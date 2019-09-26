@@ -174,8 +174,18 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl,sys::Respon
             auto records = std::make_unique<std::vector<ThreadRecord>>();
             records->push_back(ret);
             responseMsg = std::make_shared<DBThreadResponseMessage>(std::move(records), ret.dbID == 0 ? false : true);
-        }
-            break;
+        } break;
+
+        case MessageType::DBThreadGetCount: {
+#if SHOW_DB_ACCESS_PERF == 1
+			timestamp = cpp_freertos::Ticks::GetTicks();
+#endif
+			auto count = threadRecordInterface->GetCount();
+#if SHOW_DB_ACCESS_PERF == 1
+			LOG_DEBUG("DBThreadGetCount time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
+#endif
+			responseMsg = std::make_shared<DBThreadResponseMessage>( nullptr, true, 0,0,count );
+		} break;
 
         case MessageType::DBThreadRemove: {
             DBThreadMessage *msg = reinterpret_cast<DBThreadMessage *>(msgl);
@@ -199,9 +209,8 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl,sys::Respon
 #if SHOW_DB_ACCESS_PERF == 1
             LOG_DEBUG("DBThreadGetLimitOffset time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
 #endif
-            responseMsg = std::make_shared<DBThreadResponseMessage>(std::move(ret), true);
-        }
-            break;
+            responseMsg = std::make_shared<DBThreadResponseMessage>(std::move(ret), true, msg->limit, msg->offset, ret->size() );
+        } break;
 
         case MessageType::DBContactAdd: {
             DBContactMessage *msg = reinterpret_cast<DBContactMessage *>(msgl);
@@ -296,7 +305,6 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl,sys::Respon
             LOG_DEBUG("DBContactGetCount time: %lu favourites: %s",(cpp_freertos::Ticks::GetTicks()-timestamp),
 				(msg->favourite==true?"TRUE":"FALSE") );
 #endif
-            //std::unique_ptr<std::vector<ContactRecord>> rec,uint32_t retCode=0,uint32_t  count=0,uint32_t respTo=0, bool favourite = false
             responseMsg = std::make_shared<DBContactResponseMessage>(nullptr, true, 0, 0, msg->favourite,ret );
         }
             break;

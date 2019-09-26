@@ -137,6 +137,17 @@ ThreadRecord DBServiceAPI::ThreadGet(sys::Service *serv,uint32_t id) {
     }
 }
 
+uint32_t DBServiceAPI::ThreadGetCount( sys::Service* serv ) {
+	std::shared_ptr<DBThreadMessage> msg = std::make_shared<DBThreadMessage>(MessageType::DBThreadGetCount);
+
+	auto ret = sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv,5000);
+	DBThreadResponseMessage* threadResponse = reinterpret_cast<DBThreadResponseMessage*>(ret.second.get());
+	if((ret.first == sys::ReturnCodes::Success) && (threadResponse->retCode == true)){
+		return threadResponse->count;
+	}
+	return 0;
+}
+
 bool DBServiceAPI::ThreadRemove(sys::Service *serv, uint32_t id) {
     std::shared_ptr<DBThreadMessage> msg = std::make_shared<DBThreadMessage>(MessageType::DBThreadRemove);
     msg->id = id;
@@ -151,20 +162,15 @@ bool DBServiceAPI::ThreadRemove(sys::Service *serv, uint32_t id) {
     }
 }
 
-std::unique_ptr<std::vector<ThreadRecord>> DBServiceAPI::ThreadGetLimitOffset(sys::Service *serv, uint32_t offset,
+//std::unique_ptr<std::vector<ThreadRecord>>
+bool DBServiceAPI::ThreadGetLimitOffset(sys::Service *serv, uint32_t offset,
                                                                               uint32_t limit) {
-    std::shared_ptr<DBThreadMessage> msg = std::make_shared<DBThreadMessage>(MessageType::DBThreadGetLimitOffset);
+	std::shared_ptr<DBThreadMessage> msg = std::make_shared<DBThreadMessage>(MessageType::DBThreadGetLimitOffset);
     msg->offset = offset;
     msg->limit = limit;
 
-    auto ret = sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv,5000);
-    DBThreadResponseMessage* threadResponse = reinterpret_cast<DBThreadResponseMessage*>(ret.second.get());
-    if((ret.first == sys::ReturnCodes::Success) && (threadResponse->retCode == true)){
-        return std::move(threadResponse->records);
-    }
-    else{
-        return std::make_unique<std::vector<ThreadRecord>>();
-    }
+    sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv);
+    return true;
 }
 
 std::unique_ptr<std::vector<ContactRecord>> DBServiceAPI::ContactGetByName(sys::Service *serv, UTF8 primaryName, UTF8 alternativeName ) {
@@ -346,19 +352,6 @@ bool DBServiceAPI::ContactGetLimitOffset(sys::Service *serv, uint32_t offset,
     std::shared_ptr<DBContactMessage> msg = std::make_shared<DBContactMessage>(MessageType::DBContactGetLimitOffset, ContactRecord{}, favourites);
     msg->offset = offset;
     msg->limit = limit;
-
-//    auto ret = sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv,5000);
-//    DBContactResponseMessage* contactResponse = reinterpret_cast<DBContactResponseMessage*>(ret.second.get());
-//    contactResponse->offset = msg->offset;
-//    contactResponse->limit = msg->limit;
-//    contactResponse->favourite = favourites;
-//
-//    if((ret.first == sys::ReturnCodes::Success) && (contactResponse->retCode == true)){
-//        return std::move(contactResponse->records);
-//    }
-//    else{
-//        return std::make_unique<std::vector<ContactRecord>>();
-//    }
 
     sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv);
         return true;

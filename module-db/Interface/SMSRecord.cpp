@@ -124,19 +124,18 @@ std::unique_ptr<std::vector<SMSRecord>> SMSRecordInterface::GetLimitOffsetByFiel
 
         auto contactRec = contactInterface.GetByID(w.contactID);
 
-        records->push_back({
-                                   .dbID=w.ID,
-                                   .date=w.date,
-                                   .dateSent=w.dateSent,
-                                   .errorCode=w.errorCode,
-                                   .number=contactRec.numbers[0].numberE164,// TODO: or numberUser? or other number?
-                                   .body=w.body,
-                                   .isRead=w.isRead,
-                                   .type=w.type,
-                                   .threadID=w.threadID,
-                                   .contactID=w.contactID
+        SMSRecord record;
+        record.dbID = w.ID;
+        record.date = w.date;
+        record.dateSent = w.dateSent;
+        record.errorCode = w.errorCode;
+        record.number = contactRec.numbers[0].numberE164; // TODO: or numberUser? or other number?
+        record.isRead = w.isRead;
+        record.type = w.type;
+        record.threadID = w.threadID;
+        record.contactID = w.contactID;
 
-                           });
+        records->push_back( record );
     }
 
     return records;
@@ -153,19 +152,18 @@ std::unique_ptr<std::vector<SMSRecord>> SMSRecordInterface::GetLimitOffset(uint3
 
         auto contactRec = contactInterface.GetByID(w.contactID);
 
-        records->push_back({
-           .dbID=w.ID,
-           .date=w.date,
-           .dateSent=w.dateSent,
-           .errorCode=w.errorCode,
-           .number=contactRec.numbers[0].numberE164,// TODO: or numberUser? or other number
-           .body=w.body,
-           .isRead=w.isRead,
-           .type=w.type,
-           .threadID=w.threadID,
-           .contactID=w.contactID
+        SMSRecord record;
+		record.dbID = w.ID;
+		record.date = w.date;
+		record.dateSent = w.dateSent;
+		record.errorCode = w.errorCode;
+		record.number = contactRec.numbers[0].numberE164; // TODO: or numberUser? or other number?
+		record.isRead = w.isRead;
+		record.type = w.type;
+		record.threadID = w.threadID;
+		record.contactID = w.contactID;
 
-        });
+	   records->push_back( record );
     }
 
     return records;
@@ -265,20 +263,18 @@ SMSRecord SMSRecordInterface::GetByID(uint32_t id) {
     ContactRecordInterface contactInterface(contactsDB);
     auto contactRec = contactInterface.GetByID(sms.contactID);
 
-    return SMSRecord{
-        .dbID=sms.ID,
-        .date=sms.date,
-        .dateSent=sms.dateSent,
-        .errorCode=sms.errorCode,
-        .number=contactRec.numbers[0].numberE164,// TODO: or numberUser?
-        .body=sms.body,
-        .isRead=sms.isRead,
-        .type=sms.type,
-        .threadID=sms.threadID,
-        .contactID=sms.contactID
+    SMSRecord record;
+           record.dbID = sms.ID;
+           record.date = sms.date;
+           record.dateSent = sms.dateSent;
+           record.errorCode = sms.errorCode;
+           record.number = contactRec.numbers[0].numberE164; // TODO: or numberUser? or other number?
+           record.isRead = sms.isRead;
+           record.type = sms.type;
+           record.threadID = sms.threadID;
+           record.contactID = sms.contactID;
 
-    };
-
+    return record;
 }
 
 

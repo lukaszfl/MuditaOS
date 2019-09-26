@@ -32,17 +32,55 @@ bool ThreadsTable::Create() {
 
 bool ThreadsTable::Add(ThreadsTableRow entry) {
 
-    return db->Execute(
+    auto result = db->Execute(
             "INSERT or ignore INTO threads ( date, msg_count, read, contact_id, snippet, last_dir ) VALUES ( %lu, 0, 0, %lu, '%s', %lu );",
             entry.date,
             entry.contactID,
             entry.snippet.c_str(),
             entry.type
     );
+
+    if( result == false ) {
+//    	LOG_ERROR("Failed to insert thread record.");
+    	return false;
+    }
+
+    //get current number of threads
+    auto retQuery = db->Query("SELECT * FROM threads_count WHERE _id = 1;");
+
+    uint32_t threadsCount = 0;
+    if ((retQuery.get() != nullptr) && (retQuery->GetRowCount() != 0) ){
+		(*retQuery)[1].GetUInt32();
+		//add 1 to threads count and store new value in the table
+		threadsCount++;
+		return db->Execute( "UPDATE threads_count SET count = %lu WHERE _id=1;", threadsCount );
+    }
+    //add record for the first time
+    else {
+    	return db->Execute( "INSERT or ignore INTO threads_count ( count ) VALUES ( 1 );" );
+    }
 }
 
 bool ThreadsTable::RemoveByID(uint32_t id) {
-    return db->Execute("DELETE FROM threads where _id = %u;", id);
+    auto result = db->Execute("DELETE FROM threads where _id = %u;", id);
+
+    if( result == false )
+    	return false;
+
+    //get current number of threads
+	auto retQuery = db->Query("SELECT * FROM threads_count WHERE _id = 1;");
+
+	uint32_t threadsCount = 0;
+	if ((retQuery.get() != nullptr) && (retQuery->GetRowCount() != 0) ){
+		(*retQuery)[1].GetUInt32();
+		//add 1 to threads count and store new value in the table
+		threadsCount--;
+		return db->Execute( "UPDATE threads_count SET count = %lu WHERE _id=1;", threadsCount );
+	}
+	//add record for the first time
+	else {
+		return db->Execute( "INSERT or ignore INTO threads_count ( count ) VALUES ( 0 );" );
+	}
 }
 
 bool ThreadsTable::Update(ThreadsTableRow entry) {

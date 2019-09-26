@@ -20,6 +20,36 @@
 #include "../Common/Common.hpp"
 
 struct SMSRecord{
+
+	SMSRecord() : dbID{0}, date{0}, dateSent{0}, errorCode{0}, isRead{false}, type{SMSType::UNDEFINED}, threadID{0}, contactID{0} {
+	}
+
+	SMSRecord( const SMSRecord& sms){
+		dbID = sms.dbID;
+		date = sms.date;
+		dateSent = sms.dateSent;
+		errorCode = sms.errorCode;
+		number = sms.number;
+		body = sms.body;
+		isRead = sms.isRead;
+		type = sms.type;
+		threadID = sms.threadID;
+		contactID = sms.contactID;
+	}
+
+	SMSRecord( SMSRecord&& sms){
+		dbID = sms.dbID;
+		date = sms.date;
+		dateSent = sms.dateSent;
+		errorCode = sms.errorCode;
+		number = std::move(sms.number);
+		body = std::move(sms.body);
+		isRead = sms.isRead;
+		type = sms.type;
+		threadID = sms.threadID;
+		contactID = sms.contactID;
+	}
+
     uint32_t dbID;
     uint32_t date;
     uint32_t dateSent;

@@ -17,16 +17,16 @@
 #include "gui/widgets/Label.hpp"
 #include "gui/widgets/Window.hpp"
 #include "ListView.hpp"
-//#include "../PhonebookModel.hpp"
-//#include "../widgets/PhonebookListView.hpp"
+#include "../ThreadsModel.hpp"
+
 
 namespace gui {
 
 class MessagesMainWindow: public AppWindow {
   protected:
     gui::Label *title = nullptr;
-//    PhonebookListView* list;
-//    PhonebookModel* phonebookModel = nullptr;
+    ThreadsModel* threadsModel = nullptr;
+	gui::ListView* list = nullptr;
 
     Image* leftArrowImage = nullptr;
     Image* rightArrowImage = nullptr;

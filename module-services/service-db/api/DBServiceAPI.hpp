@@ -32,9 +32,10 @@ public:
     static std::unique_ptr<std::vector<SMSRecord>> SMSGetLimitOffset(sys::Service *serv,uint32_t offset,uint32_t limit);
     static std::unique_ptr<std::vector<SMSRecord>> SMSGetLimitOffsetByThreadID(sys::Service *serv,uint32_t offset,uint32_t limit,uint32_t id);
 
+    static uint32_t ThreadGetCount( sys::Service* serv );
     static ThreadRecord ThreadGet(sys::Service* serv,uint32_t id);
     static bool ThreadRemove(sys::Service* serv,uint32_t id);
-    static std::unique_ptr<std::vector<ThreadRecord>> ThreadGetLimitOffset(sys::Service *serv,uint32_t offset,uint32_t limit);
+	static bool ThreadGetLimitOffset(sys::Service *serv,uint32_t offset,uint32_t limit);
 
     /**
 	 * @brief Function is checking if new contact can be added to database. Function is blocking.

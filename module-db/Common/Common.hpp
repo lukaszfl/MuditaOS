@@ -16,6 +16,7 @@
  * Types of sms message
  */
 enum class SMSType {
+	UNDEFINED = 0x00,
     DRAFT = 0x01,
     FAILED = 0x02,
     INBOX = 0x04,

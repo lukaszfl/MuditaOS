@@ -167,6 +167,18 @@ UTF8::UTF8( const uint8_t* data, const uint32_t allocated, const uint32_t used, 
 #endif
 }
 
+UTF8::UTF8( UTF8&& utf ) {
+
+	data = utf.data;
+	utf.data = nullptr;
+
+	sizeAllocated = utf.sizeAllocated;	utf.sizeAllocated = 0;
+	sizeUsed = utf.sizeUsed;	utf.sizeUsed = 0;
+	strLength = utf.strLength; utf.strLength = 0;
+	lastIndex = utf.lastIndex;
+	lastIndexData = utf.lastIndexData;
+}
+
 UTF8::~UTF8() {
 	if( data )
 		delete [] data;

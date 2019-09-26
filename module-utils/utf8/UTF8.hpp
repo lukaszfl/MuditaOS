@@ -48,6 +48,7 @@ public:
 	UTF8( const char* str );
 	UTF8( const std::string& str );
 	UTF8( const UTF8& utf );
+	UTF8( UTF8&& utf );
 	static const int32_t npos = -1;
 
 	virtual ~UTF8();

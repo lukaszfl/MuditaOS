@@ -36,6 +36,7 @@ enum class MessageType {
     DBSMSGetSMSLimitOffsetByThreadID,  // Get SMS records by limit,offset with specified ThreadID field
 
 	DBThreadGet,        // Get thread by ID
+	DBThreadGetCount,
 	DBThreadRemove,     // Remove thread by ID
 	DBThreadGetLimitOffset, // Get Thread record by limit,offset
 

@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 
+#include "bsp/rtc/rtc.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
 
 //#include "../ApplicationPhonebook.hpp"
@@ -27,8 +28,8 @@
 namespace gui {
 
 MessagesMainWindow::MessagesMainWindow(app::Application *app) :
-	AppWindow(app, "MainWindow")
-//	phonebookModel{ new PhonebookModel(app)}
+	AppWindow(app, "MainWindow"),
+	threadsModel{ new ThreadsModel(app)}
 {
     setSize(480, 600);
     buildInterface();
@@ -43,13 +44,12 @@ void MessagesMainWindow::buildInterface() {
 
 	AppWindow::buildInterface();
 
-//	list = new gui::PhonebookListView(this, 11, 105, 480-22, 600-105-50 );
-//	list->setMaxElements(7);
-//	list->setPageSize(7);
-//	list->setPenFocusWidth(0);
-//	list->setPenWidth(0);
-//	list->setProvider( phonebookModel );
-//	list->setApplication( application );
+	list = new gui::ListView(this, 11, 105, 480-22, 600-105-50 );
+	list->setMaxElements(3);
+	list->setPageSize(3);
+	list->setPenFocusWidth(0);
+	list->setPenWidth(0);
+	list->setProvider( threadsModel );
 
 	bottomBar->setActive(BottomBar::Side::LEFT, true);
     bottomBar->setActive(BottomBar::Side::CENTER, true);
@@ -77,14 +77,14 @@ void MessagesMainWindow::buildInterface() {
 void MessagesMainWindow::destroyInterface() {
     AppWindow::destroyInterface();
     if( title ) { removeWidget(title);    delete title; title = nullptr; }
-//    if( list ) { removeWidget(list);    delete list; list = nullptr; }
+    if( list ) { removeWidget(list);    delete list; list = nullptr; }
     if( leftArrowImage ) { removeWidget(leftArrowImage);    delete leftArrowImage; leftArrowImage = nullptr; }
     if( rightArrowImage ) { removeWidget(rightArrowImage);    delete rightArrowImage; rightArrowImage = nullptr; }
     if( newMessageImage ) { removeWidget(newMessageImage);    delete newMessageImage; newMessageImage = nullptr; }
     if( searchImage ) { removeWidget(searchImage);    delete searchImage; searchImage = nullptr; }
 
     children.clear();
-//    delete phonebookModel;
+    delete threadsModel;
 }
 
 MessagesMainWindow::~MessagesMainWindow() {
@@ -93,13 +93,18 @@ MessagesMainWindow::~MessagesMainWindow() {
 
 
 void MessagesMainWindow::onBeforeShow(ShowMode mode, uint32_t command, SwitchData *data) {
-//	setFocusItem(list);
 
-//	phonebookModel->clear();
-//	phonebookModel->requestRecordsCount();
+	uint32_t count = DBServiceAPI::ThreadGetCount( application );
 
-//	list->clear();
-//	list->setElementsCount( phonebookModel->getItemCount() );
+	LOG_INFO("Number of SMS threads: %d", count);
+
+	setFocusItem(list);
+
+	threadsModel->clear();
+	threadsModel->requestRecordsCount();
+
+	list->clear();
+	list->setElementsCount( threadsModel->getItemCount() );
 }
 
 bool MessagesMainWindow::onInput(const InputEvent &inputEvent) {
@@ -117,11 +122,25 @@ bool MessagesMainWindow::onInput(const InputEvent &inputEvent) {
 	   (( inputEvent.state != InputEvent::State::keyReleasedLong )))
 		return false;
 
-//    if( inputEvent.keyCode == KeyCode::KEY_LEFT) {
-//        LOG_INFO("Adding new contact");
-//        application->switchWindow("NewContact",0,nullptr);
-//    }
-//    else
+    if( inputEvent.keyCode == KeyCode::KEY_LEFT) {
+        LOG_INFO("Adding TEST SMS");
+
+        SMSRecord sms;
+        time_t timestamp;
+        bsp::rtc_GetCurrentTimestamp(&timestamp );
+        sms.date = timestamp;
+        sms.dateSent = sms.date;
+        std::string s = "+";
+		for( uint32_t k=0; k<9; k++)
+			s+=std::to_string(rand()%10);
+        sms.number = s;
+        sms.body = "this is short sms";
+        sms.type = SMSType::INBOX;
+
+        DBServiceAPI::SMSAdd( application, sms );
+
+    }
+    else
 	if( inputEvent.keyCode == KeyCode::KEY_ENTER ) {
 		LOG_INFO("Entering thread");
 //		application->switchWindow("SearchWindow",0, nullptr );
@@ -136,9 +155,9 @@ bool MessagesMainWindow::onInput(const InputEvent &inputEvent) {
 }
 
 bool MessagesMainWindow::onDatabaseMessage( sys::Message* msgl ) {
-//	DBContactResponseMessage* msg = reinterpret_cast<DBContactResponseMessage*>( msgl );
-//	if( phonebookModel->updateRecords( std::move(msg->records), msg->offset, msg->limit, msg->count, msg->favourite ) )
-//		return true;
+	DBThreadResponseMessage* msg = reinterpret_cast<DBThreadResponseMessage*>( msgl );
+	if( threadsModel->updateRecords( std::move(msg->records), msg->offset, msg->limit, msg->count) )
+		return true;
 
 	return false;
 }
