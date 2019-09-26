@@ -6,11 +6,13 @@
  * @copyright Copyright (C) 2019 mudita.com
  * @details
  */
+#include <memory>
+#include "../data/MessagesSwitchData.hpp"
 #include "ThreadItem.hpp"
 
 namespace gui {
 
-ThreadItem::ThreadItem( ThreadsModel* model, bool mode24H) : model{model}, mode24H{mode24H} {
+ThreadItem::ThreadItem( ThreadsModel* model, app::Application* app, bool mode24H) : model{model}, app{app}, mode24H{mode24H} {
 	minWidth = 436;
 	minHeight = 146;
 	maxWidth = 436;
@@ -66,7 +68,8 @@ void ThreadItem::setThread( std::shared_ptr<ThreadRecord>& threadRecord ) {
 }
 
 bool ThreadItem::onActivated( void* data ) {
-	LOG_INFO("ITEM WAS PRESSED");
+	auto msgData = std::make_unique<app::ThreadSwitchData>(threadRecord);
+	app->switchWindow( "ThreadViewWindow", 0, std::move(msgData));
 	return true;
 }
 

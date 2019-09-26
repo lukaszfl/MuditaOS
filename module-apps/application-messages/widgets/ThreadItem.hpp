@@ -12,6 +12,7 @@
 #include "Label.hpp"
 #include "ListItem.hpp"
 #include "../ThreadsModel.hpp"
+#include "Application.hpp"
 
 namespace gui {
 
@@ -21,6 +22,7 @@ namespace gui {
 class ThreadItem: public ListItem {
 
 	ThreadsModel* model = nullptr;
+	app::Application* app = nullptr;
 	//pointer to the thread's record
 	std::shared_ptr<ThreadRecord> threadRecord = nullptr;
 	//this is hour in the mode defined in settings
@@ -31,7 +33,7 @@ class ThreadItem: public ListItem {
 	bool mode24H = false;
 
 	public:
-	ThreadItem( ThreadsModel* model, bool mode24H );
+	ThreadItem( ThreadsModel* model, app::Application* app, bool mode24H );
 		virtual ~ThreadItem();
 		//sets copy of alarm's
 		void setThread( std::shared_ptr<ThreadRecord>& thread );

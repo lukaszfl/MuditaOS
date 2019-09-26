@@ -343,10 +343,17 @@ void ListView::updateScrollDimenstions() {
 		}
 
 		uint32_t currentPage = selectedIndex/pageSize;
-		uint32_t pageHeight = widgetArea.h / pagesCount;
 
-		scroll->setPosition( widgetArea.w - 7, pageHeight*currentPage );
-		scroll->setSize(7, pageHeight );
+		if( pagesCount == 0 ){
+			scroll->visible = false;
+		}
+		else {
+			scroll->visible = true;
+			uint32_t pageHeight = widgetArea.h / pagesCount;
+
+			scroll->setPosition( widgetArea.w - 7, pageHeight*currentPage );
+			scroll->setSize(7, pageHeight );
+		}
 	}
 	//not enough space - disable scroll
 	else {

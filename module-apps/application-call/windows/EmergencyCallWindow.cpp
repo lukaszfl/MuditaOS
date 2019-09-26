@@ -6,12 +6,13 @@
  * @copyright Copyright (C) 2019 mudita.com
  * @details
  */
-#include "../data/CallSwitchData.hpp"
 #include "../ApplicationCall.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
 
 #include "i18/i18.hpp"
 #include "EmergencyCallWindow.hpp"
+
+#include "../data/CallSwitchData.hpp"
 
 namespace gui {
 

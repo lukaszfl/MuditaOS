@@ -10,6 +10,7 @@
 
 #include "MessageType.hpp"
 #include "windows/MessagesMainWindow.hpp"
+#include "windows/ThreadViewWindow.hpp"
 
 #include "ApplicationMessages.hpp"
 
@@ -73,6 +74,9 @@ void ApplicationMessages::createUserInterface() {
 
     window = new gui::MessagesMainWindow(this);
     windows.insert(std::pair<std::string, gui::AppWindow *>(window->getName(), window));
+
+    window = new gui::ThreadViewWindow(this);
+	windows.insert(std::pair<std::string, gui::AppWindow *>(window->getName(), window));
 }
 
 void ApplicationMessages::destroyUserInterface() {}

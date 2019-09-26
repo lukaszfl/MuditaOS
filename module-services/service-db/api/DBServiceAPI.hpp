@@ -29,6 +29,8 @@ public:
     static bool SMSAdd(sys::Service* serv,const SMSRecord& rec);
     static bool SMSRemove(sys::Service* serv,uint32_t id);
     static bool SMSUpdate(sys::Service* serv,const SMSRecord& rec);
+    static uint32_t SMSGetCount( sys::Service* serv, uint32_t threadID );
+
     static std::unique_ptr<std::vector<SMSRecord>> SMSGetLimitOffset(sys::Service *serv,uint32_t offset,uint32_t limit);
     static std::unique_ptr<std::vector<SMSRecord>> SMSGetLimitOffsetByThreadID(sys::Service *serv,uint32_t offset,uint32_t limit,uint32_t id);
 

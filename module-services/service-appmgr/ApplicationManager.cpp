@@ -12,8 +12,6 @@
 #include "service-appmgr/ApplicationManager.hpp"
 #include "service-evtmgr/EventManager.hpp"
 #include "messages/APMMessage.hpp"
-#include "application-call/data/CallSwitchData.hpp"
-
 #include "service-db/api/DBServiceAPI.hpp"
 #include "service-cellular/ServiceCellular.hpp"
 #include "service-cellular/api/CellularServiceAPI.hpp"
@@ -21,7 +19,7 @@
 #include <utility>
 #include <memory>
 
-//services
+#include "../../module-apps/application-call/data/CallSwitchData.hpp"
 #include "service-gui/ServiceGUI.hpp"
 #include "service-eink/ServiceEink.hpp"
 

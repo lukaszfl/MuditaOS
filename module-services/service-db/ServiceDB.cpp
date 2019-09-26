@@ -128,8 +128,18 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl,sys::Respon
             LOG_DEBUG("DBSMSUpdate time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
 #endif
             responseMsg = std::make_shared<DBSMSResponseMessage>(nullptr, ret);
-        }
-            break;
+        }  break;
+
+        case MessageType::DBSMSGetCount: {
+#if SHOW_DB_ACCESS_PERF == 1
+			timestamp = cpp_freertos::Ticks::GetTicks();
+#endif
+			auto count = smsRecordInterface->GetCount();
+#if SHOW_DB_ACCESS_PERF == 1
+			LOG_DEBUG("DBSMSGetCount time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
+#endif
+			responseMsg = std::make_shared<DBSMSResponseMessage>( nullptr, true, 0,0,count );
+		}  break;
 
         case MessageType::DBSMSGetSMSLimitOffset: {
             DBSMSMessage *msg = reinterpret_cast<DBSMSMessage *>(msgl);

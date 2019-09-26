@@ -13,11 +13,11 @@
 #include "../data/LockPhoneData.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
 #include "DesktopMainWindow.hpp"
+
+#include "../../application-call/data/CallSwitchData.hpp"
 #include "gui/widgets/Image.hpp"
 
 //application-call
-#include "application-call/data/CallSwitchData.hpp"
-
 #include "i18/i18.hpp"
 
 

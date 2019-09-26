@@ -26,6 +26,7 @@ namespace gui {
 class ThreadViewWindow: public AppWindow {
 protected:
   gui::Label *title = nullptr;
+  std::shared_ptr<ThreadRecord> threadRecord;
 
 public:
   ThreadViewWindow(app::Application *app);
@@ -34,6 +35,7 @@ public:
   // virtual methods
   bool onInput(const InputEvent &inputEvent) override;
   void onBeforeShow(ShowMode mode, uint32_t command, SwitchData *data) override;
+  bool handleSwitchData( SwitchData* data );
 
   bool onDatabaseMessage( sys::Message* msgl );
 

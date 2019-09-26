@@ -14,8 +14,6 @@
 #include "service-appmgr/ApplicationManager.hpp"
 
 #include "../ApplicationCall.hpp"
-#include "../data/CallSwitchData.hpp"
-
 #include "i18/i18.hpp"
 
 #include "service-cellular/api/CellularServiceAPI.hpp"
@@ -24,6 +22,8 @@
 #include "Label.hpp"
 #include "Margins.hpp"
 #include "CallWindow.hpp"
+
+#include "../data/CallSwitchData.hpp"
 
 namespace gui {
 

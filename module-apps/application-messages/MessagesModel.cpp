@@ -1,27 +1,29 @@
 /*
- * @file ThreadsModel.cpp
+ * @file MessagesModel.cpp
  * @author Robert Borzecki (robert.borzecki@mudita.com)
  * @date 26 wrz 2019
  * @brief
  * @copyright Copyright (C) 2019 mudita.com
  * @details
  */
-#include "ThreadsModel.hpp"
+#include "MessagesModel.hpp"
 #include "service-db/api/DBServiceAPI.hpp"
 #include "widgets/ThreadItem.hpp"
 
-#include "ThreadsModel.hpp"
-
-ThreadsModel::ThreadsModel(  app::Application* app) : DatabaseModel(app, 3){
+MessagesModel::MessagesModel(  app::Application* app) : DatabaseModel(app, 3){
 
 }
 
-ThreadsModel::~ThreadsModel() {
+MessagesModel::~MessagesModel() {
 }
 
-void ThreadsModel::requestRecordsCount() {
+void MessagesModel::setThreadID( uint32_t id ) {
+	threadID = id;
+}
+
+void MessagesModel::requestRecordsCount() {
 	uint32_t start = xTaskGetTickCount();
-	recordsCount = DBServiceAPI::ThreadGetCount(application);
+	recordsCount = DBServiceAPI::SGetCount(application);
 	uint32_t stop = xTaskGetTickCount();
 	LOG_INFO("DBServiceAPI::ThreadGetCount %d records %d ms", recordsCount, stop-start);
 
@@ -34,11 +36,11 @@ void ThreadsModel::requestRecordsCount() {
 	}
 }
 
-void ThreadsModel::requestRecords( const uint32_t offset, const uint32_t limit ) {
+void MessagesModel::requestRecords( const uint32_t offset, const uint32_t limit ) {
 	DBServiceAPI::ThreadGetLimitOffset(application, offset, limit );
 }
 
-bool ThreadsModel::updateRecords( std::unique_ptr<std::vector<ThreadRecord>> records, const uint32_t offset, const uint32_t limit, uint32_t count ) {
+bool MessagesModel::updateRecords( std::unique_ptr<std::vector<ThreadRecord>> records, const uint32_t offset, const uint32_t limit, uint32_t count ) {
 
 	LOG_INFO("Offset: %d, Limit: %d Count:%d", offset, limit, count);
 //	for( uint32_t i=0; i<records.get()->size(); ++i ) {
@@ -50,7 +52,7 @@ bool ThreadsModel::updateRecords( std::unique_ptr<std::vector<ThreadRecord>> rec
 	return true;
 }
 
-gui::ListItem* ThreadsModel::getItem( int index, int firstElement, int prevElement, uint32_t count, int remaining, bool topDown ) {
+gui::ListItem* MessagesModel::getItem( int index, int firstElement, int prevElement, uint32_t count, int remaining, bool topDown ) {
 
 	std::shared_ptr<ThreadRecord> threadRecord = getRecord( index );
 
@@ -59,7 +61,7 @@ gui::ListItem* ThreadsModel::getItem( int index, int firstElement, int prevEleme
 	if( threadRecord == nullptr )
 		return nullptr;
 
-	gui::ThreadItem* item = new gui::ThreadItem(this, application, !settings.timeFormat12 );
+	gui::ThreadItem* item = new gui::ThreadItem(this, !settings.timeFormat12 );
 	if( item != nullptr ) {
 		item->setThread( threadRecord );
 		item->setID( index );
@@ -68,7 +70,7 @@ gui::ListItem* ThreadsModel::getItem( int index, int firstElement, int prevEleme
 
 	return nullptr;
 }
-int ThreadsModel::getItemCount() {
+int MessagesModel::getItemCount() {
 	return recordsCount;
 }
 

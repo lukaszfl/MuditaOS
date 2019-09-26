@@ -91,6 +91,18 @@ bool DBServiceAPI::SMSUpdate(sys::Service *serv, const SMSRecord &rec) {
     }
 }
 
+uint32_t SMSGetCount( sys::Service* serv, uint32_t threadID ) {
+	std::shared_ptr<DBSMSMessage> msg = std::make_shared<DBSMSMessage>(MessageType::DBSMSGetCount);
+
+	auto ret = sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv,5000);
+	DBSMSResponseMessage* threadResponse = reinterpret_cast<DBSMSResponseMessage*>(ret.second.get());
+	if((ret.first == sys::ReturnCodes::Success) && (threadResponse->retCode == true)){
+		return threadResponse->count;
+	}
+	return 0;
+
+}
+
 std::unique_ptr<std::vector<SMSRecord>> DBServiceAPI::SMSGetLimitOffset(sys::Service *serv,uint32_t offset, uint32_t limit) {
     std::shared_ptr<DBSMSMessage> msg = std::make_shared<DBSMSMessage>(MessageType::DBSMSGetSMSLimitOffset);
     msg->offset = offset;

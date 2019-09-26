@@ -13,8 +13,6 @@
 #include "windows/EnterNumberWindow.hpp"
 #include "windows/EmergencyCallWindow.hpp"
 #include "windows/CallWindow.hpp"
-#include "data/CallSwitchData.hpp"
-
 #include "service-cellular/ServiceCellular.hpp"
 #include "service-cellular/api/CellularServiceAPI.hpp"
 #include "service-audio/api/AudioServiceAPI.hpp"
@@ -22,6 +20,8 @@
 #include "service-appmgr/ApplicationManager.hpp"
 
 #include "ApplicationCall.hpp"
+
+#include "data/CallSwitchData.hpp"
 namespace app {
 
 ApplicationCall::ApplicationCall(std::string name, std::string parent, bool startBackgound ) :

@@ -16,6 +16,7 @@ include_directories( ${PROJECT_NAME}
 target_sources( ${PROJECT_NAME}
 
 	PRIVATE
+		"${CMAKE_CURRENT_LIST_DIR}/data/CallSwitchData.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/ApplicationCall.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/CallMainWindow.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/EnterNumberWindow.cpp"

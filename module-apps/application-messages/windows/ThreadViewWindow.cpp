@@ -22,6 +22,7 @@
 
 #include <log/log.hpp>
 
+#include "../data/MessagesSwitchData.hpp"
 #include "ThreadViewWindow.hpp"
 
 namespace gui {
@@ -78,6 +79,23 @@ void ThreadViewWindow::destroyInterface() {
 
 ThreadViewWindow::~ThreadViewWindow() {
 	destroyInterface();
+}
+
+bool ThreadViewWindow::handleSwitchData( SwitchData* data ) {
+
+	if( data == nullptr ) {
+		LOG_ERROR("Received null pointer");
+		return false;
+	}
+
+	app::MessagesSwitchData* msgData = reinterpret_cast<app::MessagesSwitchData*>(data);
+	if( msgData->getType() == app::MessagesSwitchData::Type::PROVIDE_THREAD ) {
+		app::ThreadSwitchData* threadData = reinterpret_cast<app::ThreadSwitchData*>( data );
+		threadRecord = threadData->getThread();
+		LOG_INFO("Thread: ID: %d msg count: %d", threadRecord->dbID, threadRecord->msgCount );
+	}
+
+	return true;
 }
 
 

@@ -74,10 +74,19 @@ public:
 
 class DBSMSResponseMessage: public DBResponseMessage {
 public:
-    DBSMSResponseMessage(std::unique_ptr<std::vector<SMSRecord>> rec,uint32_t retCode=0,uint32_t count=0,uint32_t respTo=0) : DBResponseMessage(retCode,count,respTo),records(std::move(rec)){};
-    virtual ~DBSMSResponseMessage() {};
+	DBSMSResponseMessage(std::unique_ptr<std::vector<SMSRecord>> rec,uint32_t retCode=0,uint32_t limit=0,uint32_t offset=0, uint32_t count=0,uint32_t respTo=0) :
+		DBResponseMessage(retCode,count,respTo),records(std::move(rec)),
+		limit( limit ),
+		offset( offset )
+	{
+		this->count = count;
+	};
+	virtual ~DBSMSResponseMessage() {};
 
-    std::unique_ptr<std::vector<SMSRecord>> records;
+	std::unique_ptr<std::vector<SMSRecord>> records;
+
+	uint32_t limit = 0;
+	uint32_t offset = 0;
 };
 
 class DBThreadMessage : public DBMessage{

@@ -32,6 +32,7 @@ enum class MessageType {
 	DBSMSAdd,   // Add new sms record
 	DBSMSRemove,    // Remove specified SMS record
 	DBSMSUpdate,     // Update specified SMS record
+	DBSMSGetCount,
 	DBSMSGetSMSLimitOffset,  // Get SMS records by limit,offset
     DBSMSGetSMSLimitOffsetByThreadID,  // Get SMS records by limit,offset with specified ThreadID field
 

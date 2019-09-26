@@ -6,9 +6,9 @@
  * @copyright Copyright (C) 2019 mudita.com
  * @details
  */
-#include "../data/CallSwitchData.hpp"
 #include "EnterNumberWindow.hpp"
 #include "../ApplicationCall.hpp"
+#include "../data/CallSwitchData.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
 #include "service-cellular/api/CellularServiceAPI.hpp"
 
