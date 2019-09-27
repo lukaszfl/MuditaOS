@@ -91,8 +91,10 @@ bool DBServiceAPI::SMSUpdate(sys::Service *serv, const SMSRecord &rec) {
     }
 }
 
-uint32_t SMSGetCount( sys::Service* serv, uint32_t threadID ) {
+uint32_t DBServiceAPI::SMSGetCount( sys::Service* serv, uint32_t threadID ) {
 	std::shared_ptr<DBSMSMessage> msg = std::make_shared<DBSMSMessage>(MessageType::DBSMSGetCount);
+
+	msg->id = threadID;
 
 	auto ret = sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv,5000);
 	DBSMSResponseMessage* threadResponse = reinterpret_cast<DBSMSResponseMessage*>(ret.second.get());
@@ -118,21 +120,24 @@ std::unique_ptr<std::vector<SMSRecord>> DBServiceAPI::SMSGetLimitOffset(sys::Ser
     }
 }
 
-std::unique_ptr<std::vector<SMSRecord>> DBServiceAPI::SMSGetLimitOffsetByThreadID(sys::Service *serv, uint32_t offset,
+//std::unique_ptr<std::vector<SMSRecord>>
+bool DBServiceAPI::SMSGetLimitOffsetByThreadID(sys::Service *serv, uint32_t offset,
                                                                                   uint32_t limit, uint32_t id) {
     std::shared_ptr<DBSMSMessage> msg = std::make_shared<DBSMSMessage>(MessageType::DBSMSGetSMSLimitOffsetByThreadID);
     msg->offset = offset;
     msg->limit = limit;
     msg->id = id;
 
-    auto ret = sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv,5000);
-    DBSMSResponseMessage* smsResponse = reinterpret_cast<DBSMSResponseMessage*>(ret.second.get());
-    if((ret.first == sys::ReturnCodes::Success) && (smsResponse->retCode == true)){
-        return std::move(smsResponse->records);
-    }
-    else{
-        return std::make_unique<std::vector<SMSRecord>>();
-    }
+//    auto ret = sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv,5000);
+//    DBSMSResponseMessage* smsResponse = reinterpret_cast<DBSMSResponseMessage*>(ret.second.get());
+//    if((ret.first == sys::ReturnCodes::Success) && (smsResponse->retCode == true)){
+//        return std::move(smsResponse->records);
+//    }
+//    else{
+//        return std::make_unique<std::vector<SMSRecord>>();
+//    }
+    sys::Bus::SendUnicast(msg,ServiceDB::serviceName,serv);
+	return true;
 }
 
 ThreadRecord DBServiceAPI::ThreadGet(sys::Service *serv,uint32_t id) {

@@ -43,6 +43,10 @@ sys::Message_t ApplicationMessages::DataReceivedHandler(sys::DataMessage *msgl, 
 				if( currentWindow->onDatabaseMessage( resp ) )
 					refreshWindow( gui::RefreshModes::GUI_REFRESH_FAST );
 			}break;
+			case static_cast<uint32_t>(MessageType::DBSMSGetSMSLimitOffsetByThreadID ): {
+				if( (currentWindow->getName() == "ThreadViewWindow") && (currentWindow->onDatabaseMessage( resp )) )
+					refreshWindow( gui::RefreshModes::GUI_REFRESH_FAST );
+			}break;
 		}
 	}
 

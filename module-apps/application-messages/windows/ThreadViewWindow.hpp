@@ -18,6 +18,8 @@
 #include "gui/widgets/Window.hpp"
 #include "ListView.hpp"
 
+#include "../MessagesModel.hpp"
+
 namespace gui {
 
 /*
@@ -26,7 +28,9 @@ namespace gui {
 class ThreadViewWindow: public AppWindow {
 protected:
   gui::Label *title = nullptr;
+  MessagesModel* messagesModel = nullptr;
   std::shared_ptr<ThreadRecord> threadRecord;
+  gui::ListView* list = nullptr;
 
 public:
   ThreadViewWindow(app::Application *app);

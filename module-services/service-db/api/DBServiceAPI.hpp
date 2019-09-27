@@ -32,7 +32,8 @@ public:
     static uint32_t SMSGetCount( sys::Service* serv, uint32_t threadID );
 
     static std::unique_ptr<std::vector<SMSRecord>> SMSGetLimitOffset(sys::Service *serv,uint32_t offset,uint32_t limit);
-    static std::unique_ptr<std::vector<SMSRecord>> SMSGetLimitOffsetByThreadID(sys::Service *serv,uint32_t offset,uint32_t limit,uint32_t id);
+//    static std::unique_ptr<std::vector<SMSRecord>>
+	static bool SMSGetLimitOffsetByThreadID(sys::Service *serv,uint32_t offset,uint32_t limit,uint32_t id);
 
     static uint32_t ThreadGetCount( sys::Service* serv );
     static ThreadRecord ThreadGet(sys::Service* serv,uint32_t id);

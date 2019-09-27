@@ -34,7 +34,7 @@ namespace gui {
 
 PhonebookMainWindow::PhonebookMainWindow(app::Application *app) :
 	AppWindow(app, "MainWindow"),
-	phonebookModel{ new PhonebookModel(app)}{
+	phonebookModel{ nullptr}{
     setSize(480, 600);
     buildInterface();
 
@@ -47,6 +47,8 @@ void PhonebookMainWindow::rebuild() {
 void PhonebookMainWindow::buildInterface() {
 
 	AppWindow::buildInterface();
+
+	phonebookModel = new PhonebookModel(application);
 
 	list = new gui::PhonebookListView(this, 11, 105, 480-22, 600-105-50 );
 	list->setMaxElements(7);

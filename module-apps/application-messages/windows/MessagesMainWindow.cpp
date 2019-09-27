@@ -29,7 +29,7 @@ namespace gui {
 
 MessagesMainWindow::MessagesMainWindow(app::Application *app) :
 	AppWindow(app, "MainWindow"),
-	threadsModel{ new ThreadsModel(app)}
+	threadsModel{ nullptr }
 {
     setSize(480, 600);
     buildInterface();
@@ -43,6 +43,8 @@ void MessagesMainWindow::rebuild() {
 void MessagesMainWindow::buildInterface() {
 
 	AppWindow::buildInterface();
+
+	threadsModel = new ThreadsModel(application);
 
 	list = new gui::ListView(this, 11, 105, 480-22, 600-105-50 );
 	list->setMaxElements(3);

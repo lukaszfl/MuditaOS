@@ -28,8 +28,8 @@
 namespace gui {
 
 ThreadViewWindow::ThreadViewWindow(app::Application *app) :
-	AppWindow(app, "ThreadViewWindow")
-//	phonebookModel{ new PhonebookModel(app)}
+	AppWindow(app, "ThreadViewWindow"),
+	messagesModel{ nullptr }
 {
     setSize(480, 600);
     buildInterface();
@@ -44,13 +44,14 @@ void ThreadViewWindow::buildInterface() {
 
 	AppWindow::buildInterface();
 
-//	list = new gui::PhonebookListView(this, 11, 105, 480-22, 600-105-50 );
-//	list->setMaxElements(7);
-//	list->setPageSize(7);
-//	list->setPenFocusWidth(0);
-//	list->setPenWidth(0);
-//	list->setProvider( phonebookModel );
-//	list->setApplication( application );
+	messagesModel = new MessagesModel(application);
+
+	list = new gui::ListView(this, 11, 105, 480-22, 600-105-50 );
+	list->setMaxElements(7);
+	list->setPageSize(7);
+	list->setPenFocusWidth(0);
+	list->setPenWidth(0);
+	list->setProvider( messagesModel );
 
 	bottomBar->setActive(BottomBar::Side::LEFT, true);
     bottomBar->setActive(BottomBar::Side::CENTER, true);
@@ -67,14 +68,16 @@ void ThreadViewWindow::buildInterface() {
     title->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM );
     title->setMargins( Margins(0,0,0,18));
     title->setFont("gt_pressura_bold_24");
-    title->setText(utils::localize.get("app_messages_title_main"));
     title->setAlignement(gui::Alignment(gui::Alignment::ALIGN_HORIZONTAL_CENTER, gui::Alignment::ALIGN_VERTICAL_BOTTOM));
 }
 void ThreadViewWindow::destroyInterface() {
     AppWindow::destroyInterface();
+
     if( title ) { removeWidget(title);    delete title; title = nullptr; }
+    if( list ) { removeWidget(list);    delete list; list = nullptr; }
 
     children.clear();
+    delete messagesModel;
 }
 
 ThreadViewWindow::~ThreadViewWindow() {
@@ -92,7 +95,10 @@ bool ThreadViewWindow::handleSwitchData( SwitchData* data ) {
 	if( msgData->getType() == app::MessagesSwitchData::Type::PROVIDE_THREAD ) {
 		app::ThreadSwitchData* threadData = reinterpret_cast<app::ThreadSwitchData*>( data );
 		threadRecord = threadData->getThread();
+		messagesModel->setThreadID( threadRecord->dbID );
 		LOG_INFO("Thread: ID: %d msg count: %d", threadRecord->dbID, threadRecord->msgCount );
+		UTF8 str = "Contact ID:" + std::to_string( threadRecord->contactID);
+		title->setText( str );
 	}
 
 	return true;
@@ -100,6 +106,20 @@ bool ThreadViewWindow::handleSwitchData( SwitchData* data ) {
 
 
 void ThreadViewWindow::onBeforeShow(ShowMode mode, uint32_t command, SwitchData *data) {
+	LOG_INFO("getting messages");
+
+	uint32_t count = DBServiceAPI::SMSGetCount( application, threadRecord->dbID );
+
+	LOG_INFO("Number of SMSs in thread: %d is %d", threadRecord->dbID, count);
+
+	setFocusItem(list);
+
+	messagesModel->setThreadID( threadRecord->dbID );
+	messagesModel->clear();
+	messagesModel->requestRecordsCount();
+
+	list->clear();
+	list->setElementsCount( messagesModel->getItemCount() );
 }
 
 bool ThreadViewWindow::onInput(const InputEvent &inputEvent) {
@@ -130,9 +150,9 @@ bool ThreadViewWindow::onInput(const InputEvent &inputEvent) {
 }
 
 bool ThreadViewWindow::onDatabaseMessage( sys::Message* msgl ) {
-//	DBContactResponseMessage* msg = reinterpret_cast<DBContactResponseMessage*>( msgl );
-//	if( phonebookModel->updateRecords( std::move(msg->records), msg->offset, msg->limit, msg->count, msg->favourite ) )
-//		return true;
+	DBSMSResponseMessage* msg = reinterpret_cast<DBSMSResponseMessage*>( msgl );
+	if( messagesModel->updateRecords( std::move(msg->records), msg->offset, msg->limit, msg->count ) )
+		return true;
 
 	return false;
 }

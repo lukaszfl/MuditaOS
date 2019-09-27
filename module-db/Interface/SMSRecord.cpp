@@ -134,6 +134,7 @@ std::unique_ptr<std::vector<SMSRecord>> SMSRecordInterface::GetLimitOffsetByFiel
         record.type = w.type;
         record.threadID = w.threadID;
         record.contactID = w.contactID;
+        record.body = w.body;
 
         records->push_back( record );
     }
