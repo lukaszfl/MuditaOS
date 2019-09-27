@@ -156,14 +156,12 @@ void VBox::resizeItems() {
 		return;
 
 	uint32_t freeSpace = widgetArea.h;
-	int16_t newX = 0;
-	int16_t newY = 0;
 	uint16_t newH;
 	uint16_t maxHeightValue;
 	uint16_t newW = widgetArea.w;
 
 	//create list of elements to be modified. Each element is placed in the BoxElement structure;
-	//width of all elements are set to 0
+	//height of all elements are set to 0
 	std::list<BoxElement> boxElements;
 	for( Item* item : children ) {
 		boxElements.push_back( BoxElement(item) );
@@ -172,7 +170,6 @@ void VBox::resizeItems() {
 
 	uint32_t elementsToChange = children.size();
 	while( freeSpace > 0 ) {
-		newY = 0;
 		if( freeSpace < elementsToChange ) {
 			break;
 		}
@@ -187,11 +184,8 @@ void VBox::resizeItems() {
 
 		while ((i != boxElements.end()) && (freeSpace > 0))
 		{
-            newX = (*i).item->widgetArea.x;
 			//element was already updated in previous run and no further modification is possible or required
 			if( (*i).noUpdate ) {
-				(*i).item->setPosition( newX, newY );
-				newY += (*i).item->widgetArea.h;
 				++i;
 				continue;
 			}
@@ -199,11 +193,9 @@ void VBox::resizeItems() {
 			{
 				newH = (*i).item->widgetArea.h;
 				newW = (*i).item->widgetArea.w;
-				newY += newH;
 
 				freeSpace -= newH;
 
-				(*i).item->setPosition( newX, newY );
 				(*i).item->setSize( newW, newH );
 				(*i).noUpdate = true;
 				elementsToChange--;
@@ -220,10 +212,8 @@ void VBox::resizeItems() {
 				}
 
 				freeSpace -= (newH - (*i).item->widgetArea.h);
-				(*i).item->setPosition( newX, newY );
 				(*i).item->setSize( newW, newH );
 
-				newY += newH;
 			}
 
 			++i;
@@ -231,6 +221,15 @@ void VBox::resizeItems() {
 
 		if(elementsToChange == 0 )
 			break;
+	}
+
+	//iterate over all elements setting new position
+	int16_t newX = 0;
+	int16_t newY = 0;
+	std::list<BoxElement>::iterator i = boxElements.begin();
+	for( ; i != boxElements.end(); i++ ) {
+		(*i).item->setPosition( newX, newY );
+		newY += (*i).item->widgetArea.h;
 	}
 
 	Rect::updateDrawArea();

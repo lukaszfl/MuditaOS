@@ -23,8 +23,6 @@ protected:
 		Item* item;
 		bool noUpdate;
 	};
-
-	virtual void resizeItems();
 public:
 	BoxLayout();
 	BoxLayout( Item* parent, const uint32_t& x, const uint32_t& y, const uint32_t& w, const uint32_t& h);
@@ -36,24 +34,23 @@ public:
 	bool addWidget( gui::Item* item ) override;
 	bool removeWidget( Item* item ) override;
 	std::list<DrawCommand*> buildDrawList() override;
+	virtual void resizeItems();
 };
 
 class HBox : public BoxLayout {
-protected:
-	void resizeItems() override;
 public:
 	HBox();
 	HBox( Item* parent, const uint32_t& x, const uint32_t& y, const uint32_t& w, const uint32_t& h);
 	~HBox() {};
+	void resizeItems() override;
 };
 
 class VBox : public BoxLayout {
-protected:
-	void resizeItems() override;
 public:
 	VBox();
 	VBox( Item* parent, const uint32_t& x, const uint32_t& y, const uint32_t& w, const uint32_t& h);
 	~VBox() {};
+	void resizeItems() override;
 };
 
 } /* namespace gui */

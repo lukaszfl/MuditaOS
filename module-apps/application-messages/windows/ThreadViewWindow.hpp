@@ -16,6 +16,8 @@
 #include "gui/widgets/Image.hpp"
 #include "gui/widgets/Label.hpp"
 #include "gui/widgets/Window.hpp"
+#include "gui/widgets/Text.hpp"
+#include "gui/widgets/BoxLayout.hpp"
 #include "ListView.hpp"
 
 #include "../MessagesModel.hpp"
@@ -31,6 +33,8 @@ protected:
   MessagesModel* messagesModel = nullptr;
   std::shared_ptr<ThreadRecord> threadRecord;
   gui::ListView* list = nullptr;
+  gui::VBox* box = nullptr;
+  gui::Text* input = nullptr;
 
 public:
   ThreadViewWindow(app::Application *app);

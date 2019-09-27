@@ -46,12 +46,29 @@ void ThreadViewWindow::buildInterface() {
 
 	messagesModel = new MessagesModel(application);
 
-	list = new gui::ListView(this, 11, 105, 480-22, 600-105-50 );
+	box = new VBox( this, 11, 105, 480-22, 445 );
+
+	list = new gui::ListView(box, 0, 0, 480-22, 400);
 	list->setMaxElements(7);
 	list->setPageSize(7);
 	list->setPenFocusWidth(0);
 	list->setPenWidth(0);
 	list->setProvider( messagesModel );
+
+	input = new gui::Text( box, 0, 0, 480-22, 50, "", gui::Text::ExpandMode::EXPAND_UP );
+	input->setFont("gt_pressura_bold_24");
+	input->setRadius(5);
+	input->setPenWidth(5);
+	input->setMargins( gui::Margins(10, 5, 10, 5));
+	input->activatedCallback = [=] (gui::Item& item){
+		LOG_INFO("Pressed enter on input");
+		return true; };
+	input->setTextType( gui::Text::TextType::MULTI_LINE );
+	input->setEditMode(gui::Text::EditMode::EDIT );
+	input->setMinSize( 480-22, 50 );
+	input->setMaxSize( 480-22, 100 );
+
+	box->resizeItems();
 
 	bottomBar->setActive(BottomBar::Side::LEFT, true);
     bottomBar->setActive(BottomBar::Side::CENTER, true);
@@ -74,7 +91,9 @@ void ThreadViewWindow::destroyInterface() {
     AppWindow::destroyInterface();
 
     if( title ) { removeWidget(title);    delete title; title = nullptr; }
-    if( list ) { removeWidget(list);    delete list; list = nullptr; }
+    if( list ) { box->removeWidget(list);    delete list; list = nullptr; }
+    if( input ) { box->removeWidget(input);    delete input; input = nullptr; }
+    if( box ) { removeWidget(box);    delete box; box = nullptr; }
 
     children.clear();
     delete messagesModel;

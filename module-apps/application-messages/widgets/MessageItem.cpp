@@ -14,9 +14,9 @@ namespace gui {
 
 MessageItem::MessageItem( MessagesModel* model, app::Application* app, bool mode24H) : model{model}, app{app}, mode24H{mode24H} {
 	minWidth = 436;
-	minHeight = 146;
+	minHeight = 100;
 	maxWidth = 436;
-	maxHeight = 146;
+	maxHeight = 100;
 
 	setRadius( 8 );
 

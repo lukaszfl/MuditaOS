@@ -13,6 +13,7 @@
 #include "utf8/UTF8.hpp"
 #include "../core/Font.hpp"
 #include "Text.hpp"
+#include "BoxLayout.hpp"
 
 
 namespace gui {
@@ -28,7 +29,6 @@ Text::TextLine::TextLine( const UTF8& text, uint32_t startIndex, uint32_t endInd
 
 Text::Text() :
 	Rect(),
-	expandMode{ expandMode},
 	textType{ textType} {
 
 	setPenWidth( 1 );
@@ -969,7 +969,8 @@ bool Text::onContent() {
 	if(( expandMode == Text::ExpandMode::EXPAND_DOWN) ||
 		( expandMode == Text::ExpandMode::EXPAND_UP)) {
 		if( (parent->type == ItemType::VBOX ) || ( parent->type == ItemType::HBOX )) {
-			parent->onContent();
+//			BoxLayout* box = reinterpret_cast<BoxLayout*>parent;
+//			box->res
 		}
 	}
 

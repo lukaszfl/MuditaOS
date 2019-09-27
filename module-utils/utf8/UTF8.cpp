@@ -347,7 +347,7 @@ const char* UTF8::c_str() const {
 void UTF8::clear() {
 
 	if( data )
-		delete data;
+		delete [] data;
 
 	data = new uint8_t[stringExpansion];
 	sizeAllocated = stringExpansion;
