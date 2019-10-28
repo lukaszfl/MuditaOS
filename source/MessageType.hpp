@@ -133,6 +133,8 @@ enum class MessageType {
 
     BluetoothRequest,
 
+    LwIP_request,
+
 };
 
 
