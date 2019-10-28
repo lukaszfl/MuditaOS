@@ -24,6 +24,12 @@
 #include "ControlMuxChannel.hpp"
 #include "CommunicationMuxChannel.hpp"
 
+
+#ifndef SERIAL_PORT
+#warning "No serial for GSM specified - using dev null"
+#define SERIAL_PORT "/dev/null"
+#endif
+
 constexpr unsigned char MuxDaemon::closeChannelCmd[];
 const uint32_t MuxDaemon::virtualPortsCount;
 
