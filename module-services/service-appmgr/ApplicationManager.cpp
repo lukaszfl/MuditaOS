@@ -171,35 +171,35 @@ sys::Message_t ApplicationManager::DataReceivedHandler(sys::DataMessage* msgl,sy
 }
 // Invoked when timer ticked
 void ApplicationManager::TickHandler(uint32_t id) {
-	if( id == blockingTimerID ) {
-		LOG_INFO("screen Locking Timer Triggered");
-		stopTimer(blockingTimerID);
-
-		//check if application that has focus doesn't have a flag that prevents system from blocking and going to low power mode
-		ApplicationDescription* appDescription = applications.find( focusApplicationName )->second;
-		if( appDescription->preventLocking ) {
-			//restart timer
-			ReloadTimer(blockingTimerID);
-			return;
-		}
-
-		//if desktop has focus switch to main window and set it locked.
-		if( focusApplicationName == "ApplicationDesktop") {
-			//switch data must contain target window and information about blocking
-
-			app::Application::messageSwitchApplication(this, "ApplicationDesktop", "MainWindow", std::make_unique<gui::LockPhoneData>() );
-		}
-		else {
-			//get the application description for application that is on top and set blocking flag for it
-			appDescription->blockClosing = true;
-
-			std::unique_ptr<gui::LockPhoneData> data = std::make_unique<gui::LockPhoneData>();
-			data->setPrevApplication( focusApplicationName );
-
-			//run normal flow of applications change
-			messageSwitchApplication(this, "ApplicationDesktop", "MainWindow", std::move(data) );
-		}
-	}
+//	if( id == blockingTimerID ) {
+//		LOG_INFO("screen Locking Timer Triggered");
+//		stopTimer(blockingTimerID);
+//
+//		//check if application that has focus doesn't have a flag that prevents system from blocking and going to low power mode
+//		ApplicationDescription* appDescription = applications.find( focusApplicationName )->second;
+//		if( appDescription->preventLocking ) {
+//			//restart timer
+//			ReloadTimer(blockingTimerID);
+//			return;
+//		}
+//
+//		//if desktop has focus switch to main window and set it locked.
+//		if( focusApplicationName == "ApplicationDesktop") {
+//			//switch data must contain target window and information about blocking
+//
+//			app::Application::messageSwitchApplication(this, "ApplicationDesktop", "MainWindow", std::make_unique<gui::LockPhoneData>() );
+//		}
+//		else {
+//			//get the application description for application that is on top and set blocking flag for it
+//			appDescription->blockClosing = true;
+//
+//			std::unique_ptr<gui::LockPhoneData> data = std::make_unique<gui::LockPhoneData>();
+//			data->setPrevApplication( focusApplicationName );
+//
+//			//run normal flow of applications change
+//			messageSwitchApplication(this, "ApplicationDesktop", "MainWindow", std::move(data) );
+//		}
+//	}
 }
 
 // Invoked during initialization

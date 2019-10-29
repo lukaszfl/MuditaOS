@@ -27,7 +27,8 @@ bool BluetoothWorker::run() {
         auto el = getQueues()[queueIO_handle];
         BlueKitchen::getInstance()->qHandle = el;
         Bt::initialize_stack();
-        Bt::GAP::register_scan();
+        // TODO maybe it's this ( REMOVE FOR BT PAN)
+        // Bt::GAP::register_scan();
         std::string name = "PurePhone";
         Bt::set_name(name);
         // set local namne
@@ -65,7 +66,8 @@ bool BluetoothWorker::set_visible()
 
 bool BluetoothWorker::start_pan()
 {
-    auto err = Bt::PAN::bnep_setup();
+        Bt::PAN::bnep_setup();
+    auto err = Bt::PAN::bnep_start();
     if(err.err != Bt::Error::Succes) {
         LOG_ERROR("PAN setup error: %d %d", err.err, err.lib_code);
     }
@@ -78,7 +80,7 @@ BluetoothWorker::Error BluetoothWorker::aud_init()
     Error err = SuccessBt;
     LOG_INFO("AUDIO - TODO");
     // start GAVD
-    // && ASSIGN_CLASS_OF_DEVICE(ClassOfDevice, 0x28, 0x04, 0x10);
+    // &&  ASSIGN_CLASS_OF_DEVICE(ClassOfDevice, 0x28, 0x04, 0x10);
     return err;
 }
 

@@ -15,6 +15,7 @@ Error register_scan();
 Error scan();
 };
 namespace PAN {
+Error bnep_start();
 Error bnep_setup();
 }
 };
