@@ -35,6 +35,7 @@ extern "C" {
 #endif
 
 #include <Error.hpp>
+#include <functional>
 
 // #define TLV_DB_PATH_PREFIX "/tmp/btstack_"
 // #define TLV_DB_PATH_POSTFIX ".tlv"
@@ -190,6 +191,18 @@ Error initialize_stack()
     hci_event_callback_registration.callback = &hci_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
     LOG_DEBUG("BT worker run success");
+    return Error();
+}
+
+Error register_hw_error(std::function<void(uint8_t)> foo) {
+    static std::function<void(uint8_t)> bar = nullptr;
+    bar = foo;
+    hci_set_hardware_error_callback([](uint8_t val) -> void {
+            LOG_ERROR("Bluetooth HW ERROR! %d", val);
+            if(bar) {
+                bar(val);
+            }
+            });
     return Error();
 }
 

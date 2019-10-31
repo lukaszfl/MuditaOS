@@ -162,6 +162,7 @@ list(APPEND BOARD_DIR_SOURCES
     ${BT_STACK_ROOT}/platform/posix/btstack_stdin_posix.c
     ${BT_STACK_ROOT}/platform/posix/btstack_uart_block_posix.c
     ${BT_STACK_ROOT}/platform/posix/btstack_run_loop_posix.c
+    ${BT_STACK_ROOT}/platform/posix/btstack_tlv_posix.c
     )
 else()
 endif()

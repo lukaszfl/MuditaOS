@@ -57,6 +57,7 @@ sys::Message_t ServiceBluetooth::DataReceivedHandler(sys::DataMessage* msg,sys::
                 case BluetoothMessage::PAN: {
                     /// request lwip first...
                     LOG_INFO("Request LwIP running!");
+// TODO blocking message - wrecks system
 //                    auto ret = message_lwip(this, LwIP_message::Request::Start);
 //                    if (ret != sys::ReturnCodes::Success) {
 //                        LOG_ERROR("Request for LwIP start failed");
