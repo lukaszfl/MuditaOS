@@ -59,6 +59,12 @@ enum class MessageType {
 	DBAlarmGetNext,         // Get alarm, closest or equal to current timestamp.
 	DBAlarmUpdateNotification,
 
+	DBPresageAdd,			// Add presage record
+	DBPresageRemove,    	// Remove presage remove
+	DBPresageUpdate,    	// Update presage remove
+	DBPresageGetLimitOffset,   // Get presage records by limit,offset
+	DBPresageGetCount,         // Get presage count
+
 	//Cellular messages
 	CellularNotification,   // Async notification message
     CellularDialNumber,     // Dial number

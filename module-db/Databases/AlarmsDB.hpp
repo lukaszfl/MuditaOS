@@ -10,7 +10,6 @@
 
 #include "Database/Database.hpp"
 #include "../Tables/AlarmsTable.hpp"
-#include "../Tables/ThreadsTable.hpp"
 
 class AlarmsDB : public Database {
 public:
