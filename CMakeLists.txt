@@ -152,6 +152,9 @@ add_subdirectory(module-bluetooth)
 message("${PROJECT_NAME}: add_subdirectory module-lwip")
 add_subdirectory(module-lwip)
 
+message("${PROJECT_NAME}: add_subdirectory module-presage")
+add_subdirectory(presage_cmake)
+
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES SUFFIX ".elf")
 
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Xlinker -Map=${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map ")
@@ -176,6 +179,7 @@ target_link_libraries(${PROJECT_NAME}
         module-services
         module-apps
         module-bluetooth
+        presage_cmake
         ${LWIP_LIBRARIES}
         module-lwip
         ${TARGET_LIBRARIES}

@@ -509,3 +509,37 @@ bool DBServiceAPI::NotesGetLimitOffset(sys::Service *serv, uint32_t offset, uint
     return true;
 }
 
+bool DBServiceAPI::PresageExecuteNoResponse(sys::Service* serv, const std::string& query)
+{
+	std::shared_ptr<DBPresageMessage> msg = std::make_shared<DBPresageMessage>(MessageType::DBPresageExecute);
+
+	msg->query = query;
+	auto ret = sys::Bus::SendUnicast(msg, ServiceDB::serviceName, serv, 5000);
+
+	DBPresageResponseMessage* presageResponse = reinterpret_cast<DBPresageResponseMessage*>(ret.second.get());
+
+	if( (ret.first == sys::ReturnCodes::Success) && (presageResponse->retCode == true) )
+	{
+		return true;
+	}
+	return false;
+}
+
+std::unique_ptr<std::vector<Ngram>> DBServiceAPI::PresageExecuteWithResponse(sys::Service* serv, const std::string& query)
+{
+	std::shared_ptr<DBPresageMessage> msg = std::make_shared<DBPresageMessage>(MessageType::DBPresageExecute);
+
+	msg->query = query;
+	auto ret = sys::Bus::SendUnicast(msg, ServiceDB::serviceName, serv, 5000);
+
+	DBPresageResponseMessage* presageResponse = reinterpret_cast<DBPresageResponseMessage*>(ret.second.get());
+
+	std::vector<Ngram> retTable;
+
+	if( (ret.first == sys::ReturnCodes::Success) && (presageResponse->retCode == true) )
+	{
+
+		return std::move(presageResponse->records);
+	}
+	return std::make_unique<std::vector<Ngram>>();
+}

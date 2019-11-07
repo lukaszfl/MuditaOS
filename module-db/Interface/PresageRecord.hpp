@@ -14,14 +14,17 @@
 #include "utf8/UTF8.hpp"
 #include "../Common/Common.hpp"
 
-struct PresageRecord{
-	uint32_t ID;
-	uint32_t time;
-	uint32_t snooze;
-	uint32_t status;
-	UTF8    path;
-
-};
+typedef std::vector<std::string> Ngram;
+typedef std::vector<Ngram> NgramTable;
+//
+//struct PresageRecord{
+//	uint32_t ID;
+//	uint32_t time;
+//	uint32_t snooze;
+//	uint32_t status;
+//	UTF8    path;
+//
+//};
 
 enum class PresageRecordField{
     Time,
@@ -30,25 +33,27 @@ enum class PresageRecordField{
 	Path
 };
 
-class PresageRecordInterface : public RecordInterface<PresageRecord,PresageRecordField > {
+class PresageRecordInterface : public RecordInterface<Ngram,PresageRecordField > {
 public:
 
     PresageRecordInterface(PresageDB* presageDb);
     ~PresageRecordInterface();
 
-    bool Add(const PresageRecord& rec) override final;
+    bool Add(const Ngram& rec) override final;
     bool RemoveByID(uint32_t id) override final;
     bool RemoveByField(PresageRecordField field,const char* str) override final;
-    bool Update(const PresageRecord& rec) override final;
-    PresageRecord GetByID(uint32_t id) override final;
+    bool Update(const Ngram& rec) override final;
+    Ngram GetByID(uint32_t id) override final;
 
     uint32_t GetCount() override final;
 
-    std::unique_ptr<std::vector<PresageRecord>> GetLimitOffset(uint32_t offset,uint32_t limit) override final;
+    std::unique_ptr<std::vector<Ngram>> GetLimitOffset(uint32_t offset,uint32_t limit) override final;
 
-    std::unique_ptr<std::vector<PresageRecord>> GetLimitOffsetByField(uint32_t offset,uint32_t limit,PresageRecordField field, const char* str) override final;
+    std::unique_ptr<std::vector<Ngram>> GetLimitOffsetByField(uint32_t offset,uint32_t limit,PresageRecordField field, const char* str) override final;
 
-    PresageRecord GetNext(time_t time);
+
+    std::vector<Ngram> ExecuteQuery(std::string query);
+
 private:
     PresageDB* presageDB;
 };

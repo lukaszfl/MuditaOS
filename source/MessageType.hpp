@@ -64,6 +64,8 @@ enum class MessageType {
 	DBPresageUpdate,    	// Update presage remove
 	DBPresageGetLimitOffset,   // Get presage records by limit,offset
 	DBPresageGetCount,         // Get presage count
+	DBPresageGetByID,         // Get presage count
+	DBPresageExecute,         // Get presage count
 
 	//Cellular messages
 	CellularNotification,   // Async notification message
@@ -138,6 +140,8 @@ enum class MessageType {
 	EVMMinuteUpdated,//This message is send to current focused application on every minute time change.
 
     BluetoothRequest,
+
+	PresageTick
 
 };
 

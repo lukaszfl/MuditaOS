@@ -18,5 +18,6 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/ServicePresage.cpp"
 	PUBLIC
 		"${CMAKE_CURRENT_LIST_DIR}/ServicePresage.hpp"
+		"${CMAKE_CURRENT_LIST_DIR}/messages/PresageMessage.hpp"
 )
 

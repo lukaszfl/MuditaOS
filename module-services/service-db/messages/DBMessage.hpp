@@ -21,6 +21,7 @@
 #include "Interface/ContactRecord.hpp"
 #include "Interface/AlarmsRecord.hpp"
 #include "Interface/NotesRecord.hpp"
+#include "Interface/PresageRecord.hpp"
 
 
 class DBMessage: public sys::DataMessage {
@@ -169,5 +170,23 @@ public:
 	uint32_t offset = 0;
 };
 
+class DBPresageMessage : public DBMessage{
+public:
+	DBPresageMessage(MessageType messageType, const Ngram& rec = Ngram{}) : DBMessage(messageType), record(rec){
+
+	}
+	virtual ~DBPresageMessage() {};
+	std::string query;
+	Ngram record;
+	time_t time = 0;
+};
+
+class DBPresageResponseMessage : public DBResponseMessage{
+public:
+	DBPresageResponseMessage(std::unique_ptr<std::vector<Ngram>> rec,uint32_t retCode=0,uint32_t  count=0,uint32_t respTo=0) : DBResponseMessage(retCode,count,respTo),records(std::move(rec)){};
+	virtual ~DBPresageResponseMessage() {};
+
+	std::unique_ptr<std::vector<Ngram>> records;
+};
 
 #endif //PUREPHONE_DBMESSAGE_HPP

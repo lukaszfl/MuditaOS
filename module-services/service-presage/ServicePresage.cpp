@@ -7,12 +7,10 @@
 
 
 #include "ServicePresage.hpp"
+#include "messages/PresageMessage.hpp"
+#include "MessageType.hpp"
 
 #include "log/log.hpp"
-
-
-
-#include "vfs.hpp"
 
 #include "service-db/api/DBServiceAPI.hpp"
 
@@ -36,7 +34,11 @@ sys::Message_t ServicePresage::DataReceivedHandler(sys::DataMessage* msgl,sys::R
 
 	bool handled = false;
 
+	if(msgl->messageType == static_cast<uint32_t>(MessageType::PresageTick))
+	{
 
+		//LOG_INFO("Presage count = %d", count);
+	}
 
 	if( handled )
 		return std::make_shared<sys::ResponseMessage>();
@@ -61,6 +63,8 @@ sys::ReturnCodes ServicePresage::DeinitHandler() {
 void ServicePresage::TickHandler(uint32_t id)
 {
 	LOG_INFO("Presage tick");
+	auto message = std::make_shared<spresage::PresageTickMessage>(MessageType::PresageTick);
+	sys::Bus::SendUnicast(message, "ServicePresage", this);
 }
 
 sys::ReturnCodes ServicePresage::SwitchPowerModeHandler(const sys::ServicePowerMode mode) {

@@ -19,6 +19,7 @@
 #include "Interface/ContactRecord.hpp"
 #include "Interface/AlarmsRecord.hpp"
 #include "Interface/NotesRecord.hpp"
+#include "Interface/PresageRecord.hpp"
 
 class DBServiceAPI {
 
@@ -72,6 +73,9 @@ public:
 	static bool NotesUpdate(sys::Service* serv,const NotesRecord& rec);
 	static uint32_t NotesGetCount(sys::Service* serv);
 	static bool NotesGetLimitOffset(sys::Service *serv,uint32_t offset,uint32_t limit);
+
+	static bool PresageExecuteNoResponse(sys::Service* serv, const std::string& query);
+	static std::unique_ptr<std::vector<Ngram>> PresageExecuteWithResponse(sys::Service* serv, const std::string& query);
 };
 
 

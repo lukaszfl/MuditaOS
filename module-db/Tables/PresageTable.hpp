@@ -14,14 +14,16 @@
 #include "utf8/UTF8.hpp"
 #include "Common/Common.hpp"
 
+typedef std::vector<std::string> Ngram;
+typedef std::vector<Ngram> NgramTable;
 
-struct PresageTableRow{
-    uint32_t ID;
-    uint32_t time;
-    uint32_t snooze;
-    uint32_t status;
-    UTF8    path;
-};
+//struct PresageTableRow{
+//    uint32_t ID;
+//    uint32_t time;
+//    uint32_t snooze;
+//    uint32_t status;
+//    UTF8    path;
+//};
 
 enum class PresageTableFields{
     Time,
@@ -30,25 +32,25 @@ enum class PresageTableFields{
 	Path
 };
 
-class PresageTable : public Table<PresageTableRow,PresageTableFields> {
+class PresageTable : public Table<Ngram,PresageTableFields> {
 public:
 
 	PresageTable(Database* db);
     virtual ~PresageTable();
 
     bool Create() override final;
-    bool Add(PresageTableRow entry) override final;
+    bool Add(Ngram entry) override final;
     bool RemoveByID(uint32_t id) override final;
     bool RemoveByField(PresageTableFields field, const char* str) override final;
-    bool Update(PresageTableRow entry) override final;
-    PresageTableRow GetByID(uint32_t id) override final;
-    std::vector<PresageTableRow> GetLimitOffset(uint32_t offset,uint32_t limit) override final;
-    std::vector<PresageTableRow> GetLimitOffsetByField(uint32_t offset,uint32_t limit,PresageTableFields field,const char* str) override final;
+    bool Update(Ngram entry) override final;
+    Ngram GetByID(uint32_t id) override final;
+    std::vector<Ngram> GetLimitOffset(uint32_t offset,uint32_t limit) override final;
+    std::vector<Ngram> GetLimitOffsetByField(uint32_t offset,uint32_t limit,PresageTableFields field,const char* str) override final;
 
     uint32_t GetCount() override final;
     uint32_t GetCountByFieldID(const char* field,uint32_t id) override final;
 
-    PresageTableRow GetNext(time_t time);
+    NgramTable ExecuteQuery(std::string query);
 
 private:
 

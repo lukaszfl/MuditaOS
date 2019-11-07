@@ -42,6 +42,7 @@ ServiceDB::~ServiceDB() {
     smsDB.reset();
     alarmsDB.reset();
     notesDB.reset();
+    presageDB.reset();
 
     Database::Deinitialize();
     LOG_INFO("[ServiceDB] Cleaning resources");
@@ -467,6 +468,72 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl,sys::Respon
 			responseMsg = std::make_shared<DBNotesResponseMessage>(std::move(ret), true, msg->limit, msg->offset, ret->size());
 		} break;
 
+        case MessageType::DBPresageAdd: {
+            DBPresageMessage *msg = reinterpret_cast<DBPresageMessage *>(msgl);
+#if SHOW_DB_ACCESS_PERF == 1
+            timestamp = cpp_freertos::Ticks::GetTicks();
+#endif
+            auto ret = presageRecordInterface->Add(msg->record);
+#if SHOW_DB_ACCESS_PERF == 1
+            LOG_DEBUG("DBPresageAdd time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
+#endif
+            responseMsg = std::make_shared<DBAlarmResponseMessage>(nullptr, ret);
+
+        }
+            break;
+
+        case MessageType::DBPresageRemove: {
+        	DBPresageMessage *msg = reinterpret_cast<DBPresageMessage *>(msgl);
+#if SHOW_DB_ACCESS_PERF == 1
+            timestamp = cpp_freertos::Ticks::GetTicks();
+#endif
+            auto ret = presageRecordInterface->RemoveByID(msg->id);
+#if SHOW_DB_ACCESS_PERF == 1
+            LOG_DEBUG("DBPresageRemove time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
+#endif
+            responseMsg = std::make_shared<DBPresageResponseMessage>(nullptr, ret);
+        }
+            break;
+
+        case MessageType::DBPresageUpdate: {
+        	DBPresageMessage *msg = reinterpret_cast<DBPresageMessage *>(msgl);
+#if SHOW_DB_ACCESS_PERF == 1
+            timestamp = cpp_freertos::Ticks::GetTicks();
+#endif
+            auto ret = presageRecordInterface->Update(msg->record);
+#if SHOW_DB_ACCESS_PERF == 1
+            LOG_DEBUG("DBPresageAdd time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
+#endif
+            responseMsg = std::make_shared<DBPresageResponseMessage>(nullptr, ret);
+        }
+            break;
+
+        case MessageType::DBPresageGetCount: {
+#if SHOW_DB_ACCESS_PERF == 1
+            timestamp = cpp_freertos::Ticks::GetTicks();
+#endif
+            std::string query("SELECT * from alarms ORDER BY time ASC LIMIT 1 OFFSET 0;");
+            auto ret = presageRecordInterface->ExecuteQuery(query);
+            uint32_t count = 3;
+#if SHOW_DB_ACCESS_PERF == 1
+            LOG_DEBUG("DBPresageGetCount time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
+#endif
+            responseMsg = std::make_shared<DBAlarmResponseMessage>(nullptr, true,count);
+        }
+            break;
+
+        case MessageType::DBPresageGetLimitOffset: {
+        	DBPresageMessage *msg = reinterpret_cast<DBPresageMessage *>(msgl);
+#if SHOW_DB_ACCESS_PERF == 1
+            timestamp = cpp_freertos::Ticks::GetTicks();
+#endif
+            auto ret = presageRecordInterface->GetLimitOffset(msg->offset, msg->limit);
+#if SHOW_DB_ACCESS_PERF == 1
+            LOG_ERROR("DBPresageGetLimitOffset time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
+#endif
+            responseMsg = std::make_shared<DBPresageResponseMessage>(std::move(ret), true);
+        }
+            break;
 
         default:
             // ignore this message
@@ -493,6 +560,7 @@ sys::ReturnCodes ServiceDB::InitHandler() {
     smsDB = std::make_unique<SmsDB>();
     alarmsDB = std::make_unique<AlarmsDB>();
     notesDB = std::make_unique<NotesDB>();
+    presageDB = std::make_unique<PresageDB>();
 
     // Create record interfaces
     settingsRecordInterface = std::make_unique<SettingsRecordInterface>(settingsDB.get());
@@ -501,6 +569,7 @@ sys::ReturnCodes ServiceDB::InitHandler() {
     threadRecordInterface = std::make_unique<ThreadRecordInterface>(smsDB.get(), contactsDB.get());
     alarmsRecordInterface = std::make_unique<AlarmsRecordInterface>(alarmsDB.get());
     notesRecordInterface = std::make_unique<NotesRecordInterface>(notesDB.get());
+    presageRecordInterface = std::make_unique<PresageRecordInterface>(presageDB.get());
 
     return sys::ReturnCodes::Success;
 }
