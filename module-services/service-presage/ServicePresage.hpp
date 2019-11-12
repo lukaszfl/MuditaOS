@@ -15,7 +15,7 @@
 #include "MessageType.hpp"
 
 #include "bsp/common.hpp"
-
+#include "../presage_cmake/lib/presage.h"
 
 
 class ServicePresage: public sys::Service {
@@ -29,6 +29,9 @@ protected:
 public:
 	ServicePresage();
     ~ServicePresage();
+
+    LegacyPresageCallback* callback;
+    Presage* presage;
 
     sys::Message_t DataReceivedHandler(sys::DataMessage* msgl,sys::ResponseMessage* resp) override;
 

@@ -14,13 +14,23 @@
 
 #include "service-db/api/DBServiceAPI.hpp"
 
+#include "../presage_cmake/lib/presage.h"
+
+#include "ticks.hpp"
+
 const char *ServicePresage::serviceName = "ServicePresage";
+
+
 
 ServicePresage::ServicePresage()
 		: sys::Service(serviceName)
 {
+	std::string config;
+
 	LOG_INFO("[ServicePresage] Initializing");
 
+	callback = new LegacyPresageCallback;
+	presage = new Presage(callback, config);
 }
 
 ServicePresage::~ServicePresage(){
@@ -37,7 +47,19 @@ sys::Message_t ServicePresage::DataReceivedHandler(sys::DataMessage* msgl,sys::R
 	if(msgl->messageType == static_cast<uint32_t>(MessageType::PresageTick))
 	{
 
-		//LOG_INFO("Presage count = %d", count);
+		LOG_INFO("Presage predict");
+	    const int BUFFER_SIZE = 80;
+	    char buffer[ BUFFER_SIZE ];
+
+	    memset(buffer, 0, BUFFER_SIZE);
+
+	    buffer[0] = 'a';
+	    callback->update(buffer);
+
+	    auto timestamp = cpp_freertos::Ticks::GetTicks();
+	    auto predited = presage->predict();
+
+	    LOG_DEBUG("Presage prediction time: %lu",cpp_freertos::Ticks::GetTicks()-timestamp);
 	}
 
 	if( handled )
@@ -49,7 +71,7 @@ sys::Message_t ServicePresage::DataReceivedHandler(sys::DataMessage* msgl,sys::R
 // Invoked during initialization
 sys::ReturnCodes ServicePresage::InitHandler() {
 
-	timer_id = CreateTimer(2000, true);
+	timer_id = CreateTimer(10000, true);
 	ReloadTimer(timer_id);
 	return sys::ReturnCodes::Success;
 }
