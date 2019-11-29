@@ -218,7 +218,6 @@ PhonebookContact::~PhonebookContact()
 
 void PhonebookContact::onBeforeShow(ShowMode mode, SwitchData *data)
 {
-    application->setKeyboardProfile(utils::localize.get("common_kbd_upper"));
 }
 
 ContactRecord PhonebookContact::readContact()

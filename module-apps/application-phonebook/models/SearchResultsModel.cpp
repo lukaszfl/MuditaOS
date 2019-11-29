@@ -147,7 +147,7 @@ gui::ListItem *SearchResultsModel::getItem(int index, int firstElement, int prev
     return nullptr;
 }
 
-int SearchResultsModel::getItemCount()
+int SearchResultsModel::getItemCount() const
 {
     if (results)
     {

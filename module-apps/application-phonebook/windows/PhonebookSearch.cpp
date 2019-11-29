@@ -105,7 +105,6 @@ void PhonebookSearch::destroyInterface()
 void PhonebookSearch::onBeforeShow(ShowMode mode, SwitchData *data)
 {
     setFocusItem(inputField);
-    application->setKeyboardProfile(utils::localize.get("common_kbd_upper"));
 }
 
 bool PhonebookSearch::handleSwitchData(SwitchData *data)

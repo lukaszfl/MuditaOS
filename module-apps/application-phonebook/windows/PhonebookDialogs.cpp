@@ -117,7 +117,6 @@ void PhonebookDeleteContact::destroyInterface()
 void PhonebookDeleteContact::onBeforeShow(ShowMode mode, SwitchData *data)
 {
     setFocusItem(noLabel);
-    application->setKeyboardProfile(utils::localize.get("common_kbd_upper"));
 }
 
 void PhonebookDeleteContact::setContactData()
@@ -274,7 +273,6 @@ void PhonebookBlockContact::destroyInterface()
 void PhonebookBlockContact::onBeforeShow(ShowMode mode, SwitchData *data)
 {
     setFocusItem(noLabel);
-    application->setKeyboardProfile(utils::localize.get("common_kbd_upper"));
 }
 
 void PhonebookBlockContact::setContactData()
@@ -407,7 +405,6 @@ void PhonebookDuplicateNumber::destroyInterface()
 void PhonebookDuplicateNumber::onBeforeShow(ShowMode mode, SwitchData *data)
 {
     setFocusItem(noLabel);
-    application->setKeyboardProfile(utils::localize.get("common_kbd_upper"));
 }
 
 void PhonebookDuplicateNumber::setContactData()
@@ -564,7 +561,6 @@ void PhonebookDuplicateSpeedDial::destroyInterface()
 void PhonebookDuplicateSpeedDial::onBeforeShow(ShowMode mode, SwitchData *data)
 {
     setFocusItem(noLabel);
-    application->setKeyboardProfile(utils::localize.get("common_kbd_upper"));
 }
 
 void PhonebookDuplicateSpeedDial::setContactData()

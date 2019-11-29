@@ -72,11 +72,6 @@ void NoResults::destroyInterface()
     AppWindow::destroyInterface();
 }
 
-void NoResults::onBeforeShow(ShowMode mode, SwitchData *data)
-{
-    application->setKeyboardProfile(utils::localize.get("common_kbd_upper"));
-}
-
 bool NoResults::handleSwitchData(SwitchData *data)
 {
     if (data == nullptr)
@@ -177,11 +172,6 @@ void ContactBlocked::rebuild()
 void ContactBlocked::destroyInterface()
 {
     AppWindow::destroyInterface();
-}
-
-void ContactBlocked::onBeforeShow(ShowMode mode, SwitchData *data)
-{
-    application->setKeyboardProfile(utils::localize.get("common_kbd_upper"));
 }
 
 bool ContactBlocked::handleSwitchData(SwitchData *data)
