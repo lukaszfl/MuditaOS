@@ -8,35 +8,30 @@
  */
 #pragma once
 
-#include <string>
 #include <functional>
+#include <string>
 
-#include "AppWindow.hpp"
-#include "gui/widgets/Label.hpp"
-#include "gui/widgets/Image.hpp"
-#include "gui/widgets/Window.hpp"
-#include "gui/widgets/BottomBar.hpp"
-#include "gui/widgets/TopBar.hpp"
-#include "gui/widgets/ListView.hpp"
+#include "Application.hpp"
+#include "windows/AppWindow.hpp"
 
-#include "../CalllogModel.hpp"
+namespace gui
+{
 
-namespace gui {
+class CalculatorMainWindow : public AppWindow
+{
+  private:
+  public:
+    CalculatorMainWindow(app::Application *app, std::string name);
+    virtual ~CalculatorMainWindow();
 
-class CalculatorMainWindow: public AppWindow {
-	gui::ListView* list = nullptr;
-public:
-	CalculatorMainWindow( app::Application* app );
-	virtual ~CalculatorMainWindow();
+    // virtual methods
+    bool onInput(const InputEvent &inputEvent) override;
+    void onBeforeShow(ShowMode mode, SwitchData *data) override;
 
-	//virtual methods
-	bool onInput( const InputEvent& inputEvent ) override;
-	void onBeforeShow( ShowMode mode, SwitchData* data ) override;
-
-	void rebuild() override;
-	void buildInterface() override;
-	void destroyInterface() override;
-	bool onDatabaseMessage( sys::Message* msg ) override;
+    void rebuild() override;
+    void buildInterface() override;
+    void destroyInterface() override;
+    bool onDatabaseMessage(sys::Message *msg) override;
 };
 
 } /* namespace gui */

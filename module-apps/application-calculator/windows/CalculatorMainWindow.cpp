@@ -16,51 +16,48 @@
 
 #include "i18/i18.hpp"
 
-
-using namespace style;
-using namespace CalculatorStyle;
-
-namespace gui {
-
-CalculatorMainWindow::CalculatorMainWindow( app::Application* app ) :
-	AppWindow( app, Calculator::settings::MainWindowStr ), CalculatorModel{ new CalculatorModel( app ) } {
-
-	buildInterface();
+namespace gui
+{
+CalculatorMainWindow::CalculatorMainWindow( app::Application* app, std::string name ) : AppWindow( app, name ) {
+    setSize(480,600);
+    buildInterface();
 }
 
-void CalculatorMainWindow::rebuild() {
-	destroyInterface();
-	buildInterface();
+void CalculatorMainWindow::rebuild()
+{
+    destroyInterface();
+    buildInterface();
 }
-void CalculatorMainWindow::buildInterface() {
-	AppWindow::buildInterface();
+void CalculatorMainWindow::buildInterface()
+{
+    AppWindow::buildInterface();
 
-	topBar->setActive( TopBar::Elements::TIME, true );
-
-	setFocusItem( list );
+    topBar->setActive(TopBar::Elements::TIME, true);
 }
-void CalculatorMainWindow::destroyInterface() {
-	AppWindow::destroyInterface();
+void CalculatorMainWindow::destroyInterface()
+{
+    AppWindow::destroyInterface();
 
-	if( list ) { removeWidget(list); delete list; list= nullptr; };
-
-	children.clear();
-	delete CalculatorModel;
+    children.clear();
 }
 
-CalculatorMainWindow::~CalculatorMainWindow() {
-	destroyInterface();
+CalculatorMainWindow::~CalculatorMainWindow()
+{
+    destroyInterface();
 }
 
-void CalculatorMainWindow::onBeforeShow( ShowMode mode, SwitchData* data ) {
+void CalculatorMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
+{
 }
 
-bool CalculatorMainWindow::onInput( const InputEvent& inputEvent ) {
-	return AppWindow::onInput( inputEvent );
+bool CalculatorMainWindow::onInput(const InputEvent &inputEvent)
+{
+    return AppWindow::onInput(inputEvent);
 }
 
-bool CalculatorMainWindow::onDatabaseMessage( sys::Message* msgl ) {
-	return false;
+bool CalculatorMainWindow::onDatabaseMessage(sys::Message *msgl)
+{
+    return false;
 }
 
 } /* namespace gui */

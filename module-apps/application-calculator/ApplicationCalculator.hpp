@@ -11,36 +11,30 @@
 
 #include "Application.hpp"
 
-namespace app {
+namespace app
+{
+
+const inline std::string CallLogAppStr = "ApplicationCalculator";
 
 /*
  *
  */
-class ApplicationSettings: public app::Application {
-public:
-	ApplicationSettings( std::string name="ApplicationCalculator", std::string parent = "", bool startBackgound = false);
-	virtual ~ApplicationSettings();
-	sys::Message_t DataReceivedHandler(sys::DataMessage* msgl,sys::ResponseMessage* resp) override;
-	sys::ReturnCodes InitHandler() override;
-	sys::ReturnCodes DeinitHandler() override;
+class ApplicationCalculator : public app::Application
+{
+  public:
+    ApplicationCalculator(std::string name = CallLogAppStr, std::string parent = "", bool startBackgound = false);
+    virtual ~ApplicationCalculator();
+    sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp) override;
+    sys::ReturnCodes InitHandler() override;
+    sys::ReturnCodes DeinitHandler() override;
 
-    sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override final{return sys::ReturnCodes::Success;}
+    sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override final
+    {
+        return sys::ReturnCodes::Success;
+    }
 
-	void createUserInterface() ;
-	void destroyUserInterface();
-};
-
-class ApplicationSettingsLauncher : public ApplicationLauncher {
-public:
-	ApplicationSettingsLauncher() : ApplicationLauncher("ApplicationSettings", true ) {};
-	bool run(sys::Service* caller = nullptr ) override {
-		parent = (caller==nullptr?"":caller->GetName());
-		return sys::SystemManager::CreateService( std::make_shared<ApplicationSettings>(name, parent), caller );
-	};
-	bool runBackground(sys::Service* caller ) override {
-		parent = (caller==nullptr?"":caller->GetName());
-		return sys::SystemManager::CreateService( std::make_shared<ApplicationSettings>(name, parent ),caller);
-	};
+    void createUserInterface();
+    void destroyUserInterface();
 };
 
 } /* namespace app */

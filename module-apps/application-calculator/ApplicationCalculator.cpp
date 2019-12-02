@@ -15,15 +15,15 @@
 
 namespace app {
 
-ApplicationSettings::ApplicationSettings(std::string name, std::string parent, bool startBackgound) :
+ApplicationCalculator::ApplicationCalculator(std::string name, std::string parent, bool startBackgound) :
 	Application( name, parent, startBackgound ) {
 }
 
-ApplicationSettings::~ApplicationSettings() {
+ApplicationCalculator::~ApplicationCalculator() {
 }
 
 // Invoked upon receiving data message
-sys::Message_t ApplicationSettings::DataReceivedHandler(sys::DataMessage* msgl,sys::ResponseMessage* resp) {
+sys::Message_t ApplicationCalculator::DataReceivedHandler(sys::DataMessage* msgl,sys::ResponseMessage* resp) {
 
 	auto retMsg = Application::DataReceivedHandler(msgl);
 	//if message was handled by application's template there is no need to process further.
@@ -42,7 +42,7 @@ sys::Message_t ApplicationSettings::DataReceivedHandler(sys::DataMessage* msgl,s
 }
 
 // Invoked during initialization
-sys::ReturnCodes ApplicationSettings::InitHandler() {
+sys::ReturnCodes ApplicationCalculator::InitHandler() {
 
 	auto ret = Application::InitHandler();
 	if( ret != sys::ReturnCodes::Success )
@@ -55,28 +55,17 @@ sys::ReturnCodes ApplicationSettings::InitHandler() {
 	return ret;
 }
 
-sys::ReturnCodes ApplicationSettings::DeinitHandler() {
+sys::ReturnCodes ApplicationCalculator::DeinitHandler() {
 	return sys::ReturnCodes::Success;
 }
 
-void ApplicationSettings::createUserInterface() {
+void ApplicationCalculator::createUserInterface() {
 
-	gui::AppWindow* window = nullptr;
-
-	window = new gui::SettingsMainWindow(this);
-	windows.insert(std::pair<std::string,gui::AppWindow*>(window->getName(), window));
-
-	window = new gui::LanguageWindow(this);
-	windows.insert(std::pair<std::string,gui::AppWindow*>(window->getName(), window));
-
-	window = new gui::BtWindow(this);
-	windows.insert(std::pair<std::string,gui::AppWindow*>(window->getName(), window));
-
-	window = new gui::UiTestWindow(this);
-	windows.insert(std::pair<std::string,gui::AppWindow*>(window->getName(), window));
+	gui::AppWindow* window = new gui::CalculatorMainWindow(this, "Main");
+    window->setSize( 480, 600 );
 }
 
-void ApplicationSettings::destroyUserInterface() {
+void ApplicationCalculator::destroyUserInterface() {
 }
 
 } /* namespace app */
