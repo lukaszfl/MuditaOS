@@ -18,6 +18,5 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/windows/CalculatorMainWindow.cpp"
 	PUBLIC
 		"${CMAKE_CURRENT_LIST_DIR}/ApplicationCalculator.hpp"
-		"${CMAKE_CURRENT_LIST_DIR}/windows/CalculatorMainWindow.hpp"
 )
 
