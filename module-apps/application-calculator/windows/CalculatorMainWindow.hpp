@@ -21,7 +21,7 @@ class CalculatorMainWindow : public AppWindow
 {
   private:
   public:
-    CalculatorMainWindow(app::Application *app, std::string name);
+    CalculatorMainWindow(app::Application *app, std::string name = "MainWindow");
     virtual ~CalculatorMainWindow();
 
     // virtual methods

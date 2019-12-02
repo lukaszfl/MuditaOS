@@ -61,8 +61,9 @@ sys::ReturnCodes ApplicationCalculator::DeinitHandler() {
 
 void ApplicationCalculator::createUserInterface() {
 
-	gui::AppWindow* window = new gui::CalculatorMainWindow(this, "Main");
-    window->setSize( 480, 600 );
+	gui::AppWindow* window = new gui::CalculatorMainWindow(this, "MainWindow");
+    windows.insert(
+        std::pair<std::string, gui::AppWindow*>(window->getName(), window));
 }
 
 void ApplicationCalculator::destroyUserInterface() {
