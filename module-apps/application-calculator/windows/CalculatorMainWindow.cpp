@@ -33,6 +33,9 @@ void CalculatorMainWindow::buildInterface()
     AppWindow::buildInterface();
 
     topBar->setActive(TopBar::Elements::TIME, true);
+    this->setTitle(utils::localize.get("app_desktop_tools_calculator"));
+    bottomBar->setText(BottomBar::Side::CENTER,
+                       utils::localize.get("common_open"));
 }
 void CalculatorMainWindow::destroyInterface()
 {
@@ -48,6 +51,7 @@ CalculatorMainWindow::~CalculatorMainWindow()
 
 void CalculatorMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
 {
+    this->setFocus(topBar);
 }
 
 bool CalculatorMainWindow::onInput(const InputEvent &inputEvent)

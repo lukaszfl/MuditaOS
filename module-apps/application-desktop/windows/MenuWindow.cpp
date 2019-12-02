@@ -157,7 +157,10 @@ void MenuWindow::buildInterface() {
 		TileDescription{"menu_tools_notes",     "app_desktop_tools_notes",[=] (gui::Item& item){
 			sapm::ApplicationManager::messageSwitchApplication( application, "ApplicationNotes", "MainWindow", nullptr );
 			return true; }},
-		TileDescription{"menu_tools_calculator","app_desktop_tools_calculator",[=] (gui::Item& item){ return true; }},
+		TileDescription{"menu_tools_calculator","app_desktop_tools_calculator",[=] (gui::Item& item) {
+            LOG_INFO("Calculator");
+            sapm::ApplicationManager::messageSwitchApplication( application, "ApplicationCalculator", "MainWindow",nullptr);
+            return true; }},
 		TileDescription{"menu_tools_recorder",  "app_desktop_tools_recorder",[=] (gui::Item& item){ return true; }},
 	};
 

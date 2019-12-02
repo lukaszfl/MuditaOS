@@ -14,7 +14,7 @@
 namespace app
 {
 
-const inline std::string CallLogAppStr = "ApplicationCalculator";
+const inline std::string ApplicationCalculatorStr = "ApplicationCalculator";
 
 /*
  *
@@ -22,7 +22,7 @@ const inline std::string CallLogAppStr = "ApplicationCalculator";
 class ApplicationCalculator : public app::Application
 {
   public:
-    ApplicationCalculator(std::string name = CallLogAppStr, std::string parent = "", bool startBackgound = false);
+    ApplicationCalculator(std::string name = ApplicationCalculatorStr, std::string parent = "", bool startBackgound = false);
     virtual ~ApplicationCalculator();
     sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp) override;
     sys::ReturnCodes InitHandler() override;
