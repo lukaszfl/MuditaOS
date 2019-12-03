@@ -18,6 +18,7 @@
 #include "application-phonebook/ApplicationPhonebook.hpp"
 #include "application-messages/ApplicationMessages.hpp"
 #include "application-calllog/ApplicationCallLog.hpp"
+#include "application-calculator/ApplicationCalculator.hpp"
 
 //module-services
 #include "service-appmgr/ApplicationManager.hpp"
@@ -167,6 +168,8 @@ int main() {
         applications.push_back(app::CreateLauncher<app::ApplicationCallLog>("ApplicationCallLog"));
 		applications.push_back(app::CreateLauncher<app::ApplicationPhonebook>("ApplicationPhonebook"));
 		applications.push_back(app::CreateLauncher<app::ApplicationMessages>("ApplicationMessages"));
+		applications.push_back(app::CreateLauncher<app::ApplicationCalculator>(app::name::calculator));
+
 		//start application manager
         ret |= sysmgr->CreateService(std::make_shared<sapm::ApplicationManager>("ApplicationManager", sysmgr.get(), applications),
                                      sysmgr.get());

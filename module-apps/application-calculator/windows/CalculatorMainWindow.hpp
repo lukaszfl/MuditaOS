@@ -20,6 +20,7 @@ namespace gui
 class CalculatorMainWindow : public AppWindow
 {
   private:
+    gui::Label* numberLabel = nullptr;
   public:
     CalculatorMainWindow(app::Application *app, std::string name = "MainWindow");
     virtual ~CalculatorMainWindow();

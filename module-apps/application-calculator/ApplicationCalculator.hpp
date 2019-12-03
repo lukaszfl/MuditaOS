@@ -6,15 +6,17 @@
  * @copyright Copyright (C) 2019 mudita.com
  * @details
  */
-#ifndef MODULE_APPS_APPLICATION_SETTINGS_CALCULATORSETTINGS_HPP_
-#define MODULE_APPS_APPLICATION_SETTINGS_CALCULATORSETTINGS_HPP_
+#ifndef MODULE_APPS_APPLICATION_CALCULATOR_APPLICATIONCALCULATOR_HPP_
+#define MODULE_APPS_APPLICATION_CALCULATOR_APPLICATIONCALCULATOR_HPP_
 
 #include "Application.hpp"
 
 namespace app
 {
-
-const inline std::string ApplicationCalculatorStr = "ApplicationCalculator";
+namespace name
+{
+const inline std::string calculator = "ApplicationCalculator";
+};
 
 /*
  *
@@ -22,7 +24,7 @@ const inline std::string ApplicationCalculatorStr = "ApplicationCalculator";
 class ApplicationCalculator : public app::Application
 {
   public:
-    ApplicationCalculator(std::string name = ApplicationCalculatorStr, std::string parent = "", bool startBackgound = false);
+    ApplicationCalculator(std::string name = name::calculator, std::string parent = "", bool startBackgound = false);
     virtual ~ApplicationCalculator();
     sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp) override;
     sys::ReturnCodes InitHandler() override;
@@ -39,4 +41,4 @@ class ApplicationCalculator : public app::Application
 
 } /* namespace app */
 
-#endif /* MODULE_APPS_APPLICATION_SETTINGS_CALCULATORSETTINGS_HPP_ */
+#endif /* MODULE_APPS_APPLICATION_CALCULATOR_APPLICATIONCALCULATOR_HPP_ */

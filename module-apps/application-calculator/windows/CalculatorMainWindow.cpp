@@ -8,34 +8,43 @@
  */
 #include "CalculatorMainWindow.hpp"
 #include <functional>
+#include <gui/widgets/Style.hpp>
 #include <memory>
 
 #include "service-appmgr/ApplicationManager.hpp"
 
 #include "../ApplicationCalculator.hpp"
+#include "../data/CalculatorAppStyle.hpp"
 
 #include "i18/i18.hpp"
 
 namespace gui
 {
-CalculatorMainWindow::CalculatorMainWindow( app::Application* app, std::string name ) : AppWindow( app, name ) {
-    setSize(480,600);
-    buildInterface();
+
+using namespace calculatorAppStyle;
+
+CalculatorMainWindow::CalculatorMainWindow(app::Application *app, std::string name) : AppWindow(app, name)
+{
+    setSize(480, 600);
+    AppWindow::buildInterface();
+
+    this->setTitle(utils::localize.get("app_desktop_tools_calculator"));
+    topBar->setActive(TopBar::Elements::SIGNAL, true);
+    topBar->setActive(TopBar::Elements::BATTERY, true);
+    topBar->setActive(TopBar::Elements::TIME, true);
+
+    numberLabel = new gui::Label(this, numberLabel::x, numberLabel::y, numberLabel::w, numberLabel::h);
+    numberLabel->setPenWidth(numberLabel::borderW);
+    numberLabel->setFont(style::window::font::verybig);
+    numberLabel->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
+    numberLabel->setAlignement(gui::Alignment(gui::Alignment::ALIGN_HORIZONTAL_CENTER, gui::Alignment::ALIGN_VERTICAL_TOP));
 }
 
 void CalculatorMainWindow::rebuild()
 {
-    destroyInterface();
-    buildInterface();
 }
 void CalculatorMainWindow::buildInterface()
 {
-    AppWindow::buildInterface();
-
-    topBar->setActive(TopBar::Elements::TIME, true);
-    this->setTitle(utils::localize.get("app_desktop_tools_calculator"));
-    bottomBar->setText(BottomBar::Side::CENTER,
-                       utils::localize.get("common_open"));
 }
 void CalculatorMainWindow::destroyInterface()
 {
@@ -51,7 +60,6 @@ CalculatorMainWindow::~CalculatorMainWindow()
 
 void CalculatorMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
 {
-    this->setFocus(topBar);
 }
 
 bool CalculatorMainWindow::onInput(const InputEvent &inputEvent)
