@@ -19,6 +19,7 @@
 #include "application-messages/ApplicationMessages.hpp"
 #include "application-calllog/ApplicationCallLog.hpp"
 #include "application-special-input/AppSpecialInput.hpp"
+#include "application-calculator/ApplicationCalculator.hpp"
 
 //module-services
 #include "service-appmgr/ApplicationManager.hpp"
@@ -168,10 +169,12 @@ int main() {
         applications.push_back(app::CreateLauncher<app::ApplicationCallLog>(app::CallLogAppStr));
         applications.push_back(app::CreateLauncher<app::ApplicationPhonebook>(app::name_phonebook));
         applications.push_back(app::CreateLauncher<app::ApplicationMessages>(app::name_messages));
+        applications.push_back(app::CreateLauncher<app::ApplicationCalculator>(app::name::calculator));
         applications.push_back(app::CreateLauncher<app::AppSpecialInput>(app::special_input, false));
 
-        // start application manager
-        ret |= sysmgr->CreateService(std::make_shared<sapm::ApplicationManager>("ApplicationManager", sysmgr.get(), applications), sysmgr.get());
+		//start application manager
+        ret |= sysmgr->CreateService(std::make_shared<sapm::ApplicationManager>("ApplicationManager", sysmgr.get(), applications),
+                                     sysmgr.get());
 
         if (ret) {
             return 0;
