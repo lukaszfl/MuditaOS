@@ -37,7 +37,7 @@ ServiceCellular::ServiceCellular()
 
     busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 
-    callStateTimer = CreateTimer(1000, true);
+    callStateTimerID = CreateTimer(1000, true);
 
     notificationCallback = [this](std::vector<uint8_t> &data) {
         LOG_DEBUG("Notifications callback called with %i data bytes", data.size());
@@ -162,7 +162,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl,sys::
 
             if ((msg->type == CellularNotificationMessage::Type::CallAborted) ||
                 (msg->type == CellularNotificationMessage::Type::CallBusy)) {
-                stopTimer(callStateTimer);
+                stopTimer(callStateTimerID);
             } else if (msg->type == CellularNotificationMessage::Type::PowerUpProcedureComplete) {
                 sys::Bus::SendUnicast(std::make_shared<CellularRequestMessage>(MessageType::CellularStartConfProcedure),
                                       GetName(), this);
@@ -268,7 +268,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl,sys::
                     auto msg = std::make_shared<CellularNotificationMessage>(CellularNotificationMessage::Type::CallActive);
                     sys::Bus::SendMulticast(msg, sys::BusChannels::ServiceCellularNotifications, this);
 
-                    stopTimer(callStateTimer);
+                    stopTimer(callStateTimerID);
                 }
 
                 responseMsg = std::make_shared<CellularResponseMessage>(true);
@@ -285,7 +285,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl,sys::
             } else {
                 responseMsg = std::make_shared<CellularResponseMessage>(false);
             }
-            stopTimer(callStateTimer);
+            stopTimer(callStateTimerID);
 
             // Propagate "CallAborted" notification into system
                 sys::Bus::SendMulticast(std::make_shared<CellularNotificationMessage>(
@@ -317,7 +317,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl,sys::
             {
                 responseMsg = std::make_shared<CellularResponseMessage>(true);
                 // activate call state timer
-                ReloadTimer(callStateTimer);
+                ReloadTimer(callStateTimerID);
                 // Propagate "Ringing" notification into system
                 sys::Bus::SendMulticast(std::make_shared<CellularNotificationMessage>(
                     CellularNotificationMessage::Type::Ringing, msg->data),
