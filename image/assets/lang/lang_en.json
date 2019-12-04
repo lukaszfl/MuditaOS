@@ -39,7 +39,7 @@
     "locale_12hour_min" : "%I:%M %p",
     "locale_24hour_min" : "%H:%M",
     "locale_date_full" : "%m/%d/%y",
-    "locale_date_short" : "%m/%y",
+    "locale_date_short" : "%d/%y",
 
     "app_notes_title_main": "Notes",
     "app_notes_new_note": "New Note",

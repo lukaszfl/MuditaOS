@@ -9,5 +9,5 @@ IndentCaseLabels: 'false'
 IndentWidth: '4'
 PointerAlignment: Right
 UseTab: Never
-
+NamespaceIndentation: All
 ...

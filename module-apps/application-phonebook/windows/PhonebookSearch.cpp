@@ -20,28 +20,6 @@ PhonebookSearch::~PhonebookSearch()
 {
 }
 
-Label *PhonebookSearch::addLabel(std::list<Item *> *parentPage, int x, int y, int w, int h, const std::string text = "",
-                                 const std::string fontName = style::window::font::small,
-                                 const RectangleEdgeFlags edges = RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
-                                 const Alignment alignment = Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_BOTTOM),
-                                 const bool lineMode = false)
-{
-    Label *l = new Label(this, x, y, w, h);
-    l->setFilled(false);
-    l->setBorderColor(ColorFullBlack);
-    l->setEdges(edges);
-    l->setFont(fontName);
-    l->setText(text);
-    l->setAlignement(alignment);
-    l->setLineMode(lineMode);
-
-    // addItem(l);
-    if (parentPage)
-        parentPage->push_back(l);
-
-    return (l);
-}
-
 void PhonebookSearch::buildInterface()
 {
     AppWindow::buildInterface();
@@ -54,11 +32,10 @@ void PhonebookSearch::buildInterface()
     bottomBar->setText(BottomBar::Side::CENTER, utils::localize.get("app_phonebook_search"));
     bottomBar->setText(BottomBar::Side::RIGHT, utils::localize.get("app_phonebook_back"));
 
-    titleLabel = addLabel(nullptr, 0, 52, 480, 35, utils::localize.get("app_phonebook_search_win_contacts"), style::header::font::title,
-                          RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES, Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_BOTTOM));
+    setTitle(utils::localize.get("app_phonebook_search_win_contacts"));
 
-    topSeparatorLabel = addLabel(nullptr, 0, 104, 480, 1, "", "", RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
-    searchHeader = addLabel(nullptr, 30, 127, 90, 20, utils::localize.get("app_phonebook_search_win_search"));
+    topSeparatorLabel = addLabel(this, nullptr, 0, 104, 480, 1, "", "", RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
+    searchHeader = addLabel(this, nullptr, 30, 127, 90, 20, utils::localize.get("app_phonebook_search_win_search"));
 
     informationLabel = new Text(this, 45, 315, 390, 90);
     informationLabel->setText(utils::localize.get("app_phonebook_search_win_info"));

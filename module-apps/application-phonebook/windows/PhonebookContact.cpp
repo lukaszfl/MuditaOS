@@ -12,6 +12,8 @@
 #include "service-db/api/DBServiceAPI.hpp"
 #include <log/log.hpp>
 
+using namespace Phonebook::ContactWindow;
+
 PhonebookContact::PhonebookContact(app::Application *app) : AppWindow(app, "Contact")
 {
     setSize(style::window_width, style::window_height);
@@ -24,13 +26,10 @@ void PhonebookContact::rebuild()
     buildInterface();
 }
 
-Label *PhonebookContact::addLabel(std::list<Item *> *parentPage, int x, int y, int w, int h, const std::string text = "",
-                                  const std::string fontName = style::window::font::small,
-                                  const RectangleEdgeFlags edges = RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
-                                  const Alignment alignment = Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_BOTTOM),
-                                  const bool lineMode = false)
+gui::Label *addLabel(gui::Item *owner, std::list<gui::Item *> *parentPage, int x, int y, int w, int h, const std::string text, const std::string fontName,
+                     const RectangleEdgeFlags edges, const gui::Alignment alignment, const bool lineMode)
 {
-    Label *l = new Label(this, x, y, w, h);
+    gui::Label *l = new Label(owner, x, y, w, h);
     l->setFilled(false);
     l->setBorderColor(ColorFullBlack);
     l->setEdges(edges);
@@ -57,36 +56,27 @@ void PhonebookContact::buildInterface()
     bottomBar->setText(BottomBar::Side::CENTER, utils::localize.get("app_phonebook_call"));
     bottomBar->setText(BottomBar::Side::RIGHT, utils::localize.get("app_phonebook_back"));
 
-    titleLabel = addLabel(nullptr, 119, 52, 241, 35, utils::localize.get("app_phonebook_contact_information"), style::header::font::title);
-
     favouritesIcon = new Image(this, 97, 107, 32, 32, "small_heart");
-    favouritesLabel = addLabel(nullptr, 65, 144, 89, 20, utils::localize.get("app_phonebook_contact_favourites_upper"), style::phonebook::font::tinybold,
-                               RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES, Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
 
-    speedDial = addLabel(nullptr, 225, 107, 32, 32, "", style::footer::font::bold, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
-                         Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
-
-    speedDialLabel = addLabel(nullptr, 196, 144, 89, 20, utils::localize.get("app_phonebook_contact_speed_dial_upper"), style::phonebook::font::tinybold,
-                              RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES, Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
-
+    _addLabel2(favouritesLabel, utils::localize.get("app_phonebook_contact_favourites_upper"));
+    _addLabel(speedDialValue);
+    _addLabel2(speedDialLabel, utils::localize.get("app_phonebook_contact_speed_dial_upper"));
+    _addLabel(topSeparatorLabel);
+    _addLabel2(blockedLabel, utils::localize.get("app_phonebook_contact_speed_blocked_uppper"));
+    _addLabel3(informationLabel, utils::localize.get("app_phonebook_contact_information"), page1);
     blockedIcon = new Image(this, 351, 107, 32, 32, "small_circle");
-    blockedLabel = addLabel(nullptr, 329, 144, 75, 20, utils::localize.get("app_phonebook_contact_speed_blocked_uppper"), style::phonebook::font::tinybold,
-                            RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES, Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
-
-    topSeparatorLabel = addLabel(nullptr, 0, 179, 480, 1, "", "", RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
 
     // page1 contents
-    informationLabel =
-        addLabel(&page1, 30, 203, 413, 20, utils::localize.get("app_phonebook_contact_information"), style::window::font::small,
-                 RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES, Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_BOTTOM), true);
+    // informationLabel = addLabel(this, &page1, 30, 203, 413, 20, , style::window::font::small, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
+    //                          Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_BOTTOM), true);
 
     // first number line
-    numberPrimary = addLabel(&page1, 30, 249, 178, 33, "", style::window::font::bigbold, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
+    numberPrimary = addLabel(this, &page1, 30, 249, 178, 33, "", style::window::font::bigbold, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
                              Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
 
-    numberPrimaryLabel =
-        addLabel(&page1, 328, 237, 32, 53, "", style::window::font::small, RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM | RectangleEdgeFlags::GUI_RECT_EDGE_TOP,
-                 Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
+    numberPrimaryLabel = addLabel(this, &page1, 328, 237, 32, 53, "", style::window::font::small,
+                                  RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM | RectangleEdgeFlags::GUI_RECT_EDGE_TOP,
+                                  Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
     numberPrimaryLabel->inputCallback = [=](Item &item, const InputEvent &input) {
         if (input.keyCode == KeyCode::KEY_ENTER)
         {
@@ -103,9 +93,9 @@ void PhonebookContact::buildInterface()
     numberPrimaryIcon = new Image(this, 328, 249, 32, 32, "phonebook_phone_ringing");
     page1.push_back(numberPrimaryIcon);
 
-    numberPrimaryMessageLabel =
-        addLabel(&page1, 401, 237, 32, 53, "", style::window::font::small, RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM | RectangleEdgeFlags::GUI_RECT_EDGE_TOP,
-                 Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
+    numberPrimaryMessageLabel = addLabel(this, &page1, 401, 237, 32, 53, "", style::window::font::small,
+                                         RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM | RectangleEdgeFlags::GUI_RECT_EDGE_TOP,
+                                         Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
 
     numberPrimaryMessageLabel->setPenFocusWidth(3);
     numberPrimaryMessageLabel->setPenWidth(0);
@@ -121,12 +111,12 @@ void PhonebookContact::buildInterface()
     page1.push_back(numberPrimaryMessage);
 
     // second number line
-    numberSecondary = addLabel(&page1, 30, 306, 178, 33, "", style::window::font::big, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
+    numberSecondary = addLabel(this, &page1, 30, 306, 178, 33, "", style::window::font::big, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
                                Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
 
-    numberSecondaryLabel =
-        addLabel(&page1, 328, 297, 32, 53, "", style::window::font::small, RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM | RectangleEdgeFlags::GUI_RECT_EDGE_TOP,
-                 Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
+    numberSecondaryLabel = addLabel(this, &page1, 328, 297, 32, 53, "", style::window::font::small,
+                                    RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM | RectangleEdgeFlags::GUI_RECT_EDGE_TOP,
+                                    Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
     numberSecondaryLabel->setPenFocusWidth(3);
     numberSecondaryLabel->setPenWidth(0);
     numberSecondaryLabel->inputCallback = [=](Item &item, const InputEvent &input) {
@@ -142,9 +132,9 @@ void PhonebookContact::buildInterface()
     numberSecondaryIcon = new Image(this, 328, 308, 32, 32, "phonebook_phone_ringing");
     page1.push_back(numberSecondaryIcon);
 
-    numberSecondaryMessageLabel =
-        addLabel(&page1, 401, 297, 32, 53, "", style::window::font::small, RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM | RectangleEdgeFlags::GUI_RECT_EDGE_TOP,
-                 Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
+    numberSecondaryMessageLabel = addLabel(this, &page1, 401, 297, 32, 53, "", style::window::font::small,
+                                           RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM | RectangleEdgeFlags::GUI_RECT_EDGE_TOP,
+                                           Alignment(Alignment::ALIGN_HORIZONTAL_CENTER, Alignment::ALIGN_VERTICAL_CENTER));
     numberSecondaryMessageLabel->setPenFocusWidth(3);
     numberSecondaryMessageLabel->setPenWidth(0);
     numberSecondaryMessageLabel->inputCallback = [=](Item &item, const InputEvent &input) {
@@ -157,19 +147,19 @@ void PhonebookContact::buildInterface()
 
     numberSecondaryMessage = new Image(this, 401, 306, 32, 32, "mail");
     page1.push_back(numberSecondaryMessage);
-    email = addLabel(&page1, 30, 363, 413, 33, "", style::window::font::big, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
+    email = addLabel(this, &page1, 30, 363, 413, 33, "", style::window::font::big, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
                      Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_CENTER));
 
-    addressLabel = addLabel(&page1, 30, 429, 413, 20, utils::localize.get("app_phonebook_contact_address"), style::window::font::small,
+    addressLabel = addLabel(this, &page1, 30, 429, 413, 20, utils::localize.get("app_phonebook_contact_address"), style::window::font::small,
                             RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES, Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_BOTTOM), true);
 
-    addressLine1 = addLabel(&page1, 30, 475, 422, 33, "", style::window::font::big, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
+    addressLine1 = addLabel(this, &page1, 30, 475, 422, 33, "", style::window::font::big, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
                             Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_CENTER));
 
-    addressLine2 = addLabel(&page1, 30, 508, 422, 33, "", style::window::font::big, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
+    addressLine2 = addLabel(this, &page1, 30, 508, 422, 33, "", style::window::font::big, RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
                             Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_CENTER));
 
-    noteLabel = addLabel(&page2, 30, 203, 413, 20, utils::localize.get("app_phonebook_contact_note"), style::window::font::small,
+    noteLabel = addLabel(this, &page2, 30, 203, 413, 20, utils::localize.get("app_phonebook_contact_note"), style::window::font::small,
                          RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES, Alignment(Alignment::ALIGN_HORIZONTAL_LEFT, Alignment::ALIGN_VERTICAL_BOTTOM), true);
 
     noteText = new Text(this, 30, 249, 422, 600 - 249 - bottomBar->getHeight());
@@ -232,18 +222,20 @@ void PhonebookContact::setContactData()
         return;
 
     if (contact && contact->primaryName.length() > 0)
-        titleLabel->setText(contact->primaryName);
+    {
+        setTitle(contact->primaryName);
+    }
 
     if (contact && contact->primaryName.length() > 0 && contact->alternativeName.length() > 0)
-        titleLabel->setText(contact->primaryName + " " + contact->alternativeName);
+        setTitle(contact->primaryName + " " + contact->alternativeName);
 
     if (contact->speeddial >= 0 && contact->speeddial < 10)
     {
-        speedDial->setText(itoa(contact->speeddial));
+        speedDialValue->setText(itoa(contact->speeddial));
     }
     else
     {
-        speedDial->setText(UTF8("-"));
+        speedDialValue->setText(UTF8("-"));
     }
 
     if (contact->isOnFavourites == false)
@@ -358,39 +350,13 @@ bool PhonebookContact::handleSwitchData(SwitchData *data)
 
 bool PhonebookContact::onInput(const InputEvent &inputEvent)
 {
-    // check if any of the lower inheritance onInput methods catch the event
-    LOG_INFO("PhonebookContact::onInput");
-    bool ret = AppWindow::onInput(inputEvent);
-
-    if (ret)
+    if ((inputEvent.state != InputEvent::State::keyReleasedShort) && ((inputEvent.state != InputEvent::State::keyReleasedLong)) &&
+        inputEvent.keyCode == KeyCode::KEY_LF)
     {
-        // refresh window only when key is other than enter
-        if (inputEvent.keyCode != KeyCode::KEY_ENTER)
-        {
-            application->render(RefreshModes::GUI_REFRESH_FAST);
-        }
-        return (true);
-    }
-
-    if ((inputEvent.state != InputEvent::State::keyReleasedShort) && ((inputEvent.state != InputEvent::State::keyReleasedLong)))
-    {
-        return (false);
-    }
-
-    if (inputEvent.keyCode == KeyCode::KEY_ENTER)
-    {
-        LOG_INFO("Enter pressed");
-    }
-    else if (inputEvent.keyCode == KeyCode::KEY_LF)
-    {
-        LOG_INFO("switch to options");
         std::unique_ptr<gui::SwitchData> data = std::make_unique<PhonebookItemData>(contact);
         application->switchWindow("Options", gui::ShowMode::GUI_SHOW_INIT, std::move(data));
         return (true);
     }
-    else
-    {
-        LOG_INFO("PhonebookContact::onInput unhandled event code=%d", inputEvent.keyCode);
-    }
-    return (false);
+
+    return (AppWindow::onInput(inputEvent));
 }

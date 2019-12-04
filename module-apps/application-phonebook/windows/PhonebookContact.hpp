@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../data/PhonebookItemData.hpp"
-#include "../e164.hpp"
+#include "../data/Style.hpp"
 #include "AppWindow.hpp"
 #include "ContactRecord.hpp"
 #include "Label.hpp"
@@ -11,17 +11,23 @@
 #include <string>
 #include <widgets/BoxLayout.hpp>
 
-static inline const bool isValidName(const UTF8 name)
+gui::Label *addLabel(gui::Item *owner, std::list<gui::Item *> *parentPage, int x, int y, int w, int h, const std::string text = "",
+                     const std::string fontName = style::window::font::small,
+                     const gui::RectangleEdgeFlags edges = gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES,
+                     const gui::Alignment alignment = gui::Alignment(gui::Alignment::ALIGN_HORIZONTAL_LEFT, gui::Alignment::ALIGN_VERTICAL_BOTTOM),
+                     const bool lineMode = false);
+
+static inline const bool isValidName(const UTF8 &name)
 {
     return (name.length() > 0);
 }
 
-static inline const bool isValidNumber(const UTF8 number)
+static inline const bool isValidNumber(const UTF8 &number)
 {
     return (number.length() > 3);
 }
 
-static inline const bool isValidEmail(const UTF8 email)
+static inline const bool isValidEmail(const UTF8 &email)
 {
     return (email.length() > 4);
 }
@@ -80,7 +86,6 @@ class PhonebookContact : public AppWindow
 {
   protected:
     /** labels */
-    Label *titleLabel = nullptr;
     Label *informationLabel = nullptr;
     Label *ifnormation = nullptr;
     Label *addressLabel = nullptr;
@@ -93,7 +98,7 @@ class PhonebookContact : public AppWindow
     Label *speeddialLabel = nullptr;
     Label *blockedLabel = nullptr;
     Label *speedDialLabel = nullptr;
-    Label *speedDial = nullptr;
+    Label *speedDialValue = nullptr;
     Label *topSeparatorLabel = nullptr;
     Label *noteLabel = nullptr;
     Text *noteText = nullptr;
@@ -136,6 +141,4 @@ class PhonebookContact : public AppWindow
     void buildInterface() override;
     void destroyInterface() override;
     void setContactData();
-    Label *addLabel(std::list<Item *> *parentPage, int x, int y, int w, int h, const std::string text, const std::string fontName,
-                    const RectangleEdgeFlags edges, const Alignment alignment, const bool lineMode);
 };
