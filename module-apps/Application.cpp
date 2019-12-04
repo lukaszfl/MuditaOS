@@ -35,8 +35,8 @@ Application::Application(std::string name, std::string parent,bool startBackgrou
 	Service( name, parent, stackDepth, priority ),
 	startBackground{ startBackground } {
 	keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
-    longPressTimer = CreateTimer( key_timer_ms, true);
-    Service::ReloadTimer(longPressTimer);
+    longPressTimerID = CreateTimer( key_timer_ms, true);
+    Service::ReloadTimer(longPressTimerID);
 	busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 }
 
@@ -48,7 +48,7 @@ Application::~Application() {
 
 void Application::TickHandler(uint32_t id)
 {
-    if (id == longPressTimer)
+    if (id == longPressTimerID)
     {
         // TODO if(check widget type long press trigger)
         uint32_t time = xTaskGetTickCount();
