@@ -62,14 +62,17 @@ public:
 		//and request System Manager to close it.
 		DEACTIVATING
 	};
+	std::list<uint32_t> timerIDs;
 public:
 	Application(std::string name, std::string parent="", bool startBackground = false, uint32_t stackDepth=4096,sys::ServicePriority priority=sys::ServicePriority::Idle);
 	virtual ~Application();
 
-	/**
-	 * Virtual methods
-	 */
-	void TickHandler(uint32_t id) override;
+    virtual void TickHandlerLocal(uint32_t id) {};
+
+    void addTimer(TickType_t interval, bool isPeriodic)
+    {
+        timerIDs.push_back( CreateTimer(interval,  isPeriodic) );
+    }
 
 	/**
 	 * Method responsible for rendering currently active window.
@@ -130,6 +133,11 @@ public:
 protected:
 	//application's settings taken from database
 	SettingsRecord settings;
+
+    /**
+     * @param id - timer IDentificaton number
+     */
+    virtual void TickHandler(uint32_t id) override final;
 	/**
 	 * Placeholder that can be used to create window and widgets.
 	 */

@@ -61,6 +61,36 @@ void Application::TickHandler(uint32_t id)
             keyTranslator->prev_key_press = {};
         }
     }
+    else
+    {
+        //// 1
+        for( auto timerID : timerIDs)
+        {
+            if (timerID == id)
+            {
+                this->TickHandlerLocal(id);
+                break;
+            }
+        }
+        //////
+
+//        //// 2
+//        auto timerSearch = timerIDs.begin();
+//        while(*timerSearch != id && timerSearch != timerIDs.end() ){
+//            if (*timerSearch == id){
+//                this->TickHandlerLocal(id);
+//            }
+//            std::next(timerSearch);
+//        }
+//        //////
+//
+//        //// 3
+//        for_each( auto timerIDs.begin(), timerIDs.end(), [=](auto timerID) {return *timerID == id } )
+//        {
+//            this->TickHandlerLocal(id);
+//        }
+//        //////
+    }
 }
 
 void Application::render( gui::RefreshModes mode ) {
