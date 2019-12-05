@@ -57,12 +57,12 @@ sys::Message_t ApplicationClock::DataReceivedHandler(sys::DataMessage* msgl,sys:
 }
 
 // Invoked when timer ticked
-void ApplicationClock::TickHandler(uint32_t id) {
-	auto it = windows.find("Main");
-	gui::ClockMainWindow* win = reinterpret_cast<gui::ClockMainWindow*>( it->second );
-	win->incrementSecond();
-	win->updateLabels();
-	render(gui::RefreshModes::GUI_REFRESH_FAST );
+void ApplicationClock::TickHandlerLocal(uint32_t id) {
+    auto it = windows.find("MainWindow");
+    gui::ClockMainWindow* win = reinterpret_cast<gui::ClockMainWindow*>( it->second );
+    win->incrementSecond();
+    win->updateLabels();
+    render(gui::RefreshModes::GUI_REFRESH_FAST );
 }
 
 // Invoked during initialization
@@ -74,7 +74,7 @@ sys::ReturnCodes ApplicationClock::InitHandler() {
 
 	createUserInterface();
 
-	setActiveWindow("Main");
+	setActiveWindow("MainWindow");
 
 	return ret;
 }
