@@ -26,7 +26,7 @@ sys::Message_t ApplicationCalendar::DataReceivedHandler(sys::DataMessage* msgl,s
 }
 
     // Invoked when timer ticked
-void ApplicationCalendar::TickHandler(uint32_t id) {
+void ApplicationCalendar::TickHandlerLocal(uint32_t id) {
 }
 
 // Invoked during initialization

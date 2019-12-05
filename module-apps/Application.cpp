@@ -35,7 +35,7 @@ Application::Application(std::string name, std::string parent,bool startBackgrou
 	Service( name, parent, stackDepth, priority ),
 	startBackground{ startBackground } {
 	keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
-    longPressTimerID = CreateTimer( key_timer_ms, true);
+    longPressTimerID = CreateAppTimer(key_timer_ms, true);
     Service::ReloadTimer(longPressTimerID);
 	busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 }
@@ -63,34 +63,17 @@ void Application::TickHandler(uint32_t id)
     }
     else
     {
-        //// 1
-        for( auto timerID : timerIDs)
-        {
-            if (timerID == id)
-            {
-                this->TickHandlerLocal(id);
-                break;
-            }
+        if(std::find( timerIDs.begin(), timerIDs.end(), id ) != timerIDs.end()){
+            this->TickHandlerLocal(id);
         }
-        //////
-
-//        //// 2
-//        auto timerSearch = timerIDs.begin();
-//        while(*timerSearch != id && timerSearch != timerIDs.end() ){
-//            if (*timerSearch == id){
-//                this->TickHandlerLocal(id);
-//            }
-//            std::next(timerSearch);
-//        }
-//        //////
-//
-//        //// 3
-//        for_each( auto timerIDs.begin(), timerIDs.end(), [=](auto timerID) {return *timerID == id } )
-//        {
-//            this->TickHandlerLocal(id);
-//        }
-//        //////
     }
+}
+
+uint32_t Application::CreateAppTimer(TickType_t interval, bool isPeriodic)
+{
+    auto id = CreateTimer(interval, isPeriodic);
+    timerIDs.push_back( id );
+    return id;
 }
 
 void Application::render( gui::RefreshModes mode ) {

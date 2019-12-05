@@ -69,10 +69,7 @@ public:
 
     virtual void TickHandlerLocal(uint32_t id) {};
 
-    void addTimer(TickType_t interval, bool isPeriodic)
-    {
-        timerIDs.push_back( CreateTimer(interval,  isPeriodic) );
-    }
+    uint32_t CreateAppTimer(TickType_t interval, bool isPeriodic);
 
 	/**
 	 * Method responsible for rendering currently active window.

@@ -27,8 +27,8 @@ namespace app {
 ApplicationClock::ApplicationClock(std::string name,std::string parent,uint32_t stackDepth,sys::ServicePriority priority) :
 	Application( name, parent,false, stackDepth, priority ) {
 
-	timer_id = CreateTimer(100,true);
-	ReloadTimer(timer_id);
+    timerClockID = CreateAppTimer(1000, true);
+	ReloadTimer(timerClockID);
 
 }
 
@@ -80,7 +80,7 @@ sys::ReturnCodes ApplicationClock::InitHandler() {
 }
 
 sys::ReturnCodes ApplicationClock::DeinitHandler() {
-	DeleteTimer( timer_id );
+	DeleteTimer(timerClockID);
 	return sys::ReturnCodes::Success;
 }
 
