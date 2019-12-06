@@ -35,7 +35,7 @@ Application::Application(std::string name, std::string parent,bool startBackgrou
 	Service( name, parent, stackDepth, priority ),
 	startBackground{ startBackground } {
 	keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
-    longPressTimerID = CreateAppTimer(key_timer_ms, true);
+    longPressTimerID = CreateAppTimer(key_timer_ms, true, "longPressTimer");
     Service::ReloadTimer(longPressTimerID);
 	busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 }
@@ -67,6 +67,12 @@ void Application::TickHandler(uint32_t id)
             this->TickHandlerLocal(id);
         }
     }
+}
+
+uint32_t Application::CreateAppTimer(TickType_t interval, bool isPeriodic, std::string & name){
+    auto id = CreateTimer(interval, isPeriodic, name);
+    timerIDs.push_back( id );
+    return id;
 }
 
 uint32_t Application::CreateAppTimer(TickType_t interval, bool isPeriodic)
