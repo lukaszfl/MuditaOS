@@ -68,8 +68,6 @@ public:
 	        sys::ServicePriority priority=sys::ServicePriority::Idle);
 	virtual ~Application();
 
-    virtual void TickHandlerLocal(uint32_t id) {};
-
     uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name);
     uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback);
 

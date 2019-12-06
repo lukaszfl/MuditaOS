@@ -25,11 +25,17 @@
 namespace app {
 
 ApplicationClock::ApplicationClock(std::string name,std::string parent,uint32_t stackDepth,sys::ServicePriority priority) :
-	Application( name, parent,false, stackDepth, priority ) {
+	Application( name, parent,false, stackDepth, priority )
+{
+    timerClockID = registerTimer(1000, true, [=]() {
+        auto it = windows.find("MainWindow");
+        gui::ClockMainWindow *win = reinterpret_cast<gui::ClockMainWindow *>(it->second);
+        win->incrementSecond();
+        win->updateLabels();
+        render(gui::RefreshModes::GUI_REFRESH_FAST);
+    });
 
-    timerClockID = addTimer(1000, true);
-	ReloadTimer(timerClockID);
-
+    ReloadTimer(timerClockID);
 }
 
 ApplicationClock::~ApplicationClock() {
@@ -58,11 +64,6 @@ sys::Message_t ApplicationClock::DataReceivedHandler(sys::DataMessage* msgl,sys:
 
 // Invoked when timer ticked
 void ApplicationClock::TickHandlerLocal(uint32_t id) {
-    auto it = windows.find("MainWindow");
-    gui::ClockMainWindow* win = reinterpret_cast<gui::ClockMainWindow*>( it->second );
-    win->incrementSecond();
-    win->updateLabels();
-    render(gui::RefreshModes::GUI_REFRESH_FAST );
 }
 
 // Invoked during initialization
