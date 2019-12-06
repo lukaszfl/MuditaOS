@@ -27,7 +27,7 @@ namespace app {
 ApplicationCall::ApplicationCall(std::string name, std::string parent, bool startBackgound ) :
 	Application( name, parent, startBackgound, 4096+2048 ) {
 
-	timerCallId = CreateAppTimer(1000, true);
+	timerCallId = addTimer(1000, true);
 }
 
 ApplicationCall::~ApplicationCall() {

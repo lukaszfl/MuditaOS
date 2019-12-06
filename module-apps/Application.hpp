@@ -64,13 +64,14 @@ public:
 	};
 	std::list<uint32_t> timerIDs;
 public:
-	Application(std::string name, std::string parent="", bool startBackground = false, uint32_t stackDepth=4096,sys::ServicePriority priority=sys::ServicePriority::Idle);
+	Application(std::string name, std::string parent="", bool startBackground = false, uint32_t stackDepth=4096,
+	        sys::ServicePriority priority=sys::ServicePriority::Idle);
 	virtual ~Application();
 
     virtual void TickHandlerLocal(uint32_t id) {};
 
-    uint32_t CreateAppTimer(TickType_t interval, bool isPeriodic, const std::string & name);
-    uint32_t CreateAppTimer(TickType_t interval, bool isPeriodic);
+    uint32_t addTimer(TickType_t interval, bool isPeriodic, const std::string & name);
+    uint32_t addTimer(TickType_t interval, bool isPeriodic);
 
 	/**
 	 * Method responsible for rendering currently active window.

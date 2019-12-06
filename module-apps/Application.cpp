@@ -34,10 +34,10 @@ namespace app {
 Application::Application(std::string name, std::string parent,bool startBackground, uint32_t stackDepth,sys::ServicePriority priority) :
 	Service( name, parent, stackDepth, priority ),
 	startBackground{ startBackground } {
-	keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
-    longPressTimerID = CreateAppTimer(key_timer_ms, true, "longPressTimer");
+    keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
+    longPressTimerID = addTimer(key_timer_ms, true, "longPressTimer");
     Service::ReloadTimer(longPressTimerID);
-	busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
+    busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 }
 
 Application::~Application() {
@@ -69,16 +69,17 @@ void Application::TickHandler(uint32_t id)
     }
 }
 
-uint32_t Application::CreateAppTimer(TickType_t interval, bool isPeriodic, const std::string & name){
+uint32_t Application::addTimer(TickType_t interval, bool isPeriodic, const std::string &name)
+{
     auto id = CreateTimer(interval, isPeriodic, name);
-    timerIDs.push_back( id );
+    timerIDs.push_back(id);
     return id;
 }
 
-uint32_t Application::CreateAppTimer(TickType_t interval, bool isPeriodic)
+uint32_t Application::addTimer(TickType_t interval, bool isPeriodic)
 {
     auto id = CreateTimer(interval, isPeriodic);
-    timerIDs.push_back( id );
+    timerIDs.push_back(id);
     return id;
 }
 
