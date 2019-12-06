@@ -88,7 +88,7 @@ uint32_t Service::CreateTimer(uint32_t interval,bool isPeriodic,const std::strin
 {
     uint32_t unique = ServiceTimer::GetNextUniqueID();
 	timersList.push_back(std::make_unique<ServiceTimer>(name,Ticks::MsToTicks(interval),isPeriodic,unique,this));
-    LOG_DEBUG(std::string(GetName() + "Timer" + " is ID: " + std::to_string(unique)).c_str());
+    LOG_DEBUG(std::string(name + "'s ID: " + std::to_string(unique)).c_str());
 	return unique;
 }
 

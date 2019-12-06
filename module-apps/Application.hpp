@@ -69,7 +69,7 @@ public:
 
     virtual void TickHandlerLocal(uint32_t id) {};
 
-    uint32_t CreateAppTimer(TickType_t interval, bool isPeriodic, std::string & name);
+    uint32_t CreateAppTimer(TickType_t interval, bool isPeriodic, const std::string & name);
     uint32_t CreateAppTimer(TickType_t interval, bool isPeriodic);
 
 	/**

@@ -69,7 +69,7 @@ void Application::TickHandler(uint32_t id)
     }
 }
 
-uint32_t Application::CreateAppTimer(TickType_t interval, bool isPeriodic, std::string & name){
+uint32_t Application::CreateAppTimer(TickType_t interval, bool isPeriodic, const std::string & name){
     auto id = CreateTimer(interval, isPeriodic, name);
     timerIDs.push_back( id );
     return id;
