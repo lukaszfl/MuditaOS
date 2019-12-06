@@ -46,28 +46,28 @@ Application::~Application() {
 	windows.clear();
 }
 
-void Application::TickHandler(uint32_t id)
-{
-    if (id == longPressTimerID)
+    void Application::TickHandler(uint32_t id)
     {
-        // TODO if(check widget type long press trigger)
-        uint32_t time = xTaskGetTickCount();
-        if (keyTranslator->timeout(time))
+        auto timerIDtoCall = timers.find(id);
+        if (timerIDtoCall != timers.end())
         {
-            // previous key press was over standard keypress timeout - send long press
-            gui::InputEvent iev = keyTranslator->translate(time);
-            messageInputEventApplication(this, this->GetName(), iev);
-            // clean previous key
-            keyTranslator->prev_key_press = {};
+            timerIDtoCall->second();
         }
     }
-    else
+
+    uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name)
     {
-        if(std::find( timerIDs.begin(), timerIDs.end(), id ) != timerIDs.end()){
-            this->TickHandlerLocal(id);
-        }
+        auto id = CreateTimer(interval, isPeriodic, name);
+        timers.emplace(id, timerCallback);
+        return id;
     }
-}
+
+    uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback)
+    {
+        auto id = CreateTimer(interval, isPeriodic);
+        timers.emplace(id, timerCallback);
+        return id;
+    }
 
 uint32_t Application::addTimer(TickType_t interval, bool isPeriodic, const std::string &name)
 {

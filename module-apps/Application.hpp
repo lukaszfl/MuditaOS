@@ -62,13 +62,16 @@ public:
 		//and request System Manager to close it.
 		DEACTIVATING
 	};
-	std::list<uint32_t> timerIDs;
+	std::map<uint32_t, std::function <void()>> timers;
 public:
 	Application(std::string name, std::string parent="", bool startBackground = false, uint32_t stackDepth=4096,
 	        sys::ServicePriority priority=sys::ServicePriority::Idle);
 	virtual ~Application();
 
     virtual void TickHandlerLocal(uint32_t id) {};
+
+    uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name);
+    uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback);
 
     uint32_t addTimer(TickType_t interval, bool isPeriodic, const std::string & name);
     uint32_t addTimer(TickType_t interval, bool isPeriodic);
