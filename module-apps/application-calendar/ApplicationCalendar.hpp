@@ -26,7 +26,6 @@ public:
 	virtual ~ApplicationCalendar();
 
 	sys::Message_t DataReceivedHandler(sys::DataMessage* msgl,sys::ResponseMessage* resp) override;
-	void TickHandlerLocal(uint32_t id) override;
 	sys::ReturnCodes InitHandler() override;
 	sys::ReturnCodes DeinitHandler() override;
 

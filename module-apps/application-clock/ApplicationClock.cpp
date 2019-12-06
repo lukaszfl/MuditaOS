@@ -62,10 +62,6 @@ sys::Message_t ApplicationClock::DataReceivedHandler(sys::DataMessage* msgl,sys:
 		return std::make_shared<sys::ResponseMessage>(sys::ReturnCodes::Unresolved);
 }
 
-// Invoked when timer ticked
-void ApplicationClock::TickHandlerLocal(uint32_t id) {
-}
-
 // Invoked during initialization
 sys::ReturnCodes ApplicationClock::InitHandler() {
 
