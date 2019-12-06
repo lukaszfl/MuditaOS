@@ -73,9 +73,6 @@ public:
     uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name);
     uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback);
 
-    uint32_t addTimer(TickType_t interval, bool isPeriodic, const std::string & name);
-    uint32_t addTimer(TickType_t interval, bool isPeriodic);
-
 	/**
 	 * Method responsible for rendering currently active window.
 	 */

@@ -31,55 +31,54 @@
 
 namespace app {
 
-Application::Application(std::string name, std::string parent,bool startBackground, uint32_t stackDepth,sys::ServicePriority priority) :
-	Service( name, parent, stackDepth, priority ),
-	startBackground{ startBackground } {
+Application::Application(std::string name, std::string parent, bool startBackground, uint32_t stackDepth, sys::ServicePriority priority)
+    : Service(name, parent, stackDepth, priority), startBackground{startBackground}
+{
     keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
-    longPressTimerID = addTimer(key_timer_ms, true, "longPressTimer");
+    longPressTimerID = registerTimer(
+        key_timer_ms, true,
+        [=]() { // TODO if(check widget type long press trigger)
+            uint32_t time = xTaskGetTickCount();
+            if (keyTranslator->timeout(time))
+            {
+                // previous key press was over standard keypress timeout - send long press
+                gui::InputEvent iev = keyTranslator->translate(time);
+                messageInputEventApplication(this, this->GetName(), iev);
+                // clean previous key
+                keyTranslator->prev_key_press = {};
+            }
+        },
+        "longPressTimer");
     Service::ReloadTimer(longPressTimerID);
     busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 }
 
 Application::~Application() {
-	for( auto it = windows.begin(); it!= windows.end(); it++)
-		delete it->second;
-	windows.clear();
+    for( auto it = windows.begin(); it!= windows.end(); it++)
+        delete it->second;
+    windows.clear();
 }
 
-    void Application::TickHandler(uint32_t id)
+void Application::TickHandler(uint32_t id)
+{
+    auto timerIDtoCall = timers.find(id);
+    if (timerIDtoCall != timers.end())
     {
-        auto timerIDtoCall = timers.find(id);
-        if (timerIDtoCall != timers.end())
-        {
-            timerIDtoCall->second();
-        }
+        timerIDtoCall->second();
     }
+}
 
-    uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name)
-    {
-        auto id = CreateTimer(interval, isPeriodic, name);
-        timers.emplace(id, timerCallback);
-        return id;
-    }
-
-    uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback)
-    {
-        auto id = CreateTimer(interval, isPeriodic);
-        timers.emplace(id, timerCallback);
-        return id;
-    }
-
-uint32_t Application::addTimer(TickType_t interval, bool isPeriodic, const std::string &name)
+uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name)
 {
     auto id = CreateTimer(interval, isPeriodic, name);
-    timerIDs.push_back(id);
+    timers.emplace(id, timerCallback);
     return id;
 }
 
-uint32_t Application::addTimer(TickType_t interval, bool isPeriodic)
+uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback)
 {
     auto id = CreateTimer(interval, isPeriodic);
-    timerIDs.push_back(id);
+    timers.emplace(id, timerCallback);
     return id;
 }
 
