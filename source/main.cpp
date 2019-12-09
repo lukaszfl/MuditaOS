@@ -18,8 +18,8 @@
 #include "application-phonebook/ApplicationPhonebook.hpp"
 #include "application-messages/ApplicationMessages.hpp"
 #include "application-calllog/ApplicationCallLog.hpp"
-#include "application-special-input/AppSpecialInput.hpp"
 #include "application-calculator/ApplicationCalculator.hpp"
+#include "application-special-input/AppSpecialInput.hpp"
 
 //module-services
 #include "service-appmgr/ApplicationManager.hpp"
