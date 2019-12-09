@@ -25,19 +25,7 @@ using namespace calculatorAppStyle;
 
 CalculatorMainWindow::CalculatorMainWindow(app::Application *app, std::string name) : AppWindow(app, name)
 {
-    setSize(480, 600);
-    AppWindow::buildInterface();
-
-    this->setTitle(utils::localize.get("app_desktop_tools_calculator"));
-    topBar->setActive(TopBar::Elements::SIGNAL, true);
-    topBar->setActive(TopBar::Elements::BATTERY, true);
-    topBar->setActive(TopBar::Elements::TIME, true);
-
-    numberLabel = new gui::Label(this, numberLabel::x, numberLabel::y, numberLabel::w, numberLabel::h);
-    numberLabel->setPenWidth(numberLabel::borderW);
-    numberLabel->setFont(style::window::font::verybig);
-    numberLabel->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
-    numberLabel->setAlignement(gui::Alignment(gui::Alignment::ALIGN_HORIZONTAL_CENTER, gui::Alignment::ALIGN_VERTICAL_TOP));
+    buildInterface();
 }
 
 void CalculatorMainWindow::rebuild()
@@ -45,6 +33,23 @@ void CalculatorMainWindow::rebuild()
 }
 void CalculatorMainWindow::buildInterface()
 {
+    setSize(480, 600);
+    AppWindow::buildInterface();
+
+    this->setTitle(utils::localize.get("app_desktop_tools_calculator"));
+
+    bottomBar->setText( BottomBar::Side::LEFT, utils::localize.get("common_options"));
+//    bottomBar->setText(BottomBar::Side::LEFT, utils::localize.get("common"));
+    bottomBar->setText( BottomBar::Side::RIGHT, utils::localize.get("common_back"));
+
+    topBar->setActive(TopBar::Elements::SIGNAL, true);
+    topBar->setActive(TopBar::Elements::BATTERY, true);    topBar->setActive(TopBar::Elements::TIME, true);
+
+    numberLabel = new gui::Label(this, numberLabel::x, numberLabel::y, numberLabel::w, numberLabel::h);
+    numberLabel->setPenWidth(numberLabel::borderW);
+    numberLabel->setFont(style::window::font::verybig);
+    numberLabel->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
+    numberLabel->setAlignement(gui::Alignment(gui::Alignment::ALIGN_HORIZONTAL_CENTER, gui::Alignment::ALIGN_VERTICAL_TOP));
 }
 void CalculatorMainWindow::destroyInterface()
 {
