@@ -9,6 +9,8 @@
 #pragma once
 
 #include <functional>
+#include <gui/widgets/GridLayout.hpp>
+#include <gui/widgets/Style.hpp>
 #include <string>
 
 #include "Application.hpp"
@@ -17,22 +19,27 @@
 namespace gui
 {
 
-class CalculatorMainWindow : public AppWindow
-{
-  private:
-    gui::Label* numberLabel = nullptr;
-  public:
-    CalculatorMainWindow(app::Application *app, std::string name = "MainWindow");
-    virtual ~CalculatorMainWindow();
+    class CalculatorMainWindow : public AppWindow
+    {
+      private:
+        gui::Label *numberLabel = nullptr;
+        std::map<NavigationDirection, Label*> actionsNavs = {{NavigationDirection::UP, new Label(this, 0, 0, 80, 80, UTF8("?"))},
+                                                             {NavigationDirection::LEFT, new Label(this, 0, 0, 80, 80, UTF8("-"))},
+                                                             {NavigationDirection::RIGHT, new Label(this, 0, 0, 80, 80, UTF8("+"))},
+                                                             {NavigationDirection::DOWN, new Label(this, 0, 0, 80, 80, UTF8("?"))}};
 
-    // virtual methods
-    bool onInput(const InputEvent &inputEvent) override;
-    void onBeforeShow(ShowMode mode, SwitchData *data) override;
+      public:
+        CalculatorMainWindow(app::Application *app, std::string name = "MainWindow");
+        virtual ~CalculatorMainWindow();
 
-    void rebuild() override;
-    void buildInterface() override;
-    void destroyInterface() override;
-    bool onDatabaseMessage(sys::Message *msg) override;
-};
+        // virtual methods
+        bool onInput(const InputEvent &inputEvent) override;
+        void onBeforeShow(ShowMode mode, SwitchData *data) override;
+
+        void rebuild() override;
+        void buildInterface() override;
+        void destroyInterface() override;
+        bool onDatabaseMessage(sys::Message *msg) override;
+    };
 
 } /* namespace gui */
