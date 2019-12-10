@@ -35,6 +35,7 @@ namespace app {
  */
 class Application: public sys::Service {
     uint32_t longPressTimerID = 0;
+    std::function<void()> longPressTimerCallback;
 public:
 	enum class State {
 		//Application: Object has been created and underlying service is waiting to execute init handler method.
