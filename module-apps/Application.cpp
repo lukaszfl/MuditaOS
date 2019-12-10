@@ -51,9 +51,12 @@ Application::Application(std::string name, std::string parent, bool startBackgro
     busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 }
 
-Application::~Application() {
-    for( auto it = windows.begin(); it!= windows.end(); it++)
+Application::~Application()
+{
+    for (auto it = windows.begin(); it != windows.end(); it++)
+    {
         delete it->second;
+    }
     windows.clear();
 }
 
