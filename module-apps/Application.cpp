@@ -68,14 +68,7 @@ void Application::TickHandler(uint32_t id)
 
 uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name)
 {
-    auto id = CreateTimer(interval, isPeriodic, name);
-    timers.emplace(id, timerCallback);
-    return id;
-}
-
-uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback)
-{
-    auto id = CreateTimer(interval, isPeriodic);
+    auto id = name.empty() ? CreateTimer(interval, isPeriodic, name) : CreateTimer(interval, isPeriodic);
     timers.emplace(id, timerCallback);
     return id;
 }

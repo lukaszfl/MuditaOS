@@ -69,12 +69,11 @@ public:
 	        sys::ServicePriority priority=sys::ServicePriority::Idle);
 	virtual ~Application();
 
-    uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name);
-    uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback);
+    uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name = "");
 
-	/**
-	 * Method responsible for rendering currently active window.
-	 */
+    /**
+     * Method responsible for rendering currently active window.
+     */
 	void render( gui::RefreshModes mode );
 	/**
 	 * Method responsible for setting application to the state where incoming user input is blocked
