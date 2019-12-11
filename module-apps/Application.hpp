@@ -131,6 +131,8 @@ protected:
 	//application's settings taken from database
 	SettingsRecord settings;
 
+    // protected long key release handler
+    void longPressTimerCallback();
     /**
      * @param id - timer IDentificaton number
      */
