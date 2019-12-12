@@ -35,8 +35,10 @@ Application::Application(std::string name, std::string parent, bool startBackgro
     : Service(name, parent, stackDepth, priority), startBackground{startBackground}
 {
     keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
-    longPressTimerID = registerTimer(key_timer_ms, true, [&] () {longPressTimerCallback();}, "longPressTimer");
-    Service::ReloadTimer(longPressTimerID);
+    longPressTimer = CreateAppTimer(
+        key_timer_ms, true, [&]() { longPressTimerCallback(); }, "longPressTimer");
+    longPressTimer.restart();
+
     busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 }
 
@@ -51,10 +53,10 @@ Application::~Application()
 
 void Application::TickHandler(uint32_t id)
 {
-    auto timerIDtoCall = timers.find(id);
-    if (timerIDtoCall != timers.end())
+    auto appTimer = std::find_if(appTimers.begin(), appTimers.end(), [&id](AppTimer timer) { return timer.getID() == id; });
+    if (appTimer != appTimers.end())
     {
-        timerIDtoCall->second();
+        appTimer->runCallback();
     }
 }
 

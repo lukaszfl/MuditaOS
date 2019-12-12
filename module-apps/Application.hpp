@@ -55,10 +55,9 @@ class AppTimer // this should inherit from ServiceTimer, but *bodge*
  * @brief This is template for creating new applications
  */
 class Application: public sys::Service {
-    uint32_t longPressTimerID = 0;
-    std::function<void()> longPressTimerCallback;
-public:
-	enum class State {
+  AppTimer longPressTimer;
+  public:
+    enum class State {
 		//Application: Object has been created and underlying service is waiting to execute init handler method.
 		//Application Manager: Launcher for the application has been provided. Application can be started using provided launcher. The other possibility
 		//is that Appication Manager received CLOSING_FINISHED message.
@@ -85,12 +84,14 @@ public:
 		DEACTIVATING
 	};
 	std::map<uint32_t, std::function <void()>> timers;
+	std::list <AppTimer> appTimers; // @TODO decide on type
 public:
 	Application(std::string name, std::string parent="", bool startBackground = false, uint32_t stackDepth=4096,
 	        sys::ServicePriority priority=sys::ServicePriority::Idle);
 	virtual ~Application();
 
     uint32_t registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name = "");
+    AppTimer CreateAppTimer(TickType_t interval, bool isPeriodic, std::function<void()> callback, const std::string &name = "");
 
     /**
      * Method responsible for rendering currently active window.
