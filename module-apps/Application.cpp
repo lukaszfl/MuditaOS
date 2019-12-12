@@ -60,6 +60,24 @@ void Application::TickHandler(uint32_t id)
     }
 }
 
+void Application::DeleteTimer(AppTimer &timer)
+{
+    Service::DeleteTimer(timer.getID()); // remove the real FreeRTOS timer
+    auto timerOnTheList = std::find(appTimers.begin(), appTimers.end(), timer);
+    if (timerOnTheList != appTimers.end())
+    {
+        appTimers.erase(timerOnTheList);
+    }
+}
+
+void Application::DeleteTimer(uint32_t id)
+{
+    auto found = std::find(appTimers.begin(), appTimers.end(), id);
+    if (found != appTimers.end()){
+        DeleteTimer(*found);
+    }
+}
+
 uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name)
 {
     auto id = name.empty() ? CreateTimer(interval, isPeriodic, name) : CreateTimer(interval, isPeriodic);

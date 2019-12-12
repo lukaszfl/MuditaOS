@@ -143,11 +143,13 @@ public:
 	static bool messageRefreshApplication( sys::Service* sender, std::string application, std::string window, gui::SwitchData* data=nullptr );
 	static bool messageCloseApplication( sys::Service* sender, std::string application );
 	static bool messageRebuildApplication( sys::Service* sender, std::string application );
-	/**
-	 * @brief This method is used to send message to set focus of the application.
-	 * Application can gain or lose focus depending on the provided focus flag.
-	 */
-//	static bool messageFocusApplication( sys::Service* sender, std::string application, bool focus );
+    void DeleteTimer(AppTimer &timer);
+    void DeleteTimer(uint32_t id) override; // overriden, so it's safe. It'll mask underlying Service:: method. >>> @Adam here <<<
+    /**
+     * @brief This method is used to send message to set focus of the application.
+     * Application can gain or lose focus depending on the provided focus flag.
+     */
+    //	static bool messageFocusApplication( sys::Service* sender, std::string application, bool focus );
 
 protected:
 	//application's settings taken from database
