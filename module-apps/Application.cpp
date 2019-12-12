@@ -386,4 +386,51 @@ bool Application::messageInputEventApplication( sys::Service* sender, std::strin
 	return true;
 }
 
+AppTimer Application::CreateAppTimer(TickType_t interval, bool isPeriodic, std::function<void()> callback, const std::string &name)
+{
+    LOG_DEBUG(name.c_str());
+    auto id = !name.empty() ? CreateTimer(interval, isPeriodic, name) : CreateTimer(interval, isPeriodic);
+    auto timer = AppTimer(id, callback, name);
+    appTimers.push_back(timer);
+    return timer; // return ptr to the timer on the list
+}
+
+AppTimer::AppTimer(uint32_t id, std::function<void()> callback, const std::string &name)
+{
+    this->id = id;
+    registerCallback(callback);
+}
+AppTimer::AppTimer()
+{
+    id = 0;
+}
+AppTimer::~AppTimer()
+{
+    callback = nullptr;
+}
+
+void AppTimer::registerCallback(std::function<void()> callback)
+{
+    this->callback = callback;
+}
+void AppTimer::runCallback()
+{
+    callback();
+}
+uint32_t AppTimer::getID()
+{
+    return id;
+}
+void AppTimer::stop()
+{
+    //    parent.stopTimer(this->id);
+}
+void AppTimer::restart()
+{
+    //    parent.ReloadTimer(this->id);
+}
+bool AppTimer::operator==(const AppTimer &rhs) const
+{
+    return id == rhs.id;
+}
 } /* namespace app */

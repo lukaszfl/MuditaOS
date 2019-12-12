@@ -30,6 +30,27 @@ namespace gui {
 
 namespace app {
 
+class AppTimer // this should inherit from ServiceTimer, but *bodge*
+{
+  private:
+  private:
+    uint32_t id = 0;
+    std::function <void ()> callback;
+
+    void registerCallback( std::function<void ()> );
+  public:
+    AppTimer();
+    AppTimer(uint32_t id, std::function<void()> callback, const std::string &name);
+    ~AppTimer();
+    void runCallback();
+    uint32_t getID();
+    static uint32_t getNextUniqueID();
+    // timer controls:
+    void restart();
+    void stop();
+    bool operator==(const AppTimer &rhs) const;
+};
+
 /*
  * @brief This is template for creating new applications
  */
