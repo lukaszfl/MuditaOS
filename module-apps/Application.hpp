@@ -34,7 +34,7 @@ class AppTimer // this should inherit from ServiceTimer, but *bodge*
 {
   private:
   private:
-    uint32_t id = 0;
+    uint32_t id = 0; // let's say 0 indicates not initalized timer
     std::function <void ()> callback;
 
     void registerCallback( std::function<void ()> );
