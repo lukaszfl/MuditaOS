@@ -53,7 +53,7 @@ Application::~Application()
 
 void Application::TickHandler(uint32_t id)
 {
-    auto appTimer = std::find_if(appTimers.begin(), appTimers.end(), [&id](AppTimer timer) { return timer.getID() == id; });
+    auto appTimer = std::find(appTimers.begin(), appTimers.end(), id);
     if (appTimer != appTimers.end())
     {
         appTimer->runCallback();
@@ -70,6 +70,7 @@ void Application::DeleteTimer(AppTimer &timer)
     }
 }
 
+// @deprecated - only for compatibility
 void Application::DeleteTimer(uint32_t id)
 {
     auto found = std::find(appTimers.begin(), appTimers.end(), id);
@@ -82,7 +83,7 @@ void Application::longPressTimerCallback()
 {
     // TODO if(check widget type long press trigger)
     uint32_t time = xTaskGetTickCount();
-    LOG_DEBUG(typeid(*this).name());
+    // LOG_DEBUG(typeid(*this).name());
     if (keyTranslator->timeout(time))
     {
         // previous key press was over standard keypress timeout - send long press
@@ -403,20 +404,18 @@ AppTimer Application::CreateAppTimer(TickType_t interval, bool isPeriodic, std::
 {
     LOG_DEBUG(name.c_str());
     auto id = !name.empty() ? CreateTimer(interval, isPeriodic, name) : CreateTimer(interval, isPeriodic);
-    auto timer = AppTimer(id, callback, name);
+    auto timer = AppTimer(this, id, callback, name);
     appTimers.push_back(timer);
     return timer; // return ptr to the timer on the list
 }
 
-AppTimer::AppTimer(uint32_t id, std::function<void()> callback, const std::string &name)
+AppTimer::AppTimer(Application * parent, uint32_t id, std::function<void()> callback, const std::string &name) : parent(parent)
 {
     this->id = id;
     registerCallback(callback);
 }
-AppTimer::AppTimer()
-{
-    id = 0;
-}
+AppTimer::AppTimer(){}
+
 AppTimer::~AppTimer()
 {
     callback = nullptr;
@@ -436,14 +435,24 @@ uint32_t AppTimer::getID()
 }
 void AppTimer::stop()
 {
-    //    parent.stopTimer(this->id);
+    if (parent)
+    {
+        parent->stopTimer(getID());
+    }
 }
 void AppTimer::restart()
 {
-    //    parent.ReloadTimer(this->id);
+    if (parent)
+    {
+        parent->ReloadTimer(getID());
+    }
 }
 bool AppTimer::operator==(const AppTimer &rhs) const
 {
-    return id == rhs.id;
+    return this->id == rhs.id;
+}
+bool AppTimer::operator==(const uint32_t &rhs) const
+{
+    return this->id == rhs;
 }
 } /* namespace app */

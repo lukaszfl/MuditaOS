@@ -30,17 +30,19 @@ namespace gui {
 
 namespace app {
 
+class Application;
+
 class AppTimer // this should inherit from ServiceTimer, but *bodge*
 {
   private:
-  private:
     uint32_t id = 0; // let's say 0 indicates not initalized timer
     std::function <void ()> callback;
+    Application *parent = nullptr;
 
     void registerCallback( std::function<void ()> );
   public:
     AppTimer();
-    AppTimer(uint32_t id, std::function<void()> callback, const std::string &name);
+    AppTimer(Application * parent, uint32_t id, std::function<void()> callback, const std::string &name);
     ~AppTimer();
     void runCallback();
     uint32_t getID();
@@ -49,6 +51,7 @@ class AppTimer // this should inherit from ServiceTimer, but *bodge*
     void restart();
     void stop();
     bool operator==(const AppTimer &rhs) const;
+    bool operator==(const uint32_t &rhs) const;
 };
 
 /*
@@ -143,7 +146,7 @@ public:
 	static bool messageCloseApplication( sys::Service* sender, std::string application );
 	static bool messageRebuildApplication( sys::Service* sender, std::string application );
     void DeleteTimer(AppTimer &timer);
-    void DeleteTimer(uint32_t id) override; // overriden, so it's safe. It'll mask underlying Service:: method. >>> @Adam here <<<
+    void DeleteTimer(uint32_t id); // overriden, so it's safe. It'll mask underlying Service:: method. >>> @Adam here <<<
     /**
      * @brief This method is used to send message to set focus of the application.
      * Application can gain or lose focus depending on the provided focus flag.
