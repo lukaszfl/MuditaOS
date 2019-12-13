@@ -27,6 +27,8 @@ namespace app {
 ApplicationCall::ApplicationCall(std::string name, std::string parent, bool startBackgound ) :
 	Application( name, parent, startBackgound, 4096+2048 )
 {
+    timerCall = CreateAppTimer(1000, true, [=]() {timerCallCallback();} );
+}
 
     timerCallId = registerTimer(1000, true, [=]() {
         // Invoked when timer ticked, 3 seconds after end call event if user didn't press back button earlier.
@@ -36,23 +38,19 @@ ApplicationCall::ApplicationCall(std::string name, std::string parent, bool star
         {
             gui::CallWindow *callWindow = reinterpret_cast<gui::CallWindow *>(currentWindow);
 
-            if (callWindow->getState() == gui::CallWindow::State::CALL_IN_PROGRESS)
-            {
-                callWindow->updateDuration(callDuration);
-                refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
-            }
-        }
-
-        LOG_INFO("callDuration %d, callEndTime id %d", callDuration, callEndTime);
-        if (callDuration >= callEndTime)
+        if (callWindow->getState() == gui::CallWindow::State::CALL_IN_PROGRESS)
         {
-            stopTimer(timerCallId);
-            sapm::ApplicationManager::messageSwitchPreviousApplication(this);
+            callWindow->updateDuration(callDuration);
+            refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
         }
-    });
-}
+    }
 
-ApplicationCall::~ApplicationCall() {
+    LOG_INFO("callDuration %d, callEndTime id %d", callDuration, callEndTime);
+    if (callDuration >= callEndTime)
+    {
+        timerCall.stop();
+        sapm::ApplicationManager::messageSwitchPreviousApplication(this);
+    }
 }
 
 // Invoked upon receiving data message
@@ -160,7 +158,7 @@ sys::ReturnCodes ApplicationCall::DeinitHandler() {
 
 void ApplicationCall::stopCallTimer() {
 	LOG_INFO("switching to prev calldur: %d endTime: %d", callDuration, callEndTime );
-	stopTimer(timerCallId);
+	timerCall.stop();
 	sapm::ApplicationManager::messageSwitchPreviousApplication( this );
 }
 
@@ -207,7 +205,7 @@ const std::string& ApplicationCall::getDisplayedNumber() {
 void ApplicationCall::runCallTimer() {
 	callDuration = 0;
 	callEndTime = -1;
-	ReloadTimer(timerCallId);
+	timerCall.restart();
 }
 
 void ApplicationCall::destroyUserInterface() {

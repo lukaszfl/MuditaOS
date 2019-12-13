@@ -21,9 +21,10 @@ namespace app {
 class ApplicationCall: public Application {
 protected:
 	std::string phoneNumber;
-	uint32_t timerCallId = 0;
+	AppTimer timerCall;
 	uint32_t callDuration = 0;
 	uint32_t callEndTime = -1;
+    void timerCallCallback();
 public:
 	ApplicationCall( std::string name="ApplicationCall", std::string parent = "", bool startBackgound = false );
 	virtual ~ApplicationCall();
