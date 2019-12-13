@@ -78,13 +78,6 @@ void Application::DeleteTimer(uint32_t id)
     }
 }
 
-uint32_t Application::registerTimer(TickType_t interval, bool isPeriodic, std::function<void()> timerCallback, const std::string &name)
-{
-    auto id = name.empty() ? CreateTimer(interval, isPeriodic, name) : CreateTimer(interval, isPeriodic);
-    timers.emplace(id, timerCallback);
-    return id;
-}
-
 void Application::longPressTimerCallback()
 {
     // TODO if(check widget type long press trigger)
