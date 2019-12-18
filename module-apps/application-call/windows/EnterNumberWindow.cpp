@@ -86,13 +86,11 @@ EnterNumberWindow::~EnterNumberWindow() {
 
 bool EnterNumberWindow::onInput( const InputEvent& inputEvent ) {
     // choose your player:
-    // ----
+    // uncomment one of the following:
+
     std::function <void()> fnc = nullptr; fnc();
-    // ----
 //    assert(0);
-    // ----
 //    free(reinterpret_cast<void *>(123455));free(reinterpret_cast<void *>(123455));
-    // ----
 
     int val = gui::toNumeric(inputEvent.keyCode);
 	if( inputEvent.state == InputEvent::State::keyReleasedShort ) {
