@@ -14,6 +14,7 @@
 #include "windows/EmergencyCallWindow.hpp"
 #include "windows/CallWindow.hpp"
 #include "data/CallSwitchData.hpp"
+#include <ticks.hpp>
 
 #include "service-cellular/ServiceCellular.hpp"
 #include "service-cellular/api/CellularServiceAPI.hpp"
@@ -25,9 +26,9 @@
 namespace app {
 
 ApplicationCall::ApplicationCall(std::string name, std::string parent, bool startBackgound ) :
-	Application( name, parent, startBackgound, 4096+2048 ) {
+	Application( name, parent, startBackgound, 4096+2048 )  {
 
-	timerCallId = CreateTimer(1000,true);
+	timerCallId = CreateTimer(Ticks::MsToTicks(1000),true);
 }
 
 ApplicationCall::~ApplicationCall() {
@@ -99,7 +100,6 @@ sys::Message_t ApplicationCall::DataReceivedHandler(sys::DataMessage* msgl,sys::
 		}
 		else if( msg->type == CellularNotificationMessage::Type::Ringing ) {
 			//reset call duration
-		    //callDuration = 0;
 			runCallTimer();
 			LOG_INFO("---------------------------------Ringing");
 			AudioServiceAPI::RoutingStart(this);
@@ -154,8 +154,8 @@ void ApplicationCall::TickHandler(uint32_t id) {
 			}
 		}
 
-		LOG_INFO("callDuration %d, callEndTime id %d", callDuration, callEndTime);
 		if( callDuration >= callEndTime ) {
+			LOG_INFO("callDuration %d, callEndTime id %d", callDuration, callEndTime);
 			stopTimer(timerCallId);
 			sapm::ApplicationManager::messageSwitchPreviousApplication( this );
 		}
