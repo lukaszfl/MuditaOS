@@ -14,17 +14,19 @@
 #include <sstream>
 #include <iterator>
 
+#include "Common.hpp"
+#include "log/log.hpp"
+
 #include "ServiceCellular.hpp"
 #include "Service/Service.hpp"
 #include "Service/Message.hpp"
+#include "service-db/api/DBServiceAPI.hpp"
+#include <bsp/rtc/rtc.hpp>
 
 #include "MessageType.hpp"
 
 #include "messages/CellularMessage.hpp"
 #include <ticks.hpp>
-
-#include "Common.hpp"
-#include "log/log.hpp"
 
 #include "ucs2/UCS2.hpp"
 
@@ -39,7 +41,8 @@ ServiceCellular::ServiceCellular()
 
     busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 
-    callStateTimer = CreateTimer(1000, true);
+    callStateTimerId =CreateTimer(Ticks::MsToTicks(1000),true);
+    callDurationTimerId = CreateTimer(Ticks::MsToTicks(1000), true);
 
     notificationCallback = [this](std::vector<uint8_t> &data) {
         LOG_DEBUG("Notifications callback called with %i data bytes", data.size());
@@ -107,12 +110,28 @@ ServiceCellular::~ServiceCellular() {
     }
 }
 
-// Invoked when timer ticked
-void ServiceCellular::TickHandler(uint32_t id) {
-    std::shared_ptr<CellularRequestMessage> msg = std::make_shared<CellularRequestMessage>(
-            MessageType::CellularListCurrentCalls);
-
+void ServiceCellular::CallStateTimerHandler()
+{
+    std::shared_ptr<CellularRequestMessage> msg = std::make_shared<CellularRequestMessage>(MessageType::CellularListCurrentCalls);
     sys::Bus::SendUnicast(msg, ServiceCellular::serviceName, this);
+}
+
+void ServiceCellular::CallDurationTimerHandler()
+{
+    callDuration++;
+}
+
+// Invoked when timer ticked
+void ServiceCellular::TickHandler(uint32_t id)
+{
+    if (id == callStateTimerId)
+    {
+        CallStateTimerHandler();
+    }
+    else if (id == callDurationTimerId)
+    {
+        CallDurationTimerHandler();
+    }
 }
 
 // Invoked during initialization
@@ -168,28 +187,55 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
 
     // Incoming notifications from Notification Virtual Channel
     case MessageType::CellularNotification: {
-        CellularNotificationMessage *msg = reinterpret_cast<CellularNotificationMessage *>(msgl);
+        CellularNotificationMessage *msg = dynamic_cast<CellularNotificationMessage *>(msgl);
+        if (msg != nullptr)
+        {
+            switch (msg->type)
+            {
+            case CellularNotificationMessage::Type::CallActive: {
+                runCallDurationTimer();
+                break;
+            }
+            case CellularNotificationMessage::Type::CallAborted:
+            case CellularNotificationMessage::Type::CallBusy: {
+                stopTimer(callDurationTimerId);
+                stopTimer(callStateTimerId);
+                LOG_DEBUG("callDuration %d, callEndTime %d", callDuration, callEndTime);
+                CalllogRecord calllogRec;
+                calllogRec.number = "+48600226908";
+                calllogRec.presentation = PresentationType::PR_ALLOWED;
+                time_t timestamp;
+                bsp::rtc_GetCurrentTimestamp(&timestamp);
+                calllogRec.date = timestamp;
+                calllogRec.duration = callDuration;
+                calllogRec.type = CallType::CT_OUTGOING;
+                calllogRec.name = "test name";
+                calllogRec.contactId = "1";
 
-
-		if ((msg->type == CellularNotificationMessage::Type::CallAborted) ||
-			(msg->type == CellularNotificationMessage::Type::CallBusy))
-		{
-			stopTimer(callStateTimer);
-		}
-		else if (msg->type == CellularNotificationMessage::Type::PowerUpProcedureComplete)
-		{
-			sys::Bus::SendUnicast(std::make_shared<CellularRequestMessage>(MessageType::CellularStartConfProcedure),
-								  GetName(), this);
-			state = State ::ModemConfigurationInProgress;
-		}
-		else if(msg->type == CellularNotificationMessage::Type::NewIncomingSMS)
-		{
-			LOG_INFO("New incoming sms received");
-			receiveSMS(msg->data);
-		}
+                if(!DBServiceAPI::CalllogAdd(this, calllogRec))
+                {
+                    LOG_ERROR("CalllogAdd failed");
+                }
+                break;
+            }
+            case CellularNotificationMessage::Type::PowerUpProcedureComplete: {
+                sys::Bus::SendUnicast(std::make_shared<CellularRequestMessage>(MessageType::CellularStartConfProcedure), GetName(), this);
+                state = State ::ModemConfigurationInProgress;
+                break;
+            }
+            case CellularNotificationMessage::Type::NewIncomingSMS: {
+                LOG_INFO("New incoming sms received");
+                receiveSMS(msg->data);
+                break;
+            }
+            default: {
+                // ignore rest of notifications
+            }
+            }
+        }
         else
         {
-            // ignore rest of notifications
+            LOG_ERROR("Not CellularNotificationMessage");
         }
     }
     break;
@@ -288,13 +334,13 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
         {
             auto beg = ret[1].find(",", 0);
             beg = ret[1].find(",", beg + 1);
-            // If call changed to "Active" state stop callStateTimer(used for polling for call state)
+            // If call changed to "Active" state stop callStateTimerId(used for polling for call state)
             if (std::stoul(ret[1].substr(beg + 1, 1)) == static_cast<uint32_t>(CallStates::Active))
             {
                 auto msg = std::make_shared<CellularNotificationMessage>(CellularNotificationMessage::Type::CallActive);
                 sys::Bus::SendMulticast(msg, sys::BusChannels::ServiceCellularNotifications, this);
 
-                stopTimer(callStateTimer);
+                stopTimer(callStateTimerId);
             }
 
             responseMsg = std::make_shared<CellularResponseMessage>(true);
@@ -308,22 +354,23 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
 
     case MessageType::CellularHangupCall: {
         auto channel = cmux->GetChannel("Commands");
+        LOG_ERROR("************************************************CellularHangupCall");
         if (channel)
         {
             if (cmux->CheckATCommandResponse(channel->SendCommandResponse("ATH\r", 1, 5000)))
             {
                 responseMsg = std::make_shared<CellularResponseMessage>(true);
+                stopTimer(callStateTimerId);
+                // Propagate "CallAborted" notification into system
+                sys::Bus::SendMulticast(std::make_shared<CellularNotificationMessage>(CellularNotificationMessage::Type::CallAborted),
+                                        sys::BusChannels::ServiceCellularNotifications, this);
             }
             else
             {
+                LOG_ERROR("Call not aborted");
                 responseMsg = std::make_shared<CellularResponseMessage>(false);
             }
-            // TODO: this logic seems to be wrong. We should abort the call in app only if proper response from modem
-            stopTimer(callStateTimer);
-
-            // Propagate "CallAborted" notification into system
-            sys::Bus::SendMulticast(std::make_shared<CellularNotificationMessage>(CellularNotificationMessage::Type::CallAborted),
-                                    sys::BusChannels::ServiceCellularNotifications, this);
+            
             break;
         }
         responseMsg = std::make_shared<CellularResponseMessage>(false);
@@ -359,7 +406,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
 			if (cmux->CheckATCommandResponse(ret)) {
 				responseMsg = std::make_shared<CellularResponseMessage>(true);
 				// activate call state timer
-				ReloadTimer(callStateTimer);
+				ReloadTimer(callStateTimerId);
 				// Propagate "Ringing" notification into system
 				sys::Bus::SendMulticast(
 						std::make_shared<CellularNotificationMessage>(
