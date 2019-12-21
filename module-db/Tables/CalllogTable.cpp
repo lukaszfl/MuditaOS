@@ -28,8 +28,8 @@ bool CalllogTable::Add(CalllogTableRow entry)
     // this TODO also applies to CalllogTable::Update below
 
     return db->Execute(
-        "INSERT or ignore INTO calls (number, presentation, date, duration, type, name, contactId) VALUES ('%s', %lu, %lu, %lu, %lu, '%s', '%s');",
-        entry.number.c_str(), static_cast<uint32_t>(entry.presentation), static_cast<uint32_t>(entry.date), static_cast<uint32_t>(entry.duration),
+        "INSERT or ignore INTO calls (number, presentation, date, duration, type, name, contactId) VALUES ('%s', %lu, %llu, %llu, %lu, '%s', '%s');",
+        entry.number.c_str(), static_cast<uint32_t>(entry.presentation), (entry.date), (entry.duration),
         static_cast<uint32_t>(entry.type), entry.name.c_str(), entry.contactId.c_str());
 }
 
