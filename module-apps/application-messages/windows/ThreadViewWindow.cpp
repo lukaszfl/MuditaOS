@@ -141,6 +141,26 @@ namespace gui
                 }
                 return true;
             };
+            switch (el.type)
+            {
+            case SMSType::INBOX:
+                label->setYaps(RectangleYapFlags::GUI_RECT_YAP_BOTTOM_LEFT);
+                label->setSize(label->getWidth() - label->radius, label->getHeight());
+                label->setPosition(label->getX() + label->radius, label->getY());
+                break;
+            case SMSType::OUTBOX:
+                label->setYaps(RectangleYapFlags::GUI_RECT_YAP_BOTTOM_RIGHT);
+                label->setSize(label->getWidth() - label->radius, label->getHeight());
+                break;
+            case SMSType::FAILED:
+                break;
+            case SMSType::QUEUED:
+                break;
+            default:
+                LOG_ERROR("Unhandled sms type");
+                break;
+            }
+
             LOG_INFO("Add sms: %s %s", el.body.c_str(), el.number.c_str());
             if (body->tryAddWidget(label)) {}
             else
