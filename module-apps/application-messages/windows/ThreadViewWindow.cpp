@@ -166,7 +166,13 @@ namespace gui
             }
 
             LOG_INFO("Add sms: %s %s", el.body.c_str(), el.number.c_str());
-            if (body->tryAddWidget(label)) {}
+            if (body->tryAddWidget(label)) {
+                auto marginRect = new Rect(nullptr, label->getX(), label->getY(), label->getWidth(), 15);
+                marginRect->setBorderColor(gui::ColorNoColor);
+                marginRect->activeItem = false;
+                // bounty hunt: detect last element in for_range loop here   LOG_DEBUG("end: %llu, next %llu", sms.get()->end(), std::next(&el)); // cannot compare. doesn't work
+                body->tryAddWidget(marginRect); // it will fail for the most bottom one
+            }
             else
             {
                 delete label;
