@@ -142,8 +142,8 @@ namespace gui
                 return true;
             };
 
-            const auto bubbleWidth = body->getWidth() / 10 * 7;
-            switch (el.type)
+            const auto bubbleWidth = elements_width / 10 * 7;
+            switch (el.type) // it should probably be elif as SMSType looks like bitfield and cas be multiple values at once
             {
             case SMSType::INBOX:
                 label->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT);
