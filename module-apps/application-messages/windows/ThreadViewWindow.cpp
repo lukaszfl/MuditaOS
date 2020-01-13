@@ -122,9 +122,9 @@ namespace gui
         body->setReverseOrder(false);
         for (auto &el : *sms)
         {
-            auto label = new gui::Label(nullptr, labelmeta);
-            label->setText(el.body);
-            label->activatedCallback = [=](Item &) {
+            auto messageLabel = new gui::Label(nullptr, labelmeta);
+            messageLabel->setText(el.body);
+            messageLabel->activatedCallback = [=](Item &) {
                 LOG_INFO("Message activated!");
                 auto app = dynamic_cast<app::ApplicationMessages *>(application);
                 if (app == nullptr)
@@ -146,15 +146,14 @@ namespace gui
             switch (el.type) // it should probably be elif as SMSType looks like bitfield and cas be multiple values at once
             {
             case SMSType::INBOX:
-                label->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT);
-                label->setSize(bubbleWidth - label->radius, label->getHeight());
-                label->setPosition(label->getX() + label->radius, label->getY());
+                messageLabel->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT);
+                messageLabel->setSize(bubbleWidth - messageLabel->radius, messageLabel->getHeight());
+                messageLabel->setPosition(messageLabel->getX() + messageLabel->radius, messageLabel->getY());
                 break;
             case SMSType::OUTBOX:
-                label->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_RIGHT);
-                label->setSize(bubbleWidth - label->radius, label->getHeight());
-
-                label->setPosition( (body->getWidth() - bubbleWidth) - label->radius, label->getY());
+                messageLabel->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_RIGHT);
+                messageLabel->setSize(bubbleWidth - messageLabel->radius, messageLabel->getHeight());
+                messageLabel->setPosition( (body->getWidth() - bubbleWidth) - messageLabel->radius, messageLabel->getY());
                 break;
             case SMSType::FAILED:
                 break;
@@ -166,8 +165,8 @@ namespace gui
             }
 
             LOG_INFO("Add sms: %s %s", el.body.c_str(), el.number.c_str());
-            if (body->tryAddWidget(label)) {
-                auto marginRect = new Rect(nullptr, label->getX(), label->getY(), label->getWidth(), 15);
+            if (body->tryAddWidget(messageLabel)) {
+                auto marginRect = new Rect(nullptr, messageLabel->getX(), messageLabel->getY(), messageLabel->getWidth(), 15);
                 marginRect->setBorderColor(gui::ColorNoColor);
                 marginRect->activeItem = false;
                 // bounty hunt: detect last element in for_range loop here   LOG_DEBUG("end: %llu, next %llu", sms.get()->end(), std::next(&el)); // cannot compare. doesn't work
@@ -175,7 +174,7 @@ namespace gui
             }
             else
             {
-                delete label;
+                delete messageLabel;
                 break;
             }
         }
