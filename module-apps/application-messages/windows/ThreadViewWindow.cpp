@@ -146,13 +146,15 @@ namespace gui
             switch (el.type)
             {
             case SMSType::INBOX:
-                label->setYaps(RectangleYapFlags::GUI_RECT_YAP_BOTTOM_LEFT);
-                label->setSize(label->getWidth() - label->radius, label->getHeight());
+                label->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT);
+                label->setSize(bubbleWidth - label->radius, label->getHeight());
                 label->setPosition(label->getX() + label->radius, label->getY());
                 break;
             case SMSType::OUTBOX:
-                label->setYaps(RectangleYapFlags::GUI_RECT_YAP_BOTTOM_RIGHT);
-                label->setSize(label->getWidth() - label->radius, label->getHeight());
+                label->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_RIGHT);
+                label->setSize(bubbleWidth - label->radius, label->getHeight());
+
+                label->setPosition( (body->getWidth() - bubbleWidth) - label->radius, label->getY());
                 break;
             case SMSType::FAILED:
                 break;
