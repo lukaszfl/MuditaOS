@@ -141,6 +141,8 @@ namespace gui
                 }
                 return true;
             };
+
+            const auto bubbleWidth = body->getWidth() / 10 * 7;
             switch (el.type)
             {
             case SMSType::INBOX:
