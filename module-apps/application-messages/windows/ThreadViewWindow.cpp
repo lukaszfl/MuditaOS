@@ -37,7 +37,11 @@ namespace style
         inline const uint32_t sms_radius = 7;
         inline const uint32_t sms_border_no_focus = 1;
         /// TODO 100 is static size, sms elements should have size depending on text amount
-        inline const uint32_t sms_height = 100;
+        inline const uint16_t sms_height = 100;
+        inline const uint16_t bubble_width = 300;
+        inline const uint16_t spacing_close = 3;
+        inline const uint16_t spacing_far = 12;
+
     };
 }; // namespace style
 
@@ -107,7 +111,7 @@ namespace gui
     {
         auto elements_width = this->getWidth() - style::window::default_left_margin * 2;
         LOG_INFO("=============================");
-        std::unique_ptr<std::vector<SMSRecord>> sms = DBServiceAPI::SMSGetLimitOffsetByThreadID(application, 0, 4, thread_id);
+        std::unique_ptr<std::vector<SMSRecord>> sms = DBServiceAPI::SMSGetLimitOffsetByThreadID(application, 0, 3, thread_id); // it fetches in reverse date order
         LOG_INFO("=============================");
         /// dummy sms thread - TODO TODO load from db - on switchData
         /// this is not 'static' do it on window focus (on swtich window)
@@ -142,18 +146,22 @@ namespace gui
                 return true;
             };
 
-            const auto bubbleWidth = elements_width / 10 * 7;
+            // encapsulating hbox, only to store time in the same row
+            auto messageBoundingBox = new gui::HBox(nullptr, messageLabel->getX(), messageLabel->getY(), messageLabel->getWidth(), messageLabel->getHeight());
+            messageBoundingBox->setBorderColor(gui::ColorFullBlack);
+
             switch (el.type) // it should probably be elif as SMSType looks like bitfield and cas be multiple values at once
             {
             case SMSType::INBOX:
                 messageLabel->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT);
-                messageLabel->setSize(bubbleWidth - messageLabel->radius, messageLabel->getHeight());
+                messageLabel->setSize(style::window::bubble_width - messageLabel->radius, messageLabel->getHeight());
                 messageLabel->setPosition(messageLabel->getX() + messageLabel->radius, messageLabel->getY());
                 break;
             case SMSType::OUTBOX:
                 messageLabel->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_RIGHT);
-                messageLabel->setSize(bubbleWidth - messageLabel->radius, messageLabel->getHeight());
-                messageLabel->setPosition( (body->getWidth() - bubbleWidth) - messageLabel->radius, messageLabel->getY());
+                messageLabel->setSize(style::window::bubble_width - messageLabel->radius, messageLabel->getHeight());
+                messageLabel->setPosition( (body->getWidth() - style::window::bubble_width) - messageLabel->radius, messageLabel->getY());
+                messageBoundingBox->setReverseOrder(true);
                 break;
             case SMSType::FAILED:
                 break;
@@ -164,13 +172,33 @@ namespace gui
                 break;
             }
 
+//            LOG_DEBUG("%d, %d, %d, %d", messageLabel->getX(), messageLabel->getY(), messageLabel->getWidth(), messageLabel->getHeight());
+            LOG_DEBUG("added ? %c", messageBoundingBox->tryAddWidget(messageLabel) ? 'v':'x');
+
+////            messageWideBox->tryAddWidget(messageLabel);
+////            LOG_DEBUG("Label added ? %d", );
+//
+                messageLabel->focusChangedCallback = [el](gui::Item & item){
+//                messageLabel->setFocus(item.focus);
+                if (item.focus)
+                {
+                  auto arrival = new Label(nullptr, item.getX(), item.getY(), 20, 20);
+                  arrival->setText(std::to_string(getTime()));
+                  LOG_DEBUG("date: %d", el.date);
+//                  LOG_DEBUG("type: %s", typeid(item).name());
+//                    this->body->tryAddWidget(arrival);
+                }
+              return true;
+            }; // lambda showing time
+
             LOG_INFO("Add sms: %s %s", el.body.c_str(), el.number.c_str());
-            if (body->tryAddWidget(messageLabel)) {
-                auto marginRect = new Rect(nullptr, messageLabel->getX(), messageLabel->getY(), messageLabel->getWidth(), 15);
+            if (body->tryAddWidget(messageBoundingBox)) {
+                // add margin. maybe dependant on same minute/different minute
+                auto marginRect = new Rect(nullptr, messageLabel->getX(), messageLabel->getY(), messageLabel->getWidth(), style::window::spacing_far);
                 marginRect->setBorderColor(gui::ColorNoColor);
                 marginRect->activeItem = false;
                 // bounty hunt: detect last element in for_range loop here   LOG_DEBUG("end: %llu, next %llu", sms.get()->end(), std::next(&el)); // cannot compare. doesn't work
-                body->tryAddWidget(marginRect); // it will fail for the most bottom one
+//                body->tryAddWidget(marginRect); // it will fail for the most bottom one
             }
             else
             {

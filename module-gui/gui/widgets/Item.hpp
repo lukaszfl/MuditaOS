@@ -94,7 +94,8 @@ public:
 		if( state != focus ) {
             focus = state;
             onFocus( state );
-			focusChangedCallback( *this );
+//            if(focusChangedCallback)
+                focusChangedCallback( *this );
 		};
 		return state;
 	}

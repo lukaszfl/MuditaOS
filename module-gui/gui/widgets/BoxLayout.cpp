@@ -243,27 +243,27 @@ template <BoxLayout::BoxAxis axis> bool BoxLayout::tryAddWidget(Item *item)
     if (children.size() == 0)
     {
         // get max in Axis
-        if (inAxisSpace(axis, this) > inAxisMax(axis, item))
+        if (inAxisSpace(axis, this) >= inAxisMax(axis, item))
         {
             return addWidget(item);
         }
         else
         {
-            LOG_ERROR("Element too big to even try to fit in! %d > %d", inAxisSpace(axis, this), inAxisMax(axis, item));
+            LOG_ERROR("Element too big to even try to fit in! %d >= %d", inAxisSpace(axis, this), inAxisMax(axis, item));
             return false;
         }
     }
     else
     {
-        if (inAxisSpace(axis, this) - inAxisOffset(axis, children.back()) > inAxisMax(axis, item))
+        if (inAxisSpace(axis, this) - inAxisOffset(axis, children.back()) >= inAxisMax(axis, item))
         {
-            LOG_DEBUG("add  ->: %d - %d > %d", inAxisSpace(axis, this), inAxisOffset(axis, children.back()), inAxisMax(axis, item));
+            LOG_DEBUG("add  ->: %d - %d >= %d", inAxisSpace(axis, this), inAxisOffset(axis, children.back()), inAxisMax(axis, item));
             return addWidget(item);
         }
         else
         {
             /// there is no space for next element
-            LOG_ERROR("Not enough space!  ->: ! %d - %d > %d [%d]", inAxisSpace(axis, this), inAxisOffset(axis, children.back()), inAxisMax(axis, item),
+            LOG_ERROR("Not enough space!  ->: ! %d - %d >= %d [%d]", inAxisSpace(axis, this), inAxisOffset(axis, children.back()), inAxisMax(axis, item),
                       children.size());
             return false;
         }
