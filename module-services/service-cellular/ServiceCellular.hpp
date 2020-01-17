@@ -58,9 +58,9 @@ public:
     bool sendSMS(UTF8& number, UTF8& text);
     bool sendSMS(void);
     bool receiveSMS(std::string messageNumber);
+    bool getNetworkTime(void);
 
-private:
-
+  private:
     //std::unique_ptr<MuxDaemon> muxdaemon;
     TS0710 *cmux = new TS0710(PortSpeed_e::PS460800, this);
     // used for polling for call state

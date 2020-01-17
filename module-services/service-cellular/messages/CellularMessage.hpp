@@ -55,6 +55,8 @@ public:
             MessageType::CellularNotification), type(type), data(data) {}
 
     virtual ~CellularNotificationMessage() = default;
+    UTF8 number;
+    UTF8 message;
 
     Type type=Type::None;
 
@@ -93,5 +95,16 @@ public:
     uint32_t retCode;
 };
 
+class CellularNetworkTimeMessage : public CellularMessage
+{
+  public:
+    CellularNetworkTimeMessage(MessageType messageType) : CellularMessage(messageType), timestamp(0)
+    {
+    }
+    ~CellularNetworkTimeMessage()
+    {
+    }
 
+    time_t timestamp;
+};
 #endif //PUREPHONE_CELLULARMESSAGE_HPP

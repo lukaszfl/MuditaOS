@@ -22,8 +22,8 @@
 #include "Service/Message.hpp"
 #include "Service/Service.hpp"
 #include "ServiceCellular.hpp"
-#include "Service/Service.hpp"
-#include "Service/Message.hpp"
+#include "service-db/api/DBServiceAPI.hpp"
+#include <bsp/rtc/rtc.hpp>
 
 #include "MessageType.hpp"
 
@@ -326,6 +326,8 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
                     LOG_DEBUG("Setting up notifications callback");
                     notificationsChannel->setCallback(notificationCallback);
                 }
+
+                getNetworkTime();
 
                 state = State::Ready;
 
@@ -635,7 +637,6 @@ bool ServiceCellular::receiveSMS(std::string messageNumber) {
 		for (uint32_t i = 0; i < ret.size(); i++) {
 			if (ret[i].find("QCMGR") != std::string::npos) {
 
-
 				std::istringstream ss(ret[i]);
 				std::string token;
 				std::vector<std::string> tokens;
@@ -668,6 +669,7 @@ bool ServiceCellular::receiveSMS(std::string messageNumber) {
 
                 //if its single message process
 				if (tokens.size() == 5) {
+					//todo add message to database
 
 					messageRawBody = ret[i+1];
 					messageParsed = true;
@@ -723,4 +725,26 @@ bool ServiceCellular::receiveSMS(std::string messageNumber) {
 	//delete message from modem memory
     cmux->CheckATCommandResponse(cmux->GetChannel("Commands")->SendCommandResponse(("AT+CMGD=" + messageNumber).c_str(), 1, 150));
     return true;
+}
+
+bool ServiceCellular::getNetworkTime(void)
+{
+    auto response = cmux->GetChannel("Commands")->SendCommandResponse("AT+CCLK?\r", 2, 300);
+    if (response.size() == 2 && response[1] == "OK")
+    {
+        std::string command = "+CCLK: ";
+        auto pos = response[0].find(command);
+        if (pos != std::string::npos)
+        {
+            LOG_INFO("Update time");
+            response[0].erase(pos, command.length());
+            auto time = utils::time::Time();
+
+            auto msg = std::make_shared<CellularNetworkTimeMessage>(MessageType::CellularNetworkTime);
+            msg->timestamp = 1579269024;
+            sys::Bus::SendUnicast(msg, "EventManager", this);
+            return true;
+        }
+    }
+    return false;
 }

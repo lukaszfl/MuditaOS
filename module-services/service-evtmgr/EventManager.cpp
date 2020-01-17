@@ -6,17 +6,19 @@
  */
 
 #include "EventManager.hpp"
-
-#include "log/log.hpp"
-
-#include "bsp/keyboard/keyboard.hpp"
 #include "WorkerEvent.hpp"
 #include "messages/EVMessages.hpp"
 
-#include "vfs.hpp"
+#include "log/log.hpp"
 
 #include "bsp/battery-charger/battery_charger.hpp"
+#include "bsp/keyboard/keyboard.hpp"
+#include "bsp/rtc/rtc.hpp"
+
+#include "vfs.hpp"
+
 #include "service-appmgr/ApplicationManager.hpp"
+#include "service-cellular/messages/CellularMessage.hpp"
 #include "service-db/api/DBServiceAPI.hpp"
 #include "service-db/messages/DBNotificationMessage.hpp"
 
@@ -139,9 +141,16 @@ sys::Message_t EventManager::DataReceivedHandler(sys::DataMessage* msgl,sys::Res
 
 		handled = true;
 	}
+    else if (msgl->messageType == static_cast<uint32_t>(MessageType::CellularNetworkTime))
+    {
+        LOG_INFO("EVM new time");
+        CellularNetworkTimeMessage *msg = dynamic_cast<CellularNetworkTimeMessage *>(msgl);
+        bsp::rtc_SetDateTimeFromTimestamp(msg->timestamp);
+        handled = true;
+    }
 
-	if( handled )
-		return std::make_shared<sys::ResponseMessage>();
+    if (handled)
+        return std::make_shared<sys::ResponseMessage>();
 	else
 		return std::make_shared<sys::ResponseMessage>(sys::ReturnCodes::Unresolved);
 }

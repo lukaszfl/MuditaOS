@@ -77,6 +77,7 @@ enum class MessageType
     CellularStartAudioConfProcedure,
     CellularSendSMS, // request ot send new sms
     CellularSMSMulticast,
+    CellularNetworkTime, // Propagate network time
 
     DBNotesAdd,            // Add new note's record
     DBNotesRemove,         // Remove selected note's record
@@ -143,7 +144,6 @@ enum class MessageType
     EVMChargerPlugged,
     // rtc messages
     EVMMinuteUpdated, // This message is send to current focused application on every minute time change.
-
     BluetoothRequest,
 
     LwIP_request,
