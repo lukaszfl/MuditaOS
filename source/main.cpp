@@ -140,6 +140,15 @@ int main() {
 #if 1
     auto sysmgr = std::make_shared<sys::SystemManager>(5000);
 
+    try
+    {
+        throw std::runtime_error("my exception");
+    }
+    catch (const std::exception &e)
+    {
+        LOG_ERROR("exception %s", e.what());
+    }
+
     sysmgr->StartSystem([sysmgr]()->int{
 
 
