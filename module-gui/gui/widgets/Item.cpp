@@ -5,12 +5,13 @@
  *      Author: robert
  */
 
-#include <list>
-#include <algorithm>
-#include <cstring>
-#include "Navigation.hpp"
 #include "Item.hpp"
 #include "BoundingBox.hpp"
+#include "Margins.hpp"
+#include "Navigation.hpp"
+#include <algorithm>
+#include <cstring>
+#include <list>
 
 namespace gui {
 
@@ -130,7 +131,6 @@ void Item::setSize( const short& w, const short& h ) {
         maxHeight = h;
     }
     updateDrawArea();
-
     onDimensionChanged(oldArea, widgetArea);
 }
 
@@ -172,6 +172,29 @@ void Item::updateDrawArea() {
 
 	for( gui::Item* it : children )
 		it->updateDrawArea();
+}
+
+void Item::updateInnerArea(){
+    BoundingBox result = drawArea;
+    if (innerMargins.left){
+        result.x += innerMargins.left;
+        result.w -= innerMargins.left;
+    }
+    if (innerMargins.right){
+        result.w -= innerMargins.right;
+    }
+    if (innerMargins.top){
+        result.y += innerMargins.top;
+        result.h -= innerMargins.top;
+    }
+    if (innerMargins.bottom){
+        result.h -= innerMargins.bottom;
+    }
+
+    innerArea = result;
+
+    for( gui::Item* it : children )
+        it->updateInnerArea();
 }
 
 Item* Item::getNavigationItem( NavigationDirection direction ) {

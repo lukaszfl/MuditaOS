@@ -182,7 +182,6 @@ void Renderer::draw45degLine( Context* ctx, int16_t x, int16_t y, uint16_t side,
 
 //43575
 void Renderer::drawRectangle( Context* ctx, CommandRectangle* cmd ) {
-
 	//check if there is anything to draw
 	if( cmd->w == 0 || cmd->h == 0 ){
 		return;
@@ -200,7 +199,10 @@ void Renderer::drawRectangle( Context* ctx, CommandRectangle* cmd ) {
 	int16_t wgtX = 0,wgtY = 0;
 	uint16_t wgtW = cmd->areaW, wgtH=cmd->areaH;
 	int16_t wgtR = cmd->radius;
-
+//    LOG_DEBUG("rect render: drawArea.x,y,w,h: %d, %d, %d, %d", cmd->x, cmd->y, cmd->w, cmd->h);
+//    wgtX = cmd->x;
+//    wgtY = cmd->y;
+//        LOG_DEBUG("yapSize: %d", cmd->yapSize);
     if (cmd->yaps & (RectangleYapFlags::GUI_RECT_YAP_BOTTOM_LEFT | RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT))
     {
         wgtX += cmd->yapSize;

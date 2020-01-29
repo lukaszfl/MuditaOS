@@ -53,11 +53,14 @@ public:
 	void setCorners( RectangleCornerFlags corners );
 	void setFlat( RectangleFlatFlags flats);
     void setYaps( RectangleYapFlags yaps);
-    void setYapSize( short value);
+    void setYapSize( unsigned short value);
     void setFilled( bool val );
 
 	//virtaul methods
 	std::list<DrawCommand*> buildDrawList();
+
+  protected:
+    void updateInnerArea() override;
 };
 
 } /* namespace gui */

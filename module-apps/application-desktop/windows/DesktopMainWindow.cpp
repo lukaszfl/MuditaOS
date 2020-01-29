@@ -74,6 +74,23 @@ void DesktopMainWindow::buildInterface() {
 	UTF8 mess = "2 " + utils::localize.get("app_desktop_unread_messages");
 
 	notificationMessages->setText(mess);
+
+    auto rect = new  Rect(this, 0, 420, 80, 50);
+    rect->setFilled(false);
+    rect->setPenWidth(1);
+    rect->setFillColor(gui::ColorFullBlack);
+    rect->setBorderColor(gui::ColorFullBlack);
+    rect->setRadius(18);
+    rect->setYaps(RectangleYapFlags::GUI_RECT_YAP_BOTTOM_LEFT | RectangleYapFlags::GUI_RECT_YAP_TOP_RIGHT);
+
+    auto rect2 = new Rect(this, 0, 500, 80, 50);
+    rect2->setFilled(false);
+    rect2->setPenWidth(1);
+    rect2->setFillColor(gui::ColorFullBlack);
+    rect2->setBorderColor(gui::ColorFullBlack);
+    rect2->setRadius(18);
+//    rect->setFlat(RectangleFlatFlags::GUI_RECT_FLAT_BOTTOM_LEFT | RectangleFlatFlags::GUI_RECT_FLAT_TOP_LEFT);
+    // RectangleYapFlags::GUI_RECT_YAP_BOTTOM_LEFT | RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT |
 }
 
 void DesktopMainWindow::destroyInterface() {

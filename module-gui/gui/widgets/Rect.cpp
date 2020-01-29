@@ -7,6 +7,7 @@
 
 #include "../core/BoundingBox.hpp"
 #include "../core/DrawCommand.hpp"
+#include <log/log.hpp>
 
 #include "Rect.hpp"
 
@@ -81,6 +82,27 @@ void Rect::setYaps(RectangleYapFlags yaps)
     this->yaps = yaps;
 }
 
+void Rect::setYapSize(unsigned short value) {
+    if( value < 0 )
+        value = 0;
+    yapSize = value;
+    LOG_DEBUG("drawArea.x: %d, radius: %d", drawArea.x, radius);
+}
+
+void Rect::updateInnerArea()
+{
+    if (yaps & (RectangleYapFlags::GUI_RECT_YAP_BOTTOM_LEFT | RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT))
+    {
+        innerMargins.left = yapSize;
+    }
+    if (yaps & (RectangleYapFlags::GUI_RECT_YAP_BOTTOM_RIGHT | RectangleYapFlags::GUI_RECT_YAP_TOP_RIGHT))
+    {
+        innerMargins.right = yapSize;
+    }
+
+    Item::updateInnerArea();
+}
+
 std::list<DrawCommand*> Rect::buildDrawList() {
 
 	std::list<DrawCommand*> commands;
@@ -125,11 +147,6 @@ std::list<DrawCommand*> Rect::buildDrawList() {
 		commands.insert( commands.end(), childrenCommands.begin(), childrenCommands.end());
 
 	return commands;
-}
-void Rect::setYapSize(short value ) {
-    if( value < 0 )
-        value = 0;
-    yapSize = value;
 }
 
 } /* namespace gui */

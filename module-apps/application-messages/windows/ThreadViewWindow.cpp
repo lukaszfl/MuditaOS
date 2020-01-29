@@ -127,6 +127,7 @@ namespace gui
         for (auto &el : *sms)
         {
             auto messageLabel = new gui::Label(nullptr, labelmeta);
+            messageLabel->setDotsMode(true);
             messageLabel->setText(el.body);
             messageLabel->activatedCallback = [=](Item &) {
                 LOG_INFO("Message activated!");
@@ -154,13 +155,13 @@ namespace gui
             {
             case SMSType::INBOX:
                 messageLabel->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT);
-                messageLabel->setSize(style::window::bubble_width - messageLabel->radius, messageLabel->getHeight());
-                messageLabel->setPosition(messageLabel->getX() + messageLabel->radius, messageLabel->getY());
+//                messageLabel->setSize(style::window::bubble_width, messageLabel->getHeight());
+                messageBoundingBox->setReverseOrder(false);
                 break;
             case SMSType::OUTBOX:
                 messageLabel->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_RIGHT);
-                messageLabel->setSize(style::window::bubble_width - messageLabel->radius, messageLabel->getHeight());
-                messageLabel->setPosition( (body->getWidth() - style::window::bubble_width) - messageLabel->radius, messageLabel->getY());
+//                messageLabel->setSize(style::window::bubble_width, messageLabel->getHeight());
+//                messageLabel->setPosition( (body->getWidth() - style::window::bubble_width), messageLabel->getY());
                 messageBoundingBox->setReverseOrder(true);
                 break;
             case SMSType::FAILED:
@@ -172,8 +173,7 @@ namespace gui
                 break;
             }
 
-//            LOG_DEBUG("%d, %d, %d, %d", messageLabel->getX(), messageLabel->getY(), messageLabel->getWidth(), messageLabel->getHeight());
-            LOG_DEBUG("added ? %c", messageBoundingBox->tryAddWidget(messageLabel) ? 'v':'x');
+//            LOG_DEBUG("added ? %c", messageBoundingBox->tryAddWidget(messageLabel) ? 'v':'x');
 
 ////            messageWideBox->tryAddWidget(messageLabel);
 ////            LOG_DEBUG("Label added ? %d", );
@@ -192,13 +192,13 @@ namespace gui
             }; // lambda showing time
 
             LOG_INFO("Add sms: %s %s", el.body.c_str(), el.number.c_str());
-            if (body->tryAddWidget(messageBoundingBox)) {
+            if (body->tryAddWidget(messageLabel)) {
                 // add margin. maybe dependant on same minute/different minute
                 auto marginRect = new Rect(nullptr, messageLabel->getX(), messageLabel->getY(), messageLabel->getWidth(), style::window::spacing_far);
                 marginRect->setBorderColor(gui::ColorNoColor);
                 marginRect->activeItem = false;
                 // bounty hunt: detect last element in for_range loop here   LOG_DEBUG("end: %llu, next %llu", sms.get()->end(), std::next(&el)); // cannot compare. doesn't work
-//                body->tryAddWidget(marginRect); // it will fail for the most bottom one
+                body->tryAddWidget(marginRect); // it will fail for the most bottom one
             }
             else
             {
