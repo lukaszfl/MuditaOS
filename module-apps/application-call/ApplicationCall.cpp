@@ -169,7 +169,6 @@ void ApplicationCall::stopCallTimer() {
 	sapm::ApplicationManager::messageSwitchPreviousApplication( this );
 }
 
-
 void ApplicationCall::createUserInterface() {
 
 	gui::AppWindow* window = nullptr;
