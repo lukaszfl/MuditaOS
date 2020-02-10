@@ -5,6 +5,7 @@
 #include "Margins.hpp"
 #include "PhonebookNewContact.hpp"
 #include "Text.hpp"
+#include "UiCommon.hpp"
 #include "Utils.hpp"
 #include "application-call/ApplicationCall.hpp"
 #include "application-messages/ApplicationMessages.hpp"
@@ -89,8 +90,7 @@ void PhonebookContact::buildInterface()
     numberPrimaryLabel->inputCallback = [=](Item &item, const InputEvent &input) {
         if (input.keyCode == KeyCode::KEY_ENTER && input.state == InputEvent::State::keyReleasedShort)
         {
-            LOG_DEBUG("numberPrimayLabel->inputCallback switch to call window");
-            return app::ApplicationCall::messageSwitchToCall(application, contact->numbers[0].numberE164.c_str());
+            return app::call(application, contact->numbers[0].numberE164);
         }
         LOG_DEBUG("numberPrimayLabel->inputCallback just return false");
         return (false);
@@ -134,7 +134,7 @@ void PhonebookContact::buildInterface()
     numberSecondaryLabel->inputCallback = [=](Item &item, const InputEvent &input) {
         if (input.keyCode == KeyCode::KEY_ENTER)
         {
-            return app::ApplicationCall::messageSwitchToCall(application, contact->numbers[1].numberE164.c_str());
+            return app::call(application, contact->numbers[1].numberE164);
         }
         return (false);
     };
