@@ -126,12 +126,12 @@ void CallLogDetailsWindow::buildInterface() {
     // activated callbacks
     rects[FocusRects::Call]->activatedCallback = [=](gui::Item &item) {
         LOG_INFO("call %s", record.number.c_str());
-        return app::call(application, record.number);
+        return app::UiCommon::call(application, record.number);
     };
 
     rects[FocusRects::Sms]->activatedCallback = [=](gui::Item &item) {
         LOG_INFO("sms %s", record.number.c_str());
-        return app::sms(application, record.number);
+        return app::UiCommon::sms(application, record.number);
     };
 
     // Type

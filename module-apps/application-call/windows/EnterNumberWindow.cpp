@@ -73,7 +73,7 @@ void EnterNumberWindow::buildInterface() {
         auto app = dynamic_cast<app::ApplicationCall *>(application);
         if (app != nullptr)
         {
-            return app::addContact(getApplication(), app->getDisplayedNumber());
+            return app::UiCommon::addContact(getApplication(), app->getDisplayedNumber());
         }
         return false;
     };

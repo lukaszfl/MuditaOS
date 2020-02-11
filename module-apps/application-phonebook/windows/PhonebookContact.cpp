@@ -90,7 +90,7 @@ void PhonebookContact::buildInterface()
     numberPrimaryLabel->inputCallback = [=](Item &item, const InputEvent &input) {
         if (input.keyCode == KeyCode::KEY_ENTER && input.state == InputEvent::State::keyReleasedShort)
         {
-            return app::call(application, contact->numbers[0].numberE164);
+            return app::UiCommon::call(application, contact->numbers[0].numberE164);
         }
         LOG_DEBUG("numberPrimayLabel->inputCallback just return false");
         return (false);
@@ -134,7 +134,7 @@ void PhonebookContact::buildInterface()
     numberSecondaryLabel->inputCallback = [=](Item &item, const InputEvent &input) {
         if (input.keyCode == KeyCode::KEY_ENTER)
         {
-            return app::call(application, contact->numbers[1].numberE164);
+            return app::UiCommon::call(application, contact->numbers[1].numberE164);
         }
         return (false);
     };
