@@ -27,6 +27,7 @@ namespace gui
     {
       private:
         gui::VBox *body = nullptr;
+        uint16_t elements_width = this->getWidth() - style::window::default_left_margin * 2;
         void cleanView();
         enum class Action
         {
