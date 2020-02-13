@@ -76,6 +76,7 @@ namespace gui {
             this->reverse_order = reverse_order;
             resizeItems();
         }
+        bool getReverseOrder() const;
         /// callback for situaton when we reached top/bottom/left/right of box
         /// if we want to do sth special (i.e. request new items)
         std::function<bool(const InputEvent &inputEvent)> borderCallback = nullptr;

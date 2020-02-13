@@ -50,7 +50,6 @@ namespace gui
         bottomBar->setText(BottomBar::Side::LEFT, utils::localize.get("common_options"));
         bottomBar->setText(BottomBar::Side::CENTER, utils::localize.get("common_send"));
         bottomBar->setText(BottomBar::Side::RIGHT, utils::localize.get("common_back"));
-        auto elements_width = this->getWidth() - style::window::default_left_margin * 2;
         body = new gui::VBox(this, style::window::default_left_margin, title->offset_h(), elements_width, bottomBar->getY() - title->offset_h());
         body->setPenWidth(style::window::default_border_no_focus_w);
         body->setPenFocusWidth(style::window::default_border_no_focus_w);
@@ -206,7 +205,7 @@ namespace gui
     bool ThreadViewWindow::smsBuild(const SMSRecord &el, bool bottom)
     {
         /// dummy sms thread - TODO load from db - on switchData
-        auto label = new Text(nullptr, 0, 1, 300, 5);
+        auto label = new Text(nullptr, 0, 0, style::window::messages::sms_max_width, 5);
         label->setTextType(Text::TextType::MULTI_LINE);
         label->setEditMode(Text::EditMode::SCROLL);
         label->setEdges(RectangleEdgeFlags::GUI_RECT_ALL_EDGES);
@@ -218,21 +217,28 @@ namespace gui
         label->buildDrawList();
         label->setText(el.body.length() ? el.body : " "); // text doesn't really like being empty
         // TODO move to other decorating function depending on what happens (bind left, right, add dashdot etc)
+        // wrap label in H box, to make fit datetime in it
+        auto labelSpan = new gui::HBox();
+        //        labelSpan->setBorderColor(gui::Color(10,0));
+        labelSpan->setPenWidth(style::window::default_border_no_focus_w);
+        labelSpan->setPenFocusWidth(style::window::default_border_no_focus_w);
         LOG_DEBUG("ADD SMS TYPE: %d", el.type);
         switch (el.type)
         {
         case SMSType::OUTBOX:
             label->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_RIGHT);
             label->setX(body->getWidth() - label->getWidth());
+            labelSpan->setReverseOrder(true);
             break;
         case SMSType::INBOX:
             label->setYaps(RectangleYapFlags::GUI_RECT_YAP_TOP_LEFT);
+            labelSpan->setReverseOrder(false);
             break;
         default:
             break;
         }
         // @TODO: need for a callback yap change. yaps don't call recalculateDrawParams() because they are not Label, but Rect
-        label->setMargins(gui::Margins(10, 10, 10, 10)); // needs to be after setYaps, because see above ↑
+        label->setMargins(gui::Margins(15, 10, 15, 10)); // needs to be after setYaps, because see above ↑
         label->activatedCallback = [=](Item &) {
             LOG_INFO("Message activated!");
             auto app = dynamic_cast<app::ApplicationMessages *>(application);
@@ -249,18 +255,53 @@ namespace gui
             }
             return true;
         };
-        auto rect = new gui::Rect(nullptr, 0, 0, 10, 10);
-        rect->activeItem = false;
-        rect->setPenWidth(0);
-        if (!body->addWidget(rect))
+
+        labelSpan->setSize(elements_width, label->getHeight());
+        if (!labelSpan->addWidget(label))
         {
-            delete rect;
+            delete labelSpan;
+            delete label;
+            return false;
+        }
+
+        auto dateLabel = new gui::Label(nullptr, 0, 0, style::window::messages::sms_date_width, label->getHeight());
+        dateLabel->activeItem = false;
+        dateLabel->setFont(style::window::font::verysmall);
+        dateLabel->setText(utils::time::Time(el.date).str("%R"));
+        dateLabel->setPenWidth(style::window::default_border_no_focus_w);
+        dateLabel->setVisible(false);
+        dateLabel->setAlignement(gui::Alignment(gui::Alignment::ALIGN_HORIZONTAL_CENTER, gui::Alignment::ALIGN_VERTICAL_CENTER));
+
+        uint16_t dateLabelSpacerWidth = (elements_width - label->getWidth() - dateLabel->getWidth());
+        auto dateLabelSpacer = new gui::Label(nullptr, 0, 0, dateLabelSpacerWidth, label->getHeight());
+        dateLabelSpacer->activeItem = false;
+        dateLabelSpacer->setPenWidth(0);
+
+        if (!labelSpan->addWidget(dateLabelSpacer) || !labelSpan->addWidget(dateLabel))
+        {
+            delete dateLabelSpacer;
+            delete dateLabel;
+            delete labelSpan;
+            return false;
+        }
+
+        labelSpan->focusChangedCallback = [=](gui::Item &item) {
+            dateLabel->setVisible(item.focus);
+            return true;
+        };
+
+        auto verticalSpacer = new gui::Rect(nullptr, 0, 0, elements_width, style::window::messages::sms_vertical_spacer);
+        verticalSpacer->activeItem = false;
+        verticalSpacer->setPenWidth(style::window::default_border_no_focus_w);
+        if (!body->addWidget(verticalSpacer))
+        {
+            delete verticalSpacer;
             delete label;
             return false;
         }
 
         LOG_INFO("Add sms: %s %s", el.body.c_str(), el.number.c_str());
-        if (body->addWidget(label))
+        if (body->addWidget(labelSpan))
         {
             return true;
         }

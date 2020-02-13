@@ -52,6 +52,9 @@ namespace messages
     /// TODO 100 is static size, sms elements should have size depending on text amount
     inline const uint32_t sms_height = 100;
     const inline unsigned short yaps_size_default = 10;
+    const inline unsigned short sms_max_width = 320;
+    const inline unsigned short sms_date_width = 60;
+    const inline unsigned short sms_vertical_spacer = 10;
 } // namespace messages
 
 };  // namespace window

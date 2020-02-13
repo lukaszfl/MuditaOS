@@ -170,6 +170,10 @@ void BoxLayout::setNavigation()
         previous = next;
     }
 }
+bool BoxLayout::getReverseOrder() const
+{
+    return reverse_order;
+}
 
 HBox::HBox() : BoxLayout() {
 	type = ItemType::HBOX;
