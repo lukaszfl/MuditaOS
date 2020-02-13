@@ -705,7 +705,7 @@ uint32_t DBServiceAPI::CalllogAdd(sys::Service *serv, const CalllogRecord &rec)
         auto records = *calllogResponse->records;
         if (!records.empty())
         {
-            recId = records[0].id;
+            recId = records[0].ID;
         }
     }
 
