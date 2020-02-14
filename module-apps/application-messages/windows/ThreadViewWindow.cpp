@@ -268,7 +268,9 @@ namespace gui
         auto dateLabel = new gui::Label(nullptr, 0, 0, style::window::messages::sms_date_width, label->getHeight());
         dateLabel->activeItem = false;
         dateLabel->setFont(style::window::font::verysmall);
-        dateLabel->setText(utils::time::Time(el.date).str("%R"));
+
+        utils::time::Time messageTime(el.date);
+        dateLabel->setText(utils::time::Time(el.date).str());
         dateLabel->setPenWidth(style::window::default_border_no_focus_w);
         dateLabel->setVisible(false);
         dateLabel->setAlignement(gui::Alignment(gui::Alignment::ALIGN_HORIZONTAL_CENTER, gui::Alignment::ALIGN_VERTICAL_CENTER));

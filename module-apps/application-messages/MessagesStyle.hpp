@@ -14,7 +14,7 @@ constexpr auto pageSize = 4;
 constexpr auto listHeight = 445;
 constexpr auto listWidth = 458;
 constexpr auto listPositionX = 11;
-constexpr auto ListPositionY = 105;
+constexpr auto ListPositionY = 105 - 1 + 5; // topbar h - error? + design margin
 } //namespace threads
 
 namespace threadItem {
