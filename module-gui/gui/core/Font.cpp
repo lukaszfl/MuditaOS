@@ -17,7 +17,6 @@
 #include "vfs.hpp"
 #include <cassert>
 
-
 namespace gui {
 
 FontGlyph::~FontGlyph() {
@@ -210,14 +209,13 @@ uint32_t Font::getCharCountInSpace( const UTF8& str, const uint32_t space, uint3
         // go in reverse rather than UTF8::reverse. be careful, no NULL at the end.
         uint32_t iAnyDir = fromBeginning ? i : (str.length() -1 - i); // i compensated for direction
         idCurrent = str[iAnyDir];
-        auto it = glyphs.find(idCurrent);
-        if(it != glyphs.end()) {
-            FontGlyph* glyph = it->second;
-            if( glyph  )
+        auto glyph_found = glyphs.find(idCurrent);
+        if(glyph_found != glyphs.end()) {
+            FontGlyph* glyph = glyph_found->second;
+            if( glyph != nullptr )
             {
                 if (i == 0)
                 {
-                    {
                         if (availableSpace - glyph->xadvance < 0)
                         {
                             if (spaceConsumed)
@@ -227,22 +225,30 @@ uint32_t Font::getCharCountInSpace( const UTF8& str, const uint32_t space, uint3
                             return stringChars;
                         }
                         availableSpace -= glyph->xadvance;
-                    }
                 }
                 else
                 {
                     int32_t kern_value = getKerning(idLast, idCurrent);
-                    if (glyph)
-                    {
                         if (availableSpace - (glyph->xadvance + kern_value) < 0)
                         {
                             spaceConsumed = space - availableSpace;
                             return stringChars;
                         }
                         availableSpace -= glyph->xadvance + kern_value;
-                    }
                 }
             }
+        }
+        else{
+            std::unique_ptr<FontGlyph> glyph(getGlyphUnsupported());
+            if (availableSpace - glyph->xadvance < 0)
+            {
+                if (spaceConsumed)
+                {
+                    spaceConsumed = space - availableSpace;
+                }
+                return stringChars;
+            }
+            availableSpace -= glyph->xadvance;
         }
 		idLast = idCurrent;
 		++stringChars;
@@ -275,31 +281,20 @@ uint32_t Font::getPixelWidth( const UTF8& str, const uint32_t start, const uint3
 	uint32_t stringPixelWidth = 0;
 	uint16_t idLast = 0, idCurrent = 0;
 
-	for( uint32_t i=0; i<count; ++i )
+    for( uint32_t i=0; i<count; ++i )
 	{
-		if( i == 0 )
-		{
-			idCurrent = str[start+i];
-			FontGlyph* glyph = glyphs.find(idCurrent)->second;
-
-			if( glyph != NULL)
-			{
-				stringPixelWidth += glyph->xadvance ;
-			}
-		}
-		else
-		{
-			idCurrent = str[start+i];
-			FontGlyph* glyph = glyphs.find(idCurrent)->second;
-
-			int32_t kern_value = getKerning( idLast, idCurrent);
-			if( glyph != nullptr )
-			{
-				stringPixelWidth += glyph->xadvance+kern_value;
-			}
-		}
-		idLast = idCurrent;
-	}
+        idCurrent = str[start + i];
+        auto glyph_found = glyphs.find(idCurrent);
+        if (glyph_found != glyphs.end())
+        {
+            stringPixelWidth = getCharPixelWidth(idCurrent) + (i == 0 ? 0 : getKerning(idLast, idCurrent));
+        }
+        else
+        {
+            stringPixelWidth += getGlyphUnsupported()->xadvance;
+        }
+        idLast = idCurrent;
+    }
 
 	return stringPixelWidth;
 }
@@ -324,6 +319,30 @@ uint32_t Font::getCharPixelHeight( uint32_t charCode ) {
 		return  glyph->height ;
 
 	return 0;
+}
+std::unique_ptr<FontGlyph> Font::getGlyphUnsupported() const
+{
+    std::unique_ptr<FontGlyph> unsupported = std::make_unique<FontGlyph>();
+    unsupported->height = this->info.size * .8;
+    unsupported->width = unsupported->height * .69;
+    unsupported->xoffset = 0;
+    unsupported->yoffset = 0;
+
+    char baseChar = 'h'; // arbitrary choice. h as a representative character to get an idea of glyph size. if not found, then use magic numbers above
+    auto baseCharFound = this->glyphs.find(baseChar);
+    if (baseCharFound != this->glyphs.end())
+    {
+        FontGlyph *baseGlyph = baseCharFound->second;
+        unsupported->width = baseGlyph->width;
+        unsupported->height = baseGlyph->height;
+        unsupported->xoffset = (baseGlyph->xadvance - baseGlyph->width) / 2;
+        unsupported->xadvance = unsupported->width + 2 * unsupported->xoffset; // xoffset as left/right margin
+    }
+    if (unsupported->xoffset == 0)
+    {
+        unsupported->xoffset = 1; // fallback margin.
+    }
+    return std::move(unsupported);
 }
 
 FontManager::FontManager() {

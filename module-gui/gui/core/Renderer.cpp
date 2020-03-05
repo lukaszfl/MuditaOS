@@ -683,7 +683,7 @@ void Renderer::drawText( Context* ctx, CommandText* cmd ) {
         if (glyph_found != font->glyphs.end())
         {
             FontGlyph *glyph = glyph_found->second;
-            if (glyph == NULL)
+            if (glyph == nullptr)
             {
                 LOG_ERROR("terribly wrong: character id=%d is said to exist, but it doesn't", idCurrent);
                 continue;
@@ -698,7 +698,9 @@ void Renderer::drawText( Context* ctx, CommandText* cmd ) {
             {
                 int32_t kernValue = font->getKerning(idLast, idCurrent);
                 {
+                    /// TODO: M.G. do draw drawable part of the character (but inform about truncation)
                     //#ifdef BUILD_UNIT_TESTS
+                    // do not start drawing outside of draw context.
                     if ((wgtX + posX + glyph->xoffset >= drawCtx->getW()) || (wgtX + posX + glyph->xoffset < 0))
                     {
                         LOG_FATAL("Drawing outside context's X boundary for glyph: %d", glyph->id);
@@ -715,7 +717,33 @@ void Renderer::drawText( Context* ctx, CommandText* cmd ) {
                 }
             }
         }
-        // TODO: M.G. else: unsupported character
+        else
+        {
+            LOG_WARN("no glyph for character id:%d in font \"%s\"", idCurrent, font->info.face.c_str());
+            std::unique_ptr<FontGlyph> glyph(font->getGlyphUnsupported());
+            uint16_t  xoffset = glyph->xoffset;
+            uint16_t  height = glyph->height;
+            uint16_t  width = glyph->width;
+            uint16_t  stroke = glyph->xoffset;
+
+            posX += xoffset;
+
+            if ((wgtX + posX + glyph->xoffset >= drawCtx->getW()) || (wgtX + posX + glyph->xoffset < 0))
+            {
+                LOG_FATAL("Drawing outside context's X boundary for (unsupported) glyph: %d", glyph->id);
+                return;
+            }
+            if ((wgtY + posY >= drawCtx->getH()) || (wgtY + posY < 0))
+            {
+                LOG_FATAL("Drawing outside context's Y boundary for (unsupported) glyph: %d", glyph->id);
+                return;
+            }
+            drawHorizontalLine(drawCtx, wgtX + posX, wgtY + posY - height, width, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_UP);
+            drawHorizontalLine(drawCtx, wgtX + posX, wgtY + posY, width, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_DOWN);
+            drawVerticalLine(drawCtx, wgtX + posX, wgtY + posY - height, height, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_RIGHT);
+            drawVerticalLine(drawCtx, wgtX + posX + width, wgtY + posY - height, height, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_LEFT);
+            posX += glyph->xadvance - xoffset;
+        }
         idLast = idCurrent;
     }
 
