@@ -16,6 +16,7 @@
 //for loading files
 #include "Context.hpp"
 #include "DrawCommand.hpp"
+#include "Renderer.hpp"
 #include "vfs.hpp"
 #include <cassert>
 
@@ -330,6 +331,7 @@ std::unique_ptr<FontGlyph> Font::getGlyphUnsupported() const
     unsupported->xoffset = 0;
     unsupported->yoffset = 0;
 
+    // generate a rectangle based o a existing letter. otherwise use some magic numbers ↑ to approximate the size for the rectangle
     char baseChar = 'h'; // arbitrary choice. h as a representative character to get an idea of glyph size. if not found, then use magic numbers above
     auto baseCharFound = this->glyphs.find(baseChar);
     if (baseCharFound != this->glyphs.end())
@@ -344,6 +346,24 @@ std::unique_ptr<FontGlyph> Font::getGlyphUnsupported() const
     {
         unsupported->xoffset = 1; // fallback margin.
     }
+    unsupported->yoffset += unsupported->height;
+    // populate with a bitmap (glyph)
+    CommandRectangle *commandRect = new CommandRectangle();
+    commandRect->x = 0;
+    commandRect->y = 0;
+    commandRect->w = unsupported->width;
+    commandRect->h = unsupported->height;
+    commandRect->areaX = 0;
+    commandRect->areaY = 0;
+    commandRect->areaW = unsupported->width;
+    commandRect->areaH = unsupported->height;
+    commandRect->penWidth = unsupported->xoffset;
+
+    Context *renderCtx = new Context(unsupported->width, unsupported->height);
+    std::vector<gui::DrawCommand *> commands = {commandRect};
+    Renderer().render(renderCtx, commands);
+
+    unsupported->data = renderCtx->getData();
 
     return std::move(unsupported);
 }
