@@ -738,10 +738,26 @@ void Renderer::drawText( Context* ctx, CommandText* cmd ) {
                 LOG_FATAL("Drawing outside context's Y boundary for (unsupported) glyph: %d", glyph->id);
                 return;
             }
-            drawHorizontalLine(drawCtx, wgtX + posX, wgtY + posY - height, width, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_UP);
-            drawHorizontalLine(drawCtx, wgtX + posX, wgtY + posY, width, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_DOWN);
-            drawVerticalLine(drawCtx, wgtX + posX, wgtY + posY - height, height, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_RIGHT);
-            drawVerticalLine(drawCtx, wgtX + posX + width, wgtY + posY - height, height, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_LEFT);
+            //            drawHorizontalLine(drawCtx, wgtX + posX, wgtY + posY - height, width, stroke, gui::ColorFullBlack,
+            //            LineExpansionDirection::LINE_EXPAND_UP); drawHorizontalLine(drawCtx, wgtX + posX, wgtY + posY, width, stroke, gui::ColorFullBlack,
+            //            LineExpansionDirection::LINE_EXPAND_DOWN); drawVerticalLine(drawCtx, wgtX + posX, wgtY + posY - height, height, stroke,
+            //            gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_RIGHT); drawVerticalLine(drawCtx, wgtX + posX + width, wgtY + posY - height,
+            //            height, stroke, gui::ColorFullBlack, LineExpansionDirection::LINE_EXPAND_LEFT);
+
+            // populate with bitmap glyph
+            CommandRectangle *rect = new CommandRectangle();
+            rect->x = glyph->xoffset;
+            rect->y = glyph->yoffset;
+            rect->w = glyph->width;
+            rect->h = glyph->height;
+            rect->areaX = rect->x;
+            rect->areaY = rect->y;
+            rect->areaW = rect->w;
+            rect->areaH = rect->h;
+            rect->penWidth = 3;
+
+            Context *ctxx = new Context(glyph->width, glyph->height);
+            drawRectangle(drawCtx, rect);
             posX += glyph->xadvance - xoffset;
         }
         idLast = idCurrent;

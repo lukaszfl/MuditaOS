@@ -14,6 +14,8 @@
 #include "utf8/UTF8.hpp"
 #include "log/log.hpp"
 //for loading files
+#include "Context.hpp"
+#include "DrawCommand.hpp"
 #include "vfs.hpp"
 #include <cassert>
 
@@ -342,6 +344,7 @@ std::unique_ptr<FontGlyph> Font::getGlyphUnsupported() const
     {
         unsupported->xoffset = 1; // fallback margin.
     }
+
     return std::move(unsupported);
 }
 
