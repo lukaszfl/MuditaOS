@@ -181,9 +181,7 @@ namespace bsp
         SCB_EnableICache();
     }
 
-    void BoardInit()
-    {
-
+    void BoardInit(){
         PINMUX_InitBootPins();
 
         BOARD_InitBootClocks();
