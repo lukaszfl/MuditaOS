@@ -2,7 +2,7 @@
  *  @file BoardDefinitions.hpp
  *  @author Mateusz Piesta (mateusz.piesta@mudita.com)
  *  @date 09.08.19
- *  @brief  
+ *  @brief
  *  @copyright Copyright (C) 2019 mudita.com
  *  @details
  */
