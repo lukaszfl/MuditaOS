@@ -77,9 +77,8 @@ namespace bsp
 
         MSPInit();
         /// to set Store::GSM sim state and to log debug
-        Store::GSM::get()->tray = GPIO_PinRead(GPIO2, BSP_CELLULAR_SIM_CARD_1_INSERTED_PIN) == 0
-                                      ? Store::GSM::Tray::IN
-                                      : Store::GSM::Tray::OUT;
+        Store::GSM::get()->tray =
+            GPIO_PinRead(GPIO2, BSP_CELLULAR_SIM_TRAY_INSERTED_PIN) == 0 ? Store::GSM::Tray::IN : Store::GSM::Tray::OUT;
         DMAInit();
 
         uartRxStreamBuffer = xStreamBufferCreate(rxStreamBufferLength, rxStreamBufferNotifyWatermark);
@@ -315,8 +314,7 @@ namespace bsp
                                  1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_1_STATUS_PIN));
 
         gpio_2->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_2_SIM_TRAY_INSERTED_PIN) |
-                                 1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_2_RI_PIN) |
-                                 1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_2_ANTSEL_PIN));
+                                 1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_2_RI_PIN));
 
         // INPUTS
 
@@ -393,7 +391,7 @@ namespace bsp
                                             .defLogic = 0,
                                             .pin = static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_3_DTR_PIN)});
 
-        GPIO_PortEnableInterrupts(BSP_CELLULAR_SIM_CARD_1_INSERTED_PORT, 1U << BSP_CELLULAR_SIM_CARD_1_INSERTED_PIN);
+        GPIO_PortEnableInterrupts(BSP_CELLULAR_SIM_TRAY_INSERTED_PORT, 1U << BSP_CELLULAR_SIM_TRAY_INSERTED_PIN);
     }
 
     void RT1051Cellular::MSPDeinit()
@@ -478,11 +476,11 @@ namespace bsp
         auto trayIRQ_handler() -> BaseType_t
         {
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-            Store::GSM::get()->tray             = GPIO_PinRead(GPIO2, BSP_CELLULAR_SIM_CARD_1_INSERTED_PIN) == 0
+            Store::GSM::get()->tray             = GPIO_PinRead(GPIO2, BSP_CELLULAR_SIM_TRAY_INSERTED_PIN) == 0
                                           ? Store::GSM::Tray::IN
                                           : Store::GSM::Tray::OUT;
             if (qhandle) {
-                int val = GPIO_PinRead(GPIO2, BSP_CELLULAR_SIM_CARD_1_INSERTED_PIN);
+                int val = GPIO_PinRead(GPIO2, BSP_CELLULAR_SIM_TRAY_INSERTED_PIN);
                 xQueueSendFromISR(qhandle, &val, &xHigherPriorityTaskWoken);
             }
             return xHigherPriorityTaskWoken;
