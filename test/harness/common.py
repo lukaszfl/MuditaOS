@@ -66,7 +66,7 @@ class Serial:
     def read(self, val) -> str:
         buff = bytearray()
         start = time.time()
-        while 1:
+        for i in range(0, val):
             ch = self.ser.read()
             if ch == STX:
                 buff = bytearray()
@@ -74,7 +74,7 @@ class Serial:
                 return buff.decode()
             else:
                 buff += ch
-        return ""
+        return buff.decode()
 
     def key(self, val, wait=0.5):
         '''
