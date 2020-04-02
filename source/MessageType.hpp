@@ -114,6 +114,8 @@ enum class MessageType
 
     AudioSetOutputVolume,
     AudioSetInputGain,
+    AudioGetOutputVolume,
+    AudioGetInputGain,
     AudioGetFileTags,
 
     // application manager
