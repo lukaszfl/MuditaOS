@@ -197,7 +197,7 @@ namespace gui
     {
         const KeyProfile *p = getKeyProfile(uint32_t(code));
         if (p == nullptr) {
-            LOG_ERROR("KeyProfile for key: %d not found", code);
+            LOG_INFO("KeyProfile for key: %d not found, return 0", code);
             return 0;
         }
         return p->chars[times % p->chars.size()];
