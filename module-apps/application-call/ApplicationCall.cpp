@@ -75,6 +75,7 @@ namespace app
         gui::CallWindow *callWindow = dynamic_cast<gui::CallWindow *>(windows.find(window::name_call)->second);
         assert(callWindow != nullptr);
 
+        AudioServiceAPI::RoutingStart(this);
         runCallTimer();
 
         LOG_INFO("---------------------------------CallActive");
@@ -92,7 +93,8 @@ namespace app
             LOG_INFO("ignoring call incoming");
         }
         else {
-            AudioServiceAPI::RoutingStart(this);
+
+            AudioServiceAPI::PlaybackStart(this, "sys/assets/audio/ringtone.wav");
             runCallTimer();
             std::unique_ptr<gui::SwitchData> data = std::make_unique<app::IncommingCallData>(msg->data);
             // send to itself message to switch (run) call application
