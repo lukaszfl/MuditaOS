@@ -77,23 +77,36 @@ namespace gui
                     LOG_ERROR("ServiceCellular::std::to_string exception %s", e.what());
                 }
                 auto result = CellularServiceAPI::SetScanMode(this->application, mode);
+                commandResult->setFillColor(gui::Color(11, 0));
+                commandResult->setVisible(true);
                 if (result) {
-                    commandResult->setText("Succes!");
+                    commandResult->setText("Success!");
                 }
                 else {
                     commandResult->setText("Failure!");
                 }
+                for (auto button : modesBox->children) {
+                    if (button->visible == true) {
+                        static_cast<gui::Label *>(button)->setFont(style::window::font::verysmall);
+                    }
+                }
                 application->render(RefreshModes::GUI_REFRESH_FAST);
+                CellularServiceAPI::GetScanMode(this->application);
+                application->render(RefreshModes::GUI_REFRESH_DEEP);
                 return true;
             };
+            modeLabel->setRadius(11);
             modesBox->addWidget(modeLabel);
             modesBox->addWidget(addSpacer());
         }
 
         commandResult = addMode(this, "");
         commandResult->setPosition(style::window::default_left_margin, antenna::scan_mode_window::reusultLabelPosY);
+        commandResult->setRadius(11);
+        commandResult->setPenWidth(0);
+        commandResult->setFilled(true);
+        commandResult->setVisible(false);
         setFocusItem(modesBox);
-
         CellularServiceAPI::GetScanMode(this->application);
     }
     void ScanModesWindow::destroyInterface()
@@ -156,16 +169,25 @@ namespace gui
     }
     void ScanModesWindow::updateCurrentMode(std::string &data)
     {
-        uint32_t mode = 0;
+        uint32_t currentMode = 0;
         try {
-            mode = std::stoi(data);
+            currentMode = std::stoi(data);
         }
         catch (const std::exception &e) {
             LOG_ERROR("ScanModesWindow::updateCurrentMode exception %s", e.what());
             return;
         }
-        if (mode < modeButtonParams.size()) {
-            modesBox->setFocusOnElement(mode);
+        if (currentMode < modeButtonParams.size()) {
+            uint32_t counter = 0;
+            for (auto button : modesBox->children) {
+                if (button->activeItem == true && button->visible == true) {
+                    if (counter++ == currentMode) {
+                        static_cast<gui::Label *>(button)->setFont(style::window::font::verysmallbold);
+                        application->render(RefreshModes::GUI_REFRESH_FAST);
+                        break;
+                    }
+                }
+            }
         }
     }
 } // namespace gui
