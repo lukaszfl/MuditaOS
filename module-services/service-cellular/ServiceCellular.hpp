@@ -65,7 +65,6 @@ class ServiceCellular : public sys::Service
     // used for polling for call state
     uint32_t callStateTimerId = 0;
     void CallStateTimerHandler();
-
     DLC_channel::Callback_t notificationCallback = nullptr;
 
     cellular::State state;
@@ -85,6 +84,10 @@ class ServiceCellular : public sys::Service
 
     /// idle handler
     bool handle_idle();
+    /// cellular power up procedure
+    bool handle_status_check();
+    /// cellular power up procedure
+    bool handle_power_up_in_progress_procedure();
     /// cellular power up procedure
     bool handle_power_up_procedure();
     /// configure basic modem parameters

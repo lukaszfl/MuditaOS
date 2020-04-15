@@ -58,6 +58,10 @@ const char *State::c_str(State::ST state)
     switch (state) {
     case ST::Idle:
         return "Idle";
+    case ST::StatusCheck:
+        return "StatusCheck";
+    case ST::PowerUpInProgress:
+        return "PowerUpInProgress";
     case ST::PowerUpProcedure:
         return "PowerUpProcedure";
     case ST::AudioConfigurationProcedure:
@@ -154,7 +158,10 @@ void ServiceCellular::TickHandler(uint32_t id)
 
 sys::ReturnCodes ServiceCellular::InitHandler()
 {
-    state.set(this, State::ST::PowerUpProcedure);
+    // T4
+    state.set(this, State::ST::StatusCheck);
+    // T3
+    // state.set(this, State::ST::PowerUpProcedure);
     return sys::ReturnCodes::Success;
 }
 
@@ -188,6 +195,12 @@ void ServiceCellular::change_state(cellular::StateChange *msg)
     switch(msg->request) {
         case State::ST::Idle:
             handle_idle();
+            break;
+        case State::ST::StatusCheck:
+            handle_status_check();
+            break;
+        case State::ST::PowerUpInProgress:
+
             break;
         case State::ST::PowerUpProcedure:
             handle_power_up_procedure();
@@ -1219,4 +1232,28 @@ std::string ServiceCellular::GetScanMode(void)
         }
     }
     return ("");
+}
+
+bool ServiceCellular::handle_status_check(void)
+{
+    LOG_INFO("Checking modem status.");
+    auto modemActive = cmux->IsModemActive();
+    if (modemActive) {
+        // modem is already turned on, call configutarion procedure
+        LOG_INFO("Modem is already turned on.");
+        state.set(this, cellular::State::ST::CellularConfProcedure);
+    }
+    else {
+        // turn on modem
+        LOG_INFO("Turning on modem.");
+        cmux->TurnOnModem();
+        state.set(this, cellular::State::ST::PowerUpInProgress);
+    }
+    return true;
+}
+
+bool ServiceCellular::handle_power_up_in_progress_procedure(void)
+{
+
+    return true;
 }

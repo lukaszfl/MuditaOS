@@ -468,3 +468,20 @@ uint8_t TS0710::GetAntenna()
 {
     return pv_cellular->GetAntenna();
 }
+
+bool TS0710::IsModemActive(void)
+{
+    auto status = bsp::cellular::status::getStatus();
+
+    if (status == bsp::cellular::status::value::ACTIVE) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+void TS0710::TurnOnModem(void)
+{
+    return pv_cellular->PowerUp();
+}
