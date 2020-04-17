@@ -159,9 +159,9 @@ void ServiceCellular::TickHandler(uint32_t id)
 sys::ReturnCodes ServiceCellular::InitHandler()
 {
     // T4
-    state.set(this, State::ST::StatusCheck);
+    //    state.set(this, State::ST::StatusCheck);
     // T3
-    // state.set(this, State::ST::PowerUpProcedure);
+    state.set(this, State::ST::PowerUpProcedure);
     return sys::ReturnCodes::Success;
 }
 
@@ -1241,7 +1241,16 @@ bool ServiceCellular::handle_status_check(void)
     if (modemActive) {
         // modem is already turned on, call configutarion procedure
         LOG_INFO("Modem is already turned on.");
-        state.set(this, cellular::State::ST::CellularConfProcedure);
+
+        auto ret = cmux->BaudDetectProcedure();
+        if (ret == TS0710::ConfState::Success) {
+            LOG_INFO("Modem baudrate detected.");
+            state.set(this, cellular::State::ST::CellularConfProcedure);
+        }
+        else {
+            LOG_ERROR("Baud rate detection failed.");
+            state.set(this, cellular::State::ST::ModemFatalFailure);
+        }
     }
     else {
         // turn on modem

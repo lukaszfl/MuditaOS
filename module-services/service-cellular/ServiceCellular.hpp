@@ -20,6 +20,17 @@
 
 class MuxDaemon;
 
+namespace callular
+{
+
+    enum class BoardType
+    {
+        none,
+        T3,
+        T4
+    };
+}
+
 class ServiceCellular : public sys::Service
 {
 

@@ -328,7 +328,7 @@ class TS0710
     {
         return static_cast<DLCI_t>(channels.size() == 0 ? 0 : channels.size() - 1);
     }
-
+    ConfState BaudDetectProcedure();
     ConfState PowerUpProcedure();
     ConfState ConfProcedure();
     ConfState AudioConfProcedure();
