@@ -187,8 +187,13 @@ TS0710::ConfState TS0710::PowerUpProcedure()
 TS0710::ConfState TS0710::ConfProcedure()
 {
     LOG_DEBUG("Configuring modem...");
-    parser->cmd(at::AT::FACTORY_RESET);
-    parser->cmd(at::AT::ECHO_OFF);
+    if (!parser->cmd(at::AT::FACTORY_RESET)) {
+        return ConfState::Failure;
+    }
+    if (!parser->cmd(at::AT::ECHO_OFF)) {
+        return ConfState::Failure;
+    }
+
     LOG_INFO("GSM modem info:");
     auto ret = parser->cmd(at::AT::SW_INFO);
     if (ret) {
@@ -197,19 +202,25 @@ TS0710::ConfState TS0710::ConfProcedure()
             LOG_INFO("%s", ret.response[i].c_str());
         }
     }
+
+    at::AT flowCmd;
     if (hardwareControlFlowEnable) {
-        parser->cmd(at::AT::FLOW_CTRL_ON);
+        flowCmd = (at::AT::FLOW_CTRL_ON);
     }
     else {
-        parser->cmd(at::AT::FLOW_CTRL_OFF);
+        flowCmd = (at::AT::FLOW_CTRL_OFF);
+    }
+    if (!parser->cmd(flowCmd)) {
+        return ConfState::Failure;
     }
 
-    parser->cmd(at::AT::URC_NOTIF_CHANNEL);
-    parser->cmd(at::AT::RI_PIN_OFF_CALL);
-    parser->cmd(at::AT::RI_PIN_OFF_SMS);
-    parser->cmd(at::AT::URC_UART1);
-    parser->cmd(at::AT::AT_PIN_READY_LOGIC);
-    parser->cmd(at::AT::URC_NOTIF_SIGNAL);
+    auto commands = at::getCommadsSet(at::commadsSet::modemInit);
+
+    for (auto command : commands) {
+        if (!parser->cmd(command)) {
+            return ConfState::Failure;
+        }
+    }
 
     LOG_WARN("TODO: determine while this retry loop is necessary");
     auto tries          = 0;

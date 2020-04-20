@@ -125,7 +125,7 @@ namespace at
             {AT::CALLER_NUMBER_PRESENTATION, {"AT+CLIP=1\r", 15000}},
             {AT::SMS_TEXT_FORMAT, {"AT+CMGF=1\r"}},
             {AT::SMS_UCSC2, {"AT+CSCS=\"UCS2\"\r"}},
-            {AT::SMS_STORAGE, {"AT+CPMS=“ME”,“ME”,“ME”\r"}},
+            {AT::SMS_STORAGE, {"AT+CPMS=\"ME\",\"ME\",\"ME\"\r"}},
             {AT::QSCLK_ON, {"AT+QSCLK=1\r", 3000}},
             {AT::QDAI, {"AT+QDAI?\r"}},
             {AT::QDAI_INIT, {"AT+QDAI=1,0,0,5,0,1\r"}},
@@ -163,4 +163,10 @@ namespace at
         LOG_ERROR("NO SUCH AT COMMAND DEFINED: %d", static_cast<int>(at));
         return fact.at(AT::AT);
     }
+    enum class commadsSet
+    {
+        modemInit,
+        simInit
+    };
+    std::vector<AT> getCommadsSet(commadsSet set);
 }; // namespace at
