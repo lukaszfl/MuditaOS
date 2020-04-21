@@ -1176,15 +1176,15 @@ bool ServiceCellular::handle_sim_init()
         return false;
     }
     bool success = true;
-    success      = channel->cmd(at::AT::CALLER_NUMBER_PRESENTATION) && success;
-    success      = channel->cmd(at::AT::SMS_TEXT_FORMAT) && success;
-    success      = channel->cmd(at::AT::SMS_UCSC2) && success;
-    success      = channel->cmd(at::AT::SMS_STORAGE) && success;
-    success      = channel->cmd(at::AT::CRC_ON) && success;
+    auto commands = at::getCommadsSet(at::commadsSet::simInit);
 
-    if (!success) {
-        LOG_ERROR("SIM initialization failure!");
+    for (auto command : commands) {
+        if (!channel->cmd(command)) {
+            LOG_ERROR("SIM initialization failure!");
+            // return false;
+        }
     }
+
     state.set(this, State::ST::Idle);
     return success;
 }

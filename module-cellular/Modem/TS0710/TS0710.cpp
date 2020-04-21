@@ -175,7 +175,13 @@ TS0710::ConfState TS0710::BaudDetectProcedure()
 }
 TS0710::ConfState TS0710::PowerUpProcedure()
 {
-    if (BaudDetectProcedure() != ConfState::Success) {
+    // disable urc
+    pv_cellular->InformModemHostAsleep();
+    auto ret = BaudDetectProcedure();
+    // enable urc
+    pv_cellular->InformModemHostWakeup();
+
+    if (ret != ConfState::Success) {
         LOG_INFO("6. Starting power up procedure...");
         pv_cellular->PowerUp();
         return ConfState::PowerUp;
@@ -186,6 +192,7 @@ TS0710::ConfState TS0710::PowerUpProcedure()
 // TODO:M.P Fetch configuration from JSON/XML file
 TS0710::ConfState TS0710::ConfProcedure()
 {
+    pv_cellular->InformModemHostAsleep();
     LOG_DEBUG("Configuring modem...");
     if (!parser->cmd(at::AT::FACTORY_RESET)) {
         return ConfState::Failure;
@@ -359,7 +366,7 @@ TS0710::ConfState TS0710::StartMultiplexer()
     OpenChannel(Channel::Data);
 
     mode = Mode::CMUX;
-
+    pv_cellular->InformModemHostWakeup();
     DLC_channel *c = get(Channel::Commands);
     if (c != nullptr) {
         // Route URCs to second (Notifications) MUX channel
