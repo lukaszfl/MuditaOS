@@ -107,6 +107,7 @@ ServiceCellular::ServiceCellular() : sys::Service(serviceName, "", cellularStack
     busChannels.push_back(sys::BusChannels::ServiceDBNotifications);
 
     callStateTimerId = CreateTimer(Ticks::MsToTicks(1000), true);
+    stateTimerId     = CreateTimer(Ticks::MsToTicks(1000), true);
 
     ongoingCall.setStartCallAction([=](const CalllogRecord &rec) {
         auto call = DBServiceAPI::CalllogAdd(this, rec);
@@ -135,7 +136,11 @@ ServiceCellular::ServiceCellular() : sys::Service(serviceName, "", cellularStack
 
 ServiceCellular::~ServiceCellular()
 {
+
     LOG_INFO("[ServiceCellular] Cleaning resources");
+    if (cmux != nullptr) {
+        delete cmux;
+    }
 }
 
 void ServiceCellular::CallStateTimerHandler()
@@ -150,6 +155,10 @@ void ServiceCellular::TickHandler(uint32_t id)
 {
     if (id == callStateTimerId) {
         CallStateTimerHandler();
+    }
+    else if (id == stateTimerId) {
+        LOG_INFO("State timer tick");
+        handleStateTimer();
     }
     else {
         LOG_ERROR("Unrecognized timer ID = %" PRIu32, id);
@@ -640,6 +649,9 @@ std::shared_ptr<CellularNotificationMessage> ServiceCellular::identifyNotificati
         else {
             LOG_ERROR("SIM ERROR");
             Store::GSM::get()->sim = Store::GSM::SIM::SIM_FAIL;
+        }
+        if ((str.find("NOT", ret) == std::string::npos) && (str.find("READY", ret) != std::string::npos)) {
+            return std::make_shared<CellularNotificationMessage>(CellularNotificationMessage::Type::SIM);
         }
         auto message = std::make_shared<sevm::SIMMessage>();
         sys::Bus::SendUnicast(message, service::name::evt_manager, this);
@@ -1181,7 +1193,7 @@ bool ServiceCellular::handle_sim_init()
     for (auto command : commands) {
         if (!channel->cmd(command)) {
             LOG_ERROR("SIM initialization failure!");
-            // return false;
+            return false;
         }
     }
 
@@ -1265,4 +1277,25 @@ bool ServiceCellular::handle_power_up_in_progress_procedure(void)
 {
 
     return true;
+}
+void ServiceCellular::startStateTimer(uint32_t timeout)
+{
+    stateTimeout = timeout;
+    ReloadTimer(stateTimerId);
+}
+
+void ServiceCellular::stopStateTimer()
+{
+    stateTimeout = 0;
+    stopTimer(stateTimerId);
+}
+
+void ServiceCellular::handleStateTimer(void)
+{
+    stateTimeout--;
+    if (stateTimeout == 0) {
+        stopStateTimer();
+        LOG_FATAL("State %s timeout occured!", state.c_str(state.get()));
+        state.set(this, cellular::State::ST::ModemFatalFailure);
+    }
 }

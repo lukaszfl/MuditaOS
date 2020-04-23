@@ -515,3 +515,8 @@ void TS0710::TurnOnModem(void)
 {
     return pv_cellular->PowerUp();
 }
+
+void TS0710::ResetModem(void)
+{
+    return pv_cellular->Restart();
+}

@@ -75,6 +75,7 @@ class ServiceCellular : public sys::Service
     std::unique_ptr<TS0710> cmux = std::make_unique<TS0710>(PortSpeed_e::PS460800, this);
     // used for polling for call state
     uint32_t callStateTimerId = 0;
+    uint32_t stateTimerId     = 0;
     void CallStateTimerHandler();
     DLC_channel::Callback_t notificationCallback = nullptr;
 
@@ -92,7 +93,6 @@ class ServiceCellular : public sys::Service
 
     /// @defgroup state_handlers     all functions on State::ST:: change requests
     /// @{
-
     /// idle handler
     bool handle_idle();
     /// cellular power up procedure
@@ -124,6 +124,11 @@ class ServiceCellular : public sys::Service
 
     bool SetScanMode(std::string mode);
     std::string GetScanMode(void);
+
+    uint32_t stateTimeout = 0;
+    void startStateTimer(uint32_t timeout);
+    void stopStateTimer(void);
+    void handleStateTimer(void);
 };
 
 #endif // PUREPHONE_SERVICECELLULAR_HPP

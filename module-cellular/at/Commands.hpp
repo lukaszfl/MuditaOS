@@ -122,7 +122,7 @@ namespace at
             {AT::AT_PIN_READY_LOGIC, {"AT+QCFG=\"apready\",1,1,200\r"}},
             {AT::URC_NOTIF_SIGNAL, {"AT+QINDCFG=\"csq\",1\r"}},
             {AT::CRC_ON, {"AT+CRC=1\r"}},
-            {AT::CALLER_NUMBER_PRESENTATION, {"AT+CLIP=1\r", 15000}},
+            {AT::CALLER_NUMBER_PRESENTATION, {"AT+CLIP=1\r", 18000}},
             {AT::SMS_TEXT_FORMAT, {"AT+CMGF=1\r"}},
             {AT::SMS_UCSC2, {"AT+CSCS=\"UCS2\"\r"}},
             {AT::SMS_STORAGE, {"AT+CPMS=\"SM\",\"SM\",\"SM\"\r"}},
