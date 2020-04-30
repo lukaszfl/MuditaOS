@@ -20,12 +20,13 @@
 
 class MuxDaemon;
 
-namespace callular
+namespace cellular
 {
 
-    enum class BoardType
+    enum class Board
     {
         none,
+        Linux,
         T3,
         T4
     };
@@ -80,6 +81,7 @@ class ServiceCellular : public sys::Service
     DLC_channel::Callback_t notificationCallback = nullptr;
 
     cellular::State state;
+    cellular::Board board = cellular::Board::none;
 
     /// URC GSM notification handler
     std::shared_ptr<CellularNotificationMessage> identifyNotification(const std::vector<uint8_t> &data);

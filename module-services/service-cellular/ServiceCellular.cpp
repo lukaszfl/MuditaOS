@@ -169,15 +169,27 @@ void ServiceCellular::TickHandler(uint32_t id)
 
 sys::ReturnCodes ServiceCellular::InitHandler()
 {
+#if defined(TARGET_Linux)
+    board = cellular::Board::Linux;
+#else
     bool dev = EventServiceAPI::GetHwPlatform(this);
 
     LOG_INFO("Hardware platform: %s", dev ? "T4" : "T3");
-    if (dev) {
-
+    board = dev ? cellular::Board::T4 : cellular::Board::T3;
+#endif
+    switch (board) {
+    case cellular::Board::T4:
         state.set(this, State::ST::StatusCheck);
-    }
-    else {
+        break;
+    case cellular::Board::T3:
         state.set(this, State::ST::PowerUpProcedure);
+        break;
+    case cellular::Board::Linux:
+        state.set(this, State::ST::PowerUpProcedure);
+        break;
+    default:
+        return sys::ReturnCodes::Failure;
+        break;
     }
     return sys::ReturnCodes::Success;
 }
@@ -366,7 +378,9 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
                 break;
             }
             case CellularNotificationMessage::Type::PowerUpProcedureComplete: {
-                state.set(this, State::ST::CellularConfProcedure);
+                if (board == Board::T3 || board == Board::Linux) {
+                    state.set(this, State::ST::CellularConfProcedure);
+                }
                 break;
             }
             case CellularNotificationMessage::Type::NewIncomingSMS: {
@@ -612,6 +626,11 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
         }
         break;
     }
+case MessageType::EVMModemStatus: {
+        if (state.get() == State::ST::PowerUpInProgress && board == Board::T4) {
+            state.set(this, State::ST::CellularConfProcedure);
+        }
+        break;
     default:
         break;
     }
@@ -1217,10 +1236,15 @@ bool ServiceCellular::handle_failure()
 
 bool ServiceCellular::handle_fatal_failure()
 {
-    LOG_FATAL("Await for death!");
-    while (true) {
-        vTaskDelay(500);
-    }
+    delete cmux;
+    cmux = new TS0710(PortSpeed_e::PS460800, this);
+    cmux->ResetModem();
+    state.set(this, State::ST::PowerUpInProgress);
+    //    LOG_FATAL("Await for death!");
+    //    while (true) {
+    //        vTaskDelay(500);
+    //    }
+    return true;
 }
 
 bool ServiceCellular::SetScanMode(std::string mode)
