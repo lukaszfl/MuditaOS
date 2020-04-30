@@ -140,9 +140,9 @@ ServiceCellular::~ServiceCellular()
 {
 
     LOG_INFO("[ServiceCellular] Cleaning resources");
-    if (cmux != nullptr) {
-        delete cmux;
-    }
+    //    if (cmux != nullptr) {
+    //        delete cmux;
+    //    }
 }
 
 void ServiceCellular::CallStateTimerHandler()
@@ -626,7 +626,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
         }
         break;
     }
-case MessageType::EVMModemStatus: {
+    case MessageType::EVMModemStatus: {
         if (state.get() == State::ST::PowerUpInProgress && board == Board::T4) {
             state.set(this, State::ST::CellularConfProcedure);
         }
@@ -635,14 +635,13 @@ case MessageType::EVMModemStatus: {
         break;
     }
 
-    if (responseMsg == nullptr) {
-        LOG_DEBUG("message not handled: %d, %d", static_cast<int>(msgl->type), static_cast<int>(msgl->messageType));
-        responseMsg = std::make_shared<CellularResponseMessage>(false);
+        if (responseMsg == nullptr) {
+            LOG_DEBUG("message not handled: %d, %d", static_cast<int>(msgl->type), static_cast<int>(msgl->messageType));
+            responseMsg = std::make_shared<CellularResponseMessage>(false);
+        }
     }
-
     return responseMsg;
 }
-
 namespace
 {
     bool isAbortCallNotification(const std::string &str)
@@ -1236,14 +1235,10 @@ bool ServiceCellular::handle_failure()
 
 bool ServiceCellular::handle_fatal_failure()
 {
-    delete cmux;
-    cmux = new TS0710(PortSpeed_e::PS460800, this);
-    cmux->ResetModem();
-    state.set(this, State::ST::PowerUpInProgress);
-    //    LOG_FATAL("Await for death!");
-    //    while (true) {
-    //        vTaskDelay(500);
-    //    }
+    LOG_FATAL("Await for death!");
+    while (true) {
+        vTaskDelay(500);
+    }
     return true;
 }
 
