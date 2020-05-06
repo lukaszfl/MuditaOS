@@ -122,7 +122,7 @@ TS0710::ConfState TS0710::BaudDetectProcedure()
             frame.data.push_back(0x01);
             pv_cellular->Write((void *)frame.serialize().data(), frame.serialize().size());
 
-            pv_cellular->InformModemHostWakeup();
+//            pv_cellular->InformModemHostWakeup();
             // GSM module needs some time to close multiplexer
             vTaskDelay(1000);
             if (parser->cmd(at::AT::AT)) {
@@ -156,7 +156,7 @@ TS0710::ConfState TS0710::BaudDetectProcedure()
             frame.data.push_back(0x01);
             pv_cellular->Write((void *)frame.serialize().data(), frame.serialize().size());
 
-            pv_cellular->InformModemHostWakeup();
+//            pv_cellular->InformModemHostWakeup();
             // GSM module needs some time to close multiplexer
             vTaskDelay(1000);
             if (parser->cmd(at::AT::AT)) {
@@ -179,7 +179,7 @@ TS0710::ConfState TS0710::PowerUpProcedure()
     pv_cellular->InformModemHostAsleep();
     auto ret = BaudDetectProcedure();
     // enable urc
-    pv_cellular->InformModemHostWakeup();
+//    pv_cellular->InformModemHostWakeup();
 
     if (ret != ConfState::Success) {
         LOG_INFO("6. Starting power up procedure...");

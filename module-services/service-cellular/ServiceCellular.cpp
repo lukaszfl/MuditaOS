@@ -628,12 +628,13 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
     }
     case MessageType::EVMModemStatus: {
         if (state.get() == State::ST::PowerUpInProgress && board == Board::T4) {
-            state.set(this, State::ST::CellularConfProcedure);
+            vTaskDelay(pdMS_TO_TICKS(8000)); // wait for modem to be really read
+            state.set(this, State::ST::PowerUpProcedure); // and go to baud detect as usual
         }
         break;
+    }
     default:
         break;
-    }
 
         if (responseMsg == nullptr) {
             LOG_DEBUG("message not handled: %d, %d", static_cast<int>(msgl->type), static_cast<int>(msgl->messageType));
