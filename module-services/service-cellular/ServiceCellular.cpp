@@ -229,7 +229,7 @@ void ServiceCellular::change_state(cellular::StateChange *msg)
             handle_status_check();
             break;
         case State::ST::PowerUpInProgress:
-
+            handle_power_up_in_progress_procedure();
             break;
         case State::ST::PowerUpProcedure:
             handle_power_up_procedure();
@@ -275,7 +275,7 @@ bool ServiceCellular::handle_power_up_procedure()
         return true;
     }
     else if (ret == TS0710::ConfState::PowerUp) {
-        state.set(this, State::ST::Idle);
+        state.set(this, State::ST::PowerUpInProgress);
         return true;
     }
     state.set(this, State::ST::Failed);
@@ -1303,7 +1303,15 @@ bool ServiceCellular::handle_status_check(void)
 
 bool ServiceCellular::handle_power_up_in_progress_procedure(void)
 {
-
+    if (board == Board::T3) {
+        while (true) {
+            auto ret = cmux->BaudDetectProcedure();
+            if (ret == TS0710::ConfState::Success) {
+                state.set(this, cellular::State::ST::CellularConfProcedure);
+                return true;
+            }
+        }
+    }
     return true;
 }
 void ServiceCellular::startStateTimer(uint32_t timeout)
