@@ -53,7 +53,7 @@ namespace sys
 
         while (state == State::Shutdown) {
             // check if we are discharging - if so -> shutdown
-            if (Store::Battery::get().state == Store::Battery::State::Discharging) {
+            if (Store::Battery::get().state == Store::Battery::State::Unplugged) {
                 set(State::ShutdownReady);
             }
             else {

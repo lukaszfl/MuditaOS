@@ -13,9 +13,9 @@ namespace Store
     {
         enum class State
         {
-            Discharging,
-            Charging,
-        } state            = State::Discharging;
+            Unplugged,
+            Plugged,
+        } state            = State::Unplugged;
         unsigned int level = 0;
 
         static const Battery &get();
@@ -29,7 +29,6 @@ namespace Store
         two   = 2,
         three = 3,
         four  = 4,
-        five  = 5,
         noOfSupprtedBars
     };
 

@@ -56,10 +56,16 @@ namespace gui
 
       protected:
         Label *timeLabel;
+
         Image *signal[static_cast<size_t>(Store::RssiBar::noOfSupprtedBars)];
+
         Image *lock;
+
         std::array<Image *, batteryLevelCount> battery = {nullptr};
         Label *charging                                = nullptr;
+        Image* batteryPluggedFull = nullptr;
+        Image* batteryPluggedCharging = nullptr;
+
         gui::SIM *sim                                  = nullptr;
         void prepareWidget();
         static TimeMode timeMode;
@@ -100,7 +106,7 @@ namespace gui
          */
         bool setBatteryLevel(uint32_t percent);
 
-        void setBatteryCharging(bool plugged);
+        void setChargerPlugged(bool plugged);
 
         /**
          * @brief updates signal strength. This will cause appropriate image to be displayed.

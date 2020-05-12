@@ -9,7 +9,10 @@
 #define MODULE_BSP_BSP_BATTERY_CHARGER_BATTERY_CHARGER_HPP_
 
 namespace bsp{
-
+    namespace battery
+    {
+        const uint8_t fullPercent = 100; // should be in sync with charger's "fully charged" messages
+    }
 	enum class batteryChargerRegisters{
 		TOP_CONTROLL_PMIC_ID_REG = 0x20,
 		TOP_CONTROLL_PMIC_VER_REG = 0x21,
@@ -47,7 +50,7 @@ namespace bsp{
 		MaxMinVolt_REG = 0x1B,
 		MaxMinCurr_REG = 0x1C,
 		CONFIG_REG = 0x1D,
-		CONFIG2_REG = 0xBB,
+        Charger_CONFIG_4_REG = 0xBB,
 		ICHGTERM_REG = 0x1E,
 		AvCap_REG = 0x1F,
 
@@ -106,7 +109,7 @@ namespace bsp{
 
 	void battery_getBatteryLevel(uint8_t& levelPercent);
 
-	void battery_getChargeStatus( bool& status);
+	void battery_getPluggedStatus( bool&plugged);
 
 	void battery_ClearAllIRQs(void);
 

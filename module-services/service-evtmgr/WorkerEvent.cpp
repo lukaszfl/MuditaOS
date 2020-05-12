@@ -70,12 +70,12 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
             bsp::battery_ClearAllIRQs();
             auto message           = std::make_shared<sevm::BatteryLevelMessage>();
             message->levelPercents = battLevel;
-            message->fullyCharged  = false;
+            message->fullyCharged  = (battLevel == bsp::battery::fullPercent); // we could use DONE state from the charger
             sys::Bus::SendUnicast(message, service::name::evt_manager, this->service);
         }
         if (notification & static_cast<uint8_t>(bsp::batteryIRQSource::INOKB)) {
             bool status;
-            bsp::battery_getChargeStatus(status);
+            bsp::battery_getPluggedStatus(status);
             bsp::battery_ClearAllIRQs();
             auto message     = std::make_shared<sevm::BatteryPlugMessage>();
             message->plugged = status;

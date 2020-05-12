@@ -28,7 +28,6 @@ static xQueueHandle qHandleIrq            = NULL;
 static TaskHandle_t battery_worker_handle = NULL;
 
 static uint8_t battLevel = 100;
-static bool plugged      = false;
 namespace bsp
 {
 
@@ -55,9 +54,9 @@ namespace bsp
         Store::Battery::modify().level = battLevel;
     }
 
-    void battery_getChargeStatus(bool &status)
+    void battery_getPluggedStatus(bool &status)
     {
-        status = plugged;
+        status = Store::Battery::get().state == Store::Battery::State::Plugged;
     }
 
     // TODO function unused in linux driver, left for compatibility with target driver
@@ -90,7 +89,12 @@ namespace bsp
                 switch (buff[0]) {
                 case 'p':
                     notification = 0x02;
-                    plugged      = 1 - plugged;
+                    if(Store::Battery::get().state == Store::Battery::State::Plugged){
+                        Store::Battery::modify().state = Store::Battery::State::Unplugged;
+                    }
+                    else{
+                        Store::Battery::modify().state = Store::Battery::State::Plugged;
+                    }
                     break;
                 case ']':
                     notification = 0x01;

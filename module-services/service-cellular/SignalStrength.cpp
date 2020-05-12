@@ -31,9 +31,9 @@ Store::RssiBar SignalStrength::rssidBmToBar(const int rssidBm)
     if (rssidBm == rssidBm_invalid) {
         return RssiBar::zero;
     }
-    else if (rssidBm >= rssidBm_five_bar_margin) {
-        return RssiBar::five;
-    }
+//    else if (rssidBm >= rssidBm_five_bar_margin) {
+//        return RssiBar::five;
+//    }
     else if (rssidBm >= rssidBm_four_bar_margin) {
         return RssiBar::four;
     }

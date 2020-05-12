@@ -57,9 +57,9 @@ namespace gui
         topBar->setActive(TopBar::Elements::SIGNAL, false);
     }
 
-    bool AppWindow::batteryCharging(bool charging)
+    bool AppWindow::batteryChargerPlugged(bool plugged)
     {
-        topBar->setBatteryCharging(charging);
+        topBar->setChargerPlugged(plugged);
         return true;
     }
 

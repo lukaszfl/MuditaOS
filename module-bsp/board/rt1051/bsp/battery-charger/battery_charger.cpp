@@ -164,7 +164,7 @@ namespace bsp
         uint8_t level = 0;
         bool charging = false;
         battery_getBatteryLevel(level);
-        battery_getChargeStatus(charging);
+        battery_getPluggedStatus(charging);
         LOG_INFO("Phone battery start state: %d %d", level, charging);
 
         battery_ClearAllIRQs();
@@ -199,19 +199,19 @@ namespace bsp
         Store::Battery::modify().level = levelPercent;
     }
 
-    void battery_getChargeStatus(bool &status)
+    void battery_getPluggedStatus(bool &plugged)
     {
         uint8_t val = 0;
         // read clears state
         if (battery_chargerRead(bsp::batteryChargerRegisters::CHG_INT_OK, &val) != kStatus_Success) {
             LOG_ERROR("failed to read charge status");
         }
-        status = val & B_CHG_INT::CHGIN_I;
-        if (status) {
-            Store::Battery::modify().state = Store::Battery::State::Charging;
+        plugged = val & B_CHG_INT::CHGIN_I; // meaning: VBUS is valid, charging is available
+        if (plugged) {
+            Store::Battery::modify().state = Store::Battery::State::Plugged;
         }
         else {
-            Store::Battery::modify().state = Store::Battery::State::Discharging;
+            Store::Battery::modify().state = Store::Battery::State::Unplugged;
         }
     }
 
@@ -480,7 +480,7 @@ static bsp::batteryRetval battery_enableFuelGuageIRQs(void)
     uint16_t regVal = 0;
     // set dSOCen bit
     regVal |= (1 << 7);
-    if (battery_fuelGaugeWrite(bsp::batteryChargerRegisters::CONFIG2_REG, regVal) != kStatus_Success) {
+    if (battery_fuelGaugeWrite(bsp::batteryChargerRegisters::Charger_CONFIG_4_REG, regVal) != kStatus_Success) {
         LOG_ERROR("battery_enableFuelGuageIRQs failed.");
         return bsp::batteryRetval::battery_ChargerError;
     }

@@ -13,6 +13,7 @@
 #include "Image.hpp"
 #include "TopBar.hpp"
 #include <time/time_conversion.hpp>
+#include <module-bsp/bsp/battery-charger/battery_charger.hpp>
 #include "Style.hpp"
 
 #include "common_data/EventStore.hpp"
@@ -63,24 +64,27 @@ namespace gui
     void TopBar::prepareWidget()
     {
 
-        signal[0] = new gui::Image(this, signalOffset, 17, 0, 0, "signal0");
-        signal[1] = new gui::Image(this, signalOffset, 17, 0, 0, "signal1");
-        signal[2] = new gui::Image(this, signalOffset, 17, 0, 0, "signal2");
-        signal[3] = new gui::Image(this, signalOffset, 17, 0, 0, "signal3");
-        signal[4] = new gui::Image(this, signalOffset, 17, 0, 0, "signal4");
+        signal[0] = new gui::Image(this, signalOffset, 17, 0, 0, "signal0_W_G");
+        signal[1] = new gui::Image(this, signalOffset, 17, 0, 0, "signal1_W_G");
+        signal[2] = new gui::Image(this, signalOffset, 17, 0, 0, "signal2_W_G");
+        signal[3] = new gui::Image(this, signalOffset, 17, 0, 0, "signal3_W_G");
+        signal[4] = new gui::Image(this, signalOffset, 17, 0, 0, "signal4_W_G");
         signal[5] = new gui::Image(this, signalOffset, 17, 0, 0, "signal5");
         updateSignalStrength();
 
         // icons for battery
         battery = {
-            new gui::Image(this, batteryOffset, 15, 0, 0, "battery0"),
-            new gui::Image(this, batteryOffset, 15, 0, 0, "battery1"),
-            new gui::Image(this, batteryOffset, 15, 0, 0, "battery2"),
-            new gui::Image(this, batteryOffset, 15, 0, 0, "battery3"),
-            new gui::Image(this, batteryOffset, 15, 0, 0, "battery4"),
-            new gui::Image(this, batteryOffset, 15, 0, 0, "battery5"),
+            new gui::Image(this, batteryOffset, 15, 0, 0, "battery0_W_G"),
+            new gui::Image(this, batteryOffset, 15, 0, 0, "battery1_W_G"),
+            new gui::Image(this, batteryOffset, 15, 0, 0, "battery2_W_G"),
+            new gui::Image(this, batteryOffset, 15, 0, 0, "battery3_W_G"),
+            new gui::Image(this, batteryOffset, 15, 0, 0, "battery4_W_G"),
+            new gui::Image(this, batteryOffset, 15, 0, 0, "battery5_W_G"),
         };
         batteryShowBars(0);
+
+        batteryPluggedCharging = new gui::Image(this, batteryOffset, 15, 0,0, "battery_plugged_charging_W_G");
+        batteryPluggedFull = new gui::Image(this, batteryOffset, 15, 0,0, "battery_plugged_full_W_G");
 
         charging = new Label(this, batteryOffset, 15, 30, this->drawArea.h);
         charging->setFilled(false);
@@ -93,7 +97,7 @@ namespace gui
         sim                          = new SIM(this, design_sim_offset, 12);
 
         // icon of the lock
-        lock = new gui::Image(this, 240 - 11, 17, 0, 0, "lock");
+        lock = new gui::Image(this, 240 - 11, 17, 0, 0, "lock_W_G");
 
         // time label
         timeLabel = new Label(this, 0, 0, 480, this->drawArea.h);
@@ -117,12 +121,12 @@ namespace gui
         switch (element) {
         case Elements::BATTERY: {
             elements.battery = active;
-            if (Store::Battery::get().state == Store::Battery::State::Discharging) {
+            if (Store::Battery::get().state == Store::Battery::State::Unplugged) {
                 setBatteryLevel(active ? Store::Battery::get().level : 0);
             }
             else {
                 if (active) {
-                    setBatteryCharging(true);
+                    setChargerPlugged(true);
                 }
                 else {
                     charging->setVisible(false);
@@ -156,15 +160,15 @@ namespace gui
     uint32_t calculateBatteryLavel(uint32_t percentage)
     {
         uint32_t level = 0;
-        if (percentage <= 5)
+        if (percentage <= 2)
             level = 0;
-        else if (percentage <= 27)
+        else if (percentage <= 20)
             level = 1;
-        else if (percentage <= 50)
+        else if (percentage <= 40)
             level = 2;
-        else if (percentage <= 73)
+        else if (percentage <= 60)
             level = 3;
-        else if (percentage <= 95)
+        else if (percentage <= 80)
             level = 4;
         else
             level = 5;
@@ -178,27 +182,33 @@ namespace gui
 
     bool TopBar::setBatteryLevel(uint32_t percent)
     {
-        if (Store::Battery::get().state != Store::Battery::State::Discharging) {
-            return false;
+        if (Store::Battery::get().state == Store::Battery::State::Plugged) {
+            setChargerPlugged(Store::Battery::get().state == Store::Battery::State::Plugged);
+            return true;
         }
-        charging->setVisible(false);
         batteryShowBars(calculateBatteryLavel(percent));
         return true;
     }
 
-    void TopBar::setBatteryCharging(bool plugged)
+    void TopBar::setChargerPlugged(bool plugged)
     {
         if (plugged) {
-            batteryShowBars(0);
-        }
-        if (charging == nullptr)
-            return;
-        if (plugged) {
-            charging->setVisible(true);
-            batteryShowBars(0);
+            for (unsigned int i = 0; i < battery.size(); ++i) {
+                battery[i]->setVisible(false);
+            }
+            bool batteryFull = Store::Battery::get().level >= bsp::battery::fullPercent;
+            if (batteryFull){
+                batteryPluggedCharging->setVisible(false);
+                batteryPluggedFull->setVisible(true);
+            }
+            else{
+                batteryPluggedFull->setVisible(false);
+                batteryPluggedCharging->setVisible(true);
+            }
         }
         else {
-            charging->setVisible(false);
+            batteryPluggedCharging->setVisible(false);
+            batteryPluggedFull->setVisible(false);
             setBatteryLevel(Store::Battery::get().level);
         }
     }

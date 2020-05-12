@@ -146,8 +146,8 @@ namespace app
         // send drawing commands only when if application is in active and visible.
         if (state == State::ACTIVE_FORGROUND) {
             auto currwin = getCurrentWindow();
-            if (Store::Battery::get().state == Store::Battery::State::Charging) {
-                currwin->batteryCharging(true);
+            if (Store::Battery::get().state == Store::Battery::State::Plugged) {
+                currwin->batteryChargerPlugged(true);
             }
             else {
                 currwin->updateBatteryLevel(Store::Battery::get().level);
@@ -274,7 +274,7 @@ namespace app
     sys::Message_t Application::handleSignalStrengthUpdate(sys::DataMessage *msgl)
     {
         if ((state == State::ACTIVE_FORGROUND) && getCurrentWindow()->updateSignalStrength()) {
-            refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+            refreshWindow(gui::RefreshModes::GUI_REFRESH_DEEP);
         }
         return msgHandled();
     }
@@ -307,7 +307,7 @@ namespace app
         LOG_INFO("Application battery level: %d", msg->levelPercents);
 
         if (getCurrentWindow()->updateBatteryLevel(msg->levelPercents)) {
-            refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+            refreshWindow(gui::RefreshModes::GUI_REFRESH_DEEP);
         }
         return msgHandled();
     }
@@ -317,16 +317,13 @@ namespace app
         auto *msg = static_cast<sevm::BatteryPlugMessage *>(msgl);
         if (msg->plugged == true) {
             LOG_INFO("Application charger connected");
-            getCurrentWindow()->batteryCharging(true);
-            refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+            getCurrentWindow()->batteryChargerPlugged(true);
         }
         else {
             LOG_INFO("Application charger disconnected");
-            getCurrentWindow()->batteryCharging(false);
-            refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+            getCurrentWindow()->batteryChargerPlugged(false);
         }
-
-        refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+        refreshWindow(gui::RefreshModes::GUI_REFRESH_DEEP);
         return msgHandled();
     }
 
@@ -476,7 +473,7 @@ namespace app
     sys::Message_t Application::handleSIMMessage(sys::DataMessage *msgl)
     {
         getCurrentWindow()->setSIM();
-        refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+        refreshWindow(gui::RefreshModes::GUI_REFRESH_DEEP);
         return msgHandled();
     }
 
