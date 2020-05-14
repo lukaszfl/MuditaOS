@@ -289,7 +289,7 @@ namespace gui
         }
 
         if ((start >= str.length()) || (start + count - 1 >= str.length())) {
-            LOG_ERROR("incorrect string index provided");
+            LOG_ERROR("incorrect string index provided: %d >= %d , count: %d", start, str.length(), count);
             return 0;
         }
 
@@ -545,6 +545,12 @@ namespace gui
         static FontManager instance;
 
         return instance;
+    }
+
+    Font *FontManager::getFont(const std::string &name)
+    {
+        uint32_t id = getFontID(name);
+        return getFont(id);
     }
 
     Font *FontManager::getFont(uint32_t id)

@@ -182,15 +182,12 @@ namespace gui
         int16_t ty;
         int16_t tw;
         int16_t th;
-        uint16_t charsWidth; // number of visible pixels calculated
         UTF8 str;
         uint8_t fontID;
 
         Color color;
 
-        CommandText()
-            : x{0}, y{0}, w{0}, h{0}, tx{0}, ty{0}, tw{0}, th{0}, charsWidth{0}, str{""}, fontID{0},
-              color(ColorFullBlack)
+        CommandText() : x{0}, y{0}, w{0}, h{0}, tx{0}, ty{0}, tw{0}, th{0}, str{""}, fontID{0}, color(ColorFullBlack)
         {
             id = DrawCommandID::GUI_DRAW_TEXT;
         }

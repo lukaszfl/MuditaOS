@@ -6,7 +6,6 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/Image.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/Item.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/Label.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/ListItem.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/ListView.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/Margins.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/Navigation.cpp"
@@ -24,6 +23,7 @@ target_sources( ${PROJECT_NAME}
         "${CMAKE_CURRENT_LIST_DIR}/GridLayout.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/ListView_old.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/ListItemProvider_old.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/RawText.cpp"
 	PUBLIC
 		"${CMAKE_CURRENT_LIST_DIR}/Alignment.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/BottomBar.hpp"
