@@ -419,6 +419,7 @@ namespace gui
             case db::Query::Type::Update:
             case db::Query::Type::Delete:
                 // refresh view in place (current page)
+                // =^.^= →→→→ TUTAJ
                 addSMS(ThreadViewWindow::Action::Refresh);
                 break;
             case db::Query::Type::Read:
