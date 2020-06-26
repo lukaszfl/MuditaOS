@@ -43,8 +43,7 @@ namespace app
             auto msg = dynamic_cast<db::NotificationMessage *>(msgl);
             LOG_DEBUG("Received multicast");
             if (msg != nullptr) {
-                if ((msg->interface == db::Interface::Name::SMS) ||
-                    (msg->interface == db::Interface::Name::SMSThread)) {
+                if (msg->interface == db::Interface::Name::SMS) {
 
                     this->windows[gui::name::window::main_window]->rebuild();
                     // de facto parameterized rebuild
@@ -57,6 +56,16 @@ namespace app
 
                     return std::make_shared<sys::ResponseMessage>();
                 }
+                if (msg->interface == db::Interface::Name::SMSThread) {
+                    this->windows[gui::name::window::main_window]->rebuild();
+
+                    if (getCurrentWindow() == windows[gui::name::window::thread_view]){
+                        // if thread has just dissapeared but we are still in thread view → …RUN AWAY
+                        returnToPreviousWindow();
+                    }
+                    return std::make_shared<sys::ResponseMessage>();
+                }
+
                 if (windows[gui::name::window::thread_view]->onDatabaseMessage(msg)) {
                     if (getCurrentWindow() == windows[gui::name::window::thread_view]) {
                         refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
