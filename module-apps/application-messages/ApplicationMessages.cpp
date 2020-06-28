@@ -59,9 +59,9 @@ namespace app
                 if (msg->interface == db::Interface::Name::SMSThread) {
                     this->windows[gui::name::window::main_window]->rebuild();
 
-                    if (getCurrentWindow() == windows[gui::name::window::thread_view]){
-                        // if thread has just dissapeared but we are still in thread view → …RUN AWAY
-                        returnToPreviousWindow();
+                    if (getCurrentWindow() != windows[gui::name::window::main_window]) {
+                        // if thread has just dissapeared and we are not in converstaions (threads) view, then…
+                        this->switchWindow(gui::name::window::main_window, nullptr);
                     }
                     return std::make_shared<sys::ResponseMessage>();
                 }
@@ -178,7 +178,7 @@ namespace app
 
         auto meta   = dialog->meta;
         meta.action = [=]() -> bool {
-            if (!DBServiceAPI::SMSRemove(this, record.ID)) {
+            if (!DBServiceAPI::SMSRemove(this, record)) {
                 LOG_ERROR("sSMSRemove id=%" PRIu32 " failed", record.ID);
                 return false;
             }
