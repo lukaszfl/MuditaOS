@@ -3,12 +3,13 @@
 #include <list>
 #include "Common.hpp"
 #include "Label.hpp"
-#include "TextDocument.hpp"
 
 namespace gui
 {
 
-    /// interface element for TextDocument->getLine() <-- Text
+    class TextCursor;
+
+    /// interface element for TextCursor <-- Text
     class TextLine
     {
         unsigned int number_letters_shown = 0;
@@ -17,9 +18,8 @@ namespace gui
         std::list<Label *> elements_to_show_in_line;
 
       public:
-        /// creates TextLine with data from text from start position in `TextDocument` filling max_width
-        /// @note might be better to have TextBlockIterator which could hop through TextBlock inside TextDocument
-        TextLine(TextDocument *, unsigned int start_position, unsigned int max_width);
+        /// creates TextLine with data from TextCursor in max_width
+        TextLine(TextCursor &cursor, unsigned int max_width);
         ~TextLine();
         TextLine(TextLine &) = delete;
         TextLine(TextLine &&);

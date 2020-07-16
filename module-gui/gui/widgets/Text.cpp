@@ -253,7 +253,7 @@ namespace gui
         }
         debug_text("len: %d font: %s",
                    block->length(),
-                   block->getFont() == nullptr ? "no font" : block->getFont()->getName().c_str());
+                   block->getFormat()->isValid() ? "no format" : "font format loaded");
         return true;
     }
 
@@ -280,14 +280,15 @@ namespace gui
         uint32_t w           = sizeMinusPadding(Axis::X);
         uint32_t h           = sizeMinusPadding(Axis::Y);
         auto line_y_position = padding.top;
-        auto cursor          = 0;
 
-        debug_text("--> START drawLines: {%" PRIu32 ", %" PRIu32 "}", w, h);
+        auto draw_cursor = *cursor;
+        draw_cursor.setToStart();
+        debug_text("--> START drawLines: {%" PRIu32 ", %" PRIu32 "}, cursor: %s", w, h, draw_cursor.str().c_str());
 
         auto line_x_position = padding.left;
         do {
-            auto text_line = gui::TextLine(document.get(), cursor, w);
-            cursor += text_line.length();
+            auto text_line = TextLine(draw_cursor, w);
+            draw_cursor += text_line.length();
 
             if (text_line.length() == 0) {
                 debug_text("cant show more text from this document");
@@ -313,20 +314,20 @@ namespace gui
 
             line_y_position += line.height();
 
-            debug_text_lines("debug text drawing: \n start cursor: %d line length: %d end cursor %d : document length "
-                             "%d \n x: %d, y: %d \n%s",
-                             cursor - lines.last().length(),
+            debug_text_lines("debug text drawing: start cursor: %d line length: %d end cursor %d : document length "
+                             "%d \n x: %d, y: %d", //"\n%s",
+                             cursor->getPosOnScreen() - lines.last().length(),
                              lines.last().length(),
-                             cursor,
+                             cursor->getPosOnScreen(),
                              document->getText().length(),
                              line_x_position,
-                             line_y_position,
-                             [&]() -> std::string {
-                                 std::string text = document->getText();
-                                 return std::string(text.begin() + cursor - lines.last().length(),
-                                                    text.begin() + cursor);
-                             }()
-                                          .c_str());
+                             line_y_position);
+//                             [&]() -> std::string {
+//                                 std::string text = document->getText();
+//                                 return std::string(text.begin() + cursor->getPosOnScreen() - lines.last().length(),
+//                                                    text.begin() + cursor->getPosOnScreen());
+//                             }()
+//                                          .c_str());
         } while (true);
 
         // silly case resize - there request space and all is nice

@@ -2,9 +2,10 @@
 #include "Common.hpp"
 #include "Label.hpp"
 #include "TextBlock.hpp"
-#include "TextDocument.hpp"
 #include <cstdio>
 #include <RawFont.hpp>
+#include "TextCursor.hpp"
+#include "log/log.hpp"
 
 namespace gui
 {
@@ -23,50 +24,68 @@ namespace gui
 
     /// Note - line breaking could be done here with different TextLines to return
     /// or via different block types (i.e. numeric block tyle could be not "breakable"
-    TextLine::TextLine(TextDocument *document, unsigned int start_position, unsigned int max_width)
+    TextLine::TextLine(TextCursor &cursor, unsigned int max_width)
     {
-        if (document == nullptr) {
-            return;
-        }
-        auto cursor     = document->getBlockCursor(start_position);
-        auto old_cursor = cursor;
+        LOG_DEBUG("TextLine");
+        auto local_cursor = cursor;
+        LOG_DEBUG("Draw line from cursor: %s", local_cursor.str().c_str());
+        int i =0;
         do {
-            if (!cursor) { // cursor is faulty
-                return;
-            }
-            // it would be better if cursor would know what to do when it jumps over blocks
-            if (old_cursor.getBlockNr() != cursor.getBlockNr() &&
-                (*document)(old_cursor).getEnd() == TextBlock::End::Newline) {
+            LOG_DEBUG("+ + + + + + + + + + pass %d", i++);
+            if(!local_cursor) 
+            {
+                LOG_DEBUG("invalid local cursor");
                 return;
             }
 
-            // take Part of TextBlock we want to show
-            auto text_part = document->getTextPart(cursor);
-            auto text_format = (*cursor).getFormat();
-            if (text_format->getFont() == nullptr) {
+            if ( local_cursor.atEol()) 
+            {
+                LOG_DEBUG("reached end of line");
+                width_used = max_width;
                 return;
             }
-            auto can_show = text_format->getFont()->getCharCountInSpace(text_part.text, max_width - width_used);
 
-            // we can show nothing - this is the end of this line
+            if (local_cursor.atEnd()) {
+                LOG_DEBUG("document end reached");
+                return;
+            }
+
+            // get curent block format
+            auto text_format = local_cursor->getFormat();
+            if (text_format == nullptr || !text_format->isValid()) {
+                LOG_DEBUG("invalid text format");
+                return;
+            }
+
+            // get curent block text
+            std::string raw_text(local_cursor);
+            if( raw_text.length() == 0 )
+            {
+                LOG_DEBUG("no more text");
+                return;
+            }
+
+            LOG_INFO("Drawing: %s", raw_text.c_str());
+
+            // calculate how much can we show
+            auto can_show = text_format->getFont()->getCharCountInSpace(raw_text, max_width - width_used);
             if (can_show == 0) {
                 return;
             }
 
             // create item for show and update Line data
-            auto item = buildUITextPart(text_part.text.substr(0, can_show), text_format);
+            auto item = buildUITextPart(raw_text.substr(0, can_show), text_format);
             number_letters_shown += can_show;
             width_used += item->getTextNeedSpace();
             height_used = std::max(height_used, item->getTextHeight());
             elements_to_show_in_line.emplace_back(item);
 
             // not whole text shown, try again for next line if you want
-            if (can_show < text_part.text.length()) {
+            if (can_show < raw_text.length()) {
                 return;
             }
 
-            old_cursor = cursor;
-            cursor     = document->getBlockCursor(start_position + number_letters_shown);
+            local_cursor += number_letters_shown;
         } while (true);
     }
 

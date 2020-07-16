@@ -5,6 +5,7 @@
 #include "log/log.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
 #include <iterator>
 
 static const int last_char_inclusive = 0; // if then -1 / else 0
@@ -63,6 +64,14 @@ namespace gui
             return false;
         }
         return block_nr == document->blocks.size() - 1 && pos == document->blocks.back().length() + last_char_inclusive;
+    }
+
+    [[nodiscard]] auto BlockCursor::atEol() const -> bool
+    {
+        if (!checkDocument() || checkNpos()) {
+            return false;
+        }
+        return std::next(document->getBlocks().begin(), block_nr)->getText(pos) == std::string(text::newline,1);
     }
 
     auto BlockCursor::operator+=(unsigned int val) -> BlockCursor &
@@ -192,4 +201,25 @@ namespace gui
     {
         return *curentBlock();
     }
+
+    const TextBlock *BlockCursor::operator->()
+    {
+        return &*curentBlock();
+    }
+
+    BlockCursor::operator std::string()
+    {
+        if( curentBlock() == blocksEnd()) {
+            return "";
+        }
+        return curentBlock()->getText(getPosition());
+    }
+
 } // namespace gui
+
+std::string& operator<<(std::string &str, gui::BlockCursor &cursor)
+{
+    str += (*cursor).getText(cursor.getPosition());
+    LOG_DEBUG("- - - - - - - - - - %s",str.c_str());
+    return str;
+}

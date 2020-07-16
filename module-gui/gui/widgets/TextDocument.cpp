@@ -66,15 +66,6 @@ namespace gui
         return BlockCursor();
     }
 
-    TextPart TextDocument::getTextPart(BlockCursor cursor)
-    {
-        if (cursor) {
-            auto block = std::next(blocks.begin(), cursor.getBlockNr());
-            return TextPart(cursor, block->getText(cursor.getPosition()), block->getFormat()->getFont());
-        }
-        return TextPart();
-    }
-
     [[nodiscard]] const std::list<TextBlock> &TextDocument::getBlocks() const
     {
         return blocks;

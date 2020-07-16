@@ -9,17 +9,6 @@ namespace gui
 {
     class TextLine;
 
-    /// based on TextBlock - which is paragraph representation
-    struct TextPart
-    {
-        TextPart(BlockCursor cursor, UTF8 text, RawFont *font) : cursor(cursor), text(std::move(text)), font(font)
-        {}
-        TextPart() = default;
-        BlockCursor cursor;
-        UTF8 text;
-        RawFont *font = nullptr;
-    };
-
     class TextDocument
     {
         friend BlockCursor;
@@ -40,15 +29,11 @@ namespace gui
         /// --- in progress
         BlockCursor getBlockCursor(unsigned int position);
         /// get part of TextBlock based on cursor
-        TextPart getTextPart(BlockCursor cursor);
 
         /// needed for tests, alternatively could be mocked in test...
         [[nodiscard]] const std::list<TextBlock> &getBlocks() const;
         [[nodiscard]] const TextBlock *getBlock(BlockCursor *cursor) const;
 
-        /// note just for creating line for easy current block under cursor access
-        /// remove - use getTextPart instead?
-        /// or remove getTextPart and always use cursor...
         const TextBlock &operator()(const BlockCursor &cursor) const;
         void removeBlock(unsigned int block_nr);
         void removeBlock(std::list<TextBlock>::iterator it);

@@ -5,6 +5,7 @@
 #include "TextConstants.hpp"
 #include "TextDocument.hpp"
 #include <memory>
+#include <string>
 
 namespace gui
 {
@@ -57,6 +58,14 @@ namespace gui
         TextCursor &operator<<(const UTF8 &);
         TextCursor &operator<<(TextBlock);
         void removeChar();
+        [[nodiscard]] auto getPosOnScreen() const { return pos_on_screen; }
+        void setToStart() {
+            *this -= pos_on_screen; //TODO this doesn't move by block boundary
+        }
+        std::string str() const
+        {
+            return "pos: " + std::to_string(BlockCursor::getPosition()) + " block: " + std::to_string(getBlockNr());
+        }
     };
 } // namespace gui
 

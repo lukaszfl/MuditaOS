@@ -44,5 +44,10 @@ namespace gui
         {
             setter(this->color, color);
         }
+
+        bool isValid() const
+        {
+            return font != nullptr;
+        }
     };
 }; // namespace gui

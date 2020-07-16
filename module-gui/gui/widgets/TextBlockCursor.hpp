@@ -2,7 +2,8 @@
 
 #include "TextConstants.hpp"
 #include <cstdio>
-#include <stdint.h>
+#include <cstdint>
+#include <string>
 
 namespace gui
 {
@@ -61,6 +62,7 @@ namespace gui
         }
 
         [[nodiscard]] auto atEnd() const -> bool;
+        [[nodiscard]] auto atEol() const -> bool;
 
         operator bool() const
         {
@@ -76,5 +78,9 @@ namespace gui
         // return if handled ( this is not i.e. at begin/end)
         bool removeChar();
         const TextBlock &operator*();
+        const TextBlock *operator->();
+        operator std::string();
     };
 } // namespace gui
+
+std::string& operator<<(std::string &str, gui::BlockCursor &);
