@@ -35,7 +35,7 @@ namespace gui
             Error, /// error - now not implemented
         };
 
-        TextCursor(gui::Text *parent, gui::TextDocument *document);
+        TextCursor(gui::Text *parent);
         TextCursor() = delete;
 
         /// Up Down - end of line movement like in vi
@@ -60,11 +60,16 @@ namespace gui
         void removeChar();
         [[nodiscard]] auto getPosOnScreen() const { return pos_on_screen; }
         void setToStart() {
-            *this -= pos_on_screen; //TODO this doesn't move by block boundary
+            while (pos_on_screen != 0) 
+            {
+                move(NavigationDirection::LEFT); // TODO ... boundaries!
+            }
         }
         std::string str() const
         {
-            return "pos: " + std::to_string(BlockCursor::getPosition()) + " block: " + std::to_string(getBlockNr());
+            auto pos = BlockCursor::getPosition() == text::npos ? "text::npos" : std::to_string(BlockCursor::getPosition());
+            auto block = BlockCursor::getBlockNr() == text::npos ? "text::npos" : std::to_string(getBlockNr());
+            return "{ pos: " + pos + " ,block: " + block + " }";
         }
     };
 } // namespace gui

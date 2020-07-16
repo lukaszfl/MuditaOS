@@ -29,9 +29,7 @@ namespace gui
         LOG_DEBUG("TextLine");
         auto local_cursor = cursor;
         LOG_DEBUG("Draw line from cursor: %s", local_cursor.str().c_str());
-        int i =0;
         do {
-            LOG_DEBUG("+ + + + + + + + + + pass %d", i++);
             if(!local_cursor) 
             {
                 LOG_DEBUG("invalid local cursor");
@@ -50,6 +48,16 @@ namespace gui
                 return;
             }
 
+            // get curent block text
+            std::string raw_text(local_cursor);
+            if( raw_text.length() == 0 )
+            {
+                LOG_DEBUG("no more text in block");
+                ++local_cursor;
+                continue;
+            }
+
+
             // get curent block format
             auto text_format = local_cursor->getFormat();
             if (text_format == nullptr || !text_format->isValid()) {
@@ -57,15 +65,7 @@ namespace gui
                 return;
             }
 
-            // get curent block text
-            std::string raw_text(local_cursor);
-            if( raw_text.length() == 0 )
-            {
-                LOG_DEBUG("no more text");
-                return;
-            }
-
-            LOG_INFO("Drawing: %s", raw_text.c_str());
+            LOG_INFO("Drawing: >%s<", raw_text.c_str());
 
             // calculate how much can we show
             auto can_show = text_format->getFont()->getCharCountInSpace(raw_text, max_width - width_used);
@@ -85,7 +85,7 @@ namespace gui
                 return;
             }
 
-            local_cursor += number_letters_shown;
+            local_cursor += can_show;
         } while (true);
     }
 

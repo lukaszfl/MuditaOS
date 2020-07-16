@@ -80,6 +80,7 @@ namespace gui
         const TextBlock &operator*();
         const TextBlock *operator->();
         operator std::string();
+        auto end();
     };
 } // namespace gui
 

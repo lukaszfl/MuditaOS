@@ -15,8 +15,8 @@ namespace gui
 {
     const unsigned int TextCursor::default_width = 2;
 
-    TextCursor::TextCursor(gui::Text *parent, gui::TextDocument *document)
-        : Rect(parent, 0, 0, default_width, 1), BlockCursor(document, 0, 0, parent != nullptr ? parent->font : nullptr),
+    TextCursor::TextCursor(gui::Text *parent)
+        : Rect(parent, 0, 0, default_width, 1), BlockCursor(parent != nullptr ? parent->document.get() : nullptr, 0, 0, parent != nullptr ? parent->font : nullptr),
           text(parent)
     {
         setFilled(true);

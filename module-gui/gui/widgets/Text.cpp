@@ -105,6 +105,7 @@ namespace gui
     void Text::addText(TextBlock text)
     {
         *cursor << text;
+        debug_text_cursor("TextCursor %s\n", cursor->str().c_str());
         drawLines();
     }
 
@@ -209,6 +210,11 @@ namespace gui
             padding = value;
             drawLines();
         }
+    }
+
+    const TextCursor *Text::getCursor()
+    {
+        return cursor;
     }
 
     bool Text::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim)
@@ -394,7 +400,7 @@ namespace gui
     void Text::buildCursor()
     {
         erase(cursor);
-        cursor = new TextCursor(this, document.get());
+        cursor = new TextCursor(this);
         showCursor(focus);
     }
 

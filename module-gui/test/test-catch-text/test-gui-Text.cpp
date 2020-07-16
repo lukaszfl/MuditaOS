@@ -92,8 +92,7 @@ TEST_CASE("Text drawLines")
         auto text                = TestText();
         text.setSize(300, 500);
         text.setText(std::make_unique<TextDocument>(
-            textToTextBlocks(testline, fontmanager.getFont(0), TextBlock::End::Newline)));
-
+        textToTextBlocks(testline, fontmanager.getFont(0), TextBlock::End::Newline)));
         text.drawLines();
         REQUIRE(text.linesSize() == lines_count);
     }

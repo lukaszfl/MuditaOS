@@ -4,15 +4,17 @@ add_catch2_executable(
                 gui-text
         SRCS
                 main.cpp
-                ../mock/buildTextDocument.cpp
-                ../mock/multi-line-string.cpp
+                test-gui-Font.cpp
                 test-gui-Text.cpp
                 test-gui-TextBlock.cpp
                 test-gui-TextBlockCursor.cpp
+                test-gui-TextCursor.cpp
                 test-gui-TextDocument.cpp
+                test-gui-TextFormat.cpp
                 test-gui-TextLine.cpp
                 test-gui-TextParse.cpp
-                test-gui-Font.cpp
+                ../mock/buildTextDocument.cpp
+                ../mock/multi-line-string.cpp
                 ../mock/InitializedFontManager.cpp
         INCLUDE
                 ..

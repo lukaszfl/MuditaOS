@@ -86,8 +86,6 @@ namespace gui
         if (!checkDocument()) {
             return *this;
         }
-        else {
-        }
 
         resetNpos();
 
@@ -143,13 +141,11 @@ namespace gui
         if (document->blocks.size() == 0) {
             if (utf_val == text::newline) {
                 document->append(TextBlock("", default_font, TextBlock::End::Newline));
-                block_nr = 0;
-                pos      = 0;
+                resetNpos();
                 return;
             }
             document->append(TextBlock("", default_font, TextBlock::End::None));
-            block_nr = 0;
-            pos      = 0;
+            resetNpos();
         }
         auto block = curentBlock();
         if (block == blocksEnd()) {
@@ -168,9 +164,8 @@ namespace gui
         if (textblock.length() == 0) {
             return;
         }
-        if (document->isEmpty()) {
-            block_nr = 0;
-            pos      = 0;
+        if (checkNpos() || document->isEmpty()) {
+            resetNpos();
         }
         document->append(std::move(textblock));
     }
@@ -204,7 +199,7 @@ namespace gui
 
     const TextBlock *BlockCursor::operator->()
     {
-        return &*curentBlock();
+         return &*curentBlock();
     }
 
     BlockCursor::operator std::string()
@@ -213,6 +208,11 @@ namespace gui
             return "";
         }
         return curentBlock()->getText(getPosition());
+    }
+
+    auto BlockCursor::end()
+    {
+        return blocksEnd();
     }
 
 } // namespace gui
