@@ -123,6 +123,9 @@ namespace gui
     TextCursor &TextCursor::operator<<(TextBlock textblock)
     {
         auto len = textblock.length();
+        if (len == 0) {
+            return *this;
+        }
         BlockCursor::addTextBlock(std::move(textblock));
         // +1 is for block barier
         for (unsigned int i = 0; i < len + 1; ++i) {

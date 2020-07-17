@@ -60,12 +60,13 @@ namespace gui
         void removeChar();
         [[nodiscard]] auto getPosOnScreen() const { return pos_on_screen; }
         void setToStart() {
-            while (pos_on_screen != 0) 
+            while (pos_on_screen != 0)
             {
-                move(NavigationDirection::LEFT); // TODO ... boundaries!
+                move(NavigationDirection::LEFT);
             }
         }
-        std::string str() const
+
+        [[nodiscard]] std::string str() const
         {
             auto pos = BlockCursor::getPosition() == text::npos ? "text::npos" : std::to_string(BlockCursor::getPosition());
             auto block = BlockCursor::getBlockNr() == text::npos ? "text::npos" : std::to_string(getBlockNr());

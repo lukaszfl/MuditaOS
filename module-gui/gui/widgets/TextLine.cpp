@@ -30,13 +30,13 @@ namespace gui
         auto local_cursor = cursor;
         LOG_DEBUG("Draw line from cursor: %s", local_cursor.str().c_str());
         do {
-            if(!local_cursor) 
+            if(!local_cursor)
             {
                 LOG_DEBUG("invalid local cursor");
                 return;
             }
 
-            if ( local_cursor.atEol()) 
+            if ( local_cursor.atEol())
             {
                 LOG_DEBUG("reached end of line");
                 width_used = max_width;

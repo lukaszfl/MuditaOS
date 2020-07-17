@@ -167,6 +167,7 @@ namespace gui
         if (checkNpos() || document->isEmpty()) {
             resetNpos();
         }
+        /// TODO on block_no position!
         document->append(std::move(textblock));
     }
 
@@ -220,6 +221,5 @@ namespace gui
 std::string& operator<<(std::string &str, gui::BlockCursor &cursor)
 {
     str += (*cursor).getText(cursor.getPosition());
-    LOG_DEBUG("- - - - - - - - - - %s",str.c_str());
     return str;
 }
