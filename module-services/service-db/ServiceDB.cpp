@@ -119,6 +119,11 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
             LOG_INFO("SMS added, record ID: %" PRIu32, msg->record.ID);
             responseMsg = std::make_shared<DBSMSResponseMessage>(std::move(record), ret);
             sendUpdateNotification(db::Interface::Name::SMS, db::Query::Type::Create);
+            auto thread = threadRecordInterface->GetByID((msg->record.threadID));
+            if (thread.isValid() && thread.msgCount == 1){
+                LOG_DEBUG("also thread has been created");
+                sendUpdateNotification(db::Interface::Name::SMSThread, db::Query::Type::Create);
+            }
         }
     } break;
 
@@ -141,6 +146,12 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
         auto ret          = smsRecordInterface->Update(msg->record);
         responseMsg       = std::make_shared<DBSMSResponseMessage>(nullptr, ret);
         sendUpdateNotification(db::Interface::Name::SMS, db::Query::Type::Update);
+        // can update SMSThread
+//        auto thread = threadRecordInterface->GetByID((msg->record.threadID));
+//        if (!thread.isValid()) {
+//            LOG_DEBUG("also thread has been deleted");
+//            sendUpdateNotification(db::Interface::Name::SMSThread, db::Query::Type::Delete);
+//        }
     } break;
 
     case MessageType::DBSMSGetSMSLimitOffset: {

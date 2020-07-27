@@ -182,12 +182,21 @@ namespace gui
 
         auto *msgNotification = dynamic_cast<db::NotificationMessage *>(msgl);
         if (msgNotification != nullptr) {
-            // whatever notification had happened, rebuild
-            this->rebuild();
-            if (this == application->getCurrentWindow()) {
-                application->refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+            if (msgNotification->interface == db::Interface::Name::SMSThread) {
+                std::unique_ptr<ThreadRecord> threadDetails;
+                switch (msgNotification->type) {
+                case db::Query::Type::Create:
+                case db::Query::Type::Update:
+                case db::Query::Type::Delete:
+                    this->rebuild();
+                    if (this == application->getCurrentWindow()) {
+                        application->refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+                    }
+                    return true;
+                default:
+                    break;
+                }
             }
-            return true;
         }
         return false;
     } // namespace gui
