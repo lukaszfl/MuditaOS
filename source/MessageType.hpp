@@ -211,6 +211,12 @@ enum class MessageType
     FotaProgress,
     FotaFinished,
 
+    // Calendar messages
+    CalendarNotification,
+    CalendarStart,
+    CalendarProgress,
+    CalendarFinished,
+
     StateChange,
     // antenna messages
     AntennaChanged,
