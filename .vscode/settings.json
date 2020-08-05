@@ -5,4 +5,7 @@
         "COLOR_OUTPUT": "OFF"
     },
     "testMate.cpp.test.executables": "build-linux-Debug/{googletest,catch2}-*",
+    "files.associations": {
+        "system_error": "cpp"
+    },
 }

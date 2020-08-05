@@ -130,6 +130,7 @@ namespace app
 
     bool ApplicationMessages::markSmsThreadAsUnread(const uint32_t id)
     {
+        // mlucki
         using namespace db::query::smsthread;
         LOG_DEBUG("markSmsThreadAsRead");
         DBServiceAPI::GetQuery(

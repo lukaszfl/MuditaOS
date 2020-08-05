@@ -1177,6 +1177,7 @@ bool ServiceCellular::receiveSMS(std::string messageNumber)
 
                     UTF8 decodedMessage = UCS2(messageRawBody).toUTF8();
 
+                    // mlucki
                     SMSRecord record;
                     record.body   = decodedMessage;
                     record.number = utils::PhoneNumber(receivedNumber, utils::country::Id::UNKNOWN).getView();

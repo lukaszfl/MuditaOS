@@ -33,6 +33,14 @@ namespace app
     // Invoked upon receiving data message
     sys::Message_t ApplicationDesktop::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
     {
+        // mlucki
+        // Tu mam, np. obsługę battery+ (czyli ']') i battery- (czyli '[')
+        /*SMSRecord record;
+        record.body   = "Hi hi hi";
+        record.number = utils::PhoneNumber("123123444", utils::country::Id::UNKNOWN).getView();
+        record.type   = SMSType::INBOX;
+        record.date   = 0;
+        DBServiceAPI::SMSAdd(this, record);*/
 
         auto retMsg = Application::DataReceivedHandler(msgl);
         // if message was handled by application's template there is no need to process further.

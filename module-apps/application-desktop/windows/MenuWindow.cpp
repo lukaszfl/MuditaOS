@@ -219,6 +219,11 @@ namespace gui
 
     bool MenuWindow::onInput(const InputEvent &inputEvent)
     {
+        // mlucki
+        if (inputEvent.keyCode == KeyCode::SWITCH_MID) {
+            return true;
+        }
+
         if ((inputEvent.state == InputEvent::State::keyReleasedShort) && (inputEvent.keyCode == KeyCode::KEY_RF) &&
             (toolsMenu->visible)) {
             switchMenu(mainMenu);

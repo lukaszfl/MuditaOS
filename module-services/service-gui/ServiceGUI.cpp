@@ -27,6 +27,20 @@
 #include "WorkerGUI.hpp"
 #include <FontManager.hpp>
 
+// mlucki
+#include "messages/DBSMSMessage.hpp"
+#include "messages/DBThreadMessage.hpp"
+#include "messages/DBNotificationMessage.hpp"
+#include "messages/DBSettingsMessage.hpp"
+#include "messages/DBSMSMessage.hpp"
+#include "messages/DBSMSTemplateMessage.hpp"
+#include "messages/DBContactMessage.hpp"
+#include "messages/DBAlarmMessage.hpp"
+#include "messages/DBNotesMessage.hpp"
+#include "messages/DBCalllogMessage.hpp"
+#include "messages/DBCountryCodeMessage.hpp"
+#include <messages/DBServiceMessage.hpp>
+
 namespace sgui
 {
 
@@ -102,6 +116,18 @@ namespace sgui
         sgui::GUIMessage *msg = static_cast<sgui::GUIMessage *>(msgl);
 
         switch (msg->messageType) {
+            // mlucki
+            // Tu w sumie mamy jakieś msg->messageType==GUICommands po wciśnięciu battery +/-
+            /*
+                    case MessageType::AppInputEvent: {
+                        //sendUpdateNotification(db::Interface::Name::SMS, db::Query::Type::Create);
+                        auto notificationMessage = std::make_shared<db::NotificationMessage>(db::Interface::Name::SMS,
+               db::Query::Type::Create); sys::Bus::SendMulticast(notificationMessage,
+               sys::BusChannels::ServiceDBNotifications, this);
+                        //shutdownInProgress = false;
+                    } break;
+                    */
+
         case MessageType::MessageTypeUninitialized: {
             //			LOG_ERROR("[ServiceGUI] Received uninitialized message type");
         } break;

@@ -111,10 +111,16 @@ sys::Message_t EventManager::DataReceivedHandler(sys::DataMessage *msgl, sys::Re
             sys::SystemManager::ResumeSystem(this);
         }
 
+        // mlucki
+        // Próba wysłania powiadomienia o nowym SMS-ie
+        //
+        // auto notificationMessage = std::make_shared<db::NotificationMessage>(db::Interface::Name::SMS,
+        // db::Query::Type::Create); sys::Bus::SendMulticast(notificationMessage,
+        // sys::BusChannels::ServiceDBNotifications, this);
+
         auto message           = std::make_shared<sevm::BatteryLevelMessage>();
         message->levelPercents = msg->levelPercents;
         message->fullyCharged  = msg->fullyCharged;
-
         if (targetApplication.empty() == false) {
             sys::Bus::SendUnicast(message, targetApplication, this);
         }

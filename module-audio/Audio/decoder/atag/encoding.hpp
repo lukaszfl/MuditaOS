@@ -70,6 +70,8 @@ namespace atag
                         ++size;
                     else
                         size += 2;
+                    // mlucki
+                    //++size;
                 }
                 return size;
             }();
@@ -84,6 +86,8 @@ namespace atag
                     utf8.push_back(192 | *src++ >> 6);
                     utf8.push_back(128 | (*src++ & 63));
                 }
+                // mlucki
+                // utf8.push_back(*src++);
             }
             return utf8;
         }

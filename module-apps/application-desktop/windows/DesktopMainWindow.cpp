@@ -32,6 +32,11 @@
 #include <cassert>
 #include <service-appmgr/ApplicationManager.hpp>
 #include <time/time_conversion.hpp>
+#include <module-services/service-evtmgr/Constants.hpp>
+#include <module-services/service-evtmgr/messages/EVMessages.hpp>
+
+// mlucki
+#include "Service/Message.hpp"
 
 namespace style
 {
@@ -143,6 +148,21 @@ namespace gui
         }
 
         auto code = translator.handle(inputEvent.key, InputMode({InputMode::phone}).get());
+
+        // mlucki
+        // klawisz 'b'
+        if (inputEvent.keyCode == KeyCode::SWITCH_MID) {
+            enterPressed = true;
+
+            SMSRecord record;
+            record.body   = "Hi hi hi";
+            record.number = utils::PhoneNumber("321321666", utils::country::Id::UNKNOWN).getView();
+            record.type   = SMSType::INBOX;
+            record.date   = 0;
+            DBServiceAPI::SMSAdd(application, record);
+            // sys::Bus::SendUnicast(std::make_shared<sevm::SIMMessagnotye>(), service::name::evt_manager, this);
+            // getApplication()->DataReceivedHandler();
+        }
 
         // process shortpress
         if (inputEvent.state == InputEvent::State::keyReleasedShort) {

@@ -79,6 +79,7 @@ namespace gui
     bool AppWindow::updateSignalStrength()
     {
         return topBar->updateSignalStrength();
+        return topBar->updateSignalStrength();
     }
 
     bool AppWindow::updateTime(const UTF8 &timeStr)
