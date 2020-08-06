@@ -108,6 +108,9 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
          */
 
     case MessageType::DBSMSAdd: {
+        // mlucki
+        // Reakcja na message z żądaniem dodania nowego SMS-a do bazy
+
         auto time         = utils::time::Scoped("DBSMSAdd");
         DBSMSMessage *msg = reinterpret_cast<DBSMSMessage *>(msgl);
         auto ret          = smsRecordInterface->Add(msg->record);
@@ -118,6 +121,11 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
             record->push_back(msg->record);
             LOG_INFO("SMS added, record ID: %" PRIu32, msg->record.ID);
             responseMsg = std::make_shared<DBSMSResponseMessage>(std::move(record), ret);
+
+            // mlucki
+            // I tu jest tajemnicza notyfikacja, która być może zapala kropkę SMS-a w MainWindow
+            // (jeśli nie ona to trzeba prześledzić jak działa trigger w sms.db i czy on nie wyzwala
+            // message'a/notyfikacji))
             sendUpdateNotification(db::Interface::Name::SMS, db::Query::Type::Create);
         }
     } break;

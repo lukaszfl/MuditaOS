@@ -50,6 +50,7 @@ namespace gui
         desc->setText(utils::localize.get(title));
 
         if (notifications > 0) {
+            // mlucki
             auto thumbnail = new gui::Image("dot_12px_hard_alpha_W_G");
             thumbnail->setPosition(style::design::notify_dot_x, style::design::notify_dot_y);
             it->addWidget(thumbnail);
@@ -161,7 +162,7 @@ namespace gui
                                       application, "ApplicationMessages", gui::name::window::main_window, nullptr);
                                   return true;
                               },
-                              app->notifications.notRead.SMS},
+                              app->notifications.notRead.SMS}, // mlucki
                 new gui::Tile{"menu_music_player_W_G", "app_desktop_menu_music", [=](gui::Item &item) { return true; }},
                 new gui::Tile{
                     "menu_meditation_W_G", "app_desktop_menu_meditation", [=](gui::Item &item) { return true; }},
@@ -225,10 +226,10 @@ namespace gui
     bool MenuWindow::onInput(const InputEvent &inputEvent)
     {
         // mlucki
-        if (inputEvent.keyCode == KeyCode::SWITCH_MID) {
+        if ((inputEvent.state == InputEvent::State::keyReleasedLong) && (inputEvent.keyCode == KeyCode::SWITCH_MID)) {
 
             SMSRecord record;
-            record.body   = "Aha aha aha";
+            record.body   = "Aha1 aha1 aha1";
             record.number = utils::PhoneNumber("321321666", utils::country::Id::UNKNOWN).getView();
             record.type   = SMSType::INBOX;
             record.date   = 0;

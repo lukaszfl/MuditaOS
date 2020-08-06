@@ -110,6 +110,7 @@ namespace app
         if ((msg->interface == db::Interface::Name::Calllog || msg->interface == db::Interface::Name::SMSThread ||
              msg->interface == db::Interface::Name::SMS) &&
             msg->type != db::Query::Type::Read) {
+            // mlucki
             requestNotReadNotifications();
             windows[app::window::name::desktop_menu]->rebuild();
         }
