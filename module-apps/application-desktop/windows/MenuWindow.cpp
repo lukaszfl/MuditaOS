@@ -9,6 +9,11 @@
 #include <cassert>
 #include <i18/i18.hpp>
 
+// mlucki
+#include "application-messages/ApplicationMessages.hpp"
+#include <UiCommonActions.hpp>
+#include "Service/Message.hpp"
+
 namespace style::design
 {
     // all these might not be final - as designs for these didn't look like that
@@ -221,7 +226,16 @@ namespace gui
     {
         // mlucki
         if (inputEvent.keyCode == KeyCode::SWITCH_MID) {
-            return true;
+
+            SMSRecord record;
+            record.body   = "Aha aha aha";
+            record.number = utils::PhoneNumber("321321666", utils::country::Id::UNKNOWN).getView();
+            record.type   = SMSType::INBOX;
+            record.date   = 0;
+            DBServiceAPI::SMSAdd(application, record);
+            // sys::Bus::SendUnicast(std::make_shared<sevm::SIMMessagnotye>(), service::name::evt_manager, this);
+            // getApplication()->DataReceivedHandler();
+            // return true;
         }
 
         if ((inputEvent.state == InputEvent::State::keyReleasedShort) && (inputEvent.keyCode == KeyCode::KEY_RF) &&
