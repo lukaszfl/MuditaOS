@@ -35,6 +35,9 @@ enum class MessageType
     DBSettingsGet,    // get current settings from database
     DBSettingsUpdate, // update settings
 
+    // mlucki
+    DBCalendarEventAdd, // Add new calendar event
+
     DBSMSAdd,                         // Add new sms record
     DBSMSRemove,                      // Remove specified SMS record
     DBSMSUpdate,                      // Update specified SMS record
@@ -133,6 +136,7 @@ enum class MessageType
     AudioRoutingRecordCtrl,
     AudioRoutingMute,
     AudioRoutingSpeakerhone,
+    AudioRoutingHeadset,
 
     AudioSetOutputVolume,
     AudioSetInputGain,
@@ -183,6 +187,9 @@ enum class MessageType
     // rtc messages
     EVMMinuteUpdated, // This message is send to current focused application on every minute time change.
 
+    // Torch messages
+    EVMTorchStateMessage,
+
     // cellular messages
     EVMGetBoard,
     EVMModemStatus,
@@ -217,7 +224,7 @@ enum class MessageType
     AntennaCSQChange,
     AntennaLockService,
     AntennaGetLockState,
-    AntennaLockNotification
+    AntennaLockNotification,
 };
 
 #endif /* SOURCE_MESSAGETYPE_HPP_ */

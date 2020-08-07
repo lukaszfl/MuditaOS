@@ -19,6 +19,7 @@
 #include "service-appmgr/ApplicationManager.hpp"
 #include "service-db/api/DBServiceAPI.hpp"
 #include "service-db/messages/DBNotificationMessage.hpp"
+#include "AudioServiceAPI.hpp"
 
 #include "bsp/harness/bsp_harness.hpp"
 #include "harness/Parser.hpp"
@@ -159,6 +160,13 @@ sys::Message_t EventManager::DataReceivedHandler(sys::DataMessage *msgl, sys::Re
 
         handled = true;
     }
+    else if (msgl->messageType == MessageType::AudioRoutingHeadset && msgl->sender == this->GetName()) {
+        auto *msg = dynamic_cast<AudioRequestMessage *>(msgl);
+        if (msg != nullptr) {
+            AudioServiceAPI::RoutingHeadset(this, msg->enable);
+            handled = true;
+        }
+    }
     else if (!targetApplication.empty() && dynamic_cast<sevm::SIMMessage *>(msgl) != nullptr) {
         sys::Bus::SendUnicast(std::make_shared<sevm::SIMMessage>(), targetApplication, this);
     }
@@ -181,6 +189,25 @@ sys::Message_t EventManager::DataReceivedHandler(sys::DataMessage *msgl, sys::Re
         }
         handled = true;
     }
+    else if (msgl->messageType == MessageType::EVMTorchStateMessage) {
+        auto msg = dynamic_cast<sevm::TorchStateMessage *>(msgl);
+        if (msg != nullptr) {
+            auto message = std::make_shared<sevm::TorchStateResultMessage>(msg->direction);
+
+            switch (msg->direction) {
+            case bsp::torch::Action::getState:
+                std::tie(message->success, message->state) = bsp::torch::getState();
+                break;
+            case bsp::torch::Action::setState:
+                message->success = bsp::torch::turn(msg->state);
+                break;
+            case bsp::torch::Action::toggle:
+                message->success = bsp::torch::toggle();
+                break;
+            }
+            return message;
+        }
+    }
     if (handled)
         return std::make_shared<sys::ResponseMessage>();
     else
@@ -197,6 +224,8 @@ sys::ReturnCodes EventManager::InitHandler()
     // create queues for worker
     // keyboard irq queue
     sys::WorkerQueueInfo qIrq = {"qIrq", sizeof(uint8_t), 10};
+    // headset irq queue
+    sys::WorkerQueueInfo qHeadset = {"qHeadset", sizeof(uint8_t), 10};
     // battery manager queue
     sys::WorkerQueueInfo qBattery = {"qBattery", sizeof(uint8_t), 10};
     // RTC irq queue
@@ -207,15 +236,19 @@ sys::ReturnCodes EventManager::InitHandler()
     sys::WorkerQueueInfo qSIM = {"qSIM", sizeof(uint8_t), 5};
     // magnetometer queue
     sys::WorkerQueueInfo qMagnetometer = {"qMagnetometer", sizeof(uint8_t), 5};
+    // torch driver queue
+    sys::WorkerQueueInfo qTorch = {"qTorch", sizeof(uint8_t), 5};
 
     std::list<sys::WorkerQueueInfo> list;
 
     list.push_back(qIrq);
+    list.push_back(qHeadset);
     list.push_back(qBattery);
     list.push_back(qRTC);
     list.push_back(qHarness);
     list.push_back(qSIM);
     list.push_back(qMagnetometer);
+    list.push_back(qTorch);
 
     EventWorker->init(list);
     EventWorker->run();

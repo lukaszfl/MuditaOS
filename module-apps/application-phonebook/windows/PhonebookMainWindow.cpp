@@ -7,6 +7,8 @@
 #include <queries/phonebook/QueryContactGet.hpp>
 
 #include <service-appmgr/ApplicationManager.hpp>
+#include <module-services/service-db/messages/DBContactMessage.hpp>
+#include <module-services/service-db/messages/DBNotificationMessage.hpp>
 
 namespace gui
 {
@@ -19,8 +21,7 @@ namespace gui
 
     void PhonebookMainWindow::rebuild()
     {
-        destroyInterface();
-        buildInterface();
+        contactsList->rebuildList();
     }
 
     void PhonebookMainWindow::buildInterface()
@@ -60,8 +61,7 @@ namespace gui
                                                   phonebookStyle::mainWindow::contactsList::w,
                                                   phonebookStyle::mainWindow::contactsList::h,
                                                   phonebookModel);
-        contactsList->setPenFocusWidth(phonebookStyle::mainWindow::contactsList::penFocusWidth);
-        contactsList->setPenWidth(phonebookStyle::mainWindow::contactsList::penWidth);
+        setFocusItem(contactsList);
 
         bottomBar->setActive(BottomBar::Side::LEFT, true);
         bottomBar->setActive(BottomBar::Side::CENTER, true);
@@ -84,10 +84,6 @@ namespace gui
     void PhonebookMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
         LOG_INFO("onBeforeShow");
-        setFocusItem(contactsList);
-
-        contactsList->clear();
-        contactsList->setProvider(phonebookModel);
 
         auto contactRequest = dynamic_cast<PhonebookSearchReuqest *>(data);
         requestedSearch     = contactRequest != nullptr;
@@ -136,23 +132,20 @@ namespace gui
 
     bool PhonebookMainWindow::onDatabaseMessage(sys::Message *msgl)
     {
-        auto respMsg = dynamic_cast<sys::ResponseMessage *>(msgl);
+        auto *msgNotification = dynamic_cast<db::NotificationMessage *>(msgl);
+        if (msgNotification != nullptr) {
+            if (msgNotification->interface == db::Interface::Name::Contact) {
 
-        assert(respMsg != nullptr);
-        assert(respMsg->responseTo == MessageType::DBQuery);
+                if (msgNotification->dataModified()) {
 
-        auto queryResponse = dynamic_cast<db::QueryResponse *>(respMsg);
-        if (queryResponse == nullptr) {
-            LOG_ERROR("Unexpected message.");
-            return false;
+                    rebuild();
+
+                    return true;
+                }
+            }
         }
 
-        auto contactsResponse = dynamic_cast<db::query::ContactGetResult *>(queryResponse->getResult());
-        assert(contactsResponse != nullptr);
-
-        auto records = std::make_unique<std::vector<ContactRecord>>(contactsResponse->getRecords());
-
-        return phonebookModel->updateRecords(std::move(records));
+        return false;
     }
 
     bool PhonebookMainWindow::isSearchRequested() const

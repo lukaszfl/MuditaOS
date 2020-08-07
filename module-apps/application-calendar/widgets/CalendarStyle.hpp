@@ -1,4 +1,5 @@
 #pragma once
+#include <Style.hpp>
 #include <string>
 
 namespace style
@@ -14,6 +15,8 @@ namespace style
                 const inline std::string no_events_window  = "NoEventsWindow";
                 const inline std::string events_options    = "Options";
                 const inline std::string dialog_yes_no     = "DialogYesNo";
+                const inline std::string all_events_window = "AllEventsWindow";
+                const inline std::string details_window    = "DetailsWindow";
             } // namespace name
 
             const inline int day_cell_width    = 60;
@@ -36,6 +39,9 @@ namespace style
                 const inline int prev_month_id = 1;
                 const inline int month_id      = 2;
                 const inline int next_month_id = 3;
+                const inline std::string date_text_1 = "January 2019";
+                const inline std::string date_text_2 = "February 2019";
+                const inline std::string date_text_3 = "March 2019";
             } // namespace test
 
             namespace item
@@ -46,6 +52,33 @@ namespace style
                 const inline int title_h      = 40;
                 const inline int descripton_y = 42;
                 const inline int height       = 90;
+
+                namespace all
+                {
+                    const inline int description_w = 310;
+                    const inline int description_x = 120;
+                    const inline int start_time_x  = 11;
+                } // namespace all
+
+                namespace repeatAndReminder
+                {
+                    const inline int height             = 150;
+                    const inline int title_label_h      = 45;
+                    const inline int title_label_margin = 15;
+                    const inline int description_w      = style::window::default_body_width / 2 - 30;
+                    const inline int description_h      = 30;
+                } // namespace repeatAndReminder
+
+                namespace eventDetail
+                {
+                    const inline int height_min    = 90;
+                    const inline int height_max    = 160;
+                    const inline int margin_top    = 25;
+                    const inline int margin_bottom = 10;
+                    const inline int title_h       = 20;
+                    const inline int event_time_h  = 30;
+                    const inline int description_h = 40;
+                } // namespace eventDetail
             } // namespace item
 
             namespace options
@@ -56,14 +89,15 @@ namespace style
                 const inline int label_y     = 112;
             } // namespace options
 
-            namespace deletion
+            namespace details
             {
-                const inline int label_w     = 150;
-                const inline int label_h     = 80;
-                const inline int label_y     = 420;
-                const inline int label_no_x  = 70;
-                const inline int label_yes_x = 260;
-            } // namespace deletion
+                const inline int description_y    = 225;
+                const inline int time_y           = 175;
+                const inline int repeat_heading_y = 290;
+                const inline int repeat_y         = 345;
+                const inline int remind_heading_y = 290;
+                const inline int remind_y         = 345;
+            } // namespace details
 
         }; // namespace calendar
     }      // namespace window

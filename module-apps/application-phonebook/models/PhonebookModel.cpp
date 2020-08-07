@@ -3,6 +3,7 @@
 #include "ListView.hpp"
 #include "PhonebookModel.hpp"
 
+#include <Common/Query.hpp>
 #include <messages/QueryMessage.hpp>
 #include <queries/phonebook/QueryContactGet.hpp>
 #include <queries/RecordQuery.hpp>
@@ -11,16 +12,15 @@
 #include "UiCommonActions.hpp"
 
 #include <string>
+#include <utility>
 
 const static std::uint32_t phonebookModelTimeout = 1000;
 
 PhonebookModel::PhonebookModel(app::Application *app, std::string filter)
     : DatabaseModel(app), queryFilter(std::move(filter))
-{
-    requestRecordsCount();
-}
+{}
 
-void PhonebookModel::requestRecordsCount()
+auto PhonebookModel::requestRecordsCount() -> unsigned int
 {
     auto [code, msg] = DBServiceAPI::GetQueryWithReply(application,
                                                        db::Interface::Name::Contact,
@@ -31,29 +31,31 @@ void PhonebookModel::requestRecordsCount()
         auto queryResponse = dynamic_cast<db::QueryResponse *>(msg.get());
         assert(queryResponse != nullptr);
 
-        auto countResult = dynamic_cast<db::query::RecordsSizeQueryResult *>(queryResponse->getResult());
+        auto countResultResponse = queryResponse->getResult();
+        auto countResult         = dynamic_cast<db::query::RecordsSizeQueryResult *>(countResultResponse.get());
         assert(countResult != nullptr);
 
         recordsCount = countResult->getSize();
     }
+
+    return recordsCount;
 }
 
 void PhonebookModel::requestRecords(const uint32_t offset, const uint32_t limit)
 {
-    DBServiceAPI::GetQuery(
-        application, db::Interface::Name::Contact, std::make_unique<db::query::ContactGet>(offset, limit, queryFilter));
+    auto query = std::make_unique<db::query::ContactGet>(offset, limit, queryFilter);
+    query->setQueryListener(this);
+    DBServiceAPI::GetQuery(application, db::Interface::Name::Contact, std::move(query));
 }
 
-auto PhonebookModel::updateRecords(std::unique_ptr<std::vector<ContactRecord>> records,
-                                   const uint32_t offset,
-                                   const uint32_t limit,
-                                   uint32_t count) -> bool
+auto PhonebookModel::updateRecords(std::unique_ptr<std::vector<ContactRecord>> records) -> bool
 {
 
 #if DEBUG_DB_MODEL_DATA == 1
-    LOG_DEBUG("Offset: %u, Limit: %u Count:%u", offset, limit, count);
+    // mlucki
+    ////LOG_DEBUG("Offset: %" PRIu32 ", Limit: %" PRIu32 " Count:%" PRIu32 "", offset, limit, count);
     for (uint32_t i = 0; i < records->size(); ++i) {
-        LOG_DEBUG("id: %u, name: %s %s, fav: %d",
+        LOG_DEBUG("id: %" PRIu32 ", name: %s %s, fav: %d",
                   records.get()->operator[](i).ID,
                   records.get()->operator[](i).primaryName.c_str(),
                   records.get()->operator[](i).alternativeName.c_str(),
@@ -61,8 +63,7 @@ auto PhonebookModel::updateRecords(std::unique_ptr<std::vector<ContactRecord>> r
     }
 #endif
 
-    DatabaseModel::updateRecords(std::move(records), offset, limit, count);
-    modelIndex = 0;
+    DatabaseModel::updateRecords(std::move(records));
     list->onProviderDataUpdate();
 
     return true;
@@ -115,4 +116,14 @@ auto PhonebookModel::getItem(gui::Order order) -> gui::ListItem *
 auto PhonebookModel::getFilter() const -> const std::string &
 {
     return queryFilter;
+}
+
+auto PhonebookModel::handleQueryResponse(db::QueryResult *queryResult) -> bool
+{
+    auto contactsResponse = dynamic_cast<db::query::ContactGetResult *>(queryResult);
+    assert(contactsResponse != nullptr);
+
+    auto records = std::make_unique<std::vector<ContactRecord>>(contactsResponse->getRecords());
+
+    return this->updateRecords(std::move(records));
 }

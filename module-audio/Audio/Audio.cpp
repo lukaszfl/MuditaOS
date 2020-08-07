@@ -34,6 +34,17 @@ namespace audio
 
     audio::RetCode Audio::SendEvent(const Operation::Event evt, const EventData *data)
     {
+        switch (evt) {
+        case Operation::Event::HeadphonesPlugin:
+            headphonesInserted = true;
+            break;
+        case Operation::Event::HeadphonesUnplug:
+            headphonesInserted = false;
+            break;
+        default:
+            break;
+        }
+
         return currentOperation != nullptr ? currentOperation->SendEvent(evt, data) : RetCode::OperationNotSet;
     }
 
@@ -82,6 +93,10 @@ namespace audio
                 break;
             }
             currentOperation = std::move(ret.value());
+
+            if (headphonesInserted == true) {
+                currentOperation->SendEvent(audio::Operation::Event::HeadphonesPlugin);
+            }
         }
         else {
             // If creating operation failed fallback to IdleOperation which is guaranteed to work
@@ -102,7 +117,7 @@ namespace audio
 
         auto retStop = currentOperation != nullptr ? currentOperation->Stop() : RetCode::OperationNotSet;
         if (retStop != RetCode::Success) {
-            LOG_ERROR("Operation STOP failure: %s", audio::c_str(RetCode::DeviceFailure));
+            LOG_ERROR("Operation STOP failure: %s", audio::c_str(retStop));
         }
 
         auto ret = Operation::Create(Operation::Type::Idle, "");

@@ -6,24 +6,19 @@
 #include <cassert>
 
 BaseThreadRecordModel::BaseThreadRecordModel(app::Application *app) : DatabaseModel(app)
-{}
+{
+    requestRecordsCount();
+}
 
-void BaseThreadRecordModel::requestRecordsCount(void)
+unsigned int BaseThreadRecordModel::requestRecordsCount()
 {
     recordsCount = DBServiceAPI::ThreadGetCount(application);
-
-    if (recordsCount > 0) {
-
-        DBServiceAPI::ThreadGetLimitOffset(application, 0, style::messages::threads::pageSize);
-    }
+    return recordsCount;
 }
-bool BaseThreadRecordModel::updateRecords(std::unique_ptr<std::vector<ThreadRecord>> records,
-                                          const uint32_t offset,
-                                          const uint32_t limit,
-                                          uint32_t count)
+
+bool BaseThreadRecordModel::updateRecords(std::unique_ptr<std::vector<ThreadRecord>> records)
 {
-    DatabaseModel::updateRecords(std::move(records), offset, limit, count);
-    modelIndex = 0;
+    DatabaseModel::updateRecords(std::move(records));
     list->onProviderDataUpdate();
     return true;
 }

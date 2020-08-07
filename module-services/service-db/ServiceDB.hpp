@@ -37,6 +37,8 @@ class ServiceDB : public sys::Service
     std::unique_ptr<CountryCodeRecordInterface> countryCodeRecordInterface;
     std::unique_ptr<NotificationsRecordInterface> notificationsRecordInterface;
 
+    uint32_t timerID = 0;
+
   protected:
     db::Interface *getInterface(db::Interface::Name interface);
 

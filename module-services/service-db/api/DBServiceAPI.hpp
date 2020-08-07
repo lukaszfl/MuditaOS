@@ -28,6 +28,10 @@ class DBServiceAPI
     static SettingsRecord SettingsGet(sys::Service *serv);
     static bool SettingsUpdate(sys::Service *serv, const SettingsRecord &rec);
 
+    // mlucki
+    // ToDo: tu na razie wołanie z SMSRecord
+    static uint32_t CalendarEventAdd(sys::Service *serv, const SMSRecord &rec);
+
     /**
      * @brief Function is adding new SMS to SMSDB.
      * @param serv Pointer to Service based object that is sending request.

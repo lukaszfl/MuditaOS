@@ -10,16 +10,12 @@
 SMSTemplateModel::SMSTemplateModel(app::Application *app) : DatabaseModel(app)
 {}
 
-void SMSTemplateModel::requestRecordsCount()
+unsigned int SMSTemplateModel::requestRecordsCount()
 {
     recordsCount = DBServiceAPI::SMSTemplateGetCount(application);
     LOG_DEBUG("SMSTemplateGetCount %" PRIu32, recordsCount);
-    // request first
-    if (recordsCount > 0) {
-        LOG_DEBUG("SMSTemplateGetLimitOffset");
-        auto pageSize = style::messages::templates::list::pageSize;
-        DBServiceAPI::SMSTemplateGetLimitOffset(application, 0, pageSize);
-    }
+
+    return recordsCount;
 }
 
 void SMSTemplateModel::requestRecords(const uint32_t offset, const uint32_t limit)
@@ -27,16 +23,9 @@ void SMSTemplateModel::requestRecords(const uint32_t offset, const uint32_t limi
     DBServiceAPI::SMSTemplateGetLimitOffset(application, offset, limit);
 }
 
-bool SMSTemplateModel::updateRecords(std::unique_ptr<std::vector<SMSTemplateRecord>> records,
-                                     const uint32_t offset,
-                                     const uint32_t limit,
-                                     uint32_t count)
+bool SMSTemplateModel::updateRecords(std::unique_ptr<std::vector<SMSTemplateRecord>> records)
 {
-
-    LOG_INFO("Offset: %" PRIu32 ", Limit: %" PRIu32 " Count:%" PRIu32 "", offset, limit, count);
-
-    if (DatabaseModel::updateRecords(std::move(records), offset, limit, count)) {
-        modelIndex = 0;
+    if (DatabaseModel::updateRecords(std::move(records))) {
         list->onProviderDataUpdate();
         return true;
     }

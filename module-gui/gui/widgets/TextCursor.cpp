@@ -91,8 +91,8 @@ namespace gui
         }
         if (document->isEmpty() && text->font != nullptr) {
             h += text->font->info.line_height;
-            x = getAxisAlignmentValue(Axis::X);
-            y = getAxisAlignmentValue(Axis::Y);
+            x = getAxisAlignmentValue(Axis::X, widgetArea.w);
+            y = getAxisAlignmentValue(Axis::Y, widgetArea.h);
         }
         else if (text != nullptr || text->lines.size() > 0) {
             auto [line, column, row] = getLine();
@@ -117,8 +117,8 @@ namespace gui
 
     TextCursor &TextCursor::operator<<(const UTF8 &text)
     {
-        for (auto el : std::string(text)) {
-            addChar(el);
+        for (unsigned int i = 0; i < text.length(); ++i) {
+            addChar(text[i]);
         }
         return *this;
     }

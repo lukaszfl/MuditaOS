@@ -16,26 +16,13 @@
 
 using namespace calllog;
 
-#define DEBUG_CALLLOG_DB_ACCESS 0
-
 CalllogModel::CalllogModel(app::Application *app) : DatabaseModel(app)
 {}
 
-void CalllogModel::requestRecordsCount()
+unsigned int CalllogModel::requestRecordsCount()
 {
-#if (DEBUG_CALLLOG_DB_ACCESS)
-    auto tstamp = xTaskGetTickCount();
-#endif
     recordsCount = DBServiceAPI::CalllogGetCount(application);
-#if (DEBUG_CALLLOG_DB_ACCESS)
-    LOG_INFO("DBServiceAPI::CalllogGetCount %d records %d ms", recordsCount, xTaskGetTickCount() - tstamp);
-#endif
-
-    // request first and second page if possible
-    if (recordsCount > 0) {
-        LOG_INFO("DBServiceAPI::CalllogGetCount CalllogGetLimitOffset");
-        DBServiceAPI::CalllogGetLimitOffset(application, 0, calllog::settings::pageSize);
-    }
+    return recordsCount;
 }
 
 void CalllogModel::requestRecords(const uint32_t offset, const uint32_t limit)
@@ -43,20 +30,18 @@ void CalllogModel::requestRecords(const uint32_t offset, const uint32_t limit)
     DBServiceAPI::CalllogGetLimitOffset(application, offset, limit);
 }
 
-bool CalllogModel::updateRecords(std::unique_ptr<std::vector<CalllogRecord>> records,
-                                 const uint32_t offset,
-                                 const uint32_t limit,
-                                 uint32_t count)
+bool CalllogModel::updateRecords(std::unique_ptr<std::vector<CalllogRecord>> records)
 {
 #if DEBUG_DB_MODEL_DATA == 1
-    LOG_DEBUG("Offset: %d, Limit: %d Count:%d", offset, limit, count);
+    // mlucki
+    ////LOG_DEBUG("Offset: %" PRIu32 ", Limit: %" PRIu32 " Count: %" PRIu32 "", offset, limit, count);
     for (uint32_t i = 0; i < records.get()->size(); ++i) {
-        LOG_DEBUG("id: %d, name: %s", records.get()->operator[](i).ID, records.get()->operator[](i).name.c_str());
+        LOG_DEBUG(
+            "id: %" PRIu32 ", name: %s", records.get()->operator[](i).ID, records.get()->operator[](i).name.c_str());
     }
 #endif
 
-    DatabaseModel::updateRecords(std::move(records), offset, limit, count);
-    modelIndex = 0;
+    DatabaseModel::updateRecords(std::move(records));
     list->onProviderDataUpdate();
 
     return true;

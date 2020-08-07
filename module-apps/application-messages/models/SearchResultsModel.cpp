@@ -1,9 +1,11 @@
 #include "SearchResultsModel.hpp"
+#include "ListView.hpp"
 #include "time/time_conversion.hpp"
 #include "../widgets/SearchResultsItem.hpp"
 
 #include "service-db/api/DBServiceAPI.hpp"
 #include <module-db/queries/sms/QuerySMSSearch.hpp>
+#include <module-apps/application-messages/ApplicationMessages.hpp>
 
 namespace gui::model
 {
@@ -13,7 +15,6 @@ namespace gui::model
 
     unsigned int SearchResultsModel::getMinimalItemHeight() const
     {
-
         return style::window::messages::sms_thread_item_h;
     }
 
@@ -41,27 +42,39 @@ namespace gui::model
         return ret;
     }
 
-    void SearchResultsModel::requestRecordsCount()
-    {}
-
     void SearchResultsModel::requestRecords(uint32_t offset, uint32_t limit)
     {
         if (std::string(search_value).compare("") != 0) {
-            DBServiceAPI::GetQuery(
-                getApplication(),
-                db::Interface::Name::SMSThread,
-                std::make_unique<db::query::SMSSearch>(search_value, offset, max_search_items_on_screen));
+            auto query = std::make_unique<db::query::SMSSearch>(search_value, offset, limit);
+            query->setQueryListener(this);
+            DBServiceAPI::GetQuery(getApplication(), db::Interface::Name::SMSThread, std::move(query));
         }
-    }
-
-    void SearchResultsModel::setRecordsCount(uint32_t count)
-    {
-        recordsCount = count;
     }
 
     void SearchResultsModel::setSearchValue(const UTF8 &search_value)
     {
         this->search_value = search_value;
+    }
+
+    auto SearchResultsModel::handleQueryResponse(db::QueryResult *queryResult) -> bool
+    {
+        auto msgResponse = dynamic_cast<db::query::SMSSearchResult *>(queryResult);
+        assert(msgResponse != nullptr);
+
+        auto records_data = msgResponse->getResults();
+        auto records      = std::make_unique<std::vector<ThreadRecord>>(records_data.begin(), records_data.end());
+
+        if (msgResponse->getMax() == 0) {
+
+            auto app = dynamic_cast<app::ApplicationMessages *>(application);
+            assert(app);
+            return app->searchEmpty();
+        }
+
+        assert(list);
+        list->setElementsCount(msgResponse->getMax());
+
+        return this->updateRecords(std::move(records));
     }
 
 }; // namespace gui::model

@@ -1,5 +1,38 @@
 # Mudita PurePhone changelog
 
+
+## [0.32.1 - 2020-08-07]
+
+### Added
+
+* `[calendar]` Added event details window.
+* `[calendar]` Added all events list window.
+* `[phonebook]` Added alternative number handling.
+* `[music player]` Added simple music player implementation.
+* `[audio]` Added headset handling (insertion / removal).
+* `[torch]` Added initial torch functionality.
+
+### Changed
+
+* `[phonebook]` Phonebook search no window - new version of dialog box.
+* `[phonebook]` Switch to contact list instead of contact details after saving contact.
+* `[phonebook]` Require filling in at least one field while adding/editing contact.
+* `[sms]` Do not delete sms if thread is malformed (not found what expected).
+* `[listview]` Improved data refresh time.
+
+### Fixed
+* `[phonebook][db]` Fixed reading contact without a number from database.
+* `[listview]` Fixed wrong data refresh.
+* `[gui]` Fix crash when rendering font glyph.
+* `[sms]` When opening a thread show it from the newest message.
+
+### Other
+
+* `[gui]` Optimization on BoxLayout elements resize.
+* `[desktop]` Added service-desktop <-> DB interface.
+* `[desktop]` Added contact handling from service-desktop.
+* `[utilities]` Fixed copying UTF8 by character.
+
 ## [0.31.1] - 2020-07-31
 
 ### Added

@@ -63,10 +63,7 @@ namespace gui
 
     void NotesMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
-        notesModel->clear();
-        notesModel->requestRecordsCount();
-        list->clear();
-        list->setElementsCount(notesModel->getItemCount());
+        list->rebuildList();
     }
 
     bool NotesMainWindow::onInput(const InputEvent &inputEvent)
@@ -87,7 +84,7 @@ namespace gui
     bool NotesMainWindow::onDatabaseMessage(sys::Message *msgl)
     {
         DBNotesResponseMessage *msg = reinterpret_cast<DBNotesResponseMessage *>(msgl);
-        if (notesModel->updateRecords(std::move(msg->records), msg->offset, msg->limit, msg->count))
+        if (notesModel->updateRecords(std::move(msg->records)))
             return true;
 
         return false;

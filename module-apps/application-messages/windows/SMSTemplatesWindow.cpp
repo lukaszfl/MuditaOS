@@ -90,10 +90,7 @@ namespace gui
     void SMSTemplatesWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
         if (mode == ShowMode::GUI_SHOW_INIT) {
-            smsTemplateModel->clear();
-            smsTemplateModel->requestRecordsCount();
-            list->clear();
-            list->setElementsCount(smsTemplateModel->getItemCount());
+            list->rebuildList();
         }
 
         if (auto switchData = dynamic_cast<SMSTemplateRequest *>(data)) {
@@ -108,7 +105,7 @@ namespace gui
     bool SMSTemplatesWindow::onDatabaseMessage(sys::Message *msgl)
     {
         auto msg = dynamic_cast<DBSMSTemplateResponseMessage *>(msgl);
-        if (msg && smsTemplateModel->updateRecords(std::move(msg->records), msg->offset, msg->limit, msg->count)) {
+        if (msg && smsTemplateModel->updateRecords(std::move(msg->records))) {
             return true;
         }
 

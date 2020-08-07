@@ -34,8 +34,7 @@ namespace gui
                                                       phonebookStyle::searchResultsWindow::searchResultList::w,
                                                       phonebookStyle::searchResultsWindow::searchResultList::h,
                                                       searchResultsModel);
-        searchResultList->setPenFocusWidth(phonebookStyle::searchResultsWindow::searchResultList::penFocusWidth);
-        searchResultList->setPenWidth(phonebookStyle::searchResultsWindow::searchResultList::penWidth);
+        setFocusItem(searchResultList);
 
         bottomBar->setActive(BottomBar::Side::CENTER, true);
         bottomBar->setActive(BottomBar::Side::RIGHT, true);
@@ -58,7 +57,9 @@ namespace gui
 
     void PhonebookSearchResults::onBeforeShow(ShowMode mode, SwitchData *data)
     {
-        setFocusItem(searchResultList);
+        if (mode == ShowMode::GUI_SHOW_INIT) {
+            searchResultList->rebuildList();
+        }
     }
 
     auto PhonebookSearchResults::onInput(const InputEvent &inputEvent) -> bool
@@ -116,24 +117,4 @@ namespace gui
         return true;
     }
 
-    bool PhonebookSearchResults::onDatabaseMessage(sys::Message *msgl)
-    {
-        auto respMsg = dynamic_cast<sys::ResponseMessage *>(msgl);
-
-        assert(respMsg != nullptr);
-        assert(respMsg->responseTo == MessageType::DBQuery);
-
-        auto queryResponse = dynamic_cast<db::QueryResponse *>(respMsg);
-        if (queryResponse == nullptr) {
-            LOG_ERROR("Unexpected message.");
-            return false;
-        }
-
-        auto contactsResponse = dynamic_cast<db::query::ContactGetResult *>(queryResponse->getResult());
-        assert(contactsResponse != nullptr);
-
-        auto records = std::make_unique<std::vector<ContactRecord>>(contactsResponse->getRecords());
-
-        return searchResultsModel->updateRecords(std::move(records));
-    }
 } /* namespace gui */

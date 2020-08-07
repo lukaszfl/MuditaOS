@@ -50,26 +50,6 @@ namespace gui
     void BoxLayout::resizeItems()
     {}
 
-    void BoxLayout::setPosition(const short &x, const short &y)
-    {
-        Rect::setPosition(x, y);
-    }
-
-    void BoxLayout::setSize(const unsigned short w, const unsigned short h)
-    {
-        Rect::setSize(w, h);
-
-        if (children.size() != 0u) {
-            for (auto it : outOfDrawAreaItems) {
-                it->setVisible(true);
-            }
-        }
-        outOfDrawAreaItems.clear();
-
-        resizeItems();
-        setNavigation();
-    }
-
     void BoxLayout::setAlignment(const Alignment &value)
     {
         if (alignment != value) {
@@ -161,14 +141,24 @@ namespace gui
         }
     }
 
+    void BoxLayout::addFromOutOfDrawAreaList()
+    {
+        if (children.size() != 0u) {
+            for (auto it : outOfDrawAreaItems) {
+                it->setVisible(true);
+            }
+        }
+        outOfDrawAreaItems.clear();
+    }
+
     // space left distposition `first is better` tactics
     // there could be other i.e. socialism: each element take in equal part up to it's max size
     // not needed now == not implemented
     template <Axis axis> void BoxLayout::resizeItems()
     {
-        int32_t pos      = reverseOrder ? this->area().size(axis) : 0;
-        int32_t pos_left = this->getSize(axis);
-        int32_t to_split = sizeLeft<axis>(this);
+        Position pos      = reverseOrder ? this->area().size(axis) : 0;
+        Position pos_left = this->getSize(axis);
+        Position to_split = sizeLeft<axis>(this);
 
         for (auto &el : children) {
 
@@ -181,7 +171,7 @@ namespace gui
             auto orthogonalItemSize     = 0;
             auto grantedSize            = sizeStore->get(el);
             // Check if item can be resized
-            int32_t left_in_el = 0;
+            Position left_in_el = 0;
             if (!grantedSize.isZero()) {
                 left_in_el = grantedSize.get(axis) - el->area(Area::Min).size(axis);
             }
@@ -227,10 +217,10 @@ namespace gui
             }
 
             // Recalculate lead Axis position if lead axis alignment provided.
-            axisItemPosition = getAxisAlignmentValue<axis>(axisItemPosition);
+            axisItemPosition = getAxisAlignmentValue<axis>(axisItemPosition, axisItemSize, el);
 
             // Calculate orthogonal Axis position based on Box Alignment or if not specified child Alignment.
-            orthogonalItemPosition = el->getAxisAlignmentValue(orthogonal(axis));
+            orthogonalItemPosition = el->getAxisAlignmentValue(orthogonal(axis), orthogonalItemSize);
 
             if (el->visible)
                 el->setAreaInAxis(axis, axisItemPosition, orthogonalItemPosition, axisItemSize, orthogonalItemSize);
@@ -245,6 +235,61 @@ namespace gui
         resizeItems<axis>();
     }
 
+    template <Axis axis> Position BoxLayout::getAxisAlignmentValue(Position calcPos, Length calcSize, Item *el)
+    {
+        auto offset = sizeLeftWithoutElem<axis>(this, el, Area::Normal) <= calcSize
+                          ? 0
+                          : sizeLeftWithoutElem<axis>(this, el, Area::Normal) - calcSize;
+
+        switch (getAlignment(axis).vertical) {
+        case gui::Alignment::Vertical::Top:
+            if (reverseOrder) {
+                return calcPos - offset;
+            }
+            break;
+        case gui::Alignment::Vertical::Center:
+            if (reverseOrder) {
+                return calcPos - offset / 2;
+            }
+            else {
+                return calcPos + offset / 2;
+            }
+            break;
+        case gui::Alignment::Vertical::Bottom:
+            if (!reverseOrder) {
+                return calcPos + offset;
+            }
+            break;
+        default:
+            break;
+        }
+
+        switch (getAlignment(axis).horizontal) {
+        case gui::Alignment::Horizontal::Left:
+            if (reverseOrder) {
+                return calcPos - offset;
+            }
+            break;
+        case gui::Alignment::Horizontal::Center:
+            if (reverseOrder) {
+                return calcPos - offset / 2;
+            }
+            else {
+                return calcPos + offset / 2;
+            }
+            break;
+        case gui::Alignment::Horizontal::Right:
+            if (!reverseOrder) {
+                return calcPos + offset;
+            }
+            break;
+        default:
+            break;
+        }
+
+        return calcPos;
+    }
+
     std::list<Item *>::iterator BoxLayout::nextNavigationItem(std::list<Item *>::iterator from)
     {
         return std::find_if(from, this->children.end(), [](auto &el) -> bool {
@@ -255,55 +300,9 @@ namespace gui
         });
     }
 
-    template <Axis axis> uint16_t BoxLayout::getAxisAlignmentValue(uint16_t calcPos)
+    std::list<Item *>::iterator BoxLayout::getNavigationFocusedItem()
     {
-        switch (getAlignment(axis).vertical) {
-        case gui::Alignment::Vertical::Top:
-            if (reverseOrder) {
-                return calcPos - sizeLeft<axis>(this, Area::Normal);
-            }
-            break;
-        case gui::Alignment::Vertical::Center:
-            if (reverseOrder) {
-                return calcPos - sizeLeft<axis>(this, Area::Normal) / 2;
-            }
-            else {
-                return calcPos + sizeLeft<axis>(this, Area::Normal) / 2;
-            }
-            break;
-        case gui::Alignment::Vertical::Bottom:
-            if (!reverseOrder) {
-                return calcPos + sizeLeft<axis>(this, Area::Normal);
-            }
-            break;
-        default:
-            break;
-        }
-
-        switch (getAlignment(axis).horizontal) {
-        case gui::Alignment::Horizontal::Left:
-            if (reverseOrder) {
-                return calcPos - sizeLeft<axis>(this, Area::Normal);
-            }
-            break;
-        case gui::Alignment::Horizontal::Center:
-            if (reverseOrder) {
-                return calcPos - sizeLeft<axis>(this, Area::Normal) / 2;
-            }
-            else {
-                return calcPos + sizeLeft<axis>(this, Area::Normal) / 2;
-            }
-            break;
-        case gui::Alignment::Horizontal::Right:
-            if (!reverseOrder) {
-                return calcPos + sizeLeft<axis>(this, Area::Normal);
-            }
-            break;
-        default:
-            break;
-        }
-
-        return calcPos;
+        return std::find(this->children.begin(), this->children.end(), this->getFocusItem());
     }
 
     void BoxLayout::setNavigation()
@@ -332,9 +331,9 @@ namespace gui
         }
     }
 
-    void BoxLayout::setFocusOnElement(uint32_t elementNumber)
+    void BoxLayout::setFocusOnElement(unsigned int elementNumber)
     {
-        uint32_t i = 0;
+        unsigned int i = 0;
         for (auto child : children) {
             if (child->activeItem == true && child->visible == true) {
 
@@ -379,6 +378,15 @@ namespace gui
         }
     }
 
+    auto BoxLayout::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) -> bool
+    {
+        addFromOutOfDrawAreaList();
+        resizeItems();
+        setNavigation();
+
+        return true;
+    }
+
     HBox::HBox() : BoxLayout()
     {
         type = ItemType::HBOX;
@@ -404,7 +412,7 @@ namespace gui
         return BoxLayout::handleRequestResize<Axis::X>(child, request_w, request_h);
     }
 
-    uint32_t HBox::getSizeLeft()
+    Length HBox::getSizeLeft()
     {
         return sizeLeft<Axis::X>(this, Area::Normal);
     }
@@ -434,7 +442,7 @@ namespace gui
         return BoxLayout::handleRequestResize<Axis::Y>(child, request_w, request_h);
     }
 
-    uint32_t VBox::getSizeLeft()
+    Length VBox::getSizeLeft()
     {
         return sizeLeft<Axis::Y>(this, Area::Normal);
     }

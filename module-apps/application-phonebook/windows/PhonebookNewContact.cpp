@@ -28,7 +28,6 @@ namespace gui
         bottomBar->setText(BottomBar::Side::CENTER, utils::localize.get(style::strings::common::save));
         bottomBar->setText(BottomBar::Side::RIGHT, utils::localize.get(style::strings::common::back));
 
-
         setTitle(utils::localize.get("app_phonebook_contact_title"));
 
         list = new gui::ListView(this,
@@ -52,7 +51,7 @@ namespace gui
         }
 
         if (mode == ShowMode::GUI_SHOW_INIT) {
-            list->setElementsCount(newContactModel->getItemCount());
+            list->rebuildList();
         }
 
         switch (contactAction) {
@@ -125,9 +124,38 @@ namespace gui
         return false;
     }
 
+    auto PhonebookNewContact::isAtLeastOneFieldFulfilled() -> bool
+    {
+        if (contact->primaryName.length() > 0) {
+            return true;
+        }
+        if (contact->alternativeName.length() > 0) {
+            return true;
+        }
+        if (!contact->numbers.empty()) {
+            return true;
+        }
+        if (contact->mail.length() > 0) {
+            return true;
+        }
+        if (contact->address.length() > 0) {
+            return true;
+        }
+        if (contact->note.length() > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
     auto PhonebookNewContact::verifyAndSave() -> bool
     {
         ContactRecord errNumPrim, errNumAlt, errSpeedDial;
+
+        if (!isAtLeastOneFieldFulfilled()) {
+            LOG_ERROR("Can't save empty contact");
+            return false;
+        }
 
         if (contactAction == ContactAction::Add) {
             DBServiceAPI::ContactVerificationError err =
@@ -152,11 +180,7 @@ namespace gui
                 return false;
             }
             else {
-                auto contactRec = DBServiceAPI::ContactGetByID(application, DBServiceAPI::ContactGetCount(application));
-                assert(!contactRec->empty());
-                contact                               = std::make_shared<ContactRecord>(contactRec->front());
-                std::unique_ptr<gui::SwitchData> data = std::make_unique<PhonebookItemData>(contact);
-                application->switchWindow(gui::window::name::contact, gui::ShowMode::GUI_SHOW_INIT, std::move(data));
+                application->switchWindow(gui::name::window::main_window);
                 LOG_INFO("verifyAndSave contact ADDED");
                 return true;
             }
@@ -172,7 +196,7 @@ namespace gui
                 return false;
             }
             else {
-                application->switchWindow(gui::window::name::contact, gui::ShowMode::GUI_SHOW_INIT, std::move(data));
+                application->switchWindow(gui::name::window::main_window);
                 LOG_INFO("verifyAndSave contact UPDATED");
                 return true;
             }
@@ -189,7 +213,7 @@ namespace gui
         auto oldContactRecord = (matchedContact != nullptr) ? *matchedContact : ContactRecord{};
         contact->ID           = oldContactRecord.ID;
 
-        meta.action           = [=]() -> bool {
+        meta.action = [=]() -> bool {
             if (!DBServiceAPI::ContactUpdate(application, *contact)) {
                 LOG_ERROR("Contact id=%" PRIu32 " update failed", contact->ID);
                 return false;

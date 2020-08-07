@@ -26,20 +26,13 @@ class NotesModel : public app::DatabaseModel<NotesRecord>, public gui::ListItemP
     NotesModel(app::Application *app);
 
     // virtual methods
-    void requestRecordsCount() override;
-    bool updateRecords(std::unique_ptr<std::vector<NotesRecord>> records,
-                       const uint32_t offset,
-                       const uint32_t limit,
-                       uint32_t count) override;
+    bool updateRecords(std::unique_ptr<std::vector<NotesRecord>> records) override;
     void requestRecords(const uint32_t offset, const uint32_t limit) override;
 
     // virtual methods for ListViewProvider
     unsigned int getMinimalItemHeight() const override;
     gui::ListItem *getItem(gui::Order order) override;
-    int getItemCount() const override
-    {
-        return recordsCount;
-    };
+    [[nodiscard]] unsigned int requestRecordsCount() override;
 };
 
 #endif /* MODULE_APPS_APPLICATION_NOTES_NOTESMODEL_HPP_ */

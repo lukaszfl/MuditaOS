@@ -53,6 +53,20 @@ bool DBServiceAPI::SettingsUpdate(sys::Service *serv, const SettingsRecord &rec)
     }
 }
 
+uint32_t DBServiceAPI::CalendarEventAdd(sys::Service *serv, const SMSRecord &rec)
+{
+    std::shared_ptr<DBSMSMessage> msg = std::make_shared<DBSMSMessage>(MessageType::DBCalendarEventAdd, rec);
+    auto ret                          = sys::Bus::SendUnicast(msg, service::name::db, serv, 5000);
+    // mlucki
+    // Tu wysyłam tylko powiadomienie.
+    // I teraz:
+    //      - spróbuję odebrać je w serwisie SMS
+    //      - a może wystarczy wywołać metodę API serwisu SMS
+    //      - w tej metodzie stworze timer, który z opóźnieniem kilku sekund doda nowego SMS-a
+
+    return DB_ID_NONE;
+}
+
 uint32_t DBServiceAPI::SMSAdd(sys::Service *serv, const SMSRecord &rec)
 {
     std::shared_ptr<DBSMSMessage> msg = std::make_shared<DBSMSMessage>(MessageType::DBSMSAdd, rec);

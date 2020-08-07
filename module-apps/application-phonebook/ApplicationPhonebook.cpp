@@ -1,16 +1,16 @@
 #include "ApplicationPhonebook.hpp"
 #include "Dialog.hpp"
+#include "messages/QueryMessage.hpp"
+#include "messages/DBNotificationMessage.hpp"
 #include "models/PhonebookModel.hpp"
 #include "windows/PhonebookContact.hpp"
 #include "windows/PhonebookContactDetails.hpp"
 #include "windows/PhonebookContactOptions.hpp"
-#include "windows/PhonebookErrors.hpp"
 #include "windows/PhonebookMainWindow.hpp"
 #include "windows/PhonebookNewContact.hpp"
 #include "windows/PhonebookNamecardOptions.hpp"
 #include "windows/PhonebookSearch.hpp"
 #include "windows/PhonebookSearchResults.hpp"
-
 #include <service-appmgr/ApplicationManager.hpp>
 
 namespace app
@@ -18,7 +18,9 @@ namespace app
 
     ApplicationPhonebook::ApplicationPhonebook(std::string name, std::string parent, bool startBackgound)
         : Application(name, parent, startBackgound, phonebook_stack_size)
-    {}
+    {
+        busChannels.push_back(sys::BusChannels::ServiceDBNotifications);
+    }
 
     // Invoked upon receiving data message
     auto ApplicationPhonebook::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp) -> sys::Message_t
@@ -30,6 +32,22 @@ namespace app
             return retMsg;
         }
 
+        if (msgl->messageType == MessageType::DBServiceNotification) {
+            auto msg = dynamic_cast<db::NotificationMessage *>(msgl);
+            LOG_DEBUG("Received notification");
+            if (msg != nullptr) {
+                // window-specific actions
+                if (msg->interface == db::Interface::Name::Contact) {
+                    for (auto &[name, window] : windows) {
+                        window->onDatabaseMessage(msg);
+                    }
+                }
+                // app-wide actions
+                // <none>
+                return std::make_shared<sys::ResponseMessage>();
+            }
+        }
+
         // this variable defines whether message was processed.
         bool handled = false;
 
@@ -38,9 +56,17 @@ namespace app
             handled = true;
             switch (resp->responseTo) {
             case MessageType::DBQuery: {
-                if (getCurrentWindow()->onDatabaseMessage(resp)) {
-                    refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+
+                if (auto queryResponse = dynamic_cast<db::QueryResponse *>(resp)) {
+                    auto result = queryResponse->getResult();
+
+                    if (result->hasListener()) {
+                        if (result->handle()) {
+                            refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+                        }
+                    }
                 }
+
             } break;
             default:
                 break;
@@ -81,9 +107,9 @@ namespace app
         windows.insert({gui::window::name::contact, new gui::PhonebookContact(this)});
         // windows.insert({gui::window::name::contact, new gui::PhonebookContactDetails(this)});
         windows.insert({gui::window::name::search, new gui::PhonebookSearch(this)});
-        windows.insert({gui::window::name::no_results, new gui::NoResults(this)});
-        windows.insert({gui::window::name::contact_blocked, new gui::ContactBlocked(this)});
         windows.insert({gui::window::name::search_results, new gui::PhonebookSearchResults(this)});
+        windows.insert(
+            {gui::window::name::dialog, new gui::Dialog(this, gui::window::name::dialog, gui::Dialog::Meta())});
         windows.insert(
             {gui::window::name::dialog_yes_no, new gui::DialogYesNo(this, gui::window::name::dialog_yes_no)});
         windows.insert(
@@ -99,8 +125,8 @@ namespace app
     {
         auto searchModel = std::make_unique<PhonebookModel>(this, searchFilter);
 
-        LOG_DEBUG("Search results count: %d", searchModel->getItemCount());
-        if (searchModel->getItemCount() > 0) {
+        LOG_DEBUG("Search results count: %d", searchModel->requestRecordsCount());
+        if (searchModel->requestRecordsCount() > 0) {
             auto main_window = dynamic_cast<gui::PhonebookMainWindow *>(windows[gui::name::window::main_window]);
             if (main_window == nullptr) {
                 LOG_ERROR("Failed to get main window.");
@@ -121,10 +147,24 @@ namespace app
             switchWindow("SearchResults", gui::ShowMode::GUI_SHOW_INIT, std::move(data));
         }
         else {
-            LOG_DEBUG("Switching to no results window.");
-            std::unique_ptr<gui::SwitchData> data = std::make_unique<PhonebookSearchQuery>(searchFilter);
-            switchWindow("NoResults", gui::ShowMode::GUI_SHOW_INIT, std::move(data));
+            searchEmpty(searchFilter);
         }
+    }
+
+    bool ApplicationPhonebook::searchEmpty(const std::string &query)
+    {
+        auto dialog = dynamic_cast<gui::Dialog *>(windows[gui::window::name::dialog]);
+        assert(dialog);
+        auto meta  = dialog->meta;
+        meta.icon  = "search_big";
+        meta.text  = utils::localize.get("app_phonebook_search_no_results");
+        meta.title = utils::localize.get("common_results_prefix") + "\"" + query + "\"";
+        dialog->update(meta);
+        auto data                        = std::make_unique<gui::SwitchData>();
+        data->ignoreCurrentWindowOnStack = true;
+        LOG_DEBUG("Switching to app_phonebook_search_no_results window.");
+        switchWindow(dialog->getName(), std::move(data));
+        return true;
     }
 
 } /* namespace app */

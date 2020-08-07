@@ -28,11 +28,13 @@ enum class WorkerEventQueues
 {
     queueService = 0,
     queueKeyboardIRQ,
+    queueHeadsetIRQ,
     queueBattery,
     queueRTC,
     queueHarness,
     queueCellular,
     queueMagnetometer,
+    queueTorch,
 };
 
 class WorkerEvent : public sys::Worker

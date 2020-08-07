@@ -1,5 +1,5 @@
 #include "ParserStateMachine.hpp"
-#include "Service/Service.hpp"
+#include <service-desktop/ServiceDesktop.hpp>
 #include <log/log.hpp>
 #include <json/json11.hpp>
 #include <memory>
@@ -144,16 +144,13 @@ void StateMachine::parsePayload()
     state = State::ReceivedPayload;
 
     // processing payload
-    try {
-        auto handler = std::make_shared<MessageHandler>(payload, OwnerServicePtr);
+    auto handler = std::make_unique<MessageHandler>(payload, OwnerServicePtr);
 
-        if (handler->isJSONNull()) {
-            LOG_DEBUG("JsonErr: %s", handler->getErrorString().c_str());
-        }
+    if (!handler->isValid() || handler->isJSONNull()) {
+        LOG_DEBUG("JsonErr: %s", handler->getErrorString().c_str());
+        state = State::NoMsg;
+        return;
+    }
 
-        handler->processMessage();
-    }
-    catch (const std::exception &e) {
-        LOG_ERROR("Cannot create MessageHandler! err:%s\n", e.what());
-    }
+    handler->processMessage();
 }

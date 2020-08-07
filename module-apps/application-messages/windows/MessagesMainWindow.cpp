@@ -34,19 +34,9 @@ namespace gui
         buildInterface();
     }
 
-    void MessagesMainWindow::loadData()
-    {
-        threadModel->clear();
-        threadModel->requestRecordsCount();
-        list->clear();
-        list->setElementsCount(threadModel->getItemCount());
-
-        setFocusItem(list);
-    }
-
     void MessagesMainWindow::rebuild()
     {
-        loadData();
+        list->rebuildList();
     }
 
     void MessagesMainWindow::buildInterface()
@@ -65,8 +55,6 @@ namespace gui
                                  msgThreadStyle::listHeight,
                                  threadModel);
         list->setScrollTopMargin(style::margins::small);
-        list->setPenFocusWidth(0);
-        list->setPenWidth(0);
 
         bottomBar->setActive(BottomBar::Side::LEFT, true);
         bottomBar->setActive(BottomBar::Side::CENTER, true);
@@ -101,6 +89,8 @@ namespace gui
             return true;
         };
 
+        setFocusItem(list);
+
         emptyListIcon->setVisible(false);
         emptyListIcon->focusChangedCallback = [=](gui::Item & /*item*/) {
             bottomBar->setActive(BottomBar::Side::LEFT, false);
@@ -127,11 +117,8 @@ namespace gui
                 }
             }
         }
-        if (mode == ShowMode::GUI_SHOW_INIT || data == nullptr) {
-            loadData();
-        }
 
-        if (threadModel->getItemCount() == 0) {
+        if (threadModel->requestRecordsCount() == 0) {
             emptyListIcon->setVisible(true);
             setFocusItem(emptyListIcon);
         }
@@ -173,21 +160,18 @@ namespace gui
 
     bool MessagesMainWindow::onDatabaseMessage(sys::Message *msgl)
     {
-        auto *msgResponse = dynamic_cast<DBThreadResponseMessage *>(msgl);
-        if (msgResponse &&
-            threadModel->updateRecords(
-                std::move(msgResponse->records), msgResponse->offset, msgResponse->limit, msgResponse->count)) {
-            return true;
-        }
-
         auto *msgNotification = dynamic_cast<db::NotificationMessage *>(msgl);
         if (msgNotification != nullptr) {
-            // whatever notification had happened, rebuild
-            this->rebuild();
-            if (this == application->getCurrentWindow()) {
-                application->refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+            if (msgNotification->interface == db::Interface::Name::SMSThread ||
+                msgNotification->interface == db::Interface::Name::SMS) {
+
+                if (msgNotification->dataModified()) {
+
+                    rebuild();
+
+                    return true;
+                }
             }
-            return true;
         }
         return false;
     } // namespace gui

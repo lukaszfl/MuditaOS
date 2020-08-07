@@ -28,6 +28,10 @@ namespace gui
         bool navigationRotate = true;
         void resizeItems() override;
         void setNavigation() override;
+        Item *nextNavigationItem(std::list<Item *>::iterator it);
+
+        uint32_t rowSize = 0;
+        uint32_t colSize = 0;
     };
 
 }; // namespace gui

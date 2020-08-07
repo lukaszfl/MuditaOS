@@ -103,6 +103,36 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
         responseMsg            = std::make_shared<DBSettingsResponseMessage>(SettingsRecord{}, ret);
     } break;
 
+    // mlucki
+    case MessageType::DBCalendarEventAdd: {
+        // mlucki
+        // Reakcja na message z żądaniem dodania nowego SMS-a do bazy
+        // Ale tym razem za pomocą timera
+
+        // oneMsg  = reinterpret_cast<DBSMSMessage *>(msgl);
+        timerID = CreateTimer(5000, false);
+        ReloadTimer(timerID);
+
+        /*
+                auto time         = utils::time::Scoped("DBSMSAdd");
+                DBSMSMessage *msg = reinterpret_cast<DBSMSMessage *>(msgl);
+                auto ret          = smsRecordInterface->Add(msg->record);
+                if (ret == true) {
+                    // update db ID in response message
+                    auto record    = std::make_unique<std::vector<SMSRecord>>();
+                    msg->record.ID = smsRecordInterface->GetLastID();
+                    record->push_back(msg->record);
+                    LOG_INFO("SMS added, record ID: %" PRIu32, msg->record.ID);
+                    responseMsg = std::make_shared<DBSMSResponseMessage>(std::move(record), ret);
+
+                    // mlucki
+                    // I tu jest tajemnicza notyfikacja, która być może zapala kropkę SMS-a w MainWindow
+                    // (jeśli nie ona to trzeba prześledzić jak działa trigger w sms.db i czy on nie wyzwala
+                    // message'a/notyfikacji))
+                    sendUpdateNotification(db::Interface::Name::SMS, db::Query::Type::Create);
+                }
+        */
+    } break;
         /*
          * SMS records
          */
@@ -286,6 +316,7 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
         DBContactMessage *msg = reinterpret_cast<DBContactMessage *>(msgl);
         auto ret              = contactRecordInterface->Add(msg->record);
         responseMsg           = std::make_shared<DBContactResponseMessage>(nullptr, ret);
+        sendUpdateNotification(db::Interface::Name::Contact, db::Query::Type::Create);
     } break;
 
     case MessageType::DBContactGetByName: {
@@ -359,6 +390,7 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
         DBContactMessage *msg = reinterpret_cast<DBContactMessage *>(msgl);
         auto ret              = contactRecordInterface->RemoveByID(msg->id);
         responseMsg           = std::make_shared<DBContactResponseMessage>(nullptr, ret);
+        sendUpdateNotification(db::Interface::Name::Contact, db::Query::Type::Delete);
     } break;
 
     case MessageType::DBContactBlock: {
@@ -373,6 +405,7 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
         DBContactMessage *msg = reinterpret_cast<DBContactMessage *>(msgl);
         auto ret              = contactRecordInterface->Update(msg->record);
         responseMsg           = std::make_shared<DBContactResponseMessage>(nullptr, ret);
+        sendUpdateNotification(db::Interface::Name::Contact, db::Query::Type::Update);
     } break;
 
     case MessageType::DBContactGetCount: {
@@ -554,9 +587,11 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
         assert(msg);
         db::Interface *interface = getInterface(msg->getInterface());
         assert(interface != nullptr);
-        auto result = interface->runQuery(msg->getQuery());
-        responseMsg = std::make_shared<db::QueryResponse>(std::move(result));
-        sendUpdateNotification(msg->getInterface(), msg->getQuery()->type);
+        auto query     = msg->getQuery();
+        auto queryType = query->type;
+        auto result    = interface->runQuery(std::move(query));
+        responseMsg    = std::make_shared<db::QueryResponse>(std::move(result));
+        sendUpdateNotification(msg->getInterface(), queryType);
     } break;
 
     case MessageType::DBServiceBackup: {
@@ -580,7 +615,42 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
 
 // Invoked when timer ticked
 void ServiceDB::TickHandler(uint32_t id)
-{}
+{
+    // mlucki
+
+    if (id != timerID)
+        return;
+
+    stopTimer(timerID);
+    DeleteTimer(timerID);
+
+    // sys::DataMessage* msgl = oneMsg;
+
+    auto time = utils::time::Scoped("DBSMSAdd");
+
+    SMSRecord tmpRecord;
+    tmpRecord.body   = "Calendar Event 1 - temporary";
+    tmpRecord.number = utils::PhoneNumber("601555666", utils::country::Id::UNKNOWN).getView();
+    tmpRecord.type   = SMSType::INBOX;
+    tmpRecord.date   = 0;
+
+    // DBSMSMessage *msg = reinterpret_cast<DBSMSMessage *>(msgl);
+    auto ret = smsRecordInterface->Add(tmpRecord);
+    if (ret == true) {
+        // update db ID in response message
+        auto record  = std::make_unique<std::vector<SMSRecord>>();
+        tmpRecord.ID = smsRecordInterface->GetLastID();
+        record->push_back(tmpRecord);
+        LOG_INFO("SMS added, record ID: %" PRIu32, tmpRecord.ID);
+        std::make_shared<DBSMSResponseMessage>(std::move(record), ret);
+
+        // mlucki
+        // I tu jest tajemnicza notyfikacja, która być może zapala kropkę SMS-a w MainWindow
+        // (jeśli nie ona to trzeba prześledzić jak działa trigger w sms.db i czy on nie wyzwala
+        // message'a/notyfikacji))
+        sendUpdateNotification(db::Interface::Name::SMS, db::Query::Type::Create);
+    }
+}
 
 // Invoked during initialization
 sys::ReturnCodes ServiceDB::InitHandler()

@@ -8,6 +8,8 @@ include(thirdparty)
 set (SQLITE3_SOURCE Database/sqlite3.c)
 
 set(SOURCES
+        Common/Query.cpp
+
         Database/Field.cpp
         Database/QueryResult.cpp
         Database/Database.cpp
@@ -53,6 +55,7 @@ set(SOURCES
 
         queries/RecordQuery.cpp
         queries/sms/QuerySMSSearch.cpp
+        queries/sms/QuerySMSThreadsGet.cpp
         queries/sms/QuerySMSSearchByType.cpp
         queries/sms/QuerySmsThreadMarkAsRead.cpp
         queries/calllog/QueryCalllogSetAllRead.cpp

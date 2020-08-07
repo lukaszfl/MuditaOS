@@ -59,7 +59,8 @@ namespace app
         // handle database response
         if (resp != nullptr) {
             if (auto msg = dynamic_cast<db::QueryResponse *>(resp)) {
-                if (auto response = dynamic_cast<db::query::notifications::GetAllResult *>(msg->getResult())) {
+                auto result = msg->getResult();
+                if (auto response = dynamic_cast<db::query::notifications::GetAllResult *>(result.get())) {
                     handled = handle(response);
                 }
             }
@@ -85,6 +86,10 @@ namespace app
 
             case NotificationsRecord::Key::Sms:
                 notifications.notSeen.SMS = record.value;
+                break;
+
+            case NotificationsRecord::Key::CalendarEvents:
+                notifications.notSeen.CalendarEvents = record.value;
                 break;
 
             case NotificationsRecord::Key::NotValidKey:
@@ -168,6 +173,18 @@ namespace app
         return true;
     }
 
+    bool ApplicationDesktop::clearCalendarEventsNotification()
+    {
+        LOG_DEBUG("Clear CalendarEvents notifications");
+        DBServiceAPI::GetQuery(
+            this,
+            db::Interface::Name::Notifications,
+            std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::CalendarEvents));
+        notifications.notSeen.CalendarEvents = 0;
+        getCurrentWindow()->rebuild(); // triger rebuild - shouldn't be needed, but is
+        return true;
+    }
+
     bool ApplicationDesktop::requestNotSeenNotifications()
     {
         return DBServiceAPI::GetQuery(
@@ -178,6 +195,9 @@ namespace app
     {
         notifications.notRead.Calls = DBServiceAPI::CalllogGetCount(this, EntryState::UNREAD);
         notifications.notRead.SMS   = DBServiceAPI::ThreadGetCount(this, EntryState::UNREAD);
+        // mlucki
+        // ToDo: zmienić metodę czytania countera dla CalendarEvents
+        notifications.notRead.CalendarEvents = DBServiceAPI::ThreadGetCount(this, EntryState::UNREAD);
 
         return true;
     }

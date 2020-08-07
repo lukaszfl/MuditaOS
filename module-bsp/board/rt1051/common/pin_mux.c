@@ -307,6 +307,7 @@ void PINMUX_InitBootPins(void)
     PINMUX_InitPowerSW();
     PINMUX_InitJACKDET();
     PINMUX_InitVibrator();
+    PINMUX_InitTorch();
 }
 
 /*
@@ -1387,7 +1388,7 @@ void PINMUX_InitJACKDET(void)
                      0U);                /* Software Input On Field: Input Path is determined by functionality */
 
     IOMUXC_SetPinConfig(PINMUX_JACKDET_IRQ, /* GPIO_AD_B0_02 PAD functional properties : */
-                        PAD_CONFIG_PULL_UP_100kOhm | PAD_CONFIG_SELECT_PULL);
+                        PAD_CONFIG_PULL_UP_100kOhm | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_KEEPER_ENABLED);
 }
 
 void PINMUX_InitBatteryCharger(void)
@@ -1474,6 +1475,14 @@ void PINMUX_InitVibrator(void)
 
     IOMUXC_SetPinMux(PINMUX_VIBRATOR_EN_PIN, 0U);
     IOMUXC_SetPinConfig(PINMUX_VIBRATOR_EN_PIN,
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
+}
+
+void PINMUX_InitTorch(void)
+{
+    IOMUXC_SetPinMux(PINMUX_TORCH_EN_PIN, 1U);
+    IOMUXC_SetPinConfig(PINMUX_TORCH_EN_PIN,
                         PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
                             PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
 }

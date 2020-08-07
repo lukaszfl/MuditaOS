@@ -5,6 +5,7 @@
 #include "application-phonebook/data/PhonebookStyle.hpp"
 #include "application-phonebook/widgets/PhonebookItem.hpp"
 #include "Application.hpp"
+#include "Common/Query.hpp"
 #include "DatabaseModel.hpp"
 #include "Interface/ContactRecord.hpp"
 #include "ListItemProvider.hpp"
@@ -12,7 +13,7 @@
 
 #include <string>
 
-class PhonebookModel : public app::DatabaseModel<ContactRecord>, public gui::ListItemProvider
+class PhonebookModel : public app::DatabaseModel<ContactRecord>, public gui::ListItemProvider, public db::QueryListener
 {
   private:
     std::string queryFilter;
@@ -22,21 +23,17 @@ class PhonebookModel : public app::DatabaseModel<ContactRecord>, public gui::Lis
     ~PhonebookModel() override = default;
 
     // virtual methods from DatabaseModel
-    void requestRecordsCount() override;
-    auto updateRecords(std::unique_ptr<std::vector<ContactRecord>> records,
-                       const uint32_t offset = 0,
-                       const uint32_t limit  = 0,
-                       uint32_t count        = 0) -> bool override;
+    auto updateRecords(std::unique_ptr<std::vector<ContactRecord>> records) -> bool override;
     void requestRecords(const uint32_t offset, const uint32_t limit) override;
 
     // virtual methods for ListViewProvider
     [[nodiscard]] auto getMinimalItemHeight() const -> unsigned int override;
     auto getItem(gui::Order order) -> gui::ListItem * override;
 
-    [[nodiscard]] auto getItemCount() const -> int override
-    {
-        return recordsCount;
-    };
+    // virtual method for db::QueryListener
+    auto handleQueryResponse(db::QueryResult *) -> bool override;
+
+    [[nodiscard]] auto requestRecordsCount() -> unsigned int override;
 
     [[nodiscard]] auto getFilter() const -> const std::string &;
 

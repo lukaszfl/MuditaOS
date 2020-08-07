@@ -21,24 +21,45 @@ namespace gui
             bool noUpdate;
         };
 
-        template <Axis axis> uint32_t sizeUsed(Item *it, Item::Area area = Item::Area::Min)
+        template <Axis axis> Length sizeUsed(Item *it, Item::Area area = Item::Area::Min)
         {
-            uint32_t sum = 0;
+            Length sum = 0;
+
             std::for_each(it->children.begin(), it->children.end(), [&](auto &el) {
                 sum += el->visible ? el->area(area).size(axis) + el->getMargins().getSumInAxis(axis) : 0;
             });
             return sum;
         };
-        template <Axis axis> uint32_t sizeLeft(Item *it, Item::Area area = Item::Area::Min)
+
+        template <Axis axis> Length sizeUsedWithoutElem(Item *it, Item *elem, Item::Area area = Item::Area::Min)
+        {
+            Length sum = 0;
+
+            std::for_each(it->children.begin(), it->children.end(), [&](auto &el) {
+                sum += el->visible ? el->area(area).size(axis) + el->getMargins().getSumInAxis(axis) : 0;
+            });
+
+            return sum <= elem->area(area).size(axis) ? 0 : sum - elem->area(area).size(axis);
+        };
+
+        template <Axis axis> Length sizeLeft(Item *it, Item::Area area = Item::Area::Min)
         {
             return (sizeUsed<axis>(it, area) >= it->getSize(axis)) ? 0 : it->getSize(axis) - sizeUsed<axis>(it, area);
         };
 
+        template <Axis axis> Length sizeLeftWithoutElem(Item *it, Item *elem, Item::Area area = Item::Area::Min)
+        {
+            return (sizeUsedWithoutElem<axis>(it, elem, area) >= it->getSize(axis))
+                       ? 0
+                       : it->getSize(axis) - sizeUsedWithoutElem<axis>(it, elem, area);
+        };
+
         template <Axis axis> void resizeItems();
-        template <Axis axis>[[nodiscard]] uint16_t getAxisAlignmentValue(uint16_t calcPos);
+        template <Axis axis>[[nodiscard]] Position getAxisAlignmentValue(Position calcPos, Length calcSize, Item *el);
 
         std::list<Item *> outOfDrawAreaItems;
         void addToOutOfDrawAreaList(Item *item);
+        void addFromOutOfDrawAreaList();
         virtual void resizeItems();
         bool reverseOrder = false;
 
@@ -53,8 +74,6 @@ namespace gui
         virtual ~BoxLayout() = default;
 
         // virtual methods from Item
-        void setPosition(const short &x, const short &y) override;
-        void setSize(const unsigned short w, const unsigned short h) override;
         void setAlignment(const Alignment &value) override;
         void addWidget(gui::Item *item) override;
         bool removeWidget(Item *item) override;
@@ -66,6 +85,7 @@ namespace gui
         template <Axis axis> void addWidget(Item *item);
         /// set navigation from last to fist element in box
         virtual void setNavigation();
+        std::list<Item *>::iterator getNavigationFocusedItem();
         void setVisible(bool value) override;
         /// set visible but from previous scope... (page, element etc)
         void setVisible(bool value, bool previous);
@@ -74,10 +94,11 @@ namespace gui
         /// if we want to do sth special (i.e. request new items)
         std::function<bool(const InputEvent &inputEvent)> borderCallback = nullptr;
         // set focus on specified box element
-        void setFocusOnElement(uint32_t elementNumber);
+        void setFocusOnElement(unsigned int elementNumber);
         void setFocusOnLastElement();
         template <Axis axis>
         auto handleRequestResize(const Item *, unsigned short request_w, unsigned short request_h) -> Size;
+        auto onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) -> bool override;
     };
 
     class HBox : public BoxLayout
@@ -89,7 +110,7 @@ namespace gui
         virtual ~HBox() = default;
         virtual void addWidget(Item *item) override;
         auto handleRequestResize(const Item *, unsigned short request_w, unsigned short request_h) -> Size override;
-        uint32_t getSizeLeft();
+        Length getSizeLeft();
     };
 
     class VBox : public BoxLayout
@@ -101,7 +122,7 @@ namespace gui
         virtual ~VBox() = default;
         virtual void addWidget(Item *item) override;
         auto handleRequestResize(const Item *, unsigned short request_w, unsigned short request_h) -> Size override;
-        uint32_t getSizeLeft();
+        Length getSizeLeft();
     };
 
 } /* namespace gui */

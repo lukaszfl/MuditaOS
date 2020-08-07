@@ -29,6 +29,7 @@ struct NotificationsRecord : public Record
         NotValidKey = 0,
         Calls,
         Sms,
+        CalendarEvents,
         NumberOfKeys // do not use directly
     };
 
@@ -72,7 +73,7 @@ class NotificationsRecordInterface : public RecordInterface<NotificationsRecord,
 
     NotificationsRecord GetByKey(NotificationsRecord::Key key);
 
-    std::unique_ptr<db::QueryResult> runQuery(const db::Query *query) override;
+    std::unique_ptr<db::QueryResult> runQuery(std::shared_ptr<db::Query> query) override;
 
   private:
     NotificationsDB *notificationsDb = nullptr;

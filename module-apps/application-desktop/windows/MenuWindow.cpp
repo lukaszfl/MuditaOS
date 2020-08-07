@@ -128,14 +128,14 @@ namespace gui
                 },
                 new gui::Tile("menu_alarm_W_G", "app_desktop_menu_alarm", [=](gui::Item &item) { return true; }),
 
-                new gui::Tile("menu_calendar_W_G",
+                new gui::Tile{"menu_calendar_W_G",
                               "app_desktop_menu_calendar",
                               [=](gui::Item &item) {
                                   sapm::ApplicationManager::messageSwitchApplication(
                                       application, "ApplicationCalendar", gui::name::window::main_window, nullptr);
                                   return true;
-                              }),
-
+                              },
+                              app->notifications.notRead.CalendarEvents},
                 new gui::Tile{"menu_phone_W_G",
                               "app_desktop_menu_phone",
                               [=](gui::Item &item) {
@@ -163,7 +163,14 @@ namespace gui
                                   return true;
                               },
                               app->notifications.notRead.SMS}, // mlucki
-                new gui::Tile{"menu_music_player_W_G", "app_desktop_menu_music", [=](gui::Item &item) { return true; }},
+                new gui::Tile{"menu_music_player_W_G",
+                              "app_desktop_menu_music",
+                              [=](gui::Item &item) {
+                                  LOG_INFO("Music Player");
+                                  sapm::ApplicationManager::messageSwitchApplication(
+                                      application, "ApplicationMusicPlayer", gui::name::window::main_window, nullptr);
+                                  return true;
+                              }},
                 new gui::Tile{
                     "menu_meditation_W_G", "app_desktop_menu_meditation", [=](gui::Item &item) { return true; }},
                 new gui::Tile{"menu_settings_W_G",
@@ -175,6 +182,37 @@ namespace gui
                                   return true;
                               }},
             });
+
+        mainMenu->borderCallback = [this](const InputEvent &inputEvent) -> bool {
+            if (inputEvent.state != InputEvent::State::keyReleasedShort) {
+                return false;
+            }
+            switch (inputEvent.keyCode) {
+            case KeyCode::KEY_UP: {
+                auto it = mainMenu->getNavigationFocusedItem();
+                mainMenu->setFocusItem((*std::next(it, (mainMenu->rowSize - 1) * mainMenu->colSize)));
+                return true;
+            }
+            case KeyCode::KEY_DOWN: {
+                auto it = mainMenu->getNavigationFocusedItem();
+                mainMenu->setFocusItem((*std::prev(it, (mainMenu->rowSize - 1) * mainMenu->colSize)));
+                return true;
+            }
+            case KeyCode::KEY_LEFT: {
+                auto it = mainMenu->getNavigationFocusedItem();
+                mainMenu->setFocusItem((*std::next(it, mainMenu->colSize - 1)));
+                return true;
+            }
+            case KeyCode::KEY_RIGHT: {
+                auto it = mainMenu->getNavigationFocusedItem();
+                mainMenu->setFocusItem((*std::prev(it, mainMenu->colSize - 1)));
+                return true;
+            }
+            default: {
+                return false;
+            }
+            }
+        };
 
         toolsMenu = new MenuPage(
             this,
@@ -197,6 +235,37 @@ namespace gui
                                   return true;
                               }},
             });
+
+        toolsMenu->borderCallback = [this](const InputEvent &inputEvent) -> bool {
+            if (inputEvent.state != InputEvent::State::keyReleasedShort) {
+                return false;
+            }
+            switch (inputEvent.keyCode) {
+            case KeyCode::KEY_UP: {
+                auto it = toolsMenu->getNavigationFocusedItem();
+                toolsMenu->setFocusItem((*std::next(it, (toolsMenu->rowSize - 1) * toolsMenu->colSize)));
+                return true;
+            }
+            case KeyCode::KEY_DOWN: {
+                auto it = toolsMenu->getNavigationFocusedItem();
+                toolsMenu->setFocusItem((*std::prev(it, (toolsMenu->rowSize - 1) * toolsMenu->colSize)));
+                return true;
+            }
+            case KeyCode::KEY_LEFT: {
+                auto it = toolsMenu->getNavigationFocusedItem();
+                toolsMenu->setFocusItem((*std::next(it, toolsMenu->colSize - 1)));
+                return true;
+            }
+            case KeyCode::KEY_RIGHT: {
+                auto it = toolsMenu->getNavigationFocusedItem();
+                toolsMenu->setFocusItem((*std::prev(it, toolsMenu->colSize - 1)));
+                return true;
+            }
+            default: {
+                return false;
+            }
+            }
+        };
 
         using namespace style::window;
         mainMenu->setSize(this->area().w - default_left_margin - default_right_margin,
@@ -226,6 +295,7 @@ namespace gui
     bool MenuWindow::onInput(const InputEvent &inputEvent)
     {
         // mlucki
+        //'b'
         if ((inputEvent.state == InputEvent::State::keyReleasedLong) && (inputEvent.keyCode == KeyCode::SWITCH_MID)) {
 
             SMSRecord record;
@@ -237,6 +307,22 @@ namespace gui
             // sys::Bus::SendUnicast(std::make_shared<sevm::SIMMessagnotye>(), service::name::evt_manager, this);
             // getApplication()->DataReceivedHandler();
             // return true;
+        }
+        // mlucki
+        //'c'
+        if ((inputEvent.state == InputEvent::State::keyReleasedLong) && (inputEvent.keyCode == KeyCode::KEY_PND)) {}
+        // mlucki
+        //'v'
+        if ((inputEvent.state == InputEvent::State::keyReleasedLong) && (inputEvent.keyCode == KeyCode::SWITCH_DN)) {}
+        // mlucki
+        //'n'
+        if ((inputEvent.state == InputEvent::State::keyReleasedLong) && (inputEvent.keyCode == KeyCode::SWITCH_UP)) {
+            SMSRecord record;
+            record.body   = "Calendar Event 1";
+            record.number = utils::PhoneNumber("601555666", utils::country::Id::UNKNOWN).getView();
+            record.type   = SMSType::INBOX;
+            record.date   = 0;
+            DBServiceAPI::CalendarEventAdd(application, record);
         }
 
         if ((inputEvent.state == InputEvent::State::keyReleasedShort) && (inputEvent.keyCode == KeyCode::KEY_RF) &&

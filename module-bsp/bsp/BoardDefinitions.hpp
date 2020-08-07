@@ -18,35 +18,43 @@
 #include "drivers/pll/DriverPLL.hpp"
 #include "drivers/gpio/DriverGPIO.hpp"
 
-enum class BoardDefinitions{
+enum class BoardDefinitions
+{
 
-    POWER_SWITCH_HOLD_GPIO = static_cast<int >(drivers::GPIOInstances ::GPIO_2),
+    POWER_SWITCH_HOLD_GPIO   = static_cast<int>(drivers::GPIOInstances ::GPIO_2),
     POWER_SWITCH_HOLD_BUTTON = 7,
 
     USB_FUNCTION_MUX_SELECT = 25, // GPIO_AD_B1_09, USB_MUX_SEL0
-    USB_POWER_ACK = 3, // GPIO_B0_03  Note: pull-up in order to read
+    USB_POWER_ACK           = 3,  // GPIO_B0_03  Note: pull-up in order to read
 
-    AUDIOCODEC_I2C_BAUDRATE = 100000,
-    AUDIOCODEC_I2C = static_cast<int >(drivers::I2CInstances ::I2C2),
-    AUDIOCODEC_DMAMUX = static_cast<int >(drivers::DMAMuxInstances ::DMAMUX0),
-    AUDIOCODEC_DMA = static_cast<int >(drivers::DMAInstances ::DMA_0),
+    AUDIOCODEC_I2C_BAUDRATE   = 100000,
+    AUDIOCODEC_I2C            = static_cast<int>(drivers::I2CInstances ::I2C2),
+    AUDIOCODEC_DMAMUX         = static_cast<int>(drivers::DMAMuxInstances ::DMAMUX0),
+    AUDIOCODEC_DMA            = static_cast<int>(drivers::DMAInstances ::DMA_0),
     AUDIOCODEC_TX_DMA_CHANNEL = 6,
     AUDIOCODEC_RX_DMA_CHANNEL = 7,
+    AUDIOCODEC_IRQ            = 31, // GPIO_B1_15  requires pull-up 10kΩ
+    AUDIOCODEC_IRQ_GPIO       = static_cast<int>(drivers::GPIOInstances ::GPIO_2),
 
-    MIC_BIAS_DRIVER_GPIO = static_cast<int >(drivers::GPIOInstances ::GPIO_2),
-    MIC_BIAS_DRIVER_EN = 19, // GPIO_B1_03 MIC_LDO_EN
+    MIC_BIAS_DRIVER_GPIO = static_cast<int>(drivers::GPIOInstances ::GPIO_2),
+    MIC_BIAS_DRIVER_EN   = 19, // GPIO_B1_03 MIC_LDO_EN
 
-    CELLULAR_AUDIO_DMAMUX = AUDIOCODEC_DMAMUX,
-    CELLULAR_AUDIO_DMA = AUDIOCODEC_DMA,
+    CELLULAR_AUDIO_DMAMUX         = AUDIOCODEC_DMAMUX,
+    CELLULAR_AUDIO_DMA            = AUDIOCODEC_DMA,
     CELLULAR_AUDIO_TX_DMA_CHANNEL = 3,
     CELLULAR_AUDIO_RX_DMA_CHANNEL = 4,
 
     KEYBOARD_I2C_BAUDRATE = AUDIOCODEC_I2C_BAUDRATE,
-    KEYBOARD_I2C = AUDIOCODEC_I2C,
-    KEYBOARD_GPIO = static_cast<int >(drivers::GPIOInstances ::GPIO_2),
-    KEYBOARD_RF_BUTTON = 6,
-    KEYBOARD_IRQ_PIN = 28,
-    KEYBOARD_RESET_PIN = 29,
+    KEYBOARD_I2C          = AUDIOCODEC_I2C,
+    KEYBOARD_GPIO         = static_cast<int>(drivers::GPIOInstances ::GPIO_2),
+    KEYBOARD_RF_BUTTON    = 6,
+    KEYBOARD_IRQ_PIN      = 28,
+    KEYBOARD_RESET_PIN    = 29,
+
+	HEADSET_I2C_BAUDRATE = AUDIOCODEC_I2C_BAUDRATE,
+	HEADSET_I2C = AUDIOCODEC_I2C,
+	HEADSET_GPIO = static_cast<int >(drivers::GPIOInstances ::GPIO_2),
+	HEADSET_IRQ_PIN = 30,
 
     BATTERY_CHARGER_I2C_BAUDRATE = AUDIOCODEC_I2C_BAUDRATE,
     BATTERY_CHARGER_I2C = AUDIOCODEC_I2C,
@@ -101,6 +109,11 @@ enum class BoardDefinitions{
 	MAGNETOMETER_I2C_BAUDRATE = AUDIOCODEC_I2C_BAUDRATE,
     MAGNETOMETER_GPIO = static_cast<int>(drivers::GPIOInstances::GPIO_1),
     MAGNETOMETER_IRQ = 20, // GPIO_AD_B1_04
+
+    TORCH_DRIVER_I2C_BAUDRATE = AUDIOCODEC_I2C_BAUDRATE, // can do 400 kHz
+    TORCH_DRIVER_I2C = AUDIOCODEC_I2C,
+    TORCH_DRIVER_GPIO = static_cast<int>(drivers::GPIOInstances::GPIO_1),
+    TORCH_DRIVER_EN = 21, // GPIO_AD_B1_05 Active HIGH. Internal pulldown resistor of 300kΩ between HWEN and GND.
 
 };
 

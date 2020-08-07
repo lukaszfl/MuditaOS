@@ -1,30 +1,24 @@
 #pragma once
 
-
 #include "DatabaseModel.hpp"
 #include "Application.hpp"
 #include "ListItemProvider.hpp"
+#include "Common/Query.hpp"
 #include "Interface/ThreadRecord.hpp"
 
 #include <vector>
 
-class BaseThreadRecordModel : public app::DatabaseModel<ThreadRecord>, public gui::ListItemProvider
+class BaseThreadRecordModel : public app::DatabaseModel<ThreadRecord>,
+                              public gui::ListItemProvider,
+                              public db::QueryListener
 {
   public:
     BaseThreadRecordModel() = delete;
     BaseThreadRecordModel(app::Application *app);
 
-    void requestRecordsCount() override;
-    bool updateRecords(std::unique_ptr<std::vector<ThreadRecord>> records,
-                       const uint32_t offset,
-                       const uint32_t limit,
-                       uint32_t count) override;
+    unsigned int requestRecordsCount() override;
+    bool updateRecords(std::unique_ptr<std::vector<ThreadRecord>> records) override;
     void requestRecords(const uint32_t offset, const uint32_t limit) override;
-
-    int getItemCount() const override
-    {
-        return recordsCount;
-    };
 
     app::Application *getApplication(void)
     {

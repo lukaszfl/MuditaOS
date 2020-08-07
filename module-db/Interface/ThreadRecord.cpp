@@ -1,6 +1,5 @@
 #include "ThreadRecord.hpp"
 #include "SMSRecord.hpp"
-#include "queries/sms/QuerySMSSearch.hpp"
 #include <cassert>
 #include <log/log.hpp>
 
@@ -120,21 +119,28 @@ ThreadRecord ThreadRecordInterface::GetByContact(uint32_t contact_id)
     return ThreadRecord(ret[0]);
 }
 
-std::unique_ptr<db::QueryResult> ThreadRecordInterface::runQuery(const db::Query *query)
+std::unique_ptr<db::QueryResult> ThreadRecordInterface::runQuery(std::shared_ptr<db::Query> query)
 {
-    if (const auto local_query = dynamic_cast<const db::query::SMSSearch *>(query)) {
-        return runQueryImpl(local_query);
+    if (const auto localQuery = dynamic_cast<const db::query::SMSSearch *>(query.get())) {
+        auto dbResult = smsDB->threads.getBySMSQuery(localQuery->text, localQuery->starting_postion, localQuery->depth);
+
+        auto response = std::make_unique<db::query::SMSSearchResult>(dbResult.first, dbResult.second);
+        response->setRequestQuery(query);
+        return response;
     }
-    if (const auto local_query = dynamic_cast<const db::query::smsthread::MarkAsRead *>(query)) {
+
+    if (const auto localQuery = dynamic_cast<const db::query::SMSThreadsGet *>(query.get())) {
+        auto dbResult = smsDB->threads.getLimitOffset(localQuery->offset, localQuery->limit);
+
+        auto response = std::make_unique<db::query::SMSThreadsGetResults>(dbResult);
+        response->setRequestQuery(query);
+        return response;
+    }
+
+    if (const auto local_query = dynamic_cast<const db::query::smsthread::MarkAsRead *>(query.get())) {
         return runQueryImpl(local_query);
     }
     return nullptr;
-}
-
-std::unique_ptr<db::query::SMSSearchResult> ThreadRecordInterface::runQueryImpl(const db::query::SMSSearch *query)
-{
-    auto db_result = smsDB->threads.getBySMSQuery(query->text, query->starting_postion, query->depth);
-    return std::make_unique<db::query::SMSSearchResult>(db_result.first, db_result.second);
 }
 
 std::unique_ptr<db::query::smsthread::MarkAsReadResult> ThreadRecordInterface::runQueryImpl(
