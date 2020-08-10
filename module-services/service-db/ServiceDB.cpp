@@ -29,6 +29,7 @@
 
 #include <cassert>
 #include <time/ScopedTime.hpp>
+#include <module-services/service-audio/api/AudioServiceAPI.hpp>
 #include "includes/DBServiceName.hpp"
 #include "messages/QueryMessage.hpp"
 
@@ -637,6 +638,12 @@ void ServiceDB::TickHandler(uint32_t id)
     // DBSMSMessage *msg = reinterpret_cast<DBSMSMessage *>(msgl);
     auto ret = smsRecordInterface->Add(tmpRecord);
     if (ret == true) {
+
+        // const std::string ringtone_path = "assets/audio/sms_transformer.wav";
+        ////const std::string ringtone_path =
+        ///"/home/mlucki/Praca/PurePhone/build-linux-Debug/assets/audio/sms_transformer.wav";
+        ////AudioServiceAPI::PlaybackStart(this, ringtone_path);
+
         // update db ID in response message
         auto record  = std::make_unique<std::vector<SMSRecord>>();
         tmpRecord.ID = smsRecordInterface->GetLastID();

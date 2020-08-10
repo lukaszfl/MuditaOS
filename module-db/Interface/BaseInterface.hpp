@@ -12,7 +12,7 @@ namespace db
     {
       public:
         virtual std::unique_ptr<db::QueryResult> runQuery(std::shared_ptr<db::Query> query);
-
+        // mlucki
         enum class Name
         {
             Settings,
