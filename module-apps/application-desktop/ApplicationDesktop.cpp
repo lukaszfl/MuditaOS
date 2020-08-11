@@ -12,6 +12,9 @@
 #include <service-appmgr/ApplicationManager.hpp>
 #include <service-cellular/ServiceCellular.hpp>
 #include <application-calllog/ApplicationCallLog.hpp>
+#include "application-calendar/ApplicationCalendar.hpp"
+#include "application-calendar/widgets/CalendarStyle.hpp"
+
 #include <messages/QueryMessage.hpp>
 #include <module-db/queries/notifications/QueryNotificationsClear.hpp>
 
@@ -80,6 +83,10 @@ namespace app
                 notifications.notSeen.SMS = record.value;
                 break;
 
+            case NotificationsRecord::Key::CalendarEvents:
+                notifications.notSeen.CalendarEvents = record.value;
+                break;
+
             case NotificationsRecord::Key::NotValidKey:
             case NotificationsRecord::Key::NumberOfKeys:
                 LOG_ERROR("Not a valid key");
@@ -100,6 +107,8 @@ namespace app
             return requestNotSeenNotifications();
         }
 
+        // mlucki
+        // ToDo: calendarEvents
         if ((msg->interface == db::Interface::Name::Calllog || msg->interface == db::Interface::Name::SMSThread ||
              msg->interface == db::Interface::Name::SMS) &&
             msg->type != db::Query::Type::Read) {
@@ -138,6 +147,17 @@ namespace app
             this, app::CallLogAppStr, gui::name::window::main_window, nullptr);
     }
 
+    bool ApplicationDesktop::showAllCalendarEvents()
+    {
+        LOG_DEBUG("show all calendar events!");
+        return sapm::ApplicationManager::messageSwitchApplication(
+            // this, app::name_calendar, gui::name::window::main_window, nullptr);
+            this,
+            app::name_calendar,
+            style::window::calendar::name::all_events_window,
+            nullptr);
+    }
+
     bool ApplicationDesktop::clearCallsNotification()
     {
         LOG_DEBUG("Clear Call notifications");
@@ -160,6 +180,18 @@ namespace app
         return true;
     }
 
+    bool ApplicationDesktop::clearCalendarEventsNotification()
+    {
+        LOG_DEBUG("Clear CalendarEvents notifications");
+        DBServiceAPI::GetQuery(
+            this,
+            db::Interface::Name::Notifications,
+            std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::CalendarEvents));
+        notifications.notSeen.CalendarEvents = 0;
+        getCurrentWindow()->rebuild(); // triger rebuild - shouldn't be needed, but is
+        return true;
+    }
+
     bool ApplicationDesktop::requestNotSeenNotifications()
     {
         return DBServiceAPI::GetQuery(
@@ -168,8 +200,9 @@ namespace app
 
     bool ApplicationDesktop::requestNotReadNotifications()
     {
-        notifications.notRead.Calls = DBServiceAPI::CalllogGetCount(this, EntryState::UNREAD);
-        notifications.notRead.SMS   = DBServiceAPI::ThreadGetCount(this, EntryState::UNREAD);
+        notifications.notRead.Calls          = DBServiceAPI::CalllogGetCount(this, EntryState::UNREAD);
+        notifications.notRead.SMS            = DBServiceAPI::ThreadGetCount(this, EntryState::UNREAD);
+        notifications.notRead.CalendarEvents = DBServiceAPI::CalendarEventsGetCount(this, EntryState::UNREAD);
 
         return true;
     }

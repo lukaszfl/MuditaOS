@@ -4,6 +4,9 @@
 #include <gui/widgets/TopBar.hpp>
 #include <service-appmgr/ApplicationManager.hpp>
 
+#include <service-db/api/DBServiceAPI.hpp>
+#include <module-db/queries/notifications/QueryNotificationsClear.hpp>
+
 namespace gui
 {
 
@@ -52,6 +55,12 @@ namespace gui
     {
         allEventsList->clear();
         allEventsList->setProvider(allEventsModel);
+
+        // mlucki
+        DBServiceAPI::GetQuery(
+            application,
+            db::Interface::Name::Notifications,
+            std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::CalendarEvents));
     }
 
     bool AllEventsWindow::onInput(const gui::InputEvent &inputEvent)

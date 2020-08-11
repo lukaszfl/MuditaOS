@@ -36,7 +36,7 @@
 #include "service-evtmgr/EventManager.hpp"
 #include "service-fota/ServiceFota.hpp"
 #include "service-antenna/ServiceAntenna.hpp"
-#include "service-calendar/ServiceCalendar.hpp"
+#include "service-time/ServiceTime.hpp"
 
 // module-bsp
 #include "bsp/bsp.hpp"
@@ -184,7 +184,7 @@ int main()
         ret |= sys::SystemManager::CreateService(std::make_shared<FotaService::Service>(), sysmgr.get());
 #endif
         ret |= sys::SystemManager::CreateService(std::make_shared<ServiceAudio>(), sysmgr.get());
-        ret |= sys::SystemManager::CreateService(std::make_shared<ServiceCalendar>(), sysmgr.get());
+        ret |= sys::SystemManager::CreateService(std::make_shared<ServiceTime>(), sysmgr.get());
 
         // Service Desktop disabled on master - pulling read on usb driver
         // ret |= sys::SystemManager::CreateService(std::make_shared<ServiceDesktop>(), sysmgr.get());
