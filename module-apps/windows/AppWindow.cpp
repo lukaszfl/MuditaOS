@@ -6,6 +6,8 @@
 #include <application-desktop/ApplicationDesktop.hpp>
 #include <service-audio/api/AudioServiceAPI.hpp>
 
+#include "EinkIncludes.hpp"
+
 using namespace style::header;
 
 namespace gui
@@ -140,7 +142,30 @@ namespace gui
             return true;
         }
         case KeyCode::KEY_RF: {
-            application->returnToPreviousWindow();
+            auto lab         = new Label(nullptr, 100, 300, 240, 100);
+            auto temperature = EinkGetTemperatureInternal();
+            lab->setText(std::to_string(temperature));
+            lab->setFilled(true);
+            lab->setFillColor(gui::ColorFullBlack);
+            lab->setTextColor(gui::ColorFullWhite);
+            if (temperature != 0) {
+                bsp::torch::turn(bsp::torch::State::on);
+            }
+            else {
+                bsp::torch::turn(bsp::torch::State::off);
+            }
+
+            if (temperature < 25) {
+                // cold
+            }
+            else if (temperature >= 25) {
+                // warm
+            }
+            bsp::torch::setCurrent(temperature * 7);
+
+            this->addWidget(lab);
+
+            //            application->returnToPreviousWindow();
             return true;
         }
         case KeyCode::KEY_TORCH: {
