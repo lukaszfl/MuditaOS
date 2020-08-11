@@ -219,6 +219,9 @@ namespace gui
                 }
                 // if numeric key was pressed record that key and send it to call application
                 else if (code != 0) {
+                    // mlucki
+                    // Tu mamy wywołanie ekranu bezpośredniego wprowadzania numeru telefonu
+                    // Podobnie zorganizowane są inne tego typu wołania, np. przychodzące połączenie
                     return app::prepare_call(application, std::string(1, static_cast<char>(code)));
                 }
             }
