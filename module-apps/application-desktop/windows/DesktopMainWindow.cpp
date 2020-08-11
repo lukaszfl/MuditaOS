@@ -365,6 +365,24 @@ namespace gui
                 },
                 [app]() -> bool { return app->clearMessagesNotification(); });
         }
+
+        if (app->notifications.notSeen.CalendarEvents > 0) {
+            add_notification(
+                notifications,
+                "cross",
+                utils::localize.get("app_desktop_unread_calendar_events"),
+                std::to_string(app->notifications.notSeen.CalendarEvents),
+                /*[this]() -> bool {
+                  return sapm::ApplicationManager::messageSwitchApplication(
+                      //application, app::name_calendar, style::window::calendar::name::all_events_window, nullptr);
+                      application, app::name_calendar, gui::name::window::main_window, nullptr);
+                                      },*/
+
+                [app]() -> bool { return app->showAllCalendarEvents(); },
+                //[app]() -> bool { return app->showCalls(); },
+                [app]() -> bool { return app->clearCalendarEventsNotification(); });
+        }
+
         if (app->notifications.notSeen.areEmpty() != true) {
             setFocusItem(notifications);
             bottomBar->setText(BottomBar::Side::LEFT, utils::localize.get("app_desktop_show"));
