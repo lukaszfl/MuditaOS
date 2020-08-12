@@ -18,6 +18,7 @@ namespace magnetometer{
 
 	bool isPresent(void);
 	bsp::Board GetBoard(void);
+	float getTemperature();
 }
 
 }
