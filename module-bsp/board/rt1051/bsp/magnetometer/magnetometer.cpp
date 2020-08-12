@@ -29,6 +29,21 @@ namespace bsp
             return kStatus_Success;
         }
 
+        float getTemperature()
+        {
+            addr.subAddress = ALS31300_MEASUREMENTS_MSB_REG;
+
+            uint8_t buf[4];
+            i2c->Read(addr, buf, 4);
+            auto tempMSB = buf[0] && 0b111111;
+
+            addr.subAddress = ALS31300_MEASUREMENTS_LSB_REG;
+            i2c->Read(addr, buf, 4);
+
+            auto tempLSB = buf[0] && 0b111111;
+            return als31300_temperature_convert((tempMSB << 6) | (tempLSB));
+        }
+
         bool isPresent(void)
         {
             uint8_t buf;
