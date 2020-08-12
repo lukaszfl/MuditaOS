@@ -1,5 +1,5 @@
-
 #include "bsp/magnetometer/magnetometer.hpp"
+#include "ALS31300.hpp"
 
 #include "bsp/BoardDefinitions.hpp"
 #include "drivers/i2c/DriverI2C.hpp"
