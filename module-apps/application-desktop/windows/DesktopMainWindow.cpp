@@ -370,6 +370,7 @@ namespace gui
             add_notification(
                 notifications,
                 "cross",
+                //"calendar",
                 utils::localize.get("app_desktop_unread_calendar_events"),
                 std::to_string(app->notifications.notSeen.CalendarEvents),
                 /*[this]() -> bool {
