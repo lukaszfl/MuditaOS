@@ -144,24 +144,41 @@ namespace gui
         case KeyCode::KEY_RF: {
             auto lab         = new Label(nullptr, 100, 300, 240, 100);
             auto temperature = EinkGetTemperatureInternal();
-            lab->setText(std::to_string(temperature));
+
+            do {
+                auto randomX = (rand() * RAND_MAX) % lab->getWidth();
+                auto randomY = (rand() * RAND_MAX) % lab->getHeight();
+
+                std::string spaces = "";
+                for (unsigned int i = 0; i < randomX; i++) {
+                    spaces += ' ';
+                }
+
+                lab->setPosition(lab->getX(), 240 + randomY);
+
+                lab->setText(spaces);
+            } while (lab->getTextNeedSpace() > 240);
+
+            lab->setText(lab->getText() + std::to_string(temperature)); // add temperature
+
             lab->setFilled(true);
+            lab->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
             lab->setFillColor(gui::ColorFullBlack);
             lab->setTextColor(gui::ColorFullWhite);
-            if (temperature != 0) {
-                bsp::torch::turn(bsp::torch::State::on);
-            }
-            else {
+            if (temperature == 0) {
                 bsp::torch::turn(bsp::torch::State::off);
             }
+            else {
 
-            if (temperature < 25) {
-                // cold
+                if (temperature < 0) {
+                    // cold
+                    bsp::torch::turn(bsp::torch::State::on, bsp::torch::ColourTemperature::coldest);
+                }
+                else if (temperature > 0) {
+                    // warm
+                    bsp::torch::turn(bsp::torch::State::on, bsp::torch::ColourTemperature::warmest);
+                }
             }
-            else if (temperature >= 25) {
-                // warm
-            }
-            bsp::torch::setCurrent(temperature * 7);
 
             this->addWidget(lab);
 
@@ -225,3 +242,4 @@ namespace gui
     }
 
 } /* namespace gui */
+;
