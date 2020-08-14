@@ -94,7 +94,7 @@ EventsTableRow EventsTable::getById(uint32_t id)
 
 std::vector<EventsTableRow> EventsTable::selectByDatePeriod(uint32_t date_from, uint32_t date_till)
 {
-    auto retQuery = db->query("SELECT * FROM events WHERE date_from >= %u AND date_till <= %u;", date_from, date_till);
+    auto retQuery = db->query("SELECT * FROM events WHERE date_from >= %u AND date_from <= %u;", date_from, date_till);
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return std::vector<EventsTableRow>();
