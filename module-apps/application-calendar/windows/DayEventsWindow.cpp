@@ -19,7 +19,7 @@ namespace gui
 
     DayEventsWindow::DayEventsWindow(app::Application *app, std::string name)
         : AppWindow(app, style::window::calendar::name::day_events_window),
-          dayEventsModel{std::make_shared<DayEventsModel>(this->application)}
+          dayEventsModel{std::make_shared<DayEventsInternalModel>(this->application)}
     {
         buildInterface();
     }
@@ -97,9 +97,8 @@ namespace gui
                 for (auto &rec : *records) {
                     LOG_DEBUG("record: %s", rec.title.c_str());
                 }
-                uint32_t numberOfItems = records->size();
-                dayEventsModel->setRecordsCount(numberOfItems);
-                return dayEventsModel->updateRecords(std::move(records));
+                dayEventsList->rebuildList();
+                dayEventsModel->loadData(std::move(records));
             }
             LOG_DEBUG("Response False");
             return false;
