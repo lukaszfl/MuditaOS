@@ -217,6 +217,12 @@ enum class MessageType
     FotaProgress,
     FotaFinished,
 
+    // Time messages
+    TimeNotification,
+    TimeStart,
+    TimeProgress,
+    TimeFinished,
+
     StateChange,
     // antenna messages
     AntennaChanged,
