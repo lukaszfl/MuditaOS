@@ -38,6 +38,8 @@ namespace gui
                  const std::unique_ptr<MonthModel> &model);
 
         ~MonthBox() override = default;
+        std::string month;
+        uint32_t monthFilterValue;
     };
 
     class CalendarMainWindow : public gui::AppWindow
@@ -66,6 +68,10 @@ namespace gui
         void buildInterface() override;
         void destroyInterface() override;
         bool onInput(const gui::InputEvent &inputEvent) override;
+        std::unique_ptr<MonthModel> getMonthModel()
+        {
+            return std::move(monthModel);
+        }
     };
 
 } // namespace gui

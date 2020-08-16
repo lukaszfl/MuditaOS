@@ -2,6 +2,7 @@
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include <gui/widgets/Window.hpp>
 #include <time/time_conversion.hpp>
+#include <module-apps/application-calendar/data/CalendarData.hpp>
 
 namespace gui
 {
@@ -50,6 +51,23 @@ namespace gui
         eventDetailModel->loadData();
     }
 
+    auto EventDetailWindow::handleSwitchData(SwitchData *data) -> bool
+    {
+        if (data == nullptr) {
+            return false;
+        }
+
+        auto *item = dynamic_cast<EventRecordData *>(data);
+        if (item == nullptr) {
+            return false;
+        }
+
+        eventRecord = item->getData();
+        setTitle(eventRecord->title);
+
+        return true;
+    }
+
     bool EventDetailWindow::onInput(const gui::InputEvent &inputEvent)
     {
         if (AppWindow::onInput(inputEvent)) {
@@ -62,7 +80,9 @@ namespace gui
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_LF) {
             LOG_DEBUG("Switch to option window");
-            application->switchWindow(style::window::calendar::name::events_options);
+            auto rec  = std::move(eventRecord);
+            auto data = std::make_unique<EventRecordData>(std::move(rec));
+            application->switchWindow(style::window::calendar::name::events_options, std::move(data));
             return true;
         }
 
