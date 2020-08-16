@@ -2,6 +2,7 @@ target_sources( ${PROJECT_NAME}
 
 	PRIVATE
 		"${CMAKE_CURRENT_LIST_DIR}/ApplicationCalendar.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/models/MonthModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/CalendarMainWindow.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/DayEventsWindow.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/CalendarEventsOptionsWindow.cpp"
@@ -13,7 +14,6 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/models/AllEventsModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/EventDetailModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/EventDetailWindow.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/models/MonthModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/CustomRepeatModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/NewEditEventModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/DayEventsInternalModel.cpp"
@@ -30,7 +30,9 @@ target_sources( ${PROJECT_NAME}
 	PUBLIC
 		"${CMAKE_CURRENT_LIST_DIR}/ApplicationCalendar.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/DayEventsModel.hpp"
+		"${CMAKE_CURRENT_LIST_DIR}/models/MonthModel.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/CalendarListItem.hpp"
+		"${CMAKE_CURRENT_LIST_DIR}/data/CalendarData.hpp"
 
 )
 

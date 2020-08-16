@@ -29,4 +29,5 @@ class MonthModel
     uint32_t getLastDay();
     uint32_t getFirstWeekOffset();
     std::string getMonthYearText();
+    std::string getMonthText();
 };
