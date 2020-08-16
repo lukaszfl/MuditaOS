@@ -4,6 +4,7 @@
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include "application-calendar/models/DayEventsModel.hpp"
 #include "application-calendar/models/AllEventsModel.hpp"
+#include "application-calendar/data/CalendarData.hpp"
 #include "NoEvents.hpp"
 #include <module-services/service-db/messages/QueryMessage.hpp>
 #include <module-db/queries/calendar/QueryEventsGetAll.hpp>
@@ -36,14 +37,19 @@ namespace gui
             this->activeItem = false;
         }
         else {
-            std::string number =
-                std::to_string(cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1);
+            uint32_t numb      = cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1;
+            std::string number = std::to_string(numb);
             this->setText(number);
             this->activeItem = true;
             this->setFont(style::window::font::medium);
             this->activatedCallback = [=](gui::Item &item) {
                 LOG_DEBUG("Switch to DayEventsWindow");
-                app->switchWindow("DayEventsWindow", nullptr);
+                auto data           = std::make_unique<DayMonthData>();
+                auto actualMonthBox = dynamic_cast<gui::MonthBox *>(parent);
+                auto month          = actualMonthBox->month;
+                auto filter         = actualMonthBox->monthFilterValue + numb * 10000;
+                data->setData(number + " " + month, filter);
+                app->switchWindow("DayEventsWindow", std::move(data));
                 return true;
             };
             this->setPenWidth(style::window::default_border_no_focus_w);
@@ -68,6 +74,12 @@ namespace gui
 
         assert(parent);
         parent->addWidget(this);
+        month                  = model->getMonthText();
+        date::year actualYear  = model->getYear();
+        int yearInt            = static_cast<decltype(yearInt)>(actualYear) - 2000;
+        uint32_t yearUInt      = yearInt * 100000000;
+        unsigned int monthUInt = static_cast<unsigned>(model->getMonth()) * 1000000;
+        monthFilterValue       = yearUInt + monthUInt;
         grid.x = dayWidth;
         grid.y = dayHeight;
 

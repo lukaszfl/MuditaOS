@@ -1,5 +1,6 @@
 #include "DayEventsInternalModel.hpp"
 #include "application-calendar/widgets/DayEventsItem.hpp"
+#include "application-calendar/data/CalendarData.hpp"
 #include <ListView.hpp>
 #include <Utils.hpp>
 #include <algorithm>
@@ -45,7 +46,9 @@ void DayEventsInternalModel::loadData(std::unique_ptr<std::vector<EventsRecord>>
         item->setEvent(std::make_shared<EventsRecord>(record));
         item->activatedCallback = [=](gui::Item &item) {
             LOG_INFO("Switch to event detail window");
-            app->switchWindow(style::window::calendar::name::details_window);
+            auto rec  = std::make_unique<EventsRecord>(record);
+            auto data = std::make_unique<EventRecordData>(std::move(rec));
+            app->switchWindow(style::window::calendar::name::details_window, std::move(data));
             return true;
         };
         internalData.push_back(item);
