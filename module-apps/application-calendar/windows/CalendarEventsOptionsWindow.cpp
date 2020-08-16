@@ -4,6 +4,7 @@
 #include <Utils.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsRemove.hpp>
+#include <module-apps/application-calendar/data/CalendarData.hpp>
 
 namespace gui
 {
@@ -32,6 +33,22 @@ namespace gui
         return options;
     }
 
+    auto CalendarEventsOptions::handleSwitchData(SwitchData *data) -> bool
+    {
+        if (data == nullptr) {
+            return false;
+        }
+
+        auto *item = dynamic_cast<EventRecordData *>(data);
+        if (item == nullptr) {
+            return false;
+        }
+
+        eventRecord = item->getData();
+
+        return true;
+    }
+
     auto CalendarEventsOptions::eventDelete() -> bool
     {
         LOG_DEBUG("Switch to delete event window");
@@ -40,10 +57,17 @@ namespace gui
         assert(dialog != nullptr);
         auto meta   = dialog->meta;
         meta.action = [=]() -> bool {
-            LOG_INFO("Detele calendar event");
-            uint32_t mockID = 2;
-            DBServiceAPI::GetQuery(
-                application, db::Interface::Name::Events, std::make_unique<db::query::events::Remove>(mockID));
+            LOG_INFO("Detele calendar event %d", eventRecord->ID);
+            auto msg = DBServiceAPI::GetQueryWithReply(application,
+                                                       db::Interface::Name::Events,
+                                                       std::make_unique<db::query::events::Remove>(eventRecord->ID),
+                                                       1000);
+
+            LOG_DEBUG("Type id %s", typeid(*msg.second).name());
+            auto msgl = msg.second.get();
+            if (msgl) {
+                LOG_INFO("YEAH %d", eventRecord->ID);
+            }
             return true;
         };
         meta.text  = utils::localize.get("app_calendar_event_delete_confirmation");
