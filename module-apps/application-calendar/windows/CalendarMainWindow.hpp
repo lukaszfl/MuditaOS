@@ -13,8 +13,11 @@ namespace gui
 {
     class CalendarMainWindow;
 
-    class DayLabel : public Label
+    class DayLabel : public VBox
     {
+        gui::Label *dayNumber = nullptr;
+        gui::Label *dot       = nullptr;
+
       public:
         DayLabel(app::Application *app,
                  gui::Item *parent,
@@ -44,6 +47,7 @@ namespace gui
 
     class CalendarMainWindow : public gui::AppWindow
     {
+        bool isDayEmpty[31]    = {true};
         uint32_t offsetFromTop = 0;
         uint32_t monthWidth    = 0;
         uint32_t monthHeight   = 0;
@@ -60,7 +64,6 @@ namespace gui
         CalendarMainWindow(app::Application *app, std::string name);
 
         ~CalendarMainWindow() override = default;
-        void switchToNoEventsWindow();
         void rebuild() override;
         void refresh();
         void buildMonth(std::unique_ptr<MonthModel> &model);
@@ -68,6 +71,8 @@ namespace gui
         void buildInterface() override;
         void destroyInterface() override;
         bool onInput(const gui::InputEvent &inputEvent) override;
+        void onBeforeShow(ShowMode mode, SwitchData *data) override;
+        bool onDatabaseMessage(sys::Message *msgl) override;
         std::unique_ptr<MonthModel> getMonthModel()
         {
             return std::move(monthModel);

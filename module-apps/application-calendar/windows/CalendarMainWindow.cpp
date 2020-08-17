@@ -20,42 +20,58 @@ namespace gui
                        const uint32_t &firstWeekOffset,
                        const uint32_t &width,
                        const uint32_t &height)
-        : Label(parent, 0, 0, 0, 0, "")
+        : VBox(parent, 0, 0, 0, 0)
     {
         parent->addWidget(this);
         this->setSize(width, height);
+        this->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
+        this->dayNumber = new gui::Label(this, 0, 0, width, height - 33);
+        this->dayNumber->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
+        this->dayNumber->setAlignment(
+            gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
+        this->dayNumber->setMargins(gui::Margins(0, 11, 0, 0));
+        this->dayNumber->activeItem = false;
+        this->dot                   = new gui::Label(this, 0, 0, width, 11);
+        this->dot->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
+        this->dot->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Top));
+        this->dot->setText(".");
+        this->dot->activeItem = false;
 
         if (cellIndex < style::window::calendar::week_days_number) {
-            this->setText(utils::time::Locale::get_short_day(cellIndex));
-            this->setFont(style::window::font::verysmall);
-            this->setPenWidth(style::window::default_border_no_focus_w);
+            this->dayNumber->setText(utils::time::Locale::get_short_day(cellIndex));
+            this->dayNumber->setFont(style::window::font::verysmall);
+            this->dot->setVisible(false);
             this->activeItem = false;
         }
         else if (cellIndex >= style::window::calendar::week_days_number &&
                  cellIndex < style::window::calendar::week_days_number + firstWeekOffset) {
             this->setPenWidth(style::window::default_border_no_focus_w);
+            this->dot->setVisible(false);
             this->activeItem = false;
         }
         else {
             uint32_t numb      = cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1;
             std::string number = std::to_string(numb);
-            this->setText(number);
+            this->dayNumber->setText(number);
             this->activeItem = true;
-            this->setFont(style::window::font::medium);
+            this->dayNumber->setFont(style::window::font::medium);
             this->activatedCallback = [=](gui::Item &item) {
-                LOG_DEBUG("Switch to DayEventsWindow");
+                // LOG_DEBUG("Switch to DayEventsWindow");
                 auto data           = std::make_unique<DayMonthData>();
                 auto actualMonthBox = dynamic_cast<gui::MonthBox *>(parent);
                 auto month          = actualMonthBox->month;
                 auto filter         = actualMonthBox->monthFilterValue + numb * 10000;
                 data->setData(number + " " + month, filter);
-                app->switchWindow("DayEventsWindow", std::move(data));
+
+                auto application = dynamic_cast<app::ApplicationCalendar *>(app);
+                assert(application != nullptr);
+                application->switchToNoEventsWindow(data->getDayMonthText());
+                // app->switchWindow("DayEventsWindow", std::move(data));
                 return true;
             };
             this->setPenWidth(style::window::default_border_no_focus_w);
             this->setPenFocusWidth(style::window::default_border_focus_w);
             this->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_TOP | RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
-            this->setFont(style::window::font::medium);
         }
         this->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
     }
@@ -261,22 +277,12 @@ namespace gui
             return false;
         }
 
-        if (inputEvent.keyCode == gui::KeyCode::KEY_ENTER) {
-            std::shared_ptr<DayEventsModel> dayEventsModel = std::make_shared<DayEventsModel>(this->application);
-            if (dayEventsModel->requestRecordsCount() == 0) {
-                switchToNoEventsWindow();
-            }
-            else {
-                LOG_DEBUG("Switch to Day Window");
-                application->switchWindow(style::window::calendar::name::day_events_window);
-            }
-            return true;
-        }
-
         if (inputEvent.keyCode == gui::KeyCode::KEY_LF) {
             std::shared_ptr<AllEventsModel> allEventsModel = std::make_shared<AllEventsModel>(this->application);
             if (allEventsModel->requestRecordsCount() == 0) {
-                switchToNoEventsWindow();
+                auto app = dynamic_cast<app::ApplicationCalendar *>(application);
+                assert(app != nullptr);
+                app->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main").c_str());
             }
             else {
                 LOG_DEBUG("Switch to List Window");
@@ -288,22 +294,41 @@ namespace gui
         return false;
     }
 
-    void CalendarMainWindow::switchToNoEventsWindow()
+    void CalendarMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
-        auto dialog = dynamic_cast<gui::NoEvents *>(
-            this->application->getWindow(style::window::calendar::name::no_events_window));
-        assert(dialog != nullptr);
-        auto meta   = dialog->meta;
-        meta.text   = "app_calendar_no_events_information";
-        meta.title  = utils::time::Time().str("%d %B");
-        meta.icon   = "phonebook_empty_grey_circle_W_G";
-        meta.action = [=]() -> bool {
-            LOG_DEBUG("Switch to edit window");
-            return true;
-        };
-        dialog->update(meta);
-        this->application->switchWindow(dialog->getName());
-        LOG_DEBUG("Switch to no events window");
+        if (mode == ShowMode::GUI_SHOW_INIT) {
+            LOG_DEBUG("On before show MainWindow");
+            auto msg = DBServiceAPI::GetQueryWithReply(
+                application,
+                db::Interface::Name::Events,
+                std::make_unique<db::query::events::GetFiltered>(
+                    month->monthFilterValue, month->monthFilterValue + monthModel->getLastDay() * 10000 + 2359),
+                1000);
+
+            LOG_DEBUG("Type id %s", typeid(*msg.second).name());
+            auto msgl = msg.second.get();
+            assert(msgl != nullptr);
+            onDatabaseMessage(msgl);
+        }
+    }
+
+    bool CalendarMainWindow::onDatabaseMessage(sys::Message *msgl)
+    {
+        auto msg = dynamic_cast<db::QueryResponse *>(msgl);
+        if (msg != nullptr) {
+            auto temp = msg->getResult();
+            if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(temp.get())) {
+                unique_ptr<vector<EventsRecord>> records = response->getResult();
+                for (auto &rec : *records) {
+                    LOG_DEBUG("record: %s", rec.title.c_str());
+                    isDayEmpty[((rec.date_from % 100000000 - rec.date_from % 10000) / 10000) % 100] = false;
+                }
+            }
+            LOG_DEBUG("Response False");
+            return false;
+        }
+        LOG_DEBUG("Calendar MainWindow DB Message != QueryResponse");
+        return false;
     }
 
 } // namespace gui

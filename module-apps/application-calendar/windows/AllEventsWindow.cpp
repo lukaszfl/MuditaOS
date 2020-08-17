@@ -4,12 +4,17 @@
 #include <gui/widgets/TopBar.hpp>
 #include <service-appmgr/ApplicationManager.hpp>
 
+#include <module-services/service-db/messages/QueryMessage.hpp>
+#include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
+#include <module-db/queries/calendar/QueryEventsGetAll.hpp>
+#include <module-services/service-db/api/DBServiceAPI.hpp>
+
 namespace gui
 {
 
     AllEventsWindow::AllEventsWindow(app::Application *app, std::string name)
         : AppWindow(app, style::window::calendar::name::all_events_window),
-          allEventsModel{std::make_shared<AllEventsModel>(this->application)}
+          allEventsModel{std::make_shared<AllEventsInternalModel>(this->application)}
     {
         buildInterface();
     }
@@ -50,8 +55,13 @@ namespace gui
 
     void AllEventsWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
-        allEventsList->clear();
-        allEventsList->setProvider(allEventsModel);
+        auto msg = DBServiceAPI::GetQueryWithReply(
+            application, db::Interface::Name::Events, std::make_unique<db::query::events::GetAll>(), 1000);
+
+        LOG_DEBUG("Type id %s", typeid(*msg.second).name());
+        auto msgl = msg.second.get();
+        assert(msgl != nullptr);
+        onDatabaseMessage(msgl);
     }
 
     bool AllEventsWindow::onInput(const gui::InputEvent &inputEvent)
@@ -85,6 +95,26 @@ namespace gui
             return true;
         }
 
+        return false;
+    }
+
+    bool AllEventsWindow::onDatabaseMessage(sys::Message *msgl)
+    {
+        auto msg = dynamic_cast<db::QueryResponse *>(msgl);
+        if (msg != nullptr) {
+            auto temp = msg->getResult();
+            if (auto response = dynamic_cast<db::query::events::GetAllResult *>(temp.get())) {
+                unique_ptr<vector<EventsRecord>> records = response->getResult();
+                for (auto &rec : *records) {
+                    LOG_DEBUG("record: %s", rec.title.c_str());
+                }
+                allEventsList->rebuildList();
+                allEventsModel->loadData(std::move(records));
+            }
+            LOG_DEBUG("Response False");
+            return false;
+        }
+        LOG_DEBUG("AllEventsWindow DB Message != QueryResponse");
         return false;
     }
 } /* namespace gui */
