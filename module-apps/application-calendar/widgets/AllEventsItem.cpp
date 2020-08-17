@@ -27,9 +27,6 @@ namespace gui
         description->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         description->setFont(style::window::font::bigbold);
         description->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
-
-        description->setText(utils::localize.get("common_information"));
-        startTime->setText(utils::time::DateTime().str());
     }
 
     bool AllEventsItem::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim)
@@ -51,7 +48,22 @@ namespace gui
 
     UTF8 AllEventsItem::getLabelMarker() const
     {
-        return utils::time::Time().str("%d %B");
+        uint32_t start_time    = this->record->date_from % 10000;
+        uint32_t month_and_day = (this->record->date_from % 100000000 - start_time) / 10000;
+        unsigned int dayUInt   = static_cast<unsigned>(month_and_day % 100);
+        std::string monthStr =
+            utils::time::Locale::get_month(utils::time::Locale::Month(((month_and_day - dayUInt) / 100) - 1));
+        return std::to_string(dayUInt) + " " + monthStr;
     }
 
+    void AllEventsItem::setEvent(std::shared_ptr<EventsRecord> rec)
+    {
+        this->record = rec;
+
+        if (rec != nullptr) {
+            description->setText(this->record->title.c_str());
+            std::string start_time = std::to_string(this->record->date_from % 10000);
+            startTime->setText(start_time);
+        }
+    }
 } /* namespace gui */

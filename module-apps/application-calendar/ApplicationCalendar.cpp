@@ -65,8 +65,8 @@ namespace app
         auto timestamp       = new utils::time::Timestamp();
         applicationStartTime = timestamp->getTime();
         auto ret             = Application::InitHandler();
-        EventsRecord event(EventsTableRow{{1}, "TEST", "TEST", 191020142, 191020153, 1, 2, 1});
-        EventsRecord event2(EventsTableRow{{2}, "TEST2", "TEST2", 191020152, 191020163, 1, 2, 1});
+        EventsRecord event(EventsTableRow{{1}, "TEST 17.08", "TEST 17.08", 2008170142, 2008170153, 1, 2, 1});
+        EventsRecord event2(EventsTableRow{{2}, "TEST2 17.08", "TEST2 17.08", 2008170152, 2008170163, 1, 2, 1});
         DBServiceAPI::GetQuery(this, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event));
         DBServiceAPI::GetQuery(this, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event2));
         createUserInterface();
@@ -110,5 +110,25 @@ namespace app
 
     void ApplicationCalendar::destroyUserInterface()
     {}
+
+    void ApplicationCalendar::switchToNoEventsWindow(const std::string &title)
+    {
+        auto dialog = dynamic_cast<gui::NoEvents *>(getWindow(style::window::calendar::name::no_events_window));
+        assert(dialog != nullptr);
+        auto meta   = dialog->meta;
+        meta.text   = "app_calendar_no_events_information";
+        meta.title  = title;
+        meta.icon   = "phonebook_empty_grey_circle_W_G";
+        meta.action = [=]() -> bool {
+            LOG_DEBUG("Switch to new event window");
+            std::unique_ptr<gui::SwitchData> data = std::make_unique<gui::SwitchData>();
+            data->setDescription("New");
+            switchWindow(style::window::calendar::name::new_edit_event, gui::ShowMode::GUI_SHOW_INIT, std::move(data));
+            return true;
+        };
+        dialog->update(meta);
+        switchWindow(dialog->getName());
+        LOG_DEBUG("Switch to no events window");
+    }
 
 } /* namespace app */
