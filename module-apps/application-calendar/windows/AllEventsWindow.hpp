@@ -1,5 +1,5 @@
 #pragma once
-#include "application-calendar/models/AllEventsModel.hpp"
+#include "application-calendar/models/AllEventsInternalModel.hpp"
 #include "application-calendar/widgets/CalendarListView.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include "windows/AppWindow.hpp"
@@ -14,7 +14,7 @@ namespace gui
         gui::Image *newDayEventImage = nullptr;
 
         gui::ListView *allEventsList                   = nullptr;
-        std::shared_ptr<AllEventsModel> allEventsModel = nullptr;
+        std::shared_ptr<AllEventsInternalModel> allEventsModel = nullptr;
 
       public:
         AllEventsWindow(app::Application *app, std::string name);
