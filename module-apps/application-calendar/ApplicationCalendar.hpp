@@ -35,6 +35,7 @@ namespace app
 
         void createUserInterface() override;
         void destroyUserInterface() override;
+        void switchToNoEventsWindow(const std::string &title);
     };
 
 } /* namespace app */
