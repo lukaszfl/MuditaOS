@@ -33,7 +33,31 @@ namespace app
 
     sys::Message_t ApplicationCalendar::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
     {
-        return Application::DataReceivedHandler(msgl);
+        auto retMsg = Application::DataReceivedHandler(msgl);
+        // if message was handled by application's template there is no need to process further.
+        if (reinterpret_cast<sys::ResponseMessage *>(retMsg.get())->retCode == sys::ReturnCodes::Success) {
+            return retMsg;
+        }
+        // this variable defines whether message was processed.
+        bool handled = false;
+        // handle database response
+        if (resp != nullptr) {
+            handled = true;
+            switch (resp->responseTo) {
+            case MessageType::DBQuery: {
+                if (getCurrentWindow()->onDatabaseMessage(resp))
+                    refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+            } break;
+            default:
+                break;
+            }
+        }
+        if (handled) {
+            return std::make_shared<sys::ResponseMessage>();
+        }
+        else {
+            return std::make_shared<sys::ResponseMessage>(sys::ReturnCodes::Unresolved);
+        }
     }
 
     sys::ReturnCodes ApplicationCalendar::InitHandler()

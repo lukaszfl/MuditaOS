@@ -7,6 +7,8 @@
 
 namespace gui
 {
+    const std::array<uint32_t, 10> reminderTimeOptions = {0xFFFFFFFF, 0, 5, 15, 30, 100, 200, 10000, 20000, 70000};
+
     class SeveralOptionsItem : public CalendarListItem
     {
         app::Application *application = nullptr;

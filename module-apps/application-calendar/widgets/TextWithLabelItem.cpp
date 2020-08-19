@@ -50,7 +50,11 @@ namespace gui
             return true;
         };
 
-        inputCallback = [&](Item &item, const InputEvent &event) { return textInput->onInput(event); };
+        inputCallback = [&](Item &item, const InputEvent &event) {
+            auto ret       = textInput->onInput(event);
+            onSaveCallback = [&](std::shared_ptr<EventsRecord> record) { record->title = textInput->getText(); };
+            return ret;
+        };
     }
 
     bool TextWithLabelItem::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim)

@@ -22,7 +22,7 @@ namespace gui
             Add,
             Edit
         };
-
+        std::shared_ptr<EventsRecord> eventRecord            = nullptr;
         gui::ListView *list                                  = nullptr;
         std::shared_ptr<NewEditEventModel> newEditEventModel = nullptr;
         EventAction eventAction                              = EventAction::None;
