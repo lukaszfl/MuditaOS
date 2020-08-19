@@ -23,7 +23,6 @@ void AllEventsModel::requestRecords(const uint32_t offset, const uint32_t limit)
     LOG_DEBUG("REQUEST RECORDS");
     auto querry = std::make_unique<db::query::events::GetAllLimited>(offset, limit);
     DBServiceAPI::GetQuery(application, db::Interface::Name::Events, std::move(querry));
-    // list->onProviderDataUpdate();
 }
 
 unsigned int AllEventsModel::getMinimalItemHeight() const
@@ -53,7 +52,6 @@ gui::ListItem *AllEventsModel::getItem(gui::Order order)
 
 bool AllEventsModel::updateRecords(std::unique_ptr<std::vector<EventsRecord>> records)
 {
-    // list->setElementsCount(records->size());
     LOG_INFO("Records size %lu", records->size());
     DatabaseModel::updateRecords(std::move(records));
     list->onProviderDataUpdate();

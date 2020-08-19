@@ -24,7 +24,8 @@ namespace gui
                  const uint32_t &cellIndex,
                  const uint32_t &firstWeekOffset,
                  const uint32_t &width,
-                 const uint32_t &height);
+                 const uint32_t &height,
+                 bool isDayEmpty);
         ~DayLabel() override = default;
     };
 
@@ -38,7 +39,8 @@ namespace gui
                  const uint32_t &height,
                  const uint32_t &dayWidth,
                  const uint32_t &dayHeight,
-                 const std::unique_ptr<MonthModel> &model);
+                 const std::unique_ptr<MonthModel> &model,
+                 bool *isDayEmpty);
 
         ~MonthBox() override = default;
         std::string month;
@@ -47,7 +49,7 @@ namespace gui
 
     class CalendarMainWindow : public gui::AppWindow
     {
-        bool isDayEmpty[31]    = {true};
+        bool isDayEmpty[31];
         uint32_t offsetFromTop = 0;
         uint32_t monthWidth    = 0;
         uint32_t monthHeight   = 0;
@@ -66,12 +68,12 @@ namespace gui
         ~CalendarMainWindow() override = default;
         void rebuild() override;
         void refresh();
+        void filterRequest();
         void buildMonth(std::unique_ptr<MonthModel> &model);
         void buildDateLabel(std::string actualDateTime);
         void buildInterface() override;
         void destroyInterface() override;
         bool onInput(const gui::InputEvent &inputEvent) override;
-        void onBeforeShow(ShowMode mode, SwitchData *data) override;
         bool onDatabaseMessage(sys::Message *msgl) override;
         std::unique_ptr<MonthModel> getMonthModel()
         {

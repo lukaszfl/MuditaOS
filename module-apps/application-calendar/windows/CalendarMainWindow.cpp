@@ -2,7 +2,6 @@
 #include "application-calendar/ApplicationCalendar.hpp"
 #include "application-calendar/models/MonthModel.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
-#include "application-calendar/models/DayEventsModel.hpp"
 #include "application-calendar/models/AllEventsModel.hpp"
 #include "application-calendar/data/CalendarData.hpp"
 #include "NoEvents.hpp"
@@ -19,7 +18,8 @@ namespace gui
                        const uint32_t &cellIndex,
                        const uint32_t &firstWeekOffset,
                        const uint32_t &width,
-                       const uint32_t &height)
+                       const uint32_t &height,
+                       bool isDayEmpty)
         : VBox(parent, 0, 0, 0, 0)
     {
         parent->addWidget(this);
@@ -52,21 +52,27 @@ namespace gui
         else {
             uint32_t numb      = cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1;
             std::string number = std::to_string(numb);
+            if (isDayEmpty) {
+                this->dot->setVisible(false);
+            }
             this->dayNumber->setText(number);
             this->activeItem = true;
             this->dayNumber->setFont(style::window::font::medium);
             this->activatedCallback = [=](gui::Item &item) {
-                // LOG_DEBUG("Switch to DayEventsWindow");
                 auto data           = std::make_unique<DayMonthData>();
                 auto actualMonthBox = dynamic_cast<gui::MonthBox *>(parent);
                 auto month          = actualMonthBox->month;
                 auto filter         = actualMonthBox->monthFilterValue + numb * 10000;
                 data->setData(number + " " + month, filter);
-
-                auto application = dynamic_cast<app::ApplicationCalendar *>(app);
-                assert(application != nullptr);
-                application->switchToNoEventsWindow(data->getDayMonthText());
-                // app->switchWindow("DayEventsWindow", std::move(data));
+                if (isDayEmpty) {
+                    auto application = dynamic_cast<app::ApplicationCalendar *>(app);
+                    assert(application != nullptr);
+                    application->switchToNoEventsWindow(data->getDayMonthText());
+                }
+                else {
+                    LOG_DEBUG("Switch to DayEventsWindow");
+                    app->switchWindow(style::window::calendar::name::day_events_window, std::move(data));
+                }
                 return true;
             };
             this->setPenWidth(style::window::default_border_no_focus_w);
@@ -83,7 +89,8 @@ namespace gui
                        const uint32_t &height,
                        const uint32_t &dayWidth,
                        const uint32_t &dayHeight,
-                       const std::unique_ptr<MonthModel> &model)
+                       const std::unique_ptr<MonthModel> &model,
+                       bool *isDayEmpty)
         : GridLayout(parent, style::window::default_left_margin, offsetTop, width, height, {dayWidth, dayHeight})
     {
         LOG_DEBUG("Call MonthBox constructor");
@@ -105,13 +112,26 @@ namespace gui
 
         uint32_t i;
         for (i = 0; i < iterations; ++i) {
-            auto day = new DayLabel(app,
-                                    this,
-                                    i,
-                                    firstDayOffset,
-                                    style::window::calendar::day_cell_width,
-                                    style::window::calendar::day_cell_height);
-            addWidget(day);
+            if (i < style::window::calendar::week_days_number + firstDayOffset) {
+                auto day = new DayLabel(app,
+                                        this,
+                                        i,
+                                        firstDayOffset,
+                                        style::window::calendar::day_cell_width,
+                                        style::window::calendar::day_cell_height,
+                                        true);
+                addWidget(day);
+            }
+            else {
+                auto day = new DayLabel(app,
+                                        this,
+                                        i,
+                                        firstDayOffset,
+                                        style::window::calendar::day_cell_width,
+                                        style::window::calendar::day_cell_height,
+                                        isDayEmpty[i - (style::window::calendar::week_days_number + firstDayOffset)]);
+                addWidget(day);
+            }
         }
 
         LOG_DEBUG("MonthBox constructor Completed Successfully!");
@@ -124,6 +144,7 @@ namespace gui
         std::chrono::system_clock::time_point tp =
             std::chrono::system_clock::from_time_t(appCalendar->getCurrentTimeStamp());
         this->actualDate = date::year_month_day{date::floor<date::days>(tp)};
+        std::fill(begin(isDayEmpty), end(isDayEmpty), true);
         buildInterface();
     }
 
@@ -156,7 +177,8 @@ namespace gui
         dayHeight     = style::window::calendar::day_cell_height;
 
         // create empty month box
-        month = new MonthBox(app, this, offsetFromTop, monthWidth, monthHeight, dayWidth, dayHeight, monthModel);
+        month = new MonthBox(
+            app, this, offsetFromTop, monthWidth, monthHeight, dayWidth, dayHeight, monthModel, isDayEmpty);
         // setup month box
         addWidget(month);
 
@@ -176,7 +198,8 @@ namespace gui
                     date::year prevYear   = --actualDate.year();
                     actualDate            = prevYear / prevMonth / date::last;
                 }
-                this->refresh();
+
+                filterRequest();
                 return true;
             }
             case KeyCode::KEY_DOWN: {
@@ -190,7 +213,8 @@ namespace gui
                     date::year nextYear   = ++actualDate.year();
                     actualDate            = nextYear / nextMonth / 1;
                 }
-                this->refresh();
+
+                filterRequest();
                 return true;
             }
             case KeyCode::KEY_LEFT: {
@@ -251,6 +275,7 @@ namespace gui
         setTitle(utils::localize.get("app_calendar_title_main"));
 
         monthModel = std::make_unique<MonthModel>(actualDate);
+        filterRequest();
         this->buildMonth(monthModel);
         this->buildDateLabel(monthModel->getMonthYearText());
 
@@ -295,40 +320,39 @@ namespace gui
         return false;
     }
 
-    void CalendarMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
+    void CalendarMainWindow::filterRequest()
     {
-        /*if (mode == ShowMode::GUI_SHOW_INIT) {
-            LOG_DEBUG("On before show MainWindow");
-            auto msg = DBServiceAPI::GetQueryWithReply(
-                application,
-                db::Interface::Name::Events,
-                std::make_unique<db::query::events::GetFiltered>(
-                    month->monthFilterValue, month->monthFilterValue + monthModel->getLastDay() * 10000 + 2359),
-                1000);
-
-            LOG_DEBUG("Type id %s", typeid(*msg.second).name());
-            auto msgl = msg.second.get();
-            assert(msgl != nullptr);
-            onDatabaseMessage(msgl);
-        }*/
+        monthModel             = std::make_unique<MonthModel>(actualDate);
+        date::year actualYear  = monthModel->getYear();
+        int yearInt            = static_cast<decltype(yearInt)>(actualYear) - 2000;
+        uint32_t yearUInt      = yearInt * 100000000;
+        unsigned int monthUInt = static_cast<unsigned>(monthModel->getMonth()) * 1000000;
+        auto filter            = yearUInt + monthUInt;
+        LOG_DEBUG("filter:  %i", filter);
+        DBServiceAPI::GetQuery(
+            application,
+            db::Interface::Name::Events,
+            std::make_unique<db::query::events::GetFiltered>(filter, filter + monthModel->getLastDay() * 10000 + 2359));
     }
 
     bool CalendarMainWindow::onDatabaseMessage(sys::Message *msgl)
     {
-        /*auto msg = dynamic_cast<db::QueryResponse *>(msgl);
+        std::fill(begin(isDayEmpty), end(isDayEmpty), true);
+        auto msg = dynamic_cast<db::QueryResponse *>(msgl);
         if (msg != nullptr) {
             auto temp = msg->getResult();
             if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(temp.get())) {
                 unique_ptr<vector<EventsRecord>> records = response->getResult();
                 for (auto &rec : *records) {
-                    LOG_DEBUG("record: %s", rec.title.c_str());
-                    isDayEmpty[((rec.date_from % 100000000 - rec.date_from % 10000) / 10000) % 100] = false;
+                    isDayEmpty[((rec.date_from % 1000000 - rec.date_from % 10000) / 10000) - 1] = false;
                 }
+                refresh();
+                return true;
             }
             LOG_DEBUG("Response False");
             return false;
         }
-        LOG_DEBUG("Calendar MainWindow DB Message != QueryResponse");*/
+        LOG_DEBUG("Calendar MainWindow DB Message != QueryResponse");
         return false;
     }
 

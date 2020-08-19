@@ -106,15 +106,9 @@ namespace gui
         if (msg != nullptr) {
             auto temp = msg->getResult();
             if (auto response = dynamic_cast<db::query::events::GetAllLimitedResult *>(temp.get())) {
-                // unique_ptr<vector<EventsRecord>> records = response->getResult();
-                // for (auto &rec : *records) {
-                //    LOG_DEBUG("record: %s", rec.title.c_str());
-                //}
                 auto records_data = response->getResult();
                 auto records = std::make_unique<std::vector<EventsRecord>>(records_data->begin(), records_data->end());
                 return allEventsModel->updateRecords(std::move(records));
-                // allEventsList->rebuildList();
-                // allEventsModel->loadData(std::move(records));
             }
             LOG_DEBUG("Response False");
             return false;
