@@ -42,7 +42,8 @@ namespace gui
     {
         if (data != nullptr) {
             auto rec    = dynamic_cast<EventsRecord *>(data);
-            eventRecord = std::make_shared<EventsRecord>(*rec);
+            if (rec != nullptr)
+                eventRecord = std::make_shared<EventsRecord>(*rec);
         }
         else {
             auto rec    = new EventsRecord();
@@ -121,6 +122,7 @@ namespace gui
 
     bool NewEditEventWindow::handleSwitchData(gui::SwitchData *data)
     {
+        LOG_DEBUG("HANDLE SWITCH DATA");
         if (data == nullptr) {
             return false;
         }
