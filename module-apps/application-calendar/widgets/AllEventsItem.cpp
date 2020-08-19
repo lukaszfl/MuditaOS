@@ -63,7 +63,12 @@ namespace gui
         if (rec != nullptr) {
             description->setText(this->record->title.c_str());
             std::string start_time = std::to_string(this->record->date_from % 10000);
-            startTime->setText(start_time);
+            if (this->record->date_from % 10000 == 0 && this->record->date_till % 10000 == 2359) {
+                startTime->setText("All day");
+            }
+            else {
+                startTime->setText(start_time);
+            }
         }
     }
 } /* namespace gui */
