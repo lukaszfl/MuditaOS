@@ -11,13 +11,18 @@ namespace db::query::events
         return "GetAllLimited";
     }
 
-    GetAllLimitedResult::GetAllLimitedResult(std::unique_ptr<std::vector<EventsRecord>> records)
-        : records(std::move(records))
+    GetAllLimitedResult::GetAllLimitedResult(std::unique_ptr<std::vector<EventsRecord>> records,
+                                             std::unique_ptr<uint32_t> count)
+        : records(std::move(records)), recordsCount(std::move(count))
     {}
 
     auto GetAllLimitedResult::getResult() -> std::unique_ptr<std::vector<EventsRecord>>
     {
         return std::move(records);
+    }
+    auto GetAllLimitedResult::getCountResult() -> std::unique_ptr<uint32_t>
+    {
+        return std::move(recordsCount);
     }
 
     auto GetAllLimitedResult::debugInfo() const -> std::string

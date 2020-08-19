@@ -19,10 +19,12 @@ namespace db::query::events
     class GetAllLimitedResult : public QueryResult
     {
         std::unique_ptr<std::vector<EventsRecord>> records;
+        std::unique_ptr<uint32_t> recordsCount;
 
       public:
-        GetAllLimitedResult(std::unique_ptr<std::vector<EventsRecord>> records);
+        GetAllLimitedResult(std::unique_ptr<std::vector<EventsRecord>> records, std::unique_ptr<uint32_t> count);
         [[nodiscard]] auto getResult() -> std::unique_ptr<std::vector<EventsRecord>>;
+        [[nodiscard]] auto getCountResult() -> std::unique_ptr<uint32_t>;
 
         [[nodiscard]] auto debugInfo() const -> std::string override;
     };

@@ -5,6 +5,7 @@
 #include "Databases/EventsDB.hpp"
 #include "module-db/queries/calendar/QueryEventsGet.hpp"
 #include "module-db/queries/calendar/QueryEventsGetAll.hpp"
+#include "module-db/queries/calendar/QueryEventsGetAllLimited.hpp"
 #include "module-db/queries/calendar/QueryEventsGetFiltered.hpp"
 #include "module-db/queries/calendar/QueryEventsAdd.hpp"
 #include "module-db/queries/calendar/QueryEventsRemove.hpp"
@@ -172,7 +173,6 @@ TEST_CASE("Events Record tests")
         entryPre.description = "newDesc";
         entryPre.date_from   = 1999999999;
         entryPre.date_till   = 1999999999;
-        LOG_DEBUG("LOG ON!!!!!!!!!!!!!!!!!!");
         REQUIRE(eventsRecordInterface.Update(entryPre, checkV));
 
         auto entry = eventsRecordInterface.GetByID(1);
@@ -236,6 +236,25 @@ TEST_CASE("Events Record tests")
         REQUIRE(record.description == description);
         REQUIRE(record.date_from == date_from);
         REQUIRE(record.date_till == date_till);
+    };
+
+    auto getAllLimited = [&](uint32_t offset, uint32_t limit) {
+        auto query  = std::make_shared<db::query::events::GetAllLimited>(offset, limit);
+        auto ret    = eventsRecordInterface.runQuery(query);
+        auto result = dynamic_cast<db::query::events::GetAllLimitedResult *>(ret.get());
+        REQUIRE(result != nullptr);
+        auto records    = result->getResult();
+        auto buffRecord = new EventsRecord();
+        auto buff       = buffRecord;
+        for (auto record : *records) {
+            REQUIRE(record.isValid());
+            REQUIRE(record.date_from >= buffRecord->date_from);
+            buffRecord = &record;
+        }
+        delete buff;
+        REQUIRE(records->size() == limit);
+        auto count = result->getCountResult();
+        return count;
     };
 
     auto AddQuery =
@@ -313,7 +332,7 @@ TEST_CASE("Events Record tests")
         auto result = dynamic_cast<db::query::events::GetAllResult *>(ret.get());
         REQUIRE(result != nullptr);
         auto records = result->getResult();
-        REQUIRE(records->size() == 3);
+        REQUIRE(records->size() == 2);
     }
 
     SECTION("Update via query")
@@ -330,6 +349,20 @@ TEST_CASE("Events Record tests")
         REQUIRE(result != nullptr);
         auto records = result->getResult();
         REQUIRE(records->size() == 3);
+    }
+
+    SECTION("Get All Limited via query")
+    {
+        AddQuery(3, "Event1", "Desc1", 2610201424, 2210201536);
+        AddQuery(3, "Event2", "Desc2", 2010201424, 2210201536);
+        AddQuery(3, "Event3", "Desc3", 2510201424, 2210201536);
+        AddQuery(3, "Event4", "Desc4", 1910201424, 2210201536);
+        auto count1     = getAllLimited(0, 2);
+        auto count2     = getAllLimited(2, 5);
+        auto &eventsTbl = eventsDb.events;
+        auto count3     = eventsTbl.count();
+        REQUIRE(*count1 == *count2);
+        REQUIRE(*count2 == count3);
     }
 
     Database::deinitialize();
