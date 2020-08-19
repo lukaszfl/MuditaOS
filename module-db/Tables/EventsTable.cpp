@@ -149,7 +149,7 @@ std::vector<EventsTableRow> EventsTable::getLimitOffset(uint32_t offset, uint32_
 std::vector<EventsTableRow> EventsTable::getLimitOffsetByDate(uint32_t offset, uint32_t limit)
 {
 
-    auto retQuery = db->query("SELECT * from events ORDER BY date_from DESC LIMIT %u OFFSET %u;", limit, offset);
+    auto retQuery = db->query("SELECT * from events ORDER BY date_from LIMIT %u OFFSET %u;", limit, offset);
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return std::vector<EventsTableRow>();
