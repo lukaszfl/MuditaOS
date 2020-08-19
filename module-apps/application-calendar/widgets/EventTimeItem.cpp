@@ -98,6 +98,17 @@ namespace gui
                 if (atoi(minuteInput->getText().c_str()) > timeConstants::max_minutes) {
                     minuteInput->setText("00");
                 }
+                onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
+                    if (this->descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_end")) {
+                        record->date_from = record->date_from + atoi(hourInput->getText().c_str()) * 100 +
+                                            atoi(minuteInput->getText().c_str());
+                    }
+                    else if (this->descriptionLabel->getText() ==
+                             utils::localize.get("app_calendar_new_edit_event_start")) {
+                        record->date_from = record->date_from + atoi(hourInput->getText().c_str()) * 100 +
+                                            atoi(minuteInput->getText().c_str());
+                    }
+                };
                 return true;
             }
             else if (hBox->onInput(event)) {
@@ -181,7 +192,7 @@ namespace gui
                                             style::window::calendar::item::eventTime::description_label_h);
 
             onLoadCallback = [&]() {};
-            onSaveCallback = [&]() {};
+            // onSaveCallback = [&]() {};
         }
         else {
             hourInput->setMinimumSize(style::window::calendar::item::eventTime::time_input_24h_w,
@@ -192,7 +203,7 @@ namespace gui
                                             style::window::calendar::item::eventTime::description_label_h);
 
             onLoadCallback = [&]() {};
-            onSaveCallback = [&]() {};
+            // onSaveCallback = [&]() {};
         }
     }
 
