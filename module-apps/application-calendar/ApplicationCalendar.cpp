@@ -65,10 +65,10 @@ namespace app
         auto timestamp       = new utils::time::Timestamp();
         applicationStartTime = timestamp->getTime();
         auto ret             = Application::InitHandler();
-        EventsRecord event(EventsTableRow{{1}, "TEST 17.08", "TEST 17.08", 2008170142, 2008170153, 1, 2, 1});
-        EventsRecord event2(EventsTableRow{{2}, "TEST2 17.08", "TEST2 17.08", 2008170152, 2008170163, 1, 2, 1});
-        DBServiceAPI::GetQuery(this, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event));
-        DBServiceAPI::GetQuery(this, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event2));
+        // EventsRecord event(EventsTableRow{{1}, "TEST 19.08", "TEST 19.08", 2008190142, 2008190153, 1, 2, 1});
+        // EventsRecord event2(EventsTableRow{{2}, "TEST2 15.08", "TEST2 15.08", 2008150152, 2008150163, 1, 2, 1});
+        // DBServiceAPI::GetQuery(this, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event));
+        // DBServiceAPI::GetQuery(this, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event2));
         createUserInterface();
         return ret;
     }
