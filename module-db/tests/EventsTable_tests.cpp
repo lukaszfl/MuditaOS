@@ -168,75 +168,84 @@ TEST_CASE("Events Table tests")
         REQUIRE(entry.time_zone == 1);
         REQUIRE(entry.isValid());
     }
-
+    for (uint32_t i = 1; i <= 8; ++i) {
+        auto response = eventsTbl.removeById(i);
+        REQUIRE(response);
+    }
+    REQUIRE(eventsTbl.count() == 0);
     SECTION("Get all limited by date")
     {
-        Database::initialize();
+        for (uint32_t i = 1; i <= 3; ++i) {
+            auto response = eventsTbl.removeById(i);
+            REQUIRE(response);
+        }
+        REQUIRE(eventsTbl.count() == 0);
 
-        vfs.remove(EventsDB::GetDBName());
-
-        REQUIRE(eventsDb.isInitialized());
-
-        const std::array<uint32_t, 6> paramDate{1910201424, 1910201524, 1910301424, 1912201424, 2010201424, 2110201424};
-        const std::array<uint32_t, 6> paramID{4, 5, 2, 3, 1, 0};
-        const std::array<std::string, 6> paramName{"Event1", "Event6", "Event3", "Event4", "Event2", "Event1"};
-        REQUIRE(eventsTbl.add({{.ID = 0},
-                               .title       = "Event5",
-                               .description = "Desc5",
-                               .date_from   = paramDate[4],
-                               .date_till   = 3333333333,
-                               .reminder    = 0,
-                               .repeat      = 0,
-                               .time_zone   = 0}));
-        REQUIRE(eventsTbl.add({{.ID = 0},
-                               .title       = "Event6",
-                               .description = "Desc6",
-                               .date_from   = paramDate[5],
-                               .date_till   = 3333333333,
-                               .reminder    = 0,
-                               .repeat      = 0,
-                               .time_zone   = 0}));
-        REQUIRE(eventsTbl.add({{.ID = 0},
-                               .title       = "Event3",
-                               .description = "Desc3",
-                               .date_from   = paramDate[2],
-                               .date_till   = 3333333333,
-                               .reminder    = 0,
-                               .repeat      = 0,
-                               .time_zone   = 0}));
-        REQUIRE(eventsTbl.add({{.ID = 0},
-                               .title       = "Event4",
-                               .description = "Desc4",
-                               .date_from   = paramDate[3],
-                               .date_till   = 3333333333,
-                               .reminder    = 0,
-                               .repeat      = 0,
-                               .time_zone   = 0}));
-        REQUIRE(eventsTbl.add({{.ID = 0},
-                               .title       = "Event2",
-                               .description = "Desc2",
-                               .date_from   = paramDate[1],
-                               .date_till   = 3333333333,
-                               .reminder    = 0,
-                               .repeat      = 0,
-                               .time_zone   = 0}));
-        REQUIRE(eventsTbl.add({{.ID = 0},
+        const std::array<uint32_t, 6> paramDate{1810201524, 1910301424, 2010201424, 2112201424, 2210201424, 2310201424};
+        const std::array<uint32_t, 6> paramID{3, 8, 5, 6, 7, 4};
+        const std::array<std::string, 6> paramName{"Event1", "Event6", "Event3", "Event4", "Event5", "Event2"};
+        REQUIRE(eventsTbl.add({{.ID = 1},
                                .title       = "Event1",
-                               .description = "Desc1",
+                               .description = "Desc",
                                .date_from   = paramDate[0],
                                .date_till   = 3333333333,
                                .reminder    = 0,
                                .repeat      = 0,
                                .time_zone   = 0}));
+        REQUIRE(eventsTbl.add({{.ID = 2},
+                               .title       = "Event2",
+                               .description = "Desc",
+                               .date_from   = paramDate[5],
+                               .date_till   = 3333333333,
+                               .reminder    = 0,
+                               .repeat      = 0,
+                               .time_zone   = 0}));
+        REQUIRE(eventsTbl.add({{.ID = 3},
+                               .title       = "Event3",
+                               .description = "Desc",
+                               .date_from   = paramDate[2],
+                               .date_till   = 3333333333,
+                               .reminder    = 0,
+                               .repeat      = 0,
+                               .time_zone   = 0}));
+        REQUIRE(eventsTbl.add({{.ID = 4},
+                               .title       = "Event4",
+                               .description = "Desc",
+                               .date_from   = paramDate[3],
+                               .date_till   = 3333333333,
+                               .reminder    = 0,
+                               .repeat      = 0,
+                               .time_zone   = 0}));
+        REQUIRE(eventsTbl.add({{.ID = 5},
+                               .title       = "Event5",
+                               .description = "Desc",
+                               .date_from   = paramDate[4],
+                               .date_till   = 3333333333,
+                               .reminder    = 0,
+                               .repeat      = 0,
+                               .time_zone   = 0}));
+        REQUIRE(eventsTbl.add({{.ID = 6},
+                               .title       = "Event6",
+                               .description = "Desc",
+                               .date_from   = paramDate[1],
+                               .date_till   = 3333333333,
+                               .reminder    = 0,
+                               .repeat      = 0,
+                               .time_zone   = 0}));
 
-        auto entries = eventsTbl.getLimitOffsetByDate(0, 4);
-        REQUIRE(entries.size() == 4);
+        auto entries = eventsTbl.getLimitOffsetByDate(0, 6);
+        REQUIRE(entries.size() == 6);
         uint32_t index = 0;
         for (auto entry : entries) {
             LOG_DEBUG("%u", paramDate[index]);
+            LOG_DEBUG("entry %u", entry.date_from);
+            LOG_DEBUG("%s", paramName[index].c_str());
+            LOG_DEBUG("entry %s", entry.title.c_str());
+            LOG_DEBUG("%u", paramID[index]);
+            LOG_DEBUG("entry %u", entry.ID);
             REQUIRE(entry.ID == paramID[index]);
             REQUIRE(entry.title == paramName[index]);
-            REQUIRE(entry.description == "Desc7");
+            REQUIRE(entry.description == "Desc");
             REQUIRE(entry.date_from == paramDate[index]);
             REQUIRE(entry.date_till == 3333333333);
             REQUIRE(entry.reminder == 0);
@@ -246,6 +255,5 @@ TEST_CASE("Events Table tests")
             ++index;
         }
     }
-
     Database::deinitialize();
 }
