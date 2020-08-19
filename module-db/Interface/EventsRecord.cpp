@@ -182,8 +182,10 @@ std::unique_ptr<db::query::events::GetAllResult> EventsRecordInterface::runQuery
 std::unique_ptr<db::query::events::GetAllLimitedResult> EventsRecordInterface::runQueryImpl(
     const db::query::events::GetAllLimited *query)
 {
+    auto count   = GetCount();
     auto records = GetLimitOffsetByDate(query->offset, query->limit);
-    return std::make_unique<db::query::events::GetAllLimitedResult>(std::move(records));
+    return std::make_unique<db::query::events::GetAllLimitedResult>(std::move(records),
+                                                                    std::make_unique<uint32_t>(count));
 }
 
 std::unique_ptr<db::query::events::GetFilteredResult> EventsRecordInterface::runQueryImpl(
