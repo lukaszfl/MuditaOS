@@ -40,6 +40,15 @@ namespace gui
 
     void NewEditEventWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
+        if (data != nullptr) {
+            auto rec    = dynamic_cast<EventsRecord *>(data);
+            eventRecord = std::make_shared<EventsRecord>(*rec);
+        }
+        else {
+            auto rec    = new EventsRecord();
+            eventRecord = std::make_shared<EventsRecord>(*rec);
+        }
+
         switch (eventAction) {
         case EventAction::None:
             break;
@@ -103,21 +112,7 @@ namespace gui
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_ENTER) {
             LOG_DEBUG("Save Event");
-            EventsRecord event(EventsTableRow{{2}, "TEST2", "TEST2", 2008170006, 2008171536, 1, 2, 1});
-            EventsRecord event2(EventsTableRow{{2}, "TEST1", "TEST", 2008200006, 2008201536, 1, 2, 1});
-            EventsRecord event3(EventsTableRow{{2}, "TEST3", "TEST3", 2008171406, 2008171536, 1, 2, 1});
-            EventsRecord event4(EventsTableRow{{2}, "TEST4", "TEST4", 2008210006, 2008211536, 1, 2, 1});
-            EventsRecord event5(EventsTableRow{{2}, "TEST5", "TEST5", 2008220006, 2008221536, 1, 2, 1});
-            DBServiceAPI::GetQuery(
-                application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event));
-            DBServiceAPI::GetQuery(
-                application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event5));
-            DBServiceAPI::GetQuery(
-                application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event2));
-            DBServiceAPI::GetQuery(
-                application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event3));
-            DBServiceAPI::GetQuery(
-                application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(event4));
+            newEditEventModel->saveData(eventRecord);
             return true;
         }
 

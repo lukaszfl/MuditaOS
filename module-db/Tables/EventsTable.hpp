@@ -44,6 +44,8 @@ class EventsTable : public Table<EventsTableRow, EventsTableFields>
                                                       EventsTableFields field,
                                                       const char *str) override final;
 
+    std::vector<EventsTableRow> getLimitOffsetByDate(uint32_t offset, uint32_t limit);
+
   private:
     const char *createTableQuery = "CREATE TABLE IF NOT EXISTS events("
                                    "_id INTEGER PRIMARY KEY AUTOINCREMENT,"
