@@ -3,6 +3,8 @@
 #include <ListView.hpp>
 #include <Utils.hpp>
 #include <BottomBar.hpp>
+#include <module-services/service-db/api/DBServiceAPI.hpp>
+#include <module-db/queries/calendar/QueryEventsAdd.hpp>
 
 NewEditEventModel::NewEditEventModel(app::Application *app, bool mode24H) : application(app), mode24H(mode24H)
 {}
@@ -124,11 +126,13 @@ void NewEditEventModel::reloadDataWithTimeItem()
     list->rebuildList();
 }
 
-void NewEditEventModel::saveData()
+void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event)
 {
     for (auto &item : internalData) {
         if (item->onSaveCallback) {
-            item->onSaveCallback();
+            item->onSaveCallback(event);
         }
     }
+    auto record = event.get();
+    DBServiceAPI::GetQuery(application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
 }

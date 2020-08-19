@@ -14,6 +14,8 @@ namespace db::query::events
     class GetResult;
     class GetAll;
     class GetAllResult;
+    class GetAllLimited;
+    class GetAllLimitedResult;
     class GetFiltered;
     class GetFilteredResult;
     class Add;
@@ -69,6 +71,7 @@ class EventsRecordInterface : public RecordInterface<EventsRecord, EventsRecordF
                                                                      uint32_t limit,
                                                                      EventsRecordField field,
                                                                      const char *str) override final;
+    std::unique_ptr<std::vector<EventsRecord>> GetLimitOffsetByDate(uint32_t offset, uint32_t limit);
 
     std::unique_ptr<db::QueryResult> runQuery(std::shared_ptr<db::Query> query) override;
 
@@ -77,6 +80,7 @@ class EventsRecordInterface : public RecordInterface<EventsRecord, EventsRecordF
 
     std::unique_ptr<db::query::events::GetResult> runQueryImpl(const db::query::events::Get *query);
     std::unique_ptr<db::query::events::GetAllResult> runQueryImpl(const db::query::events::GetAll *query);
+    std::unique_ptr<db::query::events::GetAllLimitedResult> runQueryImpl(const db::query::events::GetAllLimited *query);
     std::unique_ptr<db::query::events::GetFilteredResult> runQueryImpl(const db::query::events::GetFiltered *query);
     std::unique_ptr<db::query::events::AddResult> runQueryImpl(const db::query::events::Add *query);
     std::unique_ptr<db::query::events::RemoveResult> runQueryImpl(const db::query::events::Remove *query);

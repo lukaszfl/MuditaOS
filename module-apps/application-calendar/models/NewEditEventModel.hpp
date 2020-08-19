@@ -27,7 +27,7 @@ class NewEditEventModel : public app::InternalModel<gui::CalendarListItem *>, pu
     void loadData(bool allDayEvent);
     void loadDataWithoutTimeItem();
     void reloadDataWithTimeItem();
-    void saveData();
+    void saveData(std::shared_ptr<EventsRecord> event);
 
     [[nodiscard]] unsigned int getMinimalItemHeight() const override;
     [[nodiscard]] unsigned int requestRecordsCount() override;
