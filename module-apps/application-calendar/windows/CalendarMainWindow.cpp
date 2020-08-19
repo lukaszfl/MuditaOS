@@ -278,7 +278,7 @@ namespace gui
         }
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_LF) {
-            std::shared_ptr<AllEventsModel> allEventsModel = std::make_shared<AllEventsModel>(this->application);
+            /*std::shared_ptr<AllEventsModel> allEventsModel = std::make_shared<AllEventsModel>(this->application);
             if (allEventsModel->requestRecordsCount() == 0) {
                 auto app = dynamic_cast<app::ApplicationCalendar *>(application);
                 assert(app != nullptr);
@@ -287,7 +287,8 @@ namespace gui
             else {
                 LOG_DEBUG("Switch to List Window");
                 application->switchWindow(style::window::calendar::name::all_events_window);
-            }
+            }*/
+            application->switchWindow(style::window::calendar::name::all_events_window);
             return true;
         }
 
@@ -296,7 +297,7 @@ namespace gui
 
     void CalendarMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
-        if (mode == ShowMode::GUI_SHOW_INIT) {
+        /*if (mode == ShowMode::GUI_SHOW_INIT) {
             LOG_DEBUG("On before show MainWindow");
             auto msg = DBServiceAPI::GetQueryWithReply(
                 application,
@@ -309,12 +310,12 @@ namespace gui
             auto msgl = msg.second.get();
             assert(msgl != nullptr);
             onDatabaseMessage(msgl);
-        }
+        }*/
     }
 
     bool CalendarMainWindow::onDatabaseMessage(sys::Message *msgl)
     {
-        auto msg = dynamic_cast<db::QueryResponse *>(msgl);
+        /*auto msg = dynamic_cast<db::QueryResponse *>(msgl);
         if (msg != nullptr) {
             auto temp = msg->getResult();
             if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(temp.get())) {
@@ -327,7 +328,7 @@ namespace gui
             LOG_DEBUG("Response False");
             return false;
         }
-        LOG_DEBUG("Calendar MainWindow DB Message != QueryResponse");
+        LOG_DEBUG("Calendar MainWindow DB Message != QueryResponse");*/
         return false;
     }
 
