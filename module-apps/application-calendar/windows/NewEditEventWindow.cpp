@@ -1,5 +1,6 @@
 #include <module-db/Interface/EventsRecord.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
+#include <module-db/queries/calendar/QueryEventsAdd.hpp>
 #include "NewEditEventWindow.hpp"
 
 namespace gui
