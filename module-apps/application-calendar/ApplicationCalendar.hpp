@@ -35,7 +35,7 @@ namespace app
 
         void createUserInterface() override;
         void destroyUserInterface() override;
-        void switchToNoEventsWindow(const std::string &title);
+        void switchToNoEventsWindow(const std::string &title, std::unique_ptr<gui::SwitchData> data);
         void applyRepeatAndReminderMap();
 
         std::map<uint32_t, std::string> reminderOptions;

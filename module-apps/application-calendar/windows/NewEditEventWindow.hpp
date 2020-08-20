@@ -2,6 +2,7 @@
 
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include "application-calendar/models/NewEditEventModel.hpp"
+#include <module-apps/application-calendar/data/CalendarData.hpp>
 #include "windows/AppWindow.hpp"
 #include "Application.hpp"
 #include <gui/widgets/Item.hpp>
