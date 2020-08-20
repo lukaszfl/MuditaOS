@@ -10,6 +10,7 @@
 #include <gui/widgets/ListItem.hpp>
 #include <ListView.hpp>
 #include <Utils.hpp>
+#include <module-apps/application-calendar/data/CalendarData.hpp>
 
 namespace gui
 {

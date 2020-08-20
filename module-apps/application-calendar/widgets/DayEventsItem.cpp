@@ -47,8 +47,13 @@ namespace gui
             description->setText(this->record->title.c_str());
             uint32_t start_time = this->record->date_from % 10000;
             uint32_t end_time   = this->record->date_till % 10000;
-            std::string text    = std::to_string(start_time) + " - " + std::to_string(end_time);
-            title->setText(text);
+            if (start_time == 0 && end_time == 2359) {
+                title->setText(utils::localize.get("app_calendar_all_day"));
+            }
+            else {
+                std::string text = std::to_string(start_time) + " - " + std::to_string(end_time);
+                title->setText(text);
+            }
         }
     }
 

@@ -57,7 +57,7 @@ namespace gui
         }
 
         dayMonthTitle = item->getDayMonthText();
-        filterFrom    = item->getDateFilter() + 1;
+        filterFrom    = item->getDateFilter();
         filterTill    = item->getDateFilter() + 2359;
         LOG_DEBUG("FILTER 1: %d", filterFrom);
         LOG_DEBUG("FILTER 2: %d", filterTill);

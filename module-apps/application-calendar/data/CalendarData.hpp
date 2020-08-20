@@ -6,14 +6,43 @@ class EventRecordData : public gui::SwitchData
 {
   protected:
     std::unique_ptr<EventsRecord> record;
+    std::map<uint32_t, std::string> reminderOptions;
+    std::map<uint32_t, std::string> repeatOptions;
 
   public:
     EventRecordData() = default;
-    EventRecordData(std::unique_ptr<EventsRecord> record) : record{std::move(record)} {};
+    EventRecordData(std::unique_ptr<EventsRecord> record) : record{std::move(record)}
+    {
+        reminderOptions[0xFFFFFF] = "app_calendar_reminder_never";
+        reminderOptions[0]        = "app_calendar_reminder_event_time";
+        reminderOptions[5]        = "app_calendar_reminder_5_min_before";
+        reminderOptions[15]       = "app_calendar_reminder_15_min_before";
+        reminderOptions[30]       = "app_calendar_reminder_30_min_before";
+        reminderOptions[100]      = "app_calendar_reminder_1_hour_before";
+        reminderOptions[200]      = "app_calendar_reminder_2_hour_before";
+        reminderOptions[10000]    = "app_calendar_reminder_1_day_before";
+        reminderOptions[20000]    = "app_calendar_reminder_2_days_before";
+        reminderOptions[70000]    = "app_calendar_reminder_1_week_before";
+        repeatOptions[0]          = "app_calendar_repeat_never";
+        repeatOptions[1]          = "app_calendar_repeat_daily";
+        repeatOptions[2]          = "app_calendar_repeat_weekly";
+        repeatOptions[3]          = "app_calendar_repeat_two_weeks";
+        repeatOptions[4]          = "app_calendar_repeat_month";
+        repeatOptions[5]          = "app_calendar_repeat_year";
+        repeatOptions[6]          = "app_calendar_repeat_custom";
+    };
     virtual ~EventRecordData() = default;
     std::unique_ptr<EventsRecord> getData()
     {
         return std::move(record);
+    };
+    std::map<uint32_t, std::string> getReminderOptionMap()
+    {
+        return reminderOptions;
+    };
+    std::map<uint32_t, std::string> getRepeatOptionMap()
+    {
+        return repeatOptions;
     };
     virtual void setData(std::unique_ptr<EventsRecord> rec)
     {

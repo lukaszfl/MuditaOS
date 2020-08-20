@@ -24,7 +24,7 @@ class NewEditEventModel : public app::InternalModel<gui::CalendarListItem *>, pu
   public:
     NewEditEventModel(app::Application *app, bool mode24H = false);
 
-    void loadData(bool allDayEvent);
+    void loadData(std::shared_ptr<EventsRecord> record);
     void loadDataWithoutTimeItem();
     void reloadDataWithTimeItem();
     void saveData(std::shared_ptr<EventsRecord> event);
