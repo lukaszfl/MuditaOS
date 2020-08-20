@@ -13,7 +13,7 @@ class EventDetailModel : public app::InternalModel<gui::CalendarListItem *>, pub
   public:
     EventDetailModel(app::Application *app);
 
-    void loadData();
+    void loadData(std::unique_ptr<EventsRecord> record);
 
     [[nodiscard]] auto requestRecordsCount() -> unsigned int override;
     [[nodiscard]] unsigned int getMinimalItemHeight() const override;

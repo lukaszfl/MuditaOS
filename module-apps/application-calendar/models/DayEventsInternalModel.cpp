@@ -47,7 +47,9 @@ void DayEventsInternalModel::loadData(std::unique_ptr<std::vector<EventsRecord>>
         item->activatedCallback = [=](gui::Item &item) {
             LOG_INFO("Switch to event detail window");
             auto rec  = std::make_unique<EventsRecord>(record);
+            LOG_DEBUG("Before event record data");
             auto data = std::make_unique<EventRecordData>(std::move(rec));
+            LOG_DEBUG("Before switch");
             app->switchWindow(style::window::calendar::name::details_window, std::move(data));
             return true;
         };

@@ -37,7 +37,7 @@ void EventDetailModel::createData()
     }
 }
 
-void EventDetailModel::loadData()
+void EventDetailModel::loadData(std::unique_ptr<EventsRecord> record)
 {
     list->clear();
     eraseInternalData();
@@ -46,7 +46,7 @@ void EventDetailModel::loadData()
 
     for (auto &item : internalData) {
         if (item->onLoadCallback) {
-            item->onLoadCallback();
+            item->onLoadCallback(std::move(record));
         }
     }
 

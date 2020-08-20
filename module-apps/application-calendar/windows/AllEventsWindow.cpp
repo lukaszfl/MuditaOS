@@ -56,13 +56,6 @@ namespace gui
 
     void AllEventsWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
-        /*auto msg = DBServiceAPI::GetQueryWithReply(
-            application, db::Interface::Name::Events, std::make_unique<db::query::events::GetAll>(), 1000);
-
-        LOG_DEBUG("Type id %s", typeid(*msg.second).name());
-        auto msgl = msg.second.get();
-        assert(msgl != nullptr);
-        onDatabaseMessage(msgl);*/
         allEventsList->rebuildList();
     }
 
@@ -107,6 +100,7 @@ namespace gui
             auto temp = msg->getResult();
             if (auto response = dynamic_cast<db::query::events::GetAllLimitedResult *>(temp.get())) {
                 auto records_data = response->getResult();
+                allEventsModel->setRecordsCount(*response->getCountResult());
                 auto records = std::make_unique<std::vector<EventsRecord>>(records_data->begin(), records_data->end());
                 return allEventsModel->updateRecords(std::move(records));
             }

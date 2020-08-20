@@ -4,6 +4,7 @@
 #include <ListView.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <queries/calendar/QueryEventsGetAllLimited.hpp>
+#include <module-apps/application-calendar/data/CalendarData.hpp>
 
 AllEventsModel::AllEventsModel(app::Application *app) : DatabaseModel(app)
 {
@@ -13,9 +14,7 @@ AllEventsModel::AllEventsModel(app::Application *app) : DatabaseModel(app)
 
 unsigned int AllEventsModel::requestRecordsCount()
 {
-    // recordsCount = DBServiceAPI::CalllogGetCount(application);
-    // return recordsCount;
-    return 24;
+    return recordsCount;
 }
 
 void AllEventsModel::requestRecords(const uint32_t offset, const uint32_t limit)
@@ -43,7 +42,9 @@ gui::ListItem *AllEventsModel::getItem(gui::Order order)
     }
     item->activatedCallback = [=](gui::Item &item) {
         LOG_INFO("Switch to event details window");
-        application->switchWindow(style::window::calendar::name::details_window);
+        auto rec  = std::make_unique<EventsRecord>(*record);
+        auto data = std::make_unique<EventRecordData>(std::move(rec));
+        application->switchWindow(style::window::calendar::name::details_window, std::move(data));
         return true;
     };
 
@@ -52,8 +53,11 @@ gui::ListItem *AllEventsModel::getItem(gui::Order order)
 
 bool AllEventsModel::updateRecords(std::unique_ptr<std::vector<EventsRecord>> records)
 {
-    LOG_INFO("Records size %lu", records->size());
     DatabaseModel::updateRecords(std::move(records));
     list->onProviderDataUpdate();
     return true;
+}
+void AllEventsModel::setRecordsCount(const uint32_t count)
+{
+    list->setElementsCount(count);
 }

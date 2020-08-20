@@ -48,7 +48,7 @@ namespace gui
             bodyList->rebuildList();
         }
 
-        eventDetailModel->loadData();
+        eventDetailModel->loadData(std::make_unique<EventsRecord>(*eventRecord));
     }
 
     auto EventDetailWindow::handleSwitchData(SwitchData *data) -> bool
@@ -63,7 +63,12 @@ namespace gui
         }
 
         eventRecord = item->getData();
-        setTitle(eventRecord->title);
+        uint32_t start_time    = this->eventRecord->date_from % 10000;
+        uint32_t month_and_day = (this->eventRecord->date_from % 100000000 - start_time) / 10000;
+        auto dayUInt           = static_cast<unsigned>(month_and_day % 100);
+        std::string monthStr =
+            utils::time::Locale::get_month(utils::time::Locale::Month(((month_and_day - dayUInt) / 100) - 1));
+        setTitle(std::to_string(dayUInt) + " " + monthStr);
 
         return true;
     }
@@ -80,7 +85,7 @@ namespace gui
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_LF) {
             LOG_DEBUG("Switch to option window");
-            auto rec  = std::move(eventRecord);
+            auto rec  = std::make_unique<EventsRecord>(*eventRecord);
             auto data = std::make_unique<EventRecordData>(std::move(rec));
             application->switchWindow(style::window::calendar::name::events_options, std::move(data));
             return true;

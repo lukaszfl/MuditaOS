@@ -82,16 +82,17 @@ void NewEditEventModel::createData(bool allDayEvent)
     }
 }
 
-void NewEditEventModel::loadData(bool allDayEvent)
+void NewEditEventModel::loadData(std::shared_ptr<EventsRecord> record)
 {
     list->clear();
     eraseInternalData();
+    auto isAllDayEvent = [&]() -> bool { return record->date_from % 10000 == 0 && record->date_till % 10000 == 2359; };
 
-    createData(allDayEvent);
+    createData(isAllDayEvent());
 
     for (auto &item : internalData) {
         if (item->onLoadCallback) {
-            item->onLoadCallback();
+            item->onLoadCallback(record);
         }
     }
 

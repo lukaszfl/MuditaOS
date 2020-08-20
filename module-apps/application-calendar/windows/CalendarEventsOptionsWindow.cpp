@@ -13,7 +13,6 @@ namespace gui
         : OptionWindow(app, style::window::calendar::name::events_options)
     {
         buildInterface();
-        this->addOptions(eventsOptionsList());
     }
 
     auto CalendarEventsOptions::eventsOptionsList() -> std::list<gui::Option>
@@ -21,10 +20,10 @@ namespace gui
         std::list<gui::Option> options;
         options.emplace_back(gui::Option{utils::localize.get("app_calendar_options_edit"), [=](gui::Item &item) {
                                              LOG_INFO("Switch to edit window");
-                                             std::unique_ptr<gui::SwitchData> data = std::make_unique<SwitchData>();
+                                             auto rec  = std::make_unique<EventsRecord>(*eventRecord);
+                                             auto data = std::make_unique<EventRecordData>(std::move(rec));
                                              data->setDescription("Edit");
                                              application->switchWindow(style::window::calendar::name::new_edit_event,
-                                                                       gui::ShowMode::GUI_SHOW_INIT,
                                                                        std::move(data));
                                              return true;
                                          }});
@@ -46,6 +45,8 @@ namespace gui
 
         eventRecord = item->getData();
 
+        clearOptions();
+        addOptions(eventsOptionsList());
         return true;
     }
 
@@ -71,7 +72,7 @@ namespace gui
             return true;
         };
         meta.text  = utils::localize.get("app_calendar_event_delete_confirmation");
-        meta.title = "Football with folks";
+        meta.title = eventRecord->title;
         meta.icon  = "phonebook_contact_delete_trashcan";
         dialog->update(meta);
         this->application->switchWindow(dialog->getName());

@@ -7,7 +7,7 @@ namespace gui
 {
     class CalendarEventsOptions : public OptionWindow
     {
-        std::unique_ptr<EventsRecord> eventRecord = nullptr;
+        std::shared_ptr<EventsRecord> eventRecord = nullptr;
 
       public:
         CalendarEventsOptions(app::Application *app);
