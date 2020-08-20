@@ -191,8 +191,10 @@ namespace gui
                                         style::window::calendar::item::eventTime::height -
                                             style::window::calendar::item::eventTime::description_label_h);
 
-            onLoadCallback = [&]() {};
-            // onSaveCallback = [&]() {};
+            onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
+                hourInput->setText(std::to_string(event->date_from % 10000 / 100));
+                minuteInput->setText(std::to_string(event->date_from % 100));
+            };
         }
         else {
             hourInput->setMinimumSize(style::window::calendar::item::eventTime::time_input_24h_w,
@@ -202,8 +204,10 @@ namespace gui
                                         style::window::calendar::item::eventTime::height -
                                             style::window::calendar::item::eventTime::description_label_h);
 
-            onLoadCallback = [&]() {};
-            // onSaveCallback = [&]() {};
+            onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
+                hourInput->setText(std::to_string(event->date_from % 10000 / 100));
+                minuteInput->setText(std::to_string(event->date_from % 100));
+            };
         }
     }
 

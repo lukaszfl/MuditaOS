@@ -64,9 +64,17 @@ namespace gui
     void EventDetailDescriptionItem::descriptionHandler()
     {
         title->setText(utils::localize.get("app_calendar_event_detail"));
-        onLoadCallback = [&]() {
-            description->setText("Football with folks at School");
-            eventTime->setText("12:45 - 1:45 PM");
+        onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
+            description->setText(event->title);
+            uint32_t start_time = event->date_from % 10000;
+            uint32_t end_time   = event->date_till % 10000;
+            if (start_time == 0 && end_time == 2359) {
+                eventTime->setText(utils::localize.get("app_calendar_all_day"));
+            }
+            else {
+                std::string text = std::to_string(start_time) + " - " + std::to_string(end_time);
+                eventTime->setText(text);
+            }
         };
     }
 

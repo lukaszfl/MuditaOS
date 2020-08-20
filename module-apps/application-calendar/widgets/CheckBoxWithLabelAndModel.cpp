@@ -48,7 +48,9 @@ namespace gui
             return false;
         };
 
-        onLoadCallback = [&]() { checkBox->setImageVisible(false); };
+        onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
+            checkBox->setImageVisible(event->date_from % 10000 == 0 && event->date_till % 10000 == 2359);
+        };
     }
 
 } /* namespace gui */

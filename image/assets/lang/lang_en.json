@@ -98,6 +98,7 @@
     "app_calendar_edit": "EDIT",
     "app_calendar_new_edit_event_name": "Event name",
     "app_calendar_new_edit_event_allday": "All day event",
+    "app_calendar_all_day": "All day",
     "app_calendar_new_edit_event_start": "Start",
     "app_calendar_new_edit_event_end": "End",
 

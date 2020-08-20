@@ -13,6 +13,7 @@ class AllEventsModel : public app::DatabaseModel<EventsRecord>, public gui::List
     AllEventsModel(app::Application *app);
     virtual ~AllEventsModel() override = default;
 
+    void setRecordsCount(const uint32_t count);
     void requestRecords(const uint32_t offset, const uint32_t limit) override;
     bool updateRecords(std::unique_ptr<std::vector<EventsRecord>> records) override;
 

@@ -2,6 +2,7 @@
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include <Style.hpp>
 #include <Utils.hpp>
+//#include <module-apps/application-calendar/data/CalendarData.hpp>
 
 namespace gui
 {
@@ -77,9 +78,13 @@ namespace gui
     {
         repeatTitle->setText(utils::localize.get("app_calendar_event_detail_repeat"));
         reminderTitle->setText(utils::localize.get("app_calendar_event_detail_reminder"));
-        onLoadCallback = [&]() {
-            repeat->setText(utils::localize.get("app_calendar_repeat_daily"));
-            reminder->setText(utils::localize.get("app_calendar_reminder_1_week_before"));
+        onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
+            // auto rec  = std::make_unique<EventsRecord>(std::move(*event));
+            // auto data = std::make_unique<EventRecordData>(std::move(rec));
+            // repeat->setText(utils::localize.get((*data->getReminderOptionMap())[event->repeat]));
+            // reminder->setText(utils::localize.get((*data->getReminderOptionMap())[event->reminder]));
+            reminder->setText("Never");
+            repeat->setText("Never");
         };
     }
 
