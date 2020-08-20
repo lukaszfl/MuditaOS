@@ -58,9 +58,10 @@ namespace gui
         switch (eventAction) {
         case EventAction::None:
             break;
-        case EventAction::Add:
+        case EventAction::Add: {
             setTitle(utils::localize.get("app_calendar_new_event_title"));
             break;
+        }
         case EventAction::Edit:
             setTitle(utils::localize.get("app_calendar_edit_event_title"));
             break;
@@ -94,6 +95,13 @@ namespace gui
     {
         if (data == nullptr) {
             return false;
+        }
+        auto rec = dynamic_cast<EventRecordData *>(data);
+        if (rec != nullptr) {
+
+            eventRecord = rec->getData();
+            LOG_DEBUG(
+                "DATA!!!!!!!!!!!!!!! date_from: %u  date_till: %u", eventRecord->date_from, eventRecord->date_till);
         }
 
         if (data->getDescription() == "Edit") {
