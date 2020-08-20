@@ -64,7 +64,7 @@ namespace gui
             description->setText(this->record->title.c_str());
             std::string start_time = std::to_string(this->record->date_from % 10000);
             if (this->record->date_from % 10000 == 0 && this->record->date_till % 10000 == 2359) {
-                startTime->setText("All day");
+                startTime->setText(utils::localize.get("app_calendar_all_day"));
             }
             else {
                 startTime->setText(start_time);

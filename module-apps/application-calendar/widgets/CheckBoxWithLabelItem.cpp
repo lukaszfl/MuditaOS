@@ -1,6 +1,6 @@
 #include "CheckBoxWithLabelItem.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
-#include "application-calendar/windows/NewEditEventWindow.hpp"
+//#include "application-calendar/windows/NewEditEventWindow.hpp"
 #include "windows/AppWindow.hpp"
 #include <ListView.hpp>
 #include <Style.hpp>
@@ -93,7 +93,7 @@ namespace gui
             return false;
         };
 
-        onLoadCallback = [&]() { checkBox->setImageVisible(false); };
+        onLoadCallback = [&](std::shared_ptr<EventsRecord> event) { checkBox->setImageVisible(false); };
     }
 
     bool CheckBoxWithLabelItem::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim)

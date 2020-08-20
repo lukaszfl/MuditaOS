@@ -1,6 +1,5 @@
 #include <module-db/Interface/EventsRecord.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
-#include <module-db/queries/calendar/QueryEventsAdd.hpp>
 #include "NewEditEventWindow.hpp"
 
 namespace gui
@@ -41,9 +40,14 @@ namespace gui
     void NewEditEventWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
         if (data != nullptr) {
-            auto rec    = dynamic_cast<EventsRecord *>(data);
-            if (rec != nullptr)
-                eventRecord = std::make_shared<EventsRecord>(*rec);
+            auto *rec = dynamic_cast<EventRecordData *>(data);
+            if (rec != nullptr) {
+                eventRecord = rec->getData();
+            }
+            else {
+                auto rec2   = new EventsRecord();
+                eventRecord = std::make_shared<EventsRecord>(*rec2);
+            }
         }
         else {
             auto rec    = new EventsRecord();
@@ -60,46 +64,11 @@ namespace gui
             setTitle(utils::localize.get("app_calendar_edit_event_title"));
             break;
         }
-
         if (mode == ShowMode::GUI_SHOW_INIT) {
-            newEditEventModel->loadData(false);
             list->rebuildList();
         }
+        newEditEventModel->loadData(eventRecord);
     }
-
-    //    bool CustomRepeatWindow::onInput(const InputEvent &inputEvent)
-    //    {
-    //        // check if any of the lower inheritance onInput methods catch the event
-    //        if (Window::onInput(inputEvent)) {
-    //            return true;
-    //        }
-    //        // process only if key is released
-    //        if ((inputEvent.state != InputEvent::State::keyReleasedShort))
-    //            return false;
-    //
-    //        switch (inputEvent.keyCode) {
-    ////            case KeyCode::KEY_VOLUP: {
-    ////                application->increaseCurrentVolume();
-    ////                return true;
-    ////            }
-    ////            case KeyCode::KEY_VOLDN: {
-    ////                application->decreaseCurrentVolume();
-    ////                return true;
-    ////            }
-    //            case KeyCode::KEY_RF: {
-    //                application->returnToPreviousWindow();
-    //                return true;
-    //            }
-    ////            case KeyCode::KEY_TORCH: {
-    ////                application->toggleTorchAndColourTemps();
-    ////                return true;
-    ////            }
-    //            default:
-    //                break;
-    //        }
-    //
-    //        return false;
-    //    }
 
     bool NewEditEventWindow::onInput(const gui::InputEvent &inputEvent)
     {
@@ -122,7 +91,6 @@ namespace gui
 
     bool NewEditEventWindow::handleSwitchData(gui::SwitchData *data)
     {
-        LOG_DEBUG("HANDLE SWITCH DATA");
         if (data == nullptr) {
             return false;
         }
@@ -133,6 +101,6 @@ namespace gui
         else if (data->getDescription() == "New") {
             eventAction = EventAction::Add;
         }
-        return false;
+        return true;
     }
 } /* namespace gui */

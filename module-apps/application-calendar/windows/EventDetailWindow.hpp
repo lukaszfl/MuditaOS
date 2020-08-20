@@ -10,7 +10,7 @@ namespace gui
 {
     class EventDetailWindow : public gui::AppWindow
     {
-        std::unique_ptr<EventsRecord> eventRecord          = nullptr;
+        std::shared_ptr<EventsRecord> eventRecord          = nullptr;
         std::shared_ptr<EventDetailModel> eventDetailModel = nullptr;
         gui::ListView *bodyList                            = nullptr;
 

@@ -58,7 +58,7 @@ void CustomRepeatModel::loadData()
 
     for (auto &item : internalData) {
         if (item->onLoadCallback) {
-            item->onLoadCallback();
+            item->onLoadCallback(std::shared_ptr<EventsRecord>());
         }
     }
 
