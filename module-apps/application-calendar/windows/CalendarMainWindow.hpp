@@ -13,10 +13,11 @@ namespace gui
 {
     class CalendarMainWindow;
 
-    class DayLabel : public VBox
+    class DayLabel : public Rect
     {
+        gui::VBox *vBox       = nullptr;
         gui::Label *dayNumber = nullptr;
-        gui::Label *dot       = nullptr;
+        gui::Image *dotImage  = nullptr;
 
       public:
         DayLabel(app::Application *app,
@@ -27,6 +28,8 @@ namespace gui
                  const uint32_t &height,
                  bool isDayEmpty);
         ~DayLabel() override = default;
+
+        bool onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) override;
     };
 
     class MonthBox : public GridLayout

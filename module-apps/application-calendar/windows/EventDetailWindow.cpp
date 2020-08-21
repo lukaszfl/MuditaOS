@@ -48,7 +48,7 @@ namespace gui
             bodyList->rebuildList();
         }
 
-        eventDetailModel->loadData(std::make_unique<EventsRecord>(*eventRecord));
+        eventDetailModel->loadData(eventRecord);
     }
 
     auto EventDetailWindow::handleSwitchData(SwitchData *data) -> bool
