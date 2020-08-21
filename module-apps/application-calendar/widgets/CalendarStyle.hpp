@@ -51,10 +51,8 @@ namespace style
                 namespace dayEvents
                 {
                     const inline int title_w       = 200;
-                    const inline int h_box_h       = 40;
-                    const inline int description_h = 30;
-                    const inline int margins       = 10;
-                    const inline int height        = 90;
+                    const inline int box_height    = style::window::label::small_h;
+                    const inline int height        = 100;
                 } // namespace dayEvents
 
                 namespace allEvents
@@ -75,56 +73,40 @@ namespace style
                 namespace eventDetail
                 {
                     const inline int height_min    = 90;
-                    const inline int height_max    = 160;
-                    const inline int margin_top    = 25;
-                    const inline int margin_bottom = 10;
+                    const inline int height_max        = 155;
+                    const inline int margin_top        = style::margins::big + style::margins::small;
+                    const inline int event_time_margin = 25;
                     const inline int title_h       = 20;
-                    const inline int event_time_h  = 30;
-                    const inline int description_h = 40;
+                    const inline int label_h           = 35;
                 } // namespace eventDetail
 
                 namespace eventTime
                 {
-                    const inline int height               = 120;
-                    const inline int margin               = 22;
-                    const inline int description_label_w  = 150;
-                    const inline int description_label_h  = 30;
-                    const inline int colon_label_w        = 25;
-                    const inline int colon_label_h        = 20;
-                    const inline int time_input_12h_w     = 125;
-                    const inline int time_input_24h_w     = 202;
-                    const inline int mode12h_input_margin = 25;
+                    const inline int height           = 106;
+                    const inline int margin           = 21;
+                    const inline int separator        = 30;
+                    const inline int time_input_12h_w = 120;
+                    const inline int time_input_24h_w = 195;
                 } // namespace eventTime
 
                 namespace checkBox
                 {
-                    const inline int height              = 52;
-                    const inline int margin_top          = 6;
-                    const inline int margin_bottom       = 5;
-                    const inline int input_box_label_w   = 55;
-                    const inline int input_box_label_h   = 50;
+                    const inline int height              = 44;
+                    const inline int margin_top          = style::margins::very_big + style::margins::small;
+                    const inline int input_box_label_w   = style::window::label::big_h;
                     const inline int description_label_w = 280;
-                    const inline int description_label_h = 40;
-                    const inline int description_margin  = 20;
-                    const inline int tick_image_w        = 30;
-                    const inline int tick_image_h        = 30;
                 } // namespace checkBox
 
                 namespace severalOptions
                 {
-                    const inline int height              = 62;
-                    const inline int margin              = 15;
-                    const inline int description_label_w = 100;
-                    const inline int description_label_h = 30;
-                    const inline int option_label_h      = 30;
-                    const inline int arrow_w             = 20;
-                    const inline int arrow_h             = 20;
+                    const inline int height    = 63;
+                    const inline int label_h   = 30;
+                    const inline int arrow_w_h = 20;
                 } // namespace severalOptions
 
                 namespace textWithLabel
                 {
                     const inline int height        = 80;
-                    const inline int margin        = 5;
                     const inline int description_h = 30;
                     const inline int text_input_h  = 40;
                 } // namespace textWithLabel
