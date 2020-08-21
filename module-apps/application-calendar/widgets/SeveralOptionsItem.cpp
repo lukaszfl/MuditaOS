@@ -3,6 +3,7 @@
 #include <Style.hpp>
 #include <Utils.hpp>
 #include <module-db/Interface/EventsRecord.hpp>
+#include <module-apps/application-calendar/ApplicationCalendar.hpp>
 
 namespace gui
 {
@@ -21,15 +22,15 @@ namespace gui
 
         setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
         setPenWidth(style::window::default_border_rect_no_focus);
-        setMargins(gui::Margins(0, style::window::calendar::item::severalOptions::margin, 0, 0));
+        setMargins(gui::Margins(style::margins::small, style::margins::huge / 2, 0, style::margins::huge / 2));
 
         vBox = new gui::VBox(this, 0, 0, 0, 0);
         vBox->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         vBox->activeItem = false;
 
         descriptionLabel = new gui::Label(vBox, 0, 0, 0, 0);
-        descriptionLabel->setMinimumSize(style::window::calendar::item::severalOptions::description_label_w,
-                                         style::window::calendar::item::severalOptions::description_label_h);
+        descriptionLabel->setMinimumSize(style::window::default_body_width,
+                                         style::window::calendar::item::severalOptions::label_h);
         descriptionLabel->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         descriptionLabel->setAlignment(Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center));
         descriptionLabel->setFont(style::window::font::small);
@@ -39,30 +40,30 @@ namespace gui
         hBox = new gui::HBox(vBox, 0, 0, 0, 0);
         hBox->setMinimumSize(style::window::default_body_width,
                              style::window::calendar::item::severalOptions::height -
-                                 style::window::calendar::item::severalOptions::description_label_h);
+                                 style::window::calendar::item::severalOptions::label_h);
         hBox->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         hBox->activeItem = false;
 
         leftArrow = new gui::Image(hBox, 0, 0, 0, 0);
-        leftArrow->setMinimumSize(style::window::calendar::item::severalOptions::arrow_w,
-                                  style::window::calendar::item::severalOptions::arrow_h);
+        leftArrow->setMinimumSize(style::window::calendar::item::severalOptions::arrow_w_h,
+                                  style::window::calendar::item::severalOptions::arrow_w_h);
         leftArrow->setAlignment(Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center));
         leftArrow->activeItem = false;
         leftArrow->set("arrow_left");
 
         optionLabel = new gui::Label(hBox, 0, 0, 0, 0);
         optionLabel->setMinimumSize(style::window::default_body_width -
-                                        2 * style::window::calendar::item::severalOptions::arrow_w,
+                                        2 * style::window::calendar::item::severalOptions::arrow_w_h,
                                     style::window::calendar::item::severalOptions::height -
-                                        style::window::calendar::item::severalOptions::description_label_h);
+                                        style::window::calendar::item::severalOptions::label_h);
         optionLabel->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         optionLabel->setAlignment(Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
-        optionLabel->setFont(style::window::font::small);
+        optionLabel->setFont(style::window::font::medium);
         optionLabel->activeItem = false;
 
         rightArrow = new gui::Image(hBox, 0, 0, 0, 0);
-        rightArrow->setMinimumSize(style::window::calendar::item::severalOptions::arrow_w,
-                                   style::window::calendar::item::severalOptions::arrow_h);
+        rightArrow->setMinimumSize(style::window::calendar::item::severalOptions::arrow_w_h,
+                                   style::window::calendar::item::severalOptions::arrow_w_h);
         rightArrow->setAlignment(Alignment(gui::Alignment::Horizontal::Right, gui::Alignment::Vertical::Center));
         rightArrow->activeItem = false;
         rightArrow->set("arrow_right");
@@ -95,7 +96,6 @@ namespace gui
             optionsNames.push_back(utils::localize.get("app_calendar_repeat_year"));
             optionsNames.push_back(utils::localize.get("app_calendar_repeat_custom"));
         }
-        optionLabel->setText(optionsNames[0]);
     }
 
     void SeveralOptionsItem::applyCallbacks()
@@ -168,6 +168,20 @@ namespace gui
                 return true;
             }
             return false;
+        };
+
+        onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
+            auto calendarApp = dynamic_cast<app::ApplicationCalendar *>(application);
+            assert(calendarApp != nullptr);
+            if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
+                actualVectorIndex = event->repeat;
+                optionLabel->setText(optionsNames[actualVectorIndex]);
+            }
+            else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
+                actualVectorIndex = std::find(reminderTimeOptions.begin(), reminderTimeOptions.end(), event->reminder) -
+                                    reminderTimeOptions.begin();
+                optionLabel->setText(optionsNames[actualVectorIndex]);
+            }
         };
     }
 

@@ -9,6 +9,7 @@ namespace gui
     AllEventsItem::AllEventsItem()
     {
         setMinimumSize(style::window::default_body_width, style::window::label::big_h);
+        setMargins(gui::Margins(0, style::margins::big, 0, 0));
 
         hBox = new gui::HBox(this, 0, 0, 0, 0);
         hBox->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
@@ -20,6 +21,7 @@ namespace gui
         startTime->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         startTime->setFont(style::window::font::small);
         startTime->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
+        startTime->setMargins(gui::Margins(style::margins::small, 0, 0, 0));
 
         description = new gui::Label(hBox, 0, 0, 0, 0);
         description->setMinimumSize(style::window::calendar::item::allEvents::description_w,
@@ -59,7 +61,6 @@ namespace gui
     void AllEventsItem::setEvent(std::shared_ptr<EventsRecord> rec)
     {
         this->record = rec;
-
         if (rec != nullptr) {
             description->setText(this->record->title.c_str());
             std::string start_time = std::to_string(this->record->date_from % 10000);

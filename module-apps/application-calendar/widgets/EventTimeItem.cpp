@@ -17,7 +17,7 @@ namespace gui
         setMinimumSize(style::window::default_body_width, style::window::calendar::item::eventTime::height);
 
         setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
-        setMargins(gui::Margins(0, style::window::calendar::item::eventTime::margin, 0, 0));
+        setMargins(gui::Margins(style::margins::small, style::window::calendar::item::eventTime::margin, 0, 0));
 
         vBox = new gui::VBox(this, 0, 0, 0, 0);
         vBox->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
@@ -25,7 +25,7 @@ namespace gui
 
         descriptionLabel = new gui::Label(vBox, 0, 0, 0, 0);
         descriptionLabel->setMinimumSize(style::window::default_body_width,
-                                         style::window::calendar::item::eventTime::description_label_h);
+                                         style::window::calendar::item::eventTime::separator);
         descriptionLabel->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         descriptionLabel->setAlignment(Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center));
         descriptionLabel->setFont(style::window::font::small);
@@ -34,7 +34,7 @@ namespace gui
         hBox = new gui::HBox(vBox, 0, 0, 0, 0);
         hBox->setMinimumSize(style::window::default_body_width,
                              style::window::calendar::item::eventTime::height -
-                                 style::window::calendar::item::eventTime::description_label_h);
+                                 style::window::calendar::item::eventTime::separator);
         hBox->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         hBox->activeItem = false;
 
@@ -48,9 +48,9 @@ namespace gui
         hourInput->setEditMode(gui::EditMode::EDIT);
 
         colonLabel = new gui::Label(hBox, 0, 0, 0, 0);
-        colonLabel->setMinimumSize(style::window::calendar::item::eventTime::colon_label_w,
+        colonLabel->setMinimumSize(style::window::calendar::item::eventTime::separator,
                                    style::window::calendar::item::eventTime::height -
-                                       style::window::calendar::item::eventTime::description_label_h);
+                                       style::window::calendar::item::eventTime::separator);
         colonLabel->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         colonLabel->setAlignment(Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
         colonLabel->setFont(style::window::font::medium);
@@ -146,6 +146,7 @@ namespace gui
     void EventTimeItem::prepareForTimeMode()
     {
         if (!mode24H) {
+            new gui::Span(hBox, Axis::X, style::window::calendar::item::eventTime::separator);
             mode12hInput = new gui::Label(hBox, 0, 0, 0, 0);
             mode12hInput->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
             mode12hInput->setAlignment(
@@ -181,15 +182,13 @@ namespace gui
 
             mode12hInput->setMinimumSize(style::window::calendar::item::eventTime::time_input_12h_w,
                                          style::window::calendar::item::eventTime::height -
-                                             style::window::calendar::item::eventTime::description_label_h);
-            mode12hInput->setMargins(
-                gui::Margins(style::window::calendar::item::eventTime::mode12h_input_margin, 0, 0, 0));
+                                             style::window::calendar::item::eventTime::separator);
             hourInput->setMinimumSize(style::window::calendar::item::eventTime::time_input_12h_w,
                                       style::window::calendar::item::eventTime::height -
-                                          style::window::calendar::item::eventTime::description_label_h);
+                                          style::window::calendar::item::eventTime::separator);
             minuteInput->setMinimumSize(style::window::calendar::item::eventTime::time_input_12h_w,
                                         style::window::calendar::item::eventTime::height -
-                                            style::window::calendar::item::eventTime::description_label_h);
+                                            style::window::calendar::item::eventTime::separator);
 
             onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
                 hourInput->setText(std::to_string(event->date_from % 10000 / 100));
@@ -199,10 +198,10 @@ namespace gui
         else {
             hourInput->setMinimumSize(style::window::calendar::item::eventTime::time_input_24h_w,
                                       style::window::calendar::item::eventTime::height -
-                                          style::window::calendar::item::eventTime::description_label_h);
+                                          style::window::calendar::item::eventTime::separator);
             minuteInput->setMinimumSize(style::window::calendar::item::eventTime::time_input_24h_w,
                                         style::window::calendar::item::eventTime::height -
-                                            style::window::calendar::item::eventTime::description_label_h);
+                                            style::window::calendar::item::eventTime::separator);
 
             onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
                 hourInput->setText(std::to_string(event->date_from % 10000 / 100));

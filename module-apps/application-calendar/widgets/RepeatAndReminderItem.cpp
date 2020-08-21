@@ -2,16 +2,17 @@
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include <Style.hpp>
 #include <Utils.hpp>
-//#include <module-apps/application-calendar/data/CalendarData.hpp>
+#include <module-apps/application-calendar/ApplicationCalendar.hpp>
 
 namespace gui
 {
 
-    RepeatAndReminderItem::RepeatAndReminderItem()
+    RepeatAndReminderItem::RepeatAndReminderItem(app::ApplicationCalendar *application) : app(application)
     {
         activeItem = false;
         setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         setMinimumSize(style::window::default_body_width, style::window::calendar::item::repeatAndReminder::height);
+        setMargins(gui::Margins(style::margins::small, 0, 0, 0));
 
         hBox = new HBox(this, 0, 0, 0, 0);
         hBox->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
@@ -41,7 +42,7 @@ namespace gui
         repeat->setMinimumSize(style::window::calendar::item::repeatAndReminder::description_w,
                                style::window::calendar::item::repeatAndReminder::description_h);
         repeat->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
-        repeat->setFont(style::window::font::small);
+        repeat->setFont(style::window::font::medium);
         repeat->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
         repeat->activeItem = false;
 
@@ -60,7 +61,7 @@ namespace gui
         reminder->setMinimumSize(style::window::default_body_width / 2,
                                  style::window::calendar::item::repeatAndReminder::description_h);
         reminder->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
-        reminder->setFont(style::window::font::small);
+        reminder->setFont(style::window::font::medium);
         reminder->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
         reminder->activeItem = false;
 
@@ -79,12 +80,8 @@ namespace gui
         repeatTitle->setText(utils::localize.get("app_calendar_event_detail_repeat"));
         reminderTitle->setText(utils::localize.get("app_calendar_event_detail_reminder"));
         onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
-            // auto rec  = std::make_unique<EventsRecord>(std::move(*event));
-            // auto data = std::make_unique<EventRecordData>(std::move(rec));
-            // repeat->setText(utils::localize.get((*data->getReminderOptionMap())[event->repeat]));
-            // reminder->setText(utils::localize.get((*data->getReminderOptionMap())[event->reminder]));
-            reminder->setText("Never");
-            repeat->setText("Never");
+            repeat->setText(utils::localize.get(app->repeatOptions[event->repeat]));
+            reminder->setText(utils::localize.get(app->reminderOptions[event->reminder]));
         };
     }
 
