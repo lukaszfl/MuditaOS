@@ -12,7 +12,7 @@ namespace gui
                                          std::function<void()> selectSpecialCharacter)
     {
         setMinimumSize(style::window::default_body_width, style::window::calendar::item::textWithLabel::height);
-
+        setMargins(gui::Margins(style::margins::small, 0, 0, 0));
         setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
 
         vBox = new gui::VBox(this, 0, 0, 0, 0);
@@ -23,7 +23,7 @@ namespace gui
         descriptionLabel = new gui::Label(vBox, 0, 0, 0, 0);
         descriptionLabel->setMinimumSize(style::window::default_body_width,
                                          style::window::calendar::item::textWithLabel::description_h);
-        descriptionLabel->setMargins(gui::Margins(0, style::window::calendar::item::textWithLabel::margin, 0, 0));
+        descriptionLabel->setMargins(gui::Margins(0, style::margins::small, 0, 0));
         descriptionLabel->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         descriptionLabel->setAlignment(Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Top));
         descriptionLabel->setFont(style::window::font::small);

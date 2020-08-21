@@ -5,6 +5,7 @@
 #include "Application.hpp"
 #include "InternalModel.hpp"
 #include <ListItemProvider.hpp>
+#include <module-apps/application-calendar/ApplicationCalendar.hpp>
 
 class EventDetailModel : public app::InternalModel<gui::CalendarListItem *>, public gui::ListItemProvider
 {
@@ -13,7 +14,7 @@ class EventDetailModel : public app::InternalModel<gui::CalendarListItem *>, pub
   public:
     EventDetailModel(app::Application *app);
 
-    void loadData(std::unique_ptr<EventsRecord> record);
+    void loadData(std::shared_ptr<EventsRecord> record);
 
     [[nodiscard]] auto requestRecordsCount() -> unsigned int override;
     [[nodiscard]] unsigned int getMinimalItemHeight() const override;

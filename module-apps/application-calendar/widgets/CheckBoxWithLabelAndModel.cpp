@@ -11,6 +11,9 @@ namespace gui
     {
         app = application;
         assert(app != nullptr);
+
+        setMargins(gui::Margins(
+            style::margins::small, style::window::calendar::item::checkBox::margin_top, 0, style::margins::small));
         applyCallbacks();
     }
 

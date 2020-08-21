@@ -20,47 +20,60 @@ namespace gui
                        const uint32_t &width,
                        const uint32_t &height,
                        bool isDayEmpty)
-        : VBox(parent, 0, 0, 0, 0)
+        : Rect(parent, 0, 0, width, height)
     {
-        parent->addWidget(this);
-        this->setSize(width, height);
         this->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
-        this->dayNumber = new gui::Label(this, 0, 0, width, height - 33);
+
+        this->vBox = new gui::VBox(this, 0, 0, 0, 0);
+        this->vBox->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
+
+        this->dayNumber = new gui::Label(this->vBox, 0, 0, 0, 0);
+        this->dayNumber->setMinimumSize(width, height - 22);
         this->dayNumber->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         this->dayNumber->setAlignment(
             gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
         this->dayNumber->setMargins(gui::Margins(0, 11, 0, 0));
         this->dayNumber->activeItem = false;
-        this->dot                   = new gui::Label(this, 0, 0, width, 11);
-        this->dot->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
-        this->dot->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Top));
-        this->dot->setText(".");
-        this->dot->activeItem = false;
+
+        this->dotImage = new gui::Image(vBox, 0, 0, 0, 0, "dot_12px_hard_alpha_W_G");
+        this->dotImage->setMinimumSize(11, 11);
+        this->dotImage->setAlignment(
+            gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
+        this->dotImage->setVisible(false);
 
         if (cellIndex < style::window::calendar::week_days_number) {
             this->dayNumber->setText(utils::time::Locale::get_short_day(cellIndex));
             this->dayNumber->setFont(style::window::font::verysmall);
-            this->dot->setVisible(false);
             this->activeItem = false;
         }
         else if (cellIndex >= style::window::calendar::week_days_number &&
                  cellIndex < style::window::calendar::week_days_number + firstWeekOffset) {
             this->setPenWidth(style::window::default_border_no_focus_w);
-            this->dot->setVisible(false);
             this->activeItem = false;
         }
         else {
+            auto actualMonthBox = dynamic_cast<gui::MonthBox *>(parent);
+            assert(actualMonthBox != nullptr);
+
             uint32_t numb      = cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1;
             std::string number = std::to_string(numb);
-            if (isDayEmpty) {
-                this->dot->setVisible(false);
+            if (!isDayEmpty) {
+                this->dotImage->setVisible(true);
             }
             this->dayNumber->setText(number);
             this->activeItem = true;
-            this->dayNumber->setFont(style::window::font::medium);
+            if (numb == utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) &&
+                (actualMonthBox->monthFilterValue % 100000000) / 1000000 ==
+                    utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month) &&
+                actualMonthBox->monthFilterValue / 100000000 + 2000 ==
+                    utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year)) {
+                this->dayNumber->setFont(style::window::font::mediumbold);
+            }
+            else {
+                this->dayNumber->setFont(style::window::font::medium);
+            }
             this->activatedCallback = [=](gui::Item &item) {
                 auto data           = std::make_unique<DayMonthData>();
-                auto actualMonthBox = dynamic_cast<gui::MonthBox *>(parent);
                 auto month          = actualMonthBox->month;
                 auto filter         = actualMonthBox->monthFilterValue + numb * 10000;
                 data->setData(number + " " + month, filter);
@@ -79,7 +92,13 @@ namespace gui
             this->setPenFocusWidth(style::window::default_border_focus_w);
             this->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_TOP | RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
         }
-        this->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
+    }
+
+    bool DayLabel::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim)
+    {
+        this->vBox->setPosition(0, 0);
+        this->vBox->setSize(newDim.w, newDim.h);
+        return true;
     }
 
     MonthBox::MonthBox(app::Application *app,

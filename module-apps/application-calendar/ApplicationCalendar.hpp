@@ -36,6 +36,10 @@ namespace app
         void createUserInterface() override;
         void destroyUserInterface() override;
         void switchToNoEventsWindow(const std::string &title);
+        void applyRepeatAndReminderMap();
+
+        std::map<uint32_t, std::string> reminderOptions;
+        std::map<uint32_t, std::string> repeatOptions;
     };
 
 } /* namespace app */

@@ -66,8 +66,8 @@ namespace gui
         }
         if (mode == ShowMode::GUI_SHOW_INIT) {
             list->rebuildList();
+            newEditEventModel->loadData(eventRecord);
         }
-        newEditEventModel->loadData(eventRecord);
     }
 
     bool NewEditEventWindow::onInput(const gui::InputEvent &inputEvent)

@@ -1,10 +1,8 @@
 #include "CheckBoxWithLabelItem.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
-//#include "application-calendar/windows/NewEditEventWindow.hpp"
 #include "windows/AppWindow.hpp"
 #include <ListView.hpp>
 #include <Style.hpp>
-#include <time/time_conversion.hpp>
 
 namespace gui
 {
@@ -18,10 +16,7 @@ namespace gui
         assert(app != nullptr);
 
         setMinimumSize(style::window::default_body_width, style::window::calendar::item::checkBox::height);
-        setMargins(gui::Margins(0,
-                                style::window::calendar::item::checkBox::margin_top,
-                                0,
-                                style::window::calendar::item::checkBox::margin_bottom));
+        setMargins(gui::Margins(style::margins::small, style::window::calendar::item::checkBox::margin_top, 0, 0));
         setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
 
         hBox = new gui::HBox(this, 0, 0, 0, 0);
@@ -53,15 +48,14 @@ namespace gui
                 [=]() { app->getCurrentWindow()->bottomBarRestoreFromTemporaryMode(); },
                 checkIsOnLeftBarSide);
         }
-        checkBox->setMinimumSize(style::window::calendar::item::checkBox::height,
+        checkBox->setMinimumSize(style::window::calendar::item::checkBox::input_box_label_w,
                                  style::window::calendar::item::checkBox::height);
         checkBox->activeItem = false;
 
         descriptionLabel = new gui::Label(hBox, 0, 0, 0, 0);
         descriptionLabel->setMinimumSize(style::window::calendar::item::checkBox::description_label_w,
-                                         style::window::calendar::item::checkBox::description_label_h);
-        descriptionLabel->setMargins(
-            gui::Margins(style::window::calendar::item::checkBox::description_margin, 0, 0, 0));
+                                         style::window::calendar::item::checkBox::height);
+        descriptionLabel->setMargins(gui::Margins(style::margins::very_big, 0, 0, 0));
         descriptionLabel->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         descriptionLabel->setAlignment(Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center));
         descriptionLabel->setFont(style::window::font::medium);

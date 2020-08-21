@@ -19,7 +19,6 @@ unsigned int AllEventsModel::requestRecordsCount()
 
 void AllEventsModel::requestRecords(const uint32_t offset, const uint32_t limit)
 {
-    LOG_DEBUG("REQUEST RECORDS");
     auto querry = std::make_unique<db::query::events::GetAllLimited>(offset, limit);
     DBServiceAPI::GetQuery(application, db::Interface::Name::Events, std::move(querry));
 }
