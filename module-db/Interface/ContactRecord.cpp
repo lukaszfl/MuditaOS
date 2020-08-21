@@ -1,5 +1,6 @@
 #include "ContactRecord.hpp"
 #include "queries/phonebook/QueryContactAdd.hpp"
+#include "queries/phonebook/QueryContactGetByID.hpp"
 #include <Utils.hpp>
 
 #include <queries/phonebook/QueryContactGet.hpp>
@@ -163,6 +164,14 @@ std::unique_ptr<db::QueryResult> ContactRecordInterface::runQuery(std::shared_pt
         std::transform(std::begin(ids), std::end(ids), std::begin(result), [this](uint32_t id) { return GetByID(id); });
 
         auto response = std::make_unique<db::query::ContactGetResult>(result);
+        response->setRequestQuery(query);
+        return response;
+    }
+    else if (typeid(*query) == typeid(db::query::ContactGetByID)) {
+        auto readQuery = static_cast<db::query::ContactGetByID *>(query.get());
+        auto record    = ContactRecordInterface::GetByID(readQuery->getID());
+
+        auto response = std::make_unique<db::query::ContactGetByIDResult>(record);
         response->setRequestQuery(query);
         return response;
     }

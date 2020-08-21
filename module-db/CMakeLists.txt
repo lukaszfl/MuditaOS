@@ -71,6 +71,7 @@ set(SOURCES
         queries/notifications/QueryNotificationsClear.cpp
         queries/notifications/QueryNotificationsGetAll.cpp
         queries/phonebook/QueryContactGet.cpp
+        queries/phonebook/QueryContactGetByID.cpp
         queries/phonebook/QueryContactAdd.cpp
         queries/calendar/QueryEventsRemove.cpp
         queries/calendar/QueryEventsGet.cpp
