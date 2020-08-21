@@ -2,6 +2,7 @@
 #include "queries/phonebook/QueryContactAdd.hpp"
 #include "queries/phonebook/QueryContactGetByID.hpp"
 #include "queries/phonebook/QueryContactUpdate.hpp"
+#include "queries/phonebook/QueryContactRemove.hpp"
 #include <Utils.hpp>
 
 #include <queries/phonebook/QueryContactGet.hpp>
@@ -211,6 +212,13 @@ std::unique_ptr<db::QueryResult> ContactRecordInterface::runQuery(std::shared_pt
         auto updateQuery = static_cast<const db::query::ContactUpdate *>(query.get());
         auto ret         = ContactRecordInterface::Update(updateQuery->rec);
         auto response    = std::make_unique<db::query::ContactUpdateResult>(ret);
+        response->setRequestQuery(query);
+        return response;
+    }
+    else if (typeid(*query) == typeid(db::query::ContactRemove)) {
+        auto removeQuery = static_cast<db::query::ContactRemove *>(query.get());
+        auto ret         = ContactRecordInterface::RemoveByID(removeQuery->getID());
+        auto response    = std::make_unique<db::query::ContactRemoveResult>(ret);
         response->setRequestQuery(query);
         return response;
     }

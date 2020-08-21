@@ -68,7 +68,6 @@ auto MessageHelper::from_json(json11::Json msgJson) -> SMSTemplateRecord
 
 auto MessageHelper::requestDataFromDB(Context &context) -> sys::ReturnCodes
 {
-    uuidQueue.push(context.getUuid());
 
     if (context.getBody()[json::messages::msgTemplate].bool_value() == true) {
         return requestTemplate(context);
@@ -203,7 +202,6 @@ auto MessageHelper::requestTemplate(Context &context) -> sys::ReturnCodes
 
 auto MessageHelper::createDBEntry(Context &context) -> sys::ReturnCodes
 {
-    uuidQueue.push(context.getUuid());
 
     if (context.getBody()[json::messages::msgTemplate].bool_value() == true) {
         return createTemplate(context);
@@ -229,7 +227,6 @@ auto MessageHelper::createSMS(Context &context) -> sys::ReturnCodes
 
 auto MessageHelper::deleteDBEntry(Context &context) -> sys::ReturnCodes
 {
-    uuidQueue.push(context.getUuid());
 
     if (context.getBody()[json::messages::msgTemplate].bool_value() == true) {
         return deleteTemplate(context);
@@ -256,7 +253,6 @@ auto MessageHelper::deleteTemplate(Context &context) -> sys::ReturnCodes
 
 auto MessageHelper::updateDBEntry(Context &context) -> sys::ReturnCodes
 {
-    uuidQueue.push(context.getUuid());
 
     if (context.getBody()[json::messages::msgTemplate].bool_value() == true) {
         return updateTemplate(context);
