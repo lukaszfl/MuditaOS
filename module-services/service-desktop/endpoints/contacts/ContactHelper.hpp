@@ -23,7 +23,7 @@ namespace ParserStateMachine
         auto deleteDBEntry(Context &context) -> sys::ReturnCodes override;
 
         auto requestContactByID(Context &context) -> sys::ReturnCodes;
-        auto updateContact(ContactRecord contact) -> sys::ReturnCodes;
+        auto updateContact(ContactRecord contact, Context context) -> sys::ReturnCodes;
         auto processQueryResult(db::QueryResult *result) -> json11::Json;
         auto getLastUUID() -> uint32_t;
         static auto to_json(ContactRecord record) -> json11::Json;

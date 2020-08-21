@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Common/Query.hpp"
-#include "QueryResult.hpp"
 #include <queries/RecordQuery.hpp>
 #include <queries/Filter.hpp>
 #include <Interface/ContactRecord.hpp>

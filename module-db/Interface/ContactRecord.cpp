@@ -1,6 +1,7 @@
 #include "ContactRecord.hpp"
 #include "queries/phonebook/QueryContactAdd.hpp"
 #include "queries/phonebook/QueryContactGetByID.hpp"
+#include "queries/phonebook/QueryContactUpdate.hpp"
 #include <Utils.hpp>
 
 #include <queries/phonebook/QueryContactGet.hpp>
@@ -170,7 +171,7 @@ std::unique_ptr<db::QueryResult> ContactRecordInterface::runQuery(std::shared_pt
     else if (typeid(*query) == typeid(db::query::ContactGetByID)) {
         auto readQuery = static_cast<db::query::ContactGetByID *>(query.get());
         auto record    = ContactRecordInterface::GetByID(readQuery->getID());
-
+        LOG_DEBUG("ID: %d", readQuery->getID());
         auto response = std::make_unique<db::query::ContactGetByIDResult>(record);
         response->setRequestQuery(query);
         return response;
@@ -203,6 +204,13 @@ std::unique_ptr<db::QueryResult> ContactRecordInterface::runQuery(std::shared_pt
         auto addQuery = static_cast<const db::query::ContactAdd *>(query.get());
         auto ret      = ContactRecordInterface::Add(addQuery->rec);
         auto response = std::make_unique<db::query::ContactAddResult>(ret);
+        response->setRequestQuery(query);
+        return response;
+    }
+    else if (typeid(*query) == typeid(db::query::ContactUpdate)) {
+        auto updateQuery = static_cast<const db::query::ContactUpdate *>(query.get());
+        auto ret         = ContactRecordInterface::Update(updateQuery->rec);
+        auto response    = std::make_unique<db::query::ContactUpdateResult>(ret);
         response->setRequestQuery(query);
         return response;
     }
