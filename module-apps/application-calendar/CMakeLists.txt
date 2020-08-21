@@ -17,7 +17,6 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/models/CustomRepeatModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/NewEditEventModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/DayEventsInternalModel.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/models/AllEventsInternalModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/DayEventsItem.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/AllEventsItem.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/CalendarListView.cpp"
