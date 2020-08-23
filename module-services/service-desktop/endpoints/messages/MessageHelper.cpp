@@ -11,6 +11,7 @@
 #include "queries/sms/QuerySMSGetByID.hpp"
 #include "queries/sms/QuerySMSGetByText.hpp"
 #include "queries/sms/QuerySMSSearch.hpp"
+#include "queries/sms/QuerySMSTemplateGet.hpp"
 #include "queries/sms/QuerySMSTemplateGetByID.hpp"
 #include "queries/sms/QuerySmsThreadMarkAsRead.hpp"
 #include "utf8/UTF8.hpp"
@@ -191,10 +192,30 @@ auto MessageHelper::requestTemplate(Context &context) -> sys::ReturnCodes
         query->setQueryListener(std::move(listener));
         DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::SMSTemplate, std::move(query));
     }
-    else // get messages
+    else // get messages templates
     {
-        DBServiceAPI::SMSTemplateGetLimitOffset(
-            ownerServicePtr, 0, context.getBody()[json::messages::count].int_value());
+        auto query = std::make_unique<db::query::SMSTemplateGet>(context.getBody()[json::messages::offset].int_value(),
+                                                                 context.getBody()[json::messages::count].int_value());
+        auto listener = std::make_unique<db::EndpointListener>(
+            [=](db::QueryResult *result, uint32_t uuid) {
+                if (auto SMSTemplateResult = dynamic_cast<db::query::SMSTemplateGetResult *>(result)) {
+
+                    json11::Json::array SMSTemplateArray;
+                    for (auto record : SMSTemplateResult->getResults()) {
+                        SMSTemplateArray.emplace_back(to_json(record));
+                    }
+                    MessageHandler::putToSendQueue(Endpoint::createSimpleResponse(
+                        true, static_cast<int>(EndpointType::messages), uuid, SMSTemplateArray));
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            },
+            context.getUuid());
+
+        query->setQueryListener(std::move(listener));
+        DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::SMSTemplate, std::move(query));
     }
 
     return sys::ReturnCodes::Success;

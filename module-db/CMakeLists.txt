@@ -65,6 +65,7 @@ set(SOURCES
         queries/sms/QuerySMSGetByContactID.cpp
         queries/sms/QuerySMSGetByText.cpp
         queries/sms/QuerySMSTemplateGetByID.cpp
+        queries/sms/QuerySMSTemplateGet.cpp
         queries/calllog/QueryCalllogSetAllRead.cpp
         queries/notifications/QueryNotificationsGet.cpp
         queries/notifications/QueryNotificationsIncrement.cpp
