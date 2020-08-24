@@ -127,7 +127,7 @@ auto ContactHelper::createDBEntry(Context &context) -> sys::ReturnCodes
 
 auto ContactHelper::requestContactByID(Context &context) -> sys::ReturnCodes
 {
-    auto id      = context.getBody()[json::contacts::id].int_value();
+    auto id    = context.getBody()[json::contacts::id].int_value();
     auto query = std::make_unique<db::query::ContactGetByID>(id);
 
     auto listener = std::make_unique<db::EndpointListener>(

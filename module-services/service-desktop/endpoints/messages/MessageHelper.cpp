@@ -10,6 +10,7 @@
 #include "queries/sms/QuerySMSGetByContactID.hpp"
 #include "queries/sms/QuerySMSGetByID.hpp"
 #include "queries/sms/QuerySMSGetByText.hpp"
+#include "queries/sms/QuerySMSGetCount.hpp"
 #include "queries/sms/QuerySMSSearch.hpp"
 #include "queries/sms/QuerySMSTemplateGet.hpp"
 #include "queries/sms/QuerySMSTemplateGetByID.hpp"
@@ -82,7 +83,25 @@ auto MessageHelper::requestSMS(Context &context) -> sys::ReturnCodes
 {
     if (context.getBody()[json::messages::count].bool_value() == true) // get messages count
     {
-        DBServiceAPI::SMSGetCount(ownerServicePtr);
+        auto query = std::make_unique<db::query::SMSGetCount>();
+
+        auto listener = std::make_unique<db::EndpointListener>(
+            [=](db::QueryResult *result, uint32_t uuid) {
+                if (auto SMSResult = dynamic_cast<db::query::SMSGetCountResult *>(result)) {
+                    auto id   = SMSResult->getResults();
+                    auto body = json11::Json::object{{json::messages::count, static_cast<int>(id)}};
+                    MessageHandler::putToSendQueue(
+                        Endpoint::createSimpleResponse(true, static_cast<int>(EndpointType::messages), uuid, body));
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            },
+            context.getUuid());
+
+        query->setQueryListener(std::move(listener));
+        DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::SMS, std::move(query));
     }
     else if (context.getBody()[json::messages::id].int_value() != 0) { // messages search
 
