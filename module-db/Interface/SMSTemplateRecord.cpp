@@ -3,6 +3,7 @@
 #include "queries/sms/QuerySMSTemplateGet.hpp"
 #include "queries/sms/QuerySMSTemplateAdd.hpp"
 #include "queries/sms/QuerySMSTemplateGetCount.hpp"
+#include "queries/sms/QuerySMSTemplateRemove.hpp"
 #include "queries/sms/QuerySMSThreadsGet.hpp"
 
 #include <log/log.hpp>
@@ -113,6 +114,13 @@ std::unique_ptr<db::QueryResult> SMSTemplateRecordInterface::runQuery(std::share
         const auto localQuery = dynamic_cast<const db::query::SMSTemplateAdd *>(query.get());
         auto ret              = SMSTemplateRecordInterface::Add(localQuery->rec);
         auto response         = std::make_unique<db::query::SMSTemplateAddResult>(ret);
+        response->setRequestQuery(query);
+        return response;
+    }
+    else if (typeid(*query) == typeid(db::query::SMSTemplateRemove)) {
+        const auto localQuery = dynamic_cast<const db::query::SMSTemplateRemove *>(query.get());
+        auto ret              = smsDB->templates.removeById(localQuery->id);
+        auto response         = std::make_unique<db::query::SMSTemplateRemoveResult>(ret);
         response->setRequestQuery(query);
         return response;
     }

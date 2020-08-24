@@ -15,6 +15,7 @@
 #include "queries/sms/QuerySMSSearch.hpp"
 #include "queries/sms/QuerySMSRemove.hpp"
 #include "queries/sms/QuerySMSTemplateGet.hpp"
+#include "queries/sms/QuerySMSTemplateRemove.hpp"
 #include "queries/sms/QuerySMSTemplateAdd.hpp"
 #include "queries/sms/QuerySMSTemplateGetByID.hpp"
 #include "queries/sms/QuerySMSTemplateGetCount.hpp"
@@ -361,7 +362,23 @@ auto MessageHelper::deleteSMS(Context &context) -> sys::ReturnCodes
 
 auto MessageHelper::deleteTemplate(Context &context) -> sys::ReturnCodes
 {
-    DBServiceAPI::SMSTemplateRemove(ownerServicePtr, context.getBody()[json::messages::id].int_value());
+    auto id       = context.getBody()[json::messages::id].int_value();
+    auto query    = std::make_unique<db::query::SMSTemplateRemove>(id);
+    auto listener = std::make_unique<db::EndpointListener>(
+        [=](db::QueryResult *result, uint32_t uuid) {
+            if (auto SMSTemplateResult = dynamic_cast<db::query::SMSTemplateRemoveResult *>(result)) {
+                MessageHandler::putToSendQueue(Endpoint::createSimpleResponse(
+                    SMSTemplateResult->getResults(), static_cast<int>(EndpointType::messages), uuid, json11::Json()));
+                return true;
+            }
+            else {
+                return false;
+            }
+        },
+        context.getUuid());
+
+    query->setQueryListener(std::move(listener));
+    DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::SMSTemplate, std::move(query));
     return sys::ReturnCodes::Success;
 }
 
