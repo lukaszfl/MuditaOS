@@ -7,6 +7,7 @@
 #include "Service/Common.hpp"
 #include "ThreadRecord.hpp"
 #include "api/DBServiceAPI.hpp"
+#include "queries/sms/QuerySMSGet.hpp"
 #include "queries/sms/QuerySMSGetByContactID.hpp"
 #include "queries/sms/QuerySMSGetByID.hpp"
 #include "queries/sms/QuerySMSGetByText.hpp"
@@ -135,7 +136,7 @@ auto MessageHelper::requestSMS(Context &context) -> sys::ReturnCodes
 
                     json11::Json::array SMSarray;
                     for (auto record : SMSResult->getResults()) {
-                        SMSarray.emplace_back(to_json(record));
+                        SMSarray.emplace_back(MessageHelper::to_json(record));
                     }
 
                     MessageHandler::putToSendQueue(
@@ -161,7 +162,7 @@ auto MessageHelper::requestSMS(Context &context) -> sys::ReturnCodes
 
                     json11::Json::array SMSarray;
                     for (auto record : SMSResult->getResults()) {
-                        SMSarray.emplace_back(to_json(record));
+                        SMSarray.emplace_back(MessageHelper::to_json(record));
                     }
 
                     MessageHandler::putToSendQueue(
@@ -179,7 +180,30 @@ auto MessageHelper::requestSMS(Context &context) -> sys::ReturnCodes
     }
     else // get messages
     {
-        DBServiceAPI::SMSGetLimitOffset(ownerServicePtr, 0, context.getBody()[json::messages::count].int_value());
+        auto query = std::make_unique<db::query::SMSGet>(context.getBody()[json::messages::count].int_value(),
+                                                         context.getBody()[json::messages::offset].int_value());
+
+        auto listener = std::make_unique<db::EndpointListener>(
+            [=](db::QueryResult *result, uint32_t uuid) {
+                if (auto SMSResult = dynamic_cast<db::query::SMSGetResult *>(result)) {
+
+                    json11::Json::array SMSarray;
+                    for (auto record : SMSResult->getRecords()) {
+                        SMSarray.emplace_back(MessageHelper::to_json(record));
+                    }
+
+                    MessageHandler::putToSendQueue(
+                        Endpoint::createSimpleResponse(true, static_cast<int>(EndpointType::messages), uuid, SMSarray));
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            },
+            context.getUuid());
+
+        query->setQueryListener(std::move(listener));
+        DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::SMS, std::move(query));
     }
 
     return sys::ReturnCodes::Success;

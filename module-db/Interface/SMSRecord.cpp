@@ -2,6 +2,7 @@
 #include "Common/Query.hpp"
 #include "ContactRecord.hpp"
 #include "ThreadRecord.hpp"
+#include "queries/sms/QuerySMSGet.hpp"
 #include "queries/sms/QuerySMSGetByContactID.hpp"
 #include "queries/sms/QuerySMSGetByID.hpp"
 #include "queries/sms/QuerySMSGetByText.hpp"
@@ -358,6 +359,28 @@ std::unique_ptr<db::QueryResult> SMSRecordInterface::runQuery(std::shared_ptr<db
     }
     else if (typeid(*query) == typeid(db::query::SMSGetCount)) {
         auto response = std::make_unique<db::query::SMSGetCountResult>(smsDB->sms.count());
+        response->setRequestQuery(query);
+        return response;
+    }
+    else if (typeid(*query) == typeid(db::query::SMSGet)) {
+        const auto localQuery = dynamic_cast<const db::query::SMSGet *>(query.get());
+
+        auto smsVector = smsDB->sms.getLimitOffset(localQuery->getOffset(), localQuery->getLimit());
+        std::vector<SMSRecord> recordVector;
+        for (auto sms : smsVector) {
+            SMSRecord record;
+            record.body      = sms.body;
+            record.contactID = sms.contactID;
+            record.date      = sms.date;
+            record.dateSent  = sms.dateSent;
+            record.errorCode = sms.errorCode;
+            record.threadID  = sms.threadID;
+            record.type      = sms.type;
+            record.ID        = sms.ID;
+            recordVector.emplace_back(record);
+        }
+
+        auto response = std::make_unique<db::query::SMSGetResult>(recordVector);
         response->setRequestQuery(query);
         return response;
     }
