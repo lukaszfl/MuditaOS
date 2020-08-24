@@ -8,6 +8,7 @@
 #include "queries/sms/QuerySMSGetByText.hpp"
 #include "queries/sms/QuerySMSGetCount.hpp"
 #include "queries/sms/QuerySMSSearch.hpp"
+#include "queries/sms/QuerySMSRemove.hpp"
 #include "queries/sms/QuerySMSSearchByType.hpp"
 #include <log/log.hpp>
 
@@ -359,6 +360,13 @@ std::unique_ptr<db::QueryResult> SMSRecordInterface::runQuery(std::shared_ptr<db
     }
     else if (typeid(*query) == typeid(db::query::SMSGetCount)) {
         auto response = std::make_unique<db::query::SMSGetCountResult>(smsDB->sms.count());
+        response->setRequestQuery(query);
+        return response;
+    }
+    else if (typeid(*query) == typeid(db::query::SMSRemove)) {
+        const auto localQuery = dynamic_cast<const db::query::SMSRemove *>(query.get());
+        auto ret              = smsDB->sms.removeById(localQuery->id);
+        auto response         = std::make_unique<db::query::SMSRemoveResult>(ret);
         response->setRequestQuery(query);
         return response;
     }
