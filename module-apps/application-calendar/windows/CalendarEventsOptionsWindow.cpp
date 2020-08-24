@@ -59,16 +59,8 @@ namespace gui
         auto meta   = dialog->meta;
         meta.action = [=]() -> bool {
             LOG_INFO("Detele calendar event %d", eventRecord->ID);
-            auto msg = DBServiceAPI::GetQueryWithReply(application,
-                                                       db::Interface::Name::Events,
-                                                       std::make_unique<db::query::events::Remove>(eventRecord->ID),
-                                                       1000);
-
-            LOG_DEBUG("Type id %s", typeid(*msg.second).name());
-            auto msgl = msg.second.get();
-            if (msgl) {
-                LOG_INFO("YEAH %d", eventRecord->ID);
-            }
+            DBServiceAPI::GetQuery(
+                application, db::Interface::Name::Events, std::make_unique<db::query::events::Remove>(eventRecord->ID));
             return true;
         };
         meta.text  = utils::localize.get("app_calendar_event_delete_confirmation");

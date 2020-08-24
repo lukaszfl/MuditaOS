@@ -24,12 +24,14 @@ namespace gui
         gui::Text *minuteInput       = nullptr;
         gui::Label *mode12hInput     = nullptr;
         bool mode24H                 = false;
+        gui::EventTimeItem *secondItem = nullptr;
 
         std::function<void(const UTF8 &text)> bottomBarTemporaryMode = nullptr;
         std::function<void()> bottomBarRestoreFromTemporaryMode      = nullptr;
 
         void applyInputCallbacks();
         void prepareForTimeMode();
+        int convertTimeTo24hMode(int mode12h, const std::string &type);
 
       public:
         EventTimeItem(const std::string &description,
@@ -38,6 +40,7 @@ namespace gui
                       std::function<void()> bottomBarRestoreFromTemporaryMode      = nullptr);
         virtual ~EventTimeItem() override = default;
 
+        void setConnectionToSecondItem(gui::EventTimeItem *item);
         // virtual methods from Item
         bool onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) override;
     };
