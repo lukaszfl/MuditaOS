@@ -14,6 +14,7 @@
 #include "queries/sms/QuerySMSGetCount.hpp"
 #include "queries/sms/QuerySMSSearch.hpp"
 #include "queries/sms/QuerySMSTemplateGet.hpp"
+#include "queries/sms/QuerySMSTemplateAdd.hpp"
 #include "queries/sms/QuerySMSTemplateGetByID.hpp"
 #include "queries/sms/QuerySMSTemplateGetCount.hpp"
 #include "queries/sms/QuerySmsThreadMarkAsRead.hpp"
@@ -298,7 +299,22 @@ auto MessageHelper::createTemplate(Context &context) -> sys::ReturnCodes
 {
     SMSTemplateRecord record = from_json(context.getBody());
 
-    DBServiceAPI::SMSTemplateAdd(ownerServicePtr, record);
+    auto query    = std::make_unique<db::query::SMSTemplateAdd>(record);
+    auto listener = std::make_unique<db::EndpointListener>(
+        [=](db::QueryResult *result, uint32_t uuid) {
+            if (auto SMSTemplateResult = dynamic_cast<db::query::SMSTemplateAddResult *>(result)) {
+                MessageHandler::putToSendQueue(Endpoint::createSimpleResponse(
+                    SMSTemplateResult->getResult(), static_cast<int>(EndpointType::messages), uuid, json11::Json()));
+                return true;
+            }
+            else {
+                return false;
+            }
+        },
+        context.getUuid());
+
+    query->setQueryListener(std::move(listener));
+    DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::SMSTemplate, std::move(query));
 
     return sys::ReturnCodes::Success;
 }

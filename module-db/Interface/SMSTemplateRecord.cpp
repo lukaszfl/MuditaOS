@@ -1,6 +1,7 @@
 #include "SMSTemplateRecord.hpp"
 #include "queries/sms/QuerySMSTemplateGetByID.hpp"
 #include "queries/sms/QuerySMSTemplateGet.hpp"
+#include "queries/sms/QuerySMSTemplateAdd.hpp"
 #include "queries/sms/QuerySMSTemplateGetCount.hpp"
 #include "queries/sms/QuerySMSThreadsGet.hpp"
 
@@ -105,6 +106,13 @@ std::unique_ptr<db::QueryResult> SMSTemplateRecordInterface::runQuery(std::share
     }
     else if (typeid(*query) == typeid(db::query::SMSTemplateGetCount)) {
         auto response = std::make_unique<db::query::SMSTemplateGetCountResult>(smsDB->templates.count());
+        response->setRequestQuery(query);
+        return response;
+    }
+    else if (typeid(*query) == typeid(db::query::SMSTemplateAdd)) {
+        const auto localQuery = dynamic_cast<const db::query::SMSTemplateAdd *>(query.get());
+        auto ret              = SMSTemplateRecordInterface::Add(localQuery->rec);
+        auto response         = std::make_unique<db::query::SMSTemplateAddResult>(ret);
         response->setRequestQuery(query);
         return response;
     }
