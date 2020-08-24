@@ -68,6 +68,9 @@ void NewEditEventModel::createData(bool allDayEvent)
         [app](const UTF8 &text) { app->getCurrentWindow()->bottomBarTemporaryMode(text, false); },
         [app]() { app->getCurrentWindow()->bottomBarRestoreFromTemporaryMode(); });
 
+    endTime->setConnectionToSecondItem(startTime);
+    startTime->setConnectionToSecondItem(endTime);
+
     internalData.push_back(eventNameInput);
     internalData.push_back(allDayEventCheckBox);
     if (!allDayEvent) {

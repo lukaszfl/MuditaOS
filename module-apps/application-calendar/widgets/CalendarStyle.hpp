@@ -31,10 +31,11 @@ namespace style
             const inline int cross_y    = 55;
             const inline int arrow_x    = 30;
             const inline int arrow_y    = 62;
-            const inline int listView_x = 16;
-            const inline int listView_y = 110;
-            const inline int listView_w = 448;
-            const inline int listView_h = 440;
+            const inline int listView_x = style::window::default_left_margin;
+            ;
+            const inline int listView_y = style::header::height;
+            const inline int listView_w = style::listview::body_width_with_scroll;
+            const inline int listView_h = style::window_height - listView_y - style::footer::height;
 
             namespace test
             {
@@ -74,7 +75,7 @@ namespace style
                 {
                     const inline int height_min    = 90;
                     const inline int height_max        = 155;
-                    const inline int margin_top        = style::margins::big + style::margins::small;
+                    const inline int margin_top        = 2 * style::margins::big;
                     const inline int event_time_margin = 25;
                     const inline int title_h       = 20;
                     const inline int label_h           = 35;
