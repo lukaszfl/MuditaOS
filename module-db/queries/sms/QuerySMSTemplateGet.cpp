@@ -12,8 +12,7 @@ namespace db::query
         return "SMSTemplateGet";
     }
 
-    SMSTemplateGetResult::SMSTemplateGetResult(std::vector<SMSTemplateRecord> result_rows)
-        : results(std::move(result_rows))
+    SMSTemplateGetResult::SMSTemplateGetResult(std::vector<SMSTemplateRecord> result) : results(std::move(result))
     {}
 
     auto SMSTemplateGetResult::getResults() const -> std::vector<SMSTemplateRecord>
