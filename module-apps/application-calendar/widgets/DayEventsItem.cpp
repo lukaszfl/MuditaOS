@@ -1,4 +1,5 @@
 #include "DayEventsItem.hpp"
+#include "application-calendar/widgets/CalendarStyle.hpp"
 #include <ListView.hpp>
 #include <gui/widgets/Label.hpp>
 #include <Style.hpp>
@@ -10,6 +11,7 @@ namespace gui
     DayEventsItem::DayEventsItem()
     {
         setMinimumSize(style::window::default_body_width, style::window::calendar::item::dayEvents::height);
+        setMargins(gui::Margins(0, style::margins::small, 0, 0));
 
         vBox = new gui::VBox(this, 0, 0, 0, 0);
         vBox->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);

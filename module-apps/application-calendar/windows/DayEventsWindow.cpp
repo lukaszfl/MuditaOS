@@ -4,14 +4,12 @@
 #include <gui/widgets/Window.hpp>
 #include <gui/widgets/Label.hpp>
 #include <gui/widgets/Item.hpp>
-#include <gui/widgets/BoxLayout.hpp>
 #include <gui/widgets/BottomBar.hpp>
 #include <gui/widgets/TopBar.hpp>
 
 #include <time/time_conversion.hpp>
 #include <module-services/service-db/messages/QueryMessage.hpp>
 #include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
-#include <module-db/queries/calendar/QueryEventsGetAll.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-apps/application-calendar/ApplicationCalendar.hpp>
 #include <module-apps/application-calendar/data/CalendarData.hpp>
@@ -32,16 +30,9 @@ namespace gui
     }
     void DayEventsWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
-        auto msg =
-            DBServiceAPI::GetQueryWithReply(application,
-                                            db::Interface::Name::Events,
-                                            std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill),
-                                            1000);
-
-        LOG_DEBUG("Type id %s", typeid(*msg.second).name());
-        auto msgl = msg.second.get();
-        assert(msgl != nullptr);
-        onDatabaseMessage(msgl);
+        DBServiceAPI::GetQuery(application,
+                               db::Interface::Name::Events,
+                               std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill));
         setTitle(dayMonthTitle);
     }
 
@@ -61,17 +52,6 @@ namespace gui
         filterTill    = item->getDateFilter() + 2359;
         LOG_DEBUG("FILTER 1: %d", filterFrom);
         LOG_DEBUG("FILTER 2: %d", filterTill);
-        auto msg =
-            DBServiceAPI::GetQueryWithReply(application,
-                                            db::Interface::Name::Events,
-                                            std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill),
-                                            1000);
-
-        LOG_DEBUG("Type id %s", typeid(*msg.second).name());
-        auto msgl = msg.second.get();
-        assert(msgl != nullptr);
-        onDatabaseMessage(msgl);
-
         setTitle(dayMonthTitle);
         if (dayMonthTitle == "") {
             return false;
@@ -84,7 +64,6 @@ namespace gui
     {
         AppWindow::buildInterface();
 
-        // auto ttime = utils::time::Time();
         topBar->setActive(gui::TopBar::Elements::TIME, true);
         bottomBar->setActive(gui::BottomBar::Side::RIGHT, true);
         bottomBar->setText(gui::BottomBar::Side::RIGHT, utils::localize.get(style::strings::common::back));
@@ -141,8 +120,8 @@ namespace gui
                 for (auto &rec : *records) {
                     LOG_DEBUG("record: %s", rec.title.c_str());
                 }
-                dayEventsList->rebuildList();
                 dayEventsModel->loadData(std::move(records));
+                application->refreshWindow(RefreshModes::GUI_REFRESH_FAST);
             }
             LOG_DEBUG("Response False");
             return false;
