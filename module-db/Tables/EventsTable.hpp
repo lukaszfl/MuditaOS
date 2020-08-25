@@ -17,6 +17,30 @@ struct EventsTableRow : public Record
     uint32_t time_zone = 0;
 };
 
+enum CalendarEventType
+{
+    unknown,
+    reminder,
+    event
+};
+
+struct EventsTypedTableRow : public EventsTableRow
+{
+    uint32_t date_selected = 0;
+    CalendarEventType type = unknown;
+    static CalendarEventType typeFromUint(uint32_t iType)
+    {
+        switch (iType) {
+        case 1:
+            return CalendarEventType::reminder;
+        case 2:
+            return CalendarEventType::event;
+        default:
+            return CalendarEventType::unknown;
+        }
+    };
+};
+
 enum class EventsTableFields
 {
     date_from,
@@ -43,6 +67,8 @@ class EventsTable : public Table<EventsTableRow, EventsTableFields>
                                                       uint32_t limit,
                                                       EventsTableFields field,
                                                       const char *str) override final;
+
+    EventsTypedTableRow getClosestInsideDay(uint32_t start_date, uint32_t day_date);
 
   private:
     const char *createTableQuery = "CREATE TABLE IF NOT EXISTS events("
