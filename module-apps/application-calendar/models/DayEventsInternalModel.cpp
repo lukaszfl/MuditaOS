@@ -46,6 +46,7 @@ void DayEventsInternalModel::loadData(std::unique_ptr<std::vector<EventsRecord>>
         item->activatedCallback = [=](gui::Item &item) {
             auto rec  = std::make_unique<EventsRecord>(record);
             auto data = std::make_unique<EventRecordData>(std::move(rec));
+            data->setWindowName(style::window::calendar::name::day_events_window);
             app->switchWindow(style::window::calendar::name::details_window, std::move(data));
             return true;
         };

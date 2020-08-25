@@ -26,10 +26,12 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/SeveralOptionsItem.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/TextWithLabelItem.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/CheckBoxWithLabelAndModel.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/widgets/AddRepeatedEvents.cpp"
 	PUBLIC
 		"${CMAKE_CURRENT_LIST_DIR}/ApplicationCalendar.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/MonthModel.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/CalendarListItem.hpp"
+		"${CMAKE_CURRENT_LIST_DIR}/widgets/AddRepeatedEvents.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/data/CalendarData.hpp"
 
 )

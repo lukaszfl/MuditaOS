@@ -63,6 +63,7 @@ namespace gui
         }
 
         eventRecord = item->getData();
+        prevWindowName         = item->getWindowName();
         uint32_t start_time    = this->eventRecord->date_from % 10000;
         uint32_t month_and_day = (this->eventRecord->date_from % 100000000 - start_time) / 10000;
         auto dayUInt           = static_cast<unsigned>(month_and_day % 100);
@@ -87,6 +88,7 @@ namespace gui
             LOG_DEBUG("Switch to option window");
             auto rec  = std::make_unique<EventsRecord>(*eventRecord);
             auto data = std::make_unique<EventRecordData>(std::move(rec));
+            data->setWindowName(prevWindowName);
             application->switchWindow(style::window::calendar::name::events_options, std::move(data));
             return true;
         }

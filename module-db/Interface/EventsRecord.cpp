@@ -94,7 +94,7 @@ std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::GetLimitOffset
 bool EventsRecordInterface::Update(const EventsRecord &rec, const uint32_t &checkValue)
 {
     auto entry = eventsDb->events.getById(rec.ID);
-    if (!entry.isValid() || entry.date_from != checkValue) {
+    if (!entry.isValid()) { //|| entry.date_from != checkValue)
         LOG_DEBUG("IS NOT VALID");
         return false;
     }

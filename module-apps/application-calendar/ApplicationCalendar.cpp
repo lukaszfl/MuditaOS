@@ -103,7 +103,9 @@ namespace app
     void ApplicationCalendar::destroyUserInterface()
     {}
 
-    void ApplicationCalendar::switchToNoEventsWindow(const std::string &title, std::unique_ptr<gui::SwitchData> data)
+    void ApplicationCalendar::switchToNoEventsWindow(const std::string &title,
+                                                     const uint32_t &dateFilter,
+                                                     const std::string &goBackWindow)
     {
         auto dialog = dynamic_cast<gui::NoEvents *>(getWindow(style::window::calendar::name::no_events_window));
         assert(dialog != nullptr);
@@ -111,16 +113,17 @@ namespace app
         meta.text   = "app_calendar_no_events_information";
         meta.title  = title;
         meta.icon   = "phonebook_empty_grey_circle_W_G";
+
         meta.action = [=]() -> bool {
             LOG_DEBUG("Switch to new event window");
-            std::unique_ptr<DayMonthData> filterData   = std::make_unique<DayMonthData>();
             std::unique_ptr<EventRecordData> eventData = std::make_unique<EventRecordData>();
             eventData->setDescription("New");
             auto rec       = new EventsRecord();
-            rec->date_from = filterData->getDateFilter();
-            rec->date_till = filterData->getDateFilter() + 2359;
+            rec->date_from = dateFilter;
+            rec->date_till = dateFilter;
             auto event     = std::make_shared<EventsRecord>(*rec);
             eventData->setData(event);
+            eventData->setWindowName(goBackWindow);
             switchWindow(
                 style::window::calendar::name::new_edit_event, gui::ShowMode::GUI_SHOW_INIT, std::move(eventData));
             return true;
