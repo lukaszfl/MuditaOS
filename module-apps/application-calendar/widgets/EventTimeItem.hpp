@@ -32,6 +32,9 @@ namespace gui
         void applyInputCallbacks();
         void prepareForTimeMode();
         int convertTimeTo24hMode(int mode12h, const std::string &type);
+        void validateHour();
+        void validateHourFor12hMode();
+        void validateHourFor24hMode();
 
       public:
         EventTimeItem(const std::string &description,

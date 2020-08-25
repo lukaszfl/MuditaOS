@@ -70,7 +70,16 @@ namespace gui
                 eventTime->setText(utils::localize.get("app_calendar_all_day"));
             }
             else {
-                std::string text = std::to_string(start_time) + " - " + std::to_string(end_time);
+                auto start = std::to_string(start_time);
+                auto end   = std::to_string(end_time);
+                if (start.length() < 4) {
+                    start.insert(0, 4 - start.length(), '0');
+                }
+                if (end.length() < 4) {
+                    end.insert(0, 4 - end.length(), '0');
+                }
+                auto text =
+                    start.substr(0, 2) + ":" + start.substr(2, 4) + " - " + end.substr(0, 2) + ":" + end.substr(2, 4);
                 eventTime->setText(text);
             }
         };

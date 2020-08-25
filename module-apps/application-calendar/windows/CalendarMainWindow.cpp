@@ -2,7 +2,6 @@
 #include "application-calendar/ApplicationCalendar.hpp"
 #include "application-calendar/models/MonthModel.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
-#include "application-calendar/models/AllEventsModel.hpp"
 #include "application-calendar/data/CalendarData.hpp"
 #include "NoEvents.hpp"
 #include <module-services/service-db/messages/QueryMessage.hpp>
@@ -151,6 +150,15 @@ namespace gui
                                         isDayEmpty[i - (style::window::calendar::week_days_number + firstDayOffset)]);
                 addWidget(day);
             }
+        }
+
+        if (yearUInt / 100000000 + 2000 ==
+                utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) &&
+            monthUInt / 1000000 == utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month)) {
+            focusChangedCallback = [=](Item &item) {
+                setFocusOnElement(utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) - 1);
+                return true;
+            };
         }
 
         LOG_DEBUG("MonthBox constructor Completed Successfully!");
@@ -322,16 +330,6 @@ namespace gui
         }
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_LF) {
-            /*std::shared_ptr<AllEventsModel> allEventsModel = std::make_shared<AllEventsModel>(this->application);
-            if (allEventsModel->requestRecordsCount() == 0) {
-                auto app = dynamic_cast<app::ApplicationCalendar *>(application);
-                assert(app != nullptr);
-                app->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main").c_str());
-            }
-            else {
-                LOG_DEBUG("Switch to List Window");
-                application->switchWindow(style::window::calendar::name::all_events_window);
-            }*/
             application->switchWindow(style::window::calendar::name::all_events_window);
             return true;
         }
