@@ -70,6 +70,9 @@ namespace gui
 
         focusChangedCallback = [&](Item &item) {
             setFocusItem(focus ? hBox : nullptr);
+            if (!item.focus) {
+                validateHour();
+            }
             return true;
         };
 
@@ -104,40 +107,36 @@ namespace gui
                     auto hour = atoi(hourInput->getText().c_str()) + 1;
                     if (!mode24H) {
                         if (mode12hInput->getText() == timeConstants::after_noon) {
+                            if (hour == 12) {
+                                hour = 11;
+                            }
                             secondItem->mode12hInput->setText(mode12hInput->getText());
+                            secondItem->minuteInput->setText(std::to_string(timeConstants::max_minutes));
+                        }
+                        else {
+                            if (hour == 12) {
+                                secondItem->mode12hInput->setText(timeConstants::after_noon);
+                            }
+                            secondItem->minuteInput->setText(minuteInput->getText());
                         }
                         if (hour > timeConstants::max_hour_12H_mode) {
                             hour = 1;
                             secondItem->mode12hInput->setText(mode12hInput->getText());
+                            secondItem->minuteInput->setText(minuteInput->getText());
                         }
                     }
                     else {
+                        secondItem->minuteInput->setText(minuteInput->getText());
                         if (hour > timeConstants::max_hour_24H_mode) {
-                            hour = 0;
-                            hourInput->setText(std::to_string(timeConstants::max_hour_24H_mode));
+                            hour = timeConstants::max_hour_24H_mode;
+                            secondItem->minuteInput->setText(minuteInput->getText());
                         }
                     }
                     secondItem->hourInput->setText(std::to_string(hour));
-                    secondItem->minuteInput->setText(minuteInput->getText());
-                }
-
-                if (this->descriptionLabel->getText() ==
-                    utils::localize.get("app_calendar_new_edit_event_end").c_str()) {
-                    if (!mode24H) {
-                        auto start_hour = convertTimeTo24hMode(atoi(secondItem->hourInput->getText().c_str()),
-                                                               secondItem->mode12hInput->getText());
-                        auto end_hour =
-                            convertTimeTo24hMode(atoi(hourInput->getText().c_str()), mode12hInput->getText());
-                        if (end_hour == start_hour) {
-                            if (atoi(minuteInput->getText().c_str()) <
-                                atoi(secondItem->minuteInput->getText().c_str())) {
-                                secondItem->hourInput->setText(std::to_string(atoi(hourInput->getText().c_str()) - 1));
-                            }
-                        }
-                    }
                 }
 
                 onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
+                    validateHour();
                     auto hour = atoi(hourInput->getText().c_str());
                     if (!mode24H) {
                         hour = convertTimeTo24hMode(hour, mode12hInput->getText());
@@ -294,6 +293,66 @@ namespace gui
             else {
                 return mode12h;
             }
+        }
+    }
+
+    void EventTimeItem::validateHour()
+    {
+        if (descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_end")) {
+            if (!mode24H) {
+                validateHourFor12hMode();
+            }
+            else {
+                validateHourFor24hMode();
+            }
+        }
+    }
+
+    void EventTimeItem::validateHourFor12hMode()
+    {
+        auto start_hour =
+            convertTimeTo24hMode(atoi(secondItem->hourInput->getText().c_str()), secondItem->mode12hInput->getText());
+        auto end_hour = convertTimeTo24hMode(atoi(hourInput->getText().c_str()), mode12hInput->getText());
+        if (start_hour > end_hour || (start_hour == end_hour && atoi(secondItem->minuteInput->getText().c_str()) >
+                                                                    atoi(minuteInput->getText().c_str()))) {
+            auto hour = atoi(secondItem->hourInput->getText().c_str()) + 1;
+            if (secondItem->mode12hInput->getText() == timeConstants::after_noon) {
+                if (hour == 12) {
+                    hour = 11;
+                }
+                mode12hInput->setText(mode12hInput->getText());
+                minuteInput->setText(std::to_string(timeConstants::max_minutes));
+            }
+            else {
+                if (hour == 12) {
+                    mode12hInput->setText(timeConstants::after_noon);
+                }
+                minuteInput->setText(minuteInput->getText());
+            }
+            if (hour > timeConstants::max_hour_12H_mode) {
+                hour = 1;
+                mode12hInput->setText(secondItem->mode12hInput->getText());
+                minuteInput->setText(secondItem->minuteInput->getText());
+            }
+            hourInput->setText(std::to_string(hour));
+        }
+    }
+
+    void EventTimeItem::validateHourFor24hMode()
+    {
+        auto start_hour = atoi(secondItem->hourInput->getText().c_str());
+        auto end_hour   = atoi(hourInput->getText().c_str());
+        if (start_hour > end_hour || (start_hour == end_hour && atoi(secondItem->minuteInput->getText().c_str()) >
+                                                                    atoi(minuteInput->getText().c_str()))) {
+            auto hour = atoi(secondItem->hourInput->getText().c_str()) + 1;
+            if (hour > timeConstants::max_hour_24H_mode) {
+                hour = timeConstants::max_hour_24H_mode;
+                minuteInput->setText(std::to_string(timeConstants::max_minutes));
+            }
+            else {
+                minuteInput->setText(secondItem->minuteInput->getText());
+            }
+            hourInput->setText(std::to_string(hour));
         }
     }
 

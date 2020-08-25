@@ -32,7 +32,6 @@ namespace style
             const inline int arrow_x    = 30;
             const inline int arrow_y    = 62;
             const inline int listView_x = style::window::default_left_margin;
-            ;
             const inline int listView_y = style::header::height;
             const inline int listView_w = style::listview::body_width_with_scroll;
             const inline int listView_h = style::window_height - listView_y - style::footer::height;
