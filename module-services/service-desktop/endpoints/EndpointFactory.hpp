@@ -4,6 +4,7 @@
 #include "Service/Service.hpp"
 #include "contacts/ContactsEndpoint.hpp"
 #include "messages/MessagesEndpoint.hpp"
+#include "backup/BackupEndpoint.hpp"
 
 using namespace ParserStateMachine;
 
@@ -18,8 +19,8 @@ class EndpointFactory
         //     return std::make_unique(EndpointDeviceInfo());
         // case EndpointType::update:
         //     return std::make_unique(EndpointUpdate());
-        // case EndpointType::backup:
-        //     return std::make_unique(EndpointBackup());
+        case EndpointType::backup:
+            return std::make_unique<BackupEndpoint>(ownerServicePtr);
         // case EndpointType::restore:
         //     return std::make_unique(EndpointRestore());
         case EndpointType::contacts:

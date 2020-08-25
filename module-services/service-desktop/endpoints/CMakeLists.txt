@@ -5,6 +5,7 @@ target_include_directories(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/../messages"
 		"${CMAKE_CURRENT_LIST_DIR}/messages"
 		"${CMAKE_CURRENT_LIST_DIR}/contacts"
+		"${CMAKE_CURRENT_LIST_DIR}/backup"
 )
 target_include_directories(${CMAKE_PROJECT_NAME}
     PUBLIC
@@ -15,12 +16,13 @@ target_sources(${PROJECT_NAME}
 	PRIVATE
 		"DeviceInfo.cpp"
 		/*"Update.cpp"*/
-		/*"Backup.cpp"*/
 		/*"Restore.cpp"*/
 		/*"Factory.cpp"*/
 		"contacts/ContactHelper.cpp"
 		"contacts/ContactsEndpoint.cpp"
 		"messages/MessageHelper.cpp"
 		"messages/MessagesEndpoint.cpp"
+		"backup/BackupEndpoint.cpp"
+		"backup/BackupRestore.cpp"
 
 )
