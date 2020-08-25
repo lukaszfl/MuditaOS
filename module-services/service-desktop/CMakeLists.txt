@@ -2,9 +2,7 @@ message( "${PROJECT_NAME}  ${CMAKE_CURRENT_LIST_DIR}" )
 
 add_subdirectory( parser )
 add_subdirectory( endpoints )
-add_subdirectory( update )
 add_subdirectory( messages )
-add_subdirectory( factory-reset )
 
 target_sources( ${PROJECT_NAME}
     PRIVATE

@@ -1,5 +1,4 @@
 #include "BackupEndpoint.hpp"
-#include "EndpointHandler.hpp"
 #include "ParserUtils.hpp"
 #include "DesktopMessages.hpp"
 #include "ServiceDesktop.hpp"

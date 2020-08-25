@@ -1,4 +1,4 @@
-#include "EndpointHandler.hpp"
+#include "Endpoint.hpp"
 #include "ParserUtils.hpp"
 #include "ServiceDesktop.hpp"
 
