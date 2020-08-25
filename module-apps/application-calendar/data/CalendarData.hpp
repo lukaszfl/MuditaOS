@@ -74,3 +74,29 @@ class DayMonthData : public gui::SwitchData
     };
 };
 
+enum PrevWindow
+{
+    DELETE = 0,
+    EDTIT,
+    ADD
+};
+
+class PrevWindowData : public gui::SwitchData
+{
+  protected:
+    PrevWindow prevWindow;
+
+  public:
+    PrevWindowData()          = default;
+    virtual ~PrevWindowData() = default;
+
+    PrevWindow getData()
+    {
+        return prevWindow;
+    };
+
+    virtual void setData(PrevWindow data)
+    {
+        prevWindow = data;
+    };
+};

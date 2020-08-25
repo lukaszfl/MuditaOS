@@ -34,6 +34,12 @@ namespace gui
                                db::Interface::Name::Events,
                                std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill));
         setTitle(dayMonthTitle);
+        auto dataRecieved = dynamic_cast<PrevWindowData *>(data);
+        if (dataRecieved != nullptr) {
+            if (dataRecieved->getData() == PrevWindow::DELETE) {
+                checkEmpty = true;
+            }
+        }
     }
 
     auto DayEventsWindow::handleSwitchData(SwitchData *data) -> bool
@@ -124,6 +130,14 @@ namespace gui
                 unique_ptr<vector<EventsRecord>> records = response->getResult();
                 for (auto &rec : *records) {
                     LOG_DEBUG("record: %s", rec.title.c_str());
+                }
+                if (checkEmpty) {
+                    if (records->size() == 0) {
+                        auto app = dynamic_cast<app::ApplicationCalendar *>(application);
+                        assert(application != nullptr);
+                        auto name = dayMonthTitle;
+                        app->switchToNoEventsWindow(name, filterFrom, style::window::calendar::name::day_events_window);
+                    }
                 }
                 dayEventsModel->loadData(std::move(records));
                 application->refreshWindow(RefreshModes::GUI_REFRESH_FAST);

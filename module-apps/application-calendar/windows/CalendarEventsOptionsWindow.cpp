@@ -63,7 +63,9 @@ namespace gui
             LOG_INFO("Detele calendar event %d", eventRecord->ID);
             DBServiceAPI::GetQuery(
                 application, db::Interface::Name::Events, std::make_unique<db::query::events::Remove>(eventRecord->ID));
-            application->switchWindow(goBackWindowName);
+            auto data = make_unique<PrevWindowData>();
+            data->setData(PrevWindow::DELETE);
+            application->switchWindow(goBackWindowName, std::move(data));
             return true;
         };
         meta.text  = utils::localize.get("app_calendar_event_delete_confirmation");

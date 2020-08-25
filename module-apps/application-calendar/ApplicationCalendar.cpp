@@ -129,6 +129,8 @@ namespace app
             return true;
         };
         dialog->update(meta);
+        // TODO: Set prev window always as main window
+        switchWindow(gui::name::window::main_window);
         switchWindow(dialog->getName());
         LOG_DEBUG("Switch to no events window");
     }

@@ -30,6 +30,17 @@ namespace gui
         ~DayLabel() override = default;
 
         bool onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) override;
+        uint32_t getDayNumber()
+        {
+            std::string text = dayNumber->getText();
+            if (auto result = std::atoi(text.c_str())) {
+                return result;
+            }
+            else {
+                LOG_ERROR("Wrong day number!");
+                return 1;
+            }
+        }
     };
 
     class MonthBox : public GridLayout
@@ -61,7 +72,7 @@ namespace gui
 
       protected:
         date::year_month_day actualDate;
-        MonthBox *month = nullptr;
+        MonthBox *monthBox = nullptr;
         Label *dateLabel = nullptr;
         std::unique_ptr<MonthModel> monthModel;
 
@@ -78,10 +89,13 @@ namespace gui
         void destroyInterface() override;
         bool onInput(const gui::InputEvent &inputEvent) override;
         bool onDatabaseMessage(sys::Message *msgl) override;
+        void onBeforeShow(ShowMode mode, SwitchData *data) override;
         std::unique_ptr<MonthModel> getMonthModel()
         {
             return std::move(monthModel);
         }
+        bool returnedFromWindow   = false;
+        uint32_t dayFocusedBefore = 0;
     };
 
 } // namespace gui
