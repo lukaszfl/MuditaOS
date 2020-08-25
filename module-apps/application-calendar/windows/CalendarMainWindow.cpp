@@ -153,14 +153,22 @@ namespace gui
                 addWidget(day);
             }
         }
-
-        if (yearUInt / 100000000 + 2000 ==
-                utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) &&
-            monthUInt / 1000000 == utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month)) {
+        auto mainWindow = dynamic_cast<CalendarMainWindow *>(parent);
+        if (mainWindow->returnedFromWindow) {
             focusChangedCallback = [=](Item &item) {
-                setFocusOnElement(utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) - 1);
+                setFocusOnElement(mainWindow->dayFocusedBefore - 1);
                 return true;
             };
+        }
+        else {
+            if (yearUInt / 100000000 + 2000 ==
+                    utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) &&
+                monthUInt / 1000000 == utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month)) {
+                focusChangedCallback = [=](Item &item) {
+                    setFocusOnElement(utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) - 1);
+                    return true;
+                };
+            }
         }
 
         LOG_DEBUG("MonthBox constructor Completed Successfully!");
@@ -180,7 +188,7 @@ namespace gui
     void CalendarMainWindow::refresh()
     {
         erase(dateLabel);
-        month->erase();
+        monthBox->erase();
 
         monthModel           = std::make_unique<MonthModel>(actualDate);
         std::string dateText = monthModel->getMonthYearText();
@@ -206,12 +214,12 @@ namespace gui
         dayHeight     = style::window::calendar::day_cell_height;
 
         // create empty month box
-        month = new MonthBox(
+        monthBox = new MonthBox(
             app, this, offsetFromTop, monthWidth, monthHeight, dayWidth, dayHeight, monthModel, isDayEmpty);
         // setup month box
-        addWidget(month);
+        addWidget(monthBox);
 
-        month->borderCallback = [this](const InputEvent &inputEvent) -> bool {
+        monthBox->borderCallback = [this](const InputEvent &inputEvent) -> bool {
             if (inputEvent.state != InputEvent::State::keyReleasedShort) {
                 return false;
             }
@@ -248,23 +256,23 @@ namespace gui
             }
             case KeyCode::KEY_LEFT: {
                 LOG_DEBUG("Call borderCallback -> go to the previous element");
-                auto it = month->getNavigationFocusedItem();
-                if (month->nextNavigationItem(std::prev(it)) != nullptr) {
-                    month->setFocusItem(month->nextNavigationItem(std::prev(it)));
+                auto it = monthBox->getNavigationFocusedItem();
+                if (monthBox->nextNavigationItem(std::prev(it)) != nullptr) {
+                    monthBox->setFocusItem(monthBox->nextNavigationItem(std::prev(it)));
                 }
                 else {
-                    month->setFocusOnLastElement();
+                    monthBox->setFocusOnLastElement();
                 }
                 return true;
             }
             case KeyCode::KEY_RIGHT: {
                 LOG_DEBUG("Call borderCallback -> go to the next element");
-                auto it = month->getNavigationFocusedItem();
-                if (month->nextNavigationItem(std::next(it)) != nullptr) {
-                    month->setFocusItem(month->nextNavigationItem(std::next(it)));
+                auto it = monthBox->getNavigationFocusedItem();
+                if (monthBox->nextNavigationItem(std::next(it)) != nullptr) {
+                    monthBox->setFocusItem(monthBox->nextNavigationItem(std::next(it)));
                 }
                 else {
-                    month->setFocusOnElement(0);
+                    monthBox->setFocusOnElement(0);
                 }
                 return true;
             }
@@ -274,7 +282,7 @@ namespace gui
             }
         };
 
-        setFocusItem(month);
+        setFocusItem(monthBox);
     }
 
     void CalendarMainWindow::buildDateLabel(std::string actualDateTime)
@@ -373,6 +381,26 @@ namespace gui
         }
         LOG_DEBUG("Calendar MainWindow DB Message != QueryResponse");
         return false;
+    }
+
+    void CalendarMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
+    {
+        if (mode == ShowMode::GUI_SHOW_RETURN) {
+            returnedFromWindow = true;
+            auto day           = dynamic_cast<DayLabel *>(monthBox->getFocusItem());
+            dayFocusedBefore   = day->getDayNumber();
+        }
+        filterRequest();
+
+        //        auto dataRecieved = dynamic_cast<PrevWindowData*>(data);
+        //        if (dataRecieved!= nullptr) {
+        //            if (dataRecieved->getData() == PrevWindow::ADD) {
+        //                auto data           = std::make_unique<DayMonthData>();
+        //                auto actualMonth = monthBox->month;
+        //                auto filter         = monthBox->monthFilterValue + numb * 10000;
+        //                data->setData(number + " " + month, filter);
+        //            }
+        //        }
     }
 
 } // namespace gui

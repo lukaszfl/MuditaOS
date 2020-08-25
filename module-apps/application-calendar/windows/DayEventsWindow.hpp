@@ -30,6 +30,8 @@ namespace gui
         void rebuild() override;
         void buildInterface() override;
         void onBeforeShow(ShowMode mode, SwitchData *data) override;
+
+        bool checkEmpty = false;
     };
 
 } /* namespace app */
