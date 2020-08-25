@@ -40,21 +40,6 @@ namespace gui
 
     void NewEditEventWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
-        if (data != nullptr) {
-            auto *rec = dynamic_cast<EventRecordData *>(data);
-            if (rec != nullptr) {
-                eventRecord = rec->getData();
-            }
-            else {
-                auto rec2   = new EventsRecord();
-                eventRecord = std::make_shared<EventsRecord>(*rec2);
-            }
-        }
-        else {
-            auto rec    = new EventsRecord();
-            eventRecord = std::make_shared<EventsRecord>(*rec);
-        }
-
         switch (eventAction) {
         case EventAction::None:
             break;
@@ -84,7 +69,15 @@ namespace gui
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_ENTER) {
             LOG_DEBUG("Save Event");
-            newEditEventModel->saveData(eventRecord);
+            bool edit;
+            if (eventAction == EventAction::Edit) {
+                edit = true;
+            }
+            else if (eventAction == EventAction::Add) {
+                edit = false;
+            }
+
+            newEditEventModel->saveData(eventRecord, edit, prevWindowName);
             return true;
         }
 
@@ -100,8 +93,7 @@ namespace gui
         if (rec != nullptr) {
 
             eventRecord = rec->getData();
-            LOG_DEBUG(
-                "DATA!!!!!!!!!!!!!!! date_from: %u  date_till: %u", eventRecord->date_from, eventRecord->date_till);
+            prevWindowName = rec->getWindowName();
         }
 
         if (data->getDescription() == "Edit") {

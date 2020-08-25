@@ -13,6 +13,7 @@ namespace app
     class ApplicationCalendar : public Application
     {
         time_t applicationStartTime = 0;
+        uint32_t eventShift         = 0;
 
       public:
         ApplicationCalendar(std::string name,
@@ -35,7 +36,9 @@ namespace app
 
         void createUserInterface() override;
         void destroyUserInterface() override;
-        void switchToNoEventsWindow(const std::string &title, std::unique_ptr<gui::SwitchData> data);
+        void switchToNoEventsWindow(const std::string &title,
+                                    const uint32_t &dateFilter,
+                                    const std::string &goBackWindow);
         void applyRepeatAndReminderMap();
 
         std::map<uint32_t, std::string> reminderOptions;
