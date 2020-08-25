@@ -5,6 +5,7 @@
 class EventRecordData : public gui::SwitchData
 {
   protected:
+    std::string backWindowName;
     std::shared_ptr<EventsRecord> record;
 
   public:
@@ -18,6 +19,14 @@ class EventRecordData : public gui::SwitchData
     virtual void setData(std::shared_ptr<EventsRecord> rec)
     {
         record = std::move(rec);
+    };
+    std::string getWindowName()
+    {
+        return backWindowName;
+    };
+    virtual void setWindowName(const std::string &windowName)
+    {
+        backWindowName = windowName;
     };
 };
 

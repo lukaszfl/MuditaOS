@@ -1,6 +1,7 @@
 #include "CalendarEventsOptionsWindow.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include "Dialog.hpp"
+#include "DayEventsWindow.hpp"
 #include <Utils.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsRemove.hpp>
@@ -23,6 +24,7 @@ namespace gui
                                              auto rec  = std::make_unique<EventsRecord>(*eventRecord);
                                              auto data = std::make_unique<EventRecordData>(std::move(rec));
                                              data->setDescription("Edit");
+                                             data->setWindowName(goBackWindowName);
                                              application->switchWindow(style::window::calendar::name::new_edit_event,
                                                                        std::move(data));
                                              return true;
@@ -44,7 +46,7 @@ namespace gui
         }
 
         eventRecord = item->getData();
-
+        goBackWindowName = item->getWindowName();
         clearOptions();
         addOptions(eventsOptionsList());
         return true;
@@ -61,6 +63,7 @@ namespace gui
             LOG_INFO("Detele calendar event %d", eventRecord->ID);
             DBServiceAPI::GetQuery(
                 application, db::Interface::Name::Events, std::make_unique<db::query::events::Remove>(eventRecord->ID));
+            application->switchWindow(goBackWindowName);
             return true;
         };
         meta.text  = utils::localize.get("app_calendar_event_delete_confirmation");
