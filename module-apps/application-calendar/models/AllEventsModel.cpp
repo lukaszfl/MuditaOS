@@ -43,6 +43,7 @@ gui::ListItem *AllEventsModel::getItem(gui::Order order)
         LOG_INFO("Switch to event details window");
         auto rec  = std::make_unique<EventsRecord>(*record);
         auto data = std::make_unique<EventRecordData>(std::move(rec));
+        data->setWindowName(style::window::calendar::name::all_events_window);
         application->switchWindow(style::window::calendar::name::details_window, std::move(data));
         return true;
     };

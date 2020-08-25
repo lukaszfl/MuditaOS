@@ -81,7 +81,7 @@ namespace gui
                     auto application = dynamic_cast<app::ApplicationCalendar *>(app);
                     assert(application != nullptr);
                     auto name = data->getDayMonthText();
-                    application->switchToNoEventsWindow(name, std::move(data));
+                    application->switchToNoEventsWindow(name, filter, style::window::calendar::name::day_events_window);
                 }
                 else {
                     LOG_DEBUG("Switch to DayEventsWindow");

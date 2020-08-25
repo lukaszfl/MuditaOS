@@ -1,10 +1,12 @@
 #include "NewEditEventModel.hpp"
 #include "application-calendar/widgets/CheckBoxWithLabelAndModel.hpp"
+#include "application-calendar/widgets/AddRepeatedEvents.hpp"
 #include <ListView.hpp>
 #include <Utils.hpp>
 #include <BottomBar.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsAdd.hpp>
+#include <module-db/queries/calendar/QueryEventsEdit.hpp>
 
 NewEditEventModel::NewEditEventModel(app::Application *app, bool mode24H) : application(app), mode24H(mode24H)
 {}
@@ -130,13 +132,31 @@ void NewEditEventModel::reloadDataWithTimeItem()
     list->rebuildList();
 }
 
-void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event)
+void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit, const std::string &windowName)
 {
     for (auto &item : internalData) {
         if (item->onSaveCallback) {
             item->onSaveCallback(event);
         }
     }
-    auto record = event.get();
-    DBServiceAPI::GetQuery(application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
+    // auto record = event.get();
+    /// count the reminder date
+    // event->reminder = event->date_from - event->reminder;
+
+    if (edit) {
+        auto record = event.get();
+        DBServiceAPI::GetQuery(application,
+                               db::Interface::Name::Events,
+                               std::make_unique<db::query::events::Edit>(*record, record->date_from));
+    }
+    else {
+        auto record = event.get();
+        DBServiceAPI::GetQuery(
+            application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
+    }
+    if (event->repeat) {
+        auto repeatObject = new AddRepeatedEvents(application);
+        repeatObject->addRepeatedEvents(std::move(event));
+    }
+    application->switchWindow(windowName);
 }

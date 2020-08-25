@@ -1,4 +1,5 @@
 #include "DayEventsItem.hpp"
+#include "CalendarStyle.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include <ListView.hpp>
 #include <gui/widgets/Label.hpp>

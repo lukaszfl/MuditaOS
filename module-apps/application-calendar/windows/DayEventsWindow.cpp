@@ -107,6 +107,7 @@ namespace gui
             rec->date_till = filterTill;
             auto event     = std::make_shared<EventsRecord>(*rec);
             data->setData(event);
+            data->setWindowName(style::window::calendar::name::day_events_window);
             application->switchWindow(
                 style::window::calendar::name::new_edit_event, gui::ShowMode::GUI_SHOW_INIT, std::move(data));
             return true;
