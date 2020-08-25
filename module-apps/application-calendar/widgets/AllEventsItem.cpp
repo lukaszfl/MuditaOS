@@ -68,7 +68,11 @@ namespace gui
                 startTime->setText(utils::localize.get("app_calendar_all_day"));
             }
             else {
-                startTime->setText(start_time);
+                if (start_time.length() < 4) {
+                    start_time.insert(0, 4 - start_time.length(), '0');
+                }
+                std::string text = start_time.substr(0, 2) + ":" + start_time.substr(2, 4);
+                startTime->setText(text);
             }
         }
     }
