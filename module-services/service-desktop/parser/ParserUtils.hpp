@@ -10,8 +10,8 @@ namespace ParserStateMachine
     // Endpoint type definition
     enum class EndpointType
     {
-        invalid    = 0,
-        deviceInfo = 1,
+        invalid = 0,
+        deviceInfo,
         update,
         backup,
         restore,

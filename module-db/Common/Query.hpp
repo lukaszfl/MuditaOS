@@ -20,13 +20,13 @@ namespace db
     class EndpointListener : public db::QueryListener
     {
       private:
-        uint32_t uuid;
+        uint32_t uuid = 0;
 
       public:
         EndpointListener(QueryCallback _callback, uint32_t uuid) : uuid(uuid), callback(std::move(_callback)){};
         EndpointListener() : callback(nullptr){};
-        ~EndpointListener() = default;
-        QueryCallback callback;
+        ~EndpointListener()    = default;
+        QueryCallback callback = nullptr;
         auto handleQueryResponse(db::QueryResult *result) -> bool override
         {
             if (callback != nullptr) {

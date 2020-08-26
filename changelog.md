@@ -1,5 +1,15 @@
 # Mudita PurePhone changelog
 
+## Current version
+### Added
+
+### Changed
+
+### Fixed
+
+### Other
+* `[desktop]` Rewritten message handling.
+
 ## [0.34.2 - 2020-08-21]
 
 ### Changed

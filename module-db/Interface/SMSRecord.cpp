@@ -297,10 +297,10 @@ SMSRecord SMSRecordInterface::GetByID(uint32_t id)
 std::unique_ptr<db::QueryResult> SMSRecordInterface::runQuery(std::shared_ptr<db::Query> query)
 {
     if (typeid(*query) == typeid(db::query::SMSSearchByType)) {
-        return runQueryImpl(dynamic_cast<const db::query::SMSSearchByType *>(query.get()));
+        return runQueryImpl(static_cast<const db::query::SMSSearchByType *>(query.get()));
     }
     else if (typeid(*query) == typeid(db::query::SMSGetByID)) {
-        const auto localQuery = dynamic_cast<const db::query::SMSGetByID *>(query.get());
+        const auto localQuery = static_cast<const db::query::SMSGetByID *>(query.get());
         auto sms = smsDB->sms.getById(localQuery->id);
         SMSRecord record;
 
@@ -317,7 +317,7 @@ std::unique_ptr<db::QueryResult> SMSRecordInterface::runQuery(std::shared_ptr<db
         return response;
     }
     else if (typeid(*query) == typeid(db::query::SMSGetByContactID)) {
-        const auto localQuery = dynamic_cast<const db::query::SMSGetByContactID *>(query.get());
+        const auto localQuery = static_cast<const db::query::SMSGetByContactID *>(query.get());
         auto smsVector = smsDB->sms.getByContactId(localQuery->contactId);
         std::vector<SMSRecord> recordVector;
         for (auto sms : smsVector) {
@@ -338,7 +338,7 @@ std::unique_ptr<db::QueryResult> SMSRecordInterface::runQuery(std::shared_ptr<db
         return response;
     }
     else if (typeid(*query) == typeid(db::query::SMSGetByText)) {
-        const auto localQuery = dynamic_cast<const db::query::SMSGetByText *>(query.get());
+        const auto localQuery = static_cast<const db::query::SMSGetByText *>(query.get());
         auto smsVector = smsDB->sms.getByText(localQuery->text);
         std::vector<SMSRecord> recordVector;
         for (auto sms : smsVector) {
@@ -364,14 +364,14 @@ std::unique_ptr<db::QueryResult> SMSRecordInterface::runQuery(std::shared_ptr<db
         return response;
     }
     else if (typeid(*query) == typeid(db::query::SMSRemove)) {
-        const auto localQuery = dynamic_cast<const db::query::SMSRemove *>(query.get());
+        const auto localQuery = static_cast<const db::query::SMSRemove *>(query.get());
         auto ret              = smsDB->sms.removeById(localQuery->id);
         auto response         = std::make_unique<db::query::SMSRemoveResult>(ret);
         response->setRequestQuery(query);
         return response;
     }
     else if (typeid(*query) == typeid(db::query::SMSGet)) {
-        const auto localQuery = dynamic_cast<const db::query::SMSGet *>(query.get());
+        const auto localQuery = static_cast<const db::query::SMSGet *>(query.get());
 
         auto smsVector = smsDB->sms.getLimitOffset(localQuery->getOffset(), localQuery->getLimit());
         std::vector<SMSRecord> recordVector;

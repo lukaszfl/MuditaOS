@@ -23,9 +23,11 @@ namespace ParserStateMachine
 
         static auto buildResponseStr(std::size_t responseSize, std::string responsePayloadString) -> std::string
         {
+            constexpr auto pos                 = 0;
+            constexpr auto count               = 1;
             std::string responsePayloadSizeStr = std::to_string(responseSize);
             while (responsePayloadSizeStr.length() < message::size_length) {
-                responsePayloadSizeStr.insert(0, 1, '0');
+                responsePayloadSizeStr.insert(pos, count, '0');
             }
 
             std::string responseStr = message::endpointChar + responsePayloadSizeStr + responsePayloadString;
@@ -57,8 +59,8 @@ namespace ParserStateMachine
         }
 
       protected:
-        std::string debugName;
-        sys::Service *ownerServicePtr;
+        std::string debugName         = "";
+        sys::Service *ownerServicePtr = nullptr;
     };
 
 } // namespace ParserStateMachine
