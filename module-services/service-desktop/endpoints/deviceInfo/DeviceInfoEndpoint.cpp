@@ -6,11 +6,6 @@
 #include <service-desktop/ServiceDesktop.hpp>
 #include <string>
 
-time_t FreeRTOS_time(time_t *pxTime)
-{
-    return utils::time::Time().getTime();
-}
-
 auto DeviceInfoEndpoint::handle(Context &context) -> std::string
 {
     switch (context.getMethod()) {
