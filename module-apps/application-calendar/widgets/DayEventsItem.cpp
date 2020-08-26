@@ -1,6 +1,5 @@
 #include "DayEventsItem.hpp"
 #include "CalendarStyle.hpp"
-#include "application-calendar/widgets/CalendarStyle.hpp"
 #include <ListView.hpp>
 #include <gui/widgets/Label.hpp>
 #include <Style.hpp>
@@ -29,9 +28,8 @@ namespace gui
         title->setFont(style::window::font::bigbold);
         title->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
 
-        clock = new gui::Image("small_tick");
+        clock = new gui::Image(hBox, 0, 0, 0, 0, "small_tick");
         clock->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
-        hBox->addWidget(clock);
 
         description = new gui::Label(vBox, 0, 0, 0, 0);
         description->setMinimumSize(style::window::default_body_width,

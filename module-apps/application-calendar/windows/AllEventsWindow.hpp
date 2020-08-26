@@ -24,6 +24,8 @@ namespace gui
         bool onInput(const gui::InputEvent &inputEvent) override;
         void rebuild() override;
         void buildInterface() override;
+
+        bool checkEmpty = false;
     };
 
 } // namespace gui

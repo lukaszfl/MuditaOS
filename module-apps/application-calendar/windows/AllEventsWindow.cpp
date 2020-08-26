@@ -9,6 +9,9 @@
 #include <module-db/queries/calendar/QueryEventsGetAllLimited.hpp>
 #include <module-db/queries/calendar/QueryEventsGetAll.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
+#include <module-apps/application-calendar/data/CalendarData.hpp>
+#include <time/time_conversion.hpp>
+#include <module-apps/application-calendar/ApplicationCalendar.hpp>
 
 namespace gui
 {
@@ -57,6 +60,12 @@ namespace gui
     void AllEventsWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
         allEventsList->rebuildList();
+        auto dataRecieved = dynamic_cast<PrevWindowData *>(data);
+        if (dataRecieved != nullptr) {
+            if (dataRecieved->getData() == PrevWindow::DELETE) {
+                checkEmpty = true;
+            }
+        }
     }
 
     bool AllEventsWindow::onInput(const gui::InputEvent &inputEvent)
@@ -77,8 +86,18 @@ namespace gui
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_LEFT) {
             LOG_DEBUG("Switch to new event window");
-            std::unique_ptr<gui::SwitchData> data = std::make_unique<SwitchData>();
+            std::unique_ptr<EventRecordData> data = std::make_unique<EventRecordData>();
             data->setDescription("New");
+            auto rec = new EventsRecord();
+            auto filter =
+                (utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) - 2000) * 100000000 +
+                utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month) * 1000000 +
+                utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) * 10000;
+            rec->date_from = filter;
+            rec->date_till = filter + 2359;
+            auto event     = std::make_shared<EventsRecord>(*rec);
+            data->setData(event);
+            data->setWindowName(style::window::calendar::name::all_events_window);
             application->switchWindow(
                 style::window::calendar::name::new_edit_event, gui::ShowMode::GUI_SHOW_INIT, std::move(data));
             return true;
@@ -102,6 +121,21 @@ namespace gui
                 auto records_data = response->getResult();
                 allEventsModel->setRecordsCount(*response->getCountResult());
                 auto records = std::make_unique<std::vector<EventsRecord>>(records_data->begin(), records_data->end());
+                if (checkEmpty) {
+                    if (records->size() == 0) {
+                        auto app = dynamic_cast<app::ApplicationCalendar *>(application);
+                        assert(application != nullptr);
+                        auto filter =
+                            (utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) - 2000) *
+                                100000000 +
+                            utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month) * 1000000 +
+                            utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) * 10000;
+                        app->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main"),
+                                                    filter,
+                                                    style::window::calendar::name::all_events_window);
+                    }
+                }
+                application->refreshWindow(RefreshModes::GUI_REFRESH_FAST);
                 return allEventsModel->updateRecords(std::move(records));
             }
             LOG_DEBUG("Response False");

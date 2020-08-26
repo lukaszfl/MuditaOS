@@ -13,7 +13,7 @@ namespace app
     class ApplicationCalendar : public Application
     {
         time_t applicationStartTime = 0;
-        uint32_t eventShift         = 0;
+        int eventShift              = 0;
 
       public:
         ApplicationCalendar(std::string name,

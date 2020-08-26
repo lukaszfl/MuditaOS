@@ -146,41 +146,47 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
     // TODO: Change bool edit to existing enum
     if (edit) {
         auto record = event.get();
-        DBServiceAPI::GetQuery(application,
-                               db::Interface::Name::Events,
-                               std::make_unique<db::query::events::Edit>(*record, record->date_from));
-        if (event->repeat) {
-            auto repeatObject = new AddRepeatedEvents(application);
-            repeatObject->addRepeatedEvents(std::move(event));
+        if (record->title != "") {
+            DBServiceAPI::GetQuery(application,
+                                   db::Interface::Name::Events,
+                                   std::make_unique<db::query::events::Edit>(*record, record->date_from));
+            if (event->repeat) {
+                auto repeatObject = new AddRepeatedEvents(application);
+                repeatObject->addRepeatedEvents(std::move(event));
+            }
         }
         application->switchWindow(windowName);
     }
     else {
         auto record = event.get();
-        DBServiceAPI::GetQuery(
-            application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
-        if (event->repeat) {
-            auto repeatObject = new AddRepeatedEvents(application);
-            repeatObject->addRepeatedEvents(std::move(event));
-        }
-        if (application->getPrevWindow() == style::window::calendar::name::no_events_window) {
-            // TODO: Create method in month model to convert filter to date time
-            auto data         = std::make_unique<DayMonthData>();
-            LOG_DEBUG("Event Date from %u", record->date_from);
-            auto filter       = record->date_from - record->date_from % 10000;
-            uint32_t yearInt  = record->date_from - record->date_from % 100000000;
-            auto year         = date::year((yearInt + 2000) / 100000000);
-            uint32_t monthInt = record->date_from - record->date_from % 1000000 - yearInt;
-            auto month        = date::month(monthInt / 1000000);
-            auto dayInt       = (filter - yearInt - monthInt) / 10000;
-            auto day          = date::day(dayInt);
-            auto monthModel   = std::make_unique<MonthModel>(year / month / day);
-            auto monthTxt     = monthModel->getMonthText();
-            auto dayTxt       = std::to_string(dayInt);
-            data->setData(monthTxt + " " + dayTxt, filter);
+        if (record->title != "") {
+            DBServiceAPI::GetQuery(
+                application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
+            if (event->repeat) {
+                auto repeatObject = new AddRepeatedEvents(application);
+                repeatObject->addRepeatedEvents(std::move(event));
+            }
+            if (application->getPrevWindow() == style::window::calendar::name::no_events_window) {
+                // TODO: Create method in month model to convert filter to date time
+                auto data         = std::make_unique<DayMonthData>();
+                auto filter       = event->date_from - event->date_from % 10000;
+                uint32_t yearInt  = event->date_from - event->date_from % 100000000;
+                auto year         = date::year((yearInt + 2000) / 100000000);
+                uint32_t monthInt = event->date_from - event->date_from % 1000000 - yearInt;
+                auto month        = date::month(monthInt / 1000000);
+                auto dayInt       = (filter - yearInt - monthInt) / 10000;
+                auto day          = date::day(dayInt);
+                auto monthModel   = std::make_unique<MonthModel>(year / month / day);
+                auto monthTxt     = monthModel->getMonthText();
+                auto dayTxt       = std::to_string(dayInt);
+                data->setData(monthTxt + " " + dayTxt, filter);
 
-            application->switchWindow(gui::name::window::main_window);
-            application->switchWindow(windowName, std::move(data));
+                application->switchWindow(gui::name::window::main_window);
+                application->switchWindow(windowName, std::move(data));
+            }
+            else {
+                application->returnToPreviousWindow();
+            }
         }
         else {
             application->returnToPreviousWindow();
