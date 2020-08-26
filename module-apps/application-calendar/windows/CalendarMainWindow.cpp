@@ -340,7 +340,8 @@ namespace gui
         }
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_LF) {
-            application->switchWindow(style::window::calendar::name::all_events_window);
+            DBServiceAPI::GetQuery(
+                application, db::Interface::Name::Events, std::make_unique<db::query::events::GetAll>());
             return true;
         }
 
@@ -374,6 +375,25 @@ namespace gui
                     isDayEmpty[((rec.date_from % 1000000 - rec.date_from % 10000) / 10000) - 1] = false;
                 }
                 refresh();
+                return true;
+            }
+            if (auto response = dynamic_cast<db::query::events::GetAllResult *>(temp.get())) {
+                unique_ptr<vector<EventsRecord>> records = response->getResult();
+                if (records->size() != 0) {
+                    application->switchWindow(style::window::calendar::name::all_events_window);
+                }
+                else {
+                    auto appCalendar = dynamic_cast<app::ApplicationCalendar *>(application);
+                    assert(appCalendar != nullptr);
+                    auto filter =
+                        (utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) - 2000) *
+                            100000000 +
+                        utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month) * 1000000 +
+                        utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) * 10000;
+                    appCalendar->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main"),
+                                                        filter,
+                                                        style::window::calendar::name::all_events_window);
+                }
                 return true;
             }
             LOG_DEBUG("Response False");
