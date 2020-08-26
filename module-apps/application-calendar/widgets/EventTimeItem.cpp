@@ -109,9 +109,12 @@ namespace gui
                         if (mode12hInput->getText() == timeConstants::after_noon) {
                             if (hour == 12) {
                                 hour = 11;
+                                secondItem->minuteInput->setText(std::to_string(timeConstants::max_minutes));
+                            }
+                            else {
+                                secondItem->minuteInput->setText(minuteInput->getText());
                             }
                             secondItem->mode12hInput->setText(mode12hInput->getText());
-                            secondItem->minuteInput->setText(std::to_string(timeConstants::max_minutes));
                         }
                         else {
                             if (hour == 12) {
@@ -134,23 +137,6 @@ namespace gui
                     }
                     secondItem->hourInput->setText(std::to_string(hour));
                 }
-
-                onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
-                    validateHour();
-                    auto hour = atoi(hourInput->getText().c_str());
-                    if (!mode24H) {
-                        hour = convertTimeTo24hMode(hour, mode12hInput->getText());
-                    }
-                    if (this->descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_end")) {
-                        record->date_till = record->date_till - record->date_till % 10000;
-                        record->date_till = record->date_till + hour * 100 + atoi(minuteInput->getText().c_str());
-                    }
-                    else if (this->descriptionLabel->getText() ==
-                             utils::localize.get("app_calendar_new_edit_event_start")) {
-                        record->date_from = record->date_from - record->date_from % 10000;
-                        record->date_from = record->date_from + hour * 100 + atoi(minuteInput->getText().c_str());
-                    }
-                };
                 return true;
             }
             else if (hBox->onInput(event)) {
@@ -158,6 +144,23 @@ namespace gui
             }
 
             return false;
+        };
+
+        onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
+            validateHour();
+            auto hour = atoi(hourInput->getText().c_str());
+            if (!mode24H) {
+                hour = convertTimeTo24hMode(hour, mode12hInput->getText());
+            }
+            if (this->descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_end")) {
+
+                record->date_till = record->date_till - record->date_till % 10000;
+                record->date_till = record->date_till + hour * 100 + atoi(minuteInput->getText().c_str());
+            }
+            else if (this->descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_start")) {
+                record->date_from = record->date_from - record->date_from % 10000;
+                record->date_from = record->date_from + hour * 100 + atoi(minuteInput->getText().c_str());
+            }
         };
 
         hourInput->inputCallback = [&](Item &item, const InputEvent &event) {
