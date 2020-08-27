@@ -133,7 +133,7 @@ namespace gui
                 optionLabel->setText(optionsNames[actualVectorIndex]);
                 onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
                     if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                        if (record->repeat < 6) {
+                        if (record->repeat < 6 || actualVectorIndex < 6) {
                             record->repeat = actualVectorIndex;
                         }
                     }
@@ -158,7 +158,10 @@ namespace gui
                 }
                 onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
                     if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                        if (record->repeat < 6) {
+                        //                        auto parser            = new OptionParser();
+                        //                        parser->getNoCustomValue(record->repeat);
+
+                        if (record->repeat < 6 || actualVectorIndex < 6) {
                             record->repeat = actualVectorIndex;
                         }
                     }
