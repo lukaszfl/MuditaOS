@@ -19,8 +19,8 @@ unsigned int AllEventsModel::requestRecordsCount()
 
 void AllEventsModel::requestRecords(const uint32_t offset, const uint32_t limit)
 {
-    auto querry = std::make_unique<db::query::events::GetAllLimited>(offset, limit);
-    DBServiceAPI::GetQuery(application, db::Interface::Name::Events, std::move(querry));
+    auto query = std::make_unique<db::query::events::GetAllLimited>(offset, limit);
+    DBServiceAPI::GetQuery(application, db::Interface::Name::Events, std::move(query));
 }
 
 unsigned int AllEventsModel::getMinimalItemHeight() const

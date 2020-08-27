@@ -107,8 +107,8 @@ namespace gui
                     auto hour = atoi(hourInput->getText().c_str()) + 1;
                     if (!mode24H) {
                         if (mode12hInput->getText() == timeConstants::after_noon) {
-                            if (hour == 12) {
-                                hour = 11;
+                            if (hour == timeConstants::max_hour_12H_mode) {
+                                hour = timeConstants::max_hour_12H_mode - 1;
                                 secondItem->minuteInput->setText(std::to_string(timeConstants::max_minutes));
                             }
                             else {
@@ -117,7 +117,7 @@ namespace gui
                             secondItem->mode12hInput->setText(mode12hInput->getText());
                         }
                         else {
-                            if (hour == 12) {
+                            if (hour == timeConstants::max_hour_12H_mode) {
                                 secondItem->mode12hInput->setText(timeConstants::after_noon);
                             }
                             secondItem->minuteInput->setText(minuteInput->getText());
@@ -320,14 +320,14 @@ namespace gui
                                                                     atoi(minuteInput->getText().c_str()))) {
             auto hour = atoi(secondItem->hourInput->getText().c_str()) + 1;
             if (secondItem->mode12hInput->getText() == timeConstants::after_noon) {
-                if (hour == 12) {
-                    hour = 11;
+                if (hour == timeConstants::max_hour_12H_mode) {
+                    hour = timeConstants::max_hour_12H_mode - 1;
                 }
                 mode12hInput->setText(mode12hInput->getText());
                 minuteInput->setText(std::to_string(timeConstants::max_minutes));
             }
             else {
-                if (hour == 12) {
+                if (hour == timeConstants::max_hour_12H_mode) {
                     mode12hInput->setText(timeConstants::after_noon);
                 }
                 minuteInput->setText(minuteInput->getText());

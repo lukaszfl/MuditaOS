@@ -1,7 +1,6 @@
 #include "CalendarEventsOptionsWindow.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include "Dialog.hpp"
-#include "DayEventsWindow.hpp"
 #include <Utils.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsRemove.hpp>

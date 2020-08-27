@@ -115,9 +115,6 @@ void NewEditEventModel::loadDataWithoutTimeItem()
 
 void NewEditEventModel::reloadDataWithTimeItem()
 {
-    [[maybe_unused]] auto app = application;
-    assert(app != nullptr);
-
     internalData.clear();
 
     internalData.push_back(eventNameInput);
@@ -169,10 +166,10 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
             if (application->getPrevWindow() == style::window::calendar::name::no_events_window) {
                 // TODO: Create method in month model to convert filter to date time
                 auto data         = std::make_unique<DayMonthData>();
-                auto filter       = event->date_from - event->date_from % 10000;
-                uint32_t yearInt  = event->date_from - event->date_from % 100000000;
+                auto filter       = record->date_from - record->date_from % 10000;
+                uint32_t yearInt  = record->date_from - record->date_from % 100000000;
                 auto year         = date::year((yearInt + 2000) / 100000000);
-                uint32_t monthInt = event->date_from - event->date_from % 1000000 - yearInt;
+                uint32_t monthInt = record->date_from - record->date_from % 1000000 - yearInt;
                 auto month        = date::month(monthInt / 1000000);
                 auto dayInt       = (filter - yearInt - monthInt) / 10000;
                 auto day          = date::day(dayInt);

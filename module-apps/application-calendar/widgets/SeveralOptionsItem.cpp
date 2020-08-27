@@ -131,16 +131,6 @@ namespace gui
                     bottomBarRestoreFromTemporaryMode();
                 }
                 optionLabel->setText(optionsNames[actualVectorIndex]);
-                onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
-                    if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                        if (record->repeat < 6) {
-                            record->repeat = actualVectorIndex;
-                        }
-                    }
-                    else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
-                        record->reminder = reminderTimeOptions[actualVectorIndex];
-                    }
-                };
                 return true;
             }
             if (event.keyCode == gui::KeyCode::KEY_RIGHT) {
@@ -156,16 +146,6 @@ namespace gui
                 else {
                     bottomBarRestoreFromTemporaryMode();
                 }
-                onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
-                    if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                        if (record->repeat < 6) {
-                            record->repeat = actualVectorIndex;
-                        }
-                    }
-                    else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
-                        record->reminder = reminderTimeOptions[actualVectorIndex];
-                    }
-                };
                 return true;
             }
             if (event.keyCode == gui::KeyCode::KEY_LF && actualVectorIndex == optionsNames.size() - 1 &&
@@ -180,15 +160,26 @@ namespace gui
             return false;
         };
 
+        onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
+            if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
+                if (record->repeat < optionsNames.size() - 1) {
+                    record->repeat = actualVectorIndex;
+                }
+            }
+            else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
+                record->reminder = reminderTimeOptions[actualVectorIndex];
+            }
+        };
+
         onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
             auto calendarApp = dynamic_cast<app::ApplicationCalendar *>(application);
             assert(calendarApp != nullptr);
             if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                if (event->repeat < 6) {
+                if (event->repeat < optionsNames.size() - 1) {
                     actualVectorIndex = event->repeat;
                 }
                 else {
-                    actualVectorIndex = 6;
+                    actualVectorIndex = optionsNames.size() - 1;
                 }
                 repeatOptionValue = event->repeat;
                 optionLabel->setText(optionsNames[actualVectorIndex]);
