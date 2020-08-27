@@ -1,4 +1,6 @@
 #include "CustomRepeatWindow.hpp"
+#include <module-apps/application-calendar/data/CalendarData.hpp>
+#include "application-calendar/widgets/CheckBoxWithLabelItem.hpp"
 #include <gui/widgets/Window.hpp>
 #include <Utils.hpp>
 
@@ -42,7 +44,54 @@ namespace gui
             list->rebuildList();
         }
 
+        auto recievedData = dynamic_cast<WeekDaysRepeatData *>(data);
+        if (recievedData != nullptr) {
+            weekDaysOptData = std::make_unique<WeekDaysRepeatData>(*recievedData);
+        }
+        else {
+            weekDaysOptData = std::make_unique<WeekDaysRepeatData>();
+        }
         customRepeatModel->loadData();
+    }
+
+    bool CustomRepeatWindow::onInput(const InputEvent &inputEvent)
+    {
+        // check if any of the lower inheritance onInput methods catch the event
+        if (Window::onInput(inputEvent)) {
+            return true;
+        }
+        // process only if key is released
+        if ((inputEvent.state != InputEvent::State::keyReleasedShort))
+            return false;
+
+        switch (inputEvent.keyCode) {
+        case KeyCode::KEY_RF: {
+            if (weekDaysOptData != nullptr) {
+                auto items = customRepeatModel->getInternalData();
+                uint32_t i = 0;
+                for (auto it : items) {
+                    auto item = dynamic_cast<CheckBoxWithLabelItem *>(it);
+                    if (item->checkBox->isChecked()) {
+                        LOG_DEBUG("IS CHECKED!!!");
+                        weekDaysOptData->setData(i);
+                    }
+                    ++i;
+                }
+                auto data = weekDaysOptData.get();
+                application->switchWindow(style::window::calendar::name::new_edit_event,
+                                          gui::ShowMode::GUI_SHOW_RETURN,
+                                          std::make_unique<WeekDaysRepeatData>(*data));
+                return true;
+            }
+            else {
+                application->returnToPreviousWindow();
+            }
+        }
+        default:
+            break;
+        }
+
+        return false;
     }
 
 } /* namespace gui */

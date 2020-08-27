@@ -32,7 +32,7 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/models/MonthModel.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/CalendarListItem.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/AddRepeatedEvents.hpp"
+		"${CMAKE_CURRENT_LIST_DIR}/data/OptionParser.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/data/CalendarData.hpp"
-
 )
 

@@ -40,6 +40,21 @@ namespace gui
 
     void NewEditEventWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
+        if (mode == ShowMode::GUI_SHOW_RETURN) {
+
+            LOG_DEBUG("RETURN");
+            /// load data from customRepeatWindow to -> call newEditModel->SeverelaOptionsItem repeat->Parse()
+            /// (uaktualnia repeat->dataFrobRecerd)
+            // newEditEventModel->loadData(eventRecord);
+            auto recievedData = dynamic_cast<WeekDaysRepeatData *>(data);
+            if (recievedData != nullptr) {
+                auto parser         = new OptionParser();
+                auto uniqueData     = std::make_unique<WeekDaysRepeatData>(*recievedData);
+                eventRecord->repeat = parser->getDatabaseFieldValue(std::move(uniqueData));
+                LOG_DEBUG("EVENT RECORD REPEAT VALUE %u", eventRecord->repeat);
+            }
+        }
+
         switch (eventAction) {
         case EventAction::None:
             break;
@@ -93,6 +108,7 @@ namespace gui
         if (rec != nullptr) {
 
             eventRecord = rec->getData();
+            newEditEventModel->setRepeatOptionValue(eventRecord->repeat);
             prevWindowName = rec->getWindowName();
         }
 

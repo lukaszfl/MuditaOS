@@ -4,6 +4,8 @@
 #include <Utils.hpp>
 #include <module-db/Interface/EventsRecord.hpp>
 #include <module-apps/application-calendar/ApplicationCalendar.hpp>
+#include <module-apps/application-calendar/data/CalendarData.hpp>
+#include <module-apps/application-calendar/data/OptionParser.hpp>
 
 namespace gui
 {
@@ -131,7 +133,9 @@ namespace gui
                 optionLabel->setText(optionsNames[actualVectorIndex]);
                 onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
                     if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                        record->repeat = actualVectorIndex;
+                        if (record->repeat < 6) {
+                            record->repeat = actualVectorIndex;
+                        }
                     }
                     else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
                         record->reminder = reminderTimeOptions[actualVectorIndex];
@@ -154,7 +158,9 @@ namespace gui
                 }
                 onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
                     if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                        record->repeat = actualVectorIndex;
+                        if (record->repeat < 6) {
+                            record->repeat = actualVectorIndex;
+                        }
                     }
                     else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
                         record->reminder = reminderTimeOptions[actualVectorIndex];
@@ -164,7 +170,11 @@ namespace gui
             }
             if (event.keyCode == gui::KeyCode::KEY_LF && actualVectorIndex == optionsNames.size() - 1 &&
                 descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                application->switchWindow(style::window::calendar::name::custom_repeat_window);
+                auto parser            = new OptionParser();
+                auto weekDayRepeatData = std::make_unique<WeekDaysRepeatData>();
+                assert(weekDayRepeatData != nullptr);
+                auto weekDayData = parser->setWeekDayOptions(repeatOptionValue, std::move(weekDayRepeatData));
+                application->switchWindow(style::window::calendar::name::custom_repeat_window, std::move(weekDayData));
                 return true;
             }
             return false;
@@ -174,7 +184,13 @@ namespace gui
             auto calendarApp = dynamic_cast<app::ApplicationCalendar *>(application);
             assert(calendarApp != nullptr);
             if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                actualVectorIndex = event->repeat;
+                if (event->repeat < 6) {
+                    actualVectorIndex = event->repeat;
+                }
+                else {
+                    actualVectorIndex = 6;
+                }
+                repeatOptionValue = event->repeat;
                 optionLabel->setText(optionsNames[actualVectorIndex]);
             }
             else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
