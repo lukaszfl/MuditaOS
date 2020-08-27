@@ -35,6 +35,26 @@ class NewEditEventModel : public app::InternalModel<gui::CalendarListItem *>, pu
     gui::ListItem *getItem(gui::Order order) override;
     void requestRecords(const uint32_t offset, const uint32_t limit) override;
 
+    uint32_t getRepeatOptionValue()
+    {
+        if (repeat != nullptr) {
+            return repeat->repeatOptionValue;
+        }
+        else {
+            LOG_ERROR("Repeat option value returned before assigmend!");
+            return 0;
+        }
+    }
+    void setRepeatOptionValue(const uint32_t &value)
+    {
+        if (repeat != nullptr) {
+            repeat->repeatOptionValue = value;
+        }
+        else {
+            LOG_ERROR("Value not assigned. Repeat option item was not ready!");
+        }
+    }
+
   private:
     void createData(bool allDayEvent);
 };

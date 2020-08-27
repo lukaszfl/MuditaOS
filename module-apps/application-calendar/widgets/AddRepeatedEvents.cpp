@@ -59,13 +59,13 @@ void AddRepeatedEvents::addYear(std::shared_ptr<EventsRecord> event)
 }
 void AddRepeatedEvents::addCustom(std::shared_ptr<EventsRecord> event)
 {
-    auto record = event.get();
-    for (uint32_t i = 1; i <= 7; i++) {
-        record->date_from = record->date_from + 10000 * i;
-        record->date_from = record->date_from + 10000 * i;
-        DBServiceAPI::GetQuery(
-            application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
-    }
+    //    auto record = event.get();
+    //    for (uint32_t i = 1; i <= 7; i++) {
+    //        record->date_from = record->date_from + 10000 * i;
+    //        record->date_from = record->date_from + 10000 * i;
+    //        DBServiceAPI::GetQuery(
+    //            application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
+    //    }
 }
 
 void AddRepeatedEvents::addRepeatedEvents(std::shared_ptr<EventsRecord> event)
