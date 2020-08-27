@@ -87,10 +87,6 @@ namespace gui
                                           style::window::calendar::listView_w,
                                           style::window::calendar::listView_h,
                                           dayEventsModel);
-
-        dayEventsList->setPenFocusWidth(style::window::default_border_no_focus_w);
-        dayEventsList->setPenWidth(style::window::default_border_no_focus_w);
-
         setFocusItem(dayEventsList);
     }
 

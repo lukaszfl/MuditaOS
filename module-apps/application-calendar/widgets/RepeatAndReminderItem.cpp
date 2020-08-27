@@ -80,7 +80,12 @@ namespace gui
         repeatTitle->setText(utils::localize.get("app_calendar_event_detail_repeat"));
         reminderTitle->setText(utils::localize.get("app_calendar_event_detail_reminder"));
         onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
-            repeat->setText(utils::localize.get(app->repeatOptions[event->repeat]));
+            if (event->repeat >= app->repeatOptions.size()) {
+                repeat->setText("app_calendar_custom_repeat_title");
+            }
+            else {
+                repeat->setText(utils::localize.get(app->repeatOptions[event->repeat]));
+            }
             reminder->setText(utils::localize.get(app->reminderOptions[event->reminder]));
         };
     }

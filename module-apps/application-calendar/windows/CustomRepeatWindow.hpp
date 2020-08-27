@@ -11,7 +11,7 @@ namespace gui
     {
         gui::ListView *list                                  = nullptr;
         std::shared_ptr<CustomRepeatModel> customRepeatModel = nullptr;
-        std::unique_ptr<WeekDaysRepeatData> weekDaysOptData;
+        std::shared_ptr<WeekDaysRepeatData> weekDaysOptData;
 
       public:
         CustomRepeatWindow(app::Application *app, std::string name);

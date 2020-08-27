@@ -68,10 +68,12 @@ namespace gui
                 startTime->setText(utils::localize.get("app_calendar_all_day"));
             }
             else {
-                if (start_time.length() < 4) {
-                    start_time.insert(0, 4 - start_time.length(), '0');
+                if (start_time.length() < style::window::calendar::max_time_length) {
+                    start_time.insert(0, style::window::calendar::max_time_length - start_time.length(), '0');
                 }
-                std::string text = start_time.substr(0, 2) + ":" + start_time.substr(2, 4);
+                std::string text = start_time.substr(0, style::window::calendar::max_time_length / 2) + ":" +
+                                   start_time.substr(style::window::calendar::max_time_length / 2,
+                                                     style::window::calendar::max_time_length);
                 startTime->setText(text);
             }
         }

@@ -1,6 +1,5 @@
 #include "TextWithLabelItem.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
-#include "windows/AppWindow.hpp"
 #include <Style.hpp>
 
 namespace gui
@@ -14,6 +13,7 @@ namespace gui
         setMinimumSize(style::window::default_body_width, style::window::calendar::item::textWithLabel::height);
         setMargins(gui::Margins(style::margins::small, 0, 0, 0));
         setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
+        bottomBarRestoreFromTemporaryMode();
 
         vBox = new gui::VBox(this, 0, 0, 0, 0);
         vBox->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);

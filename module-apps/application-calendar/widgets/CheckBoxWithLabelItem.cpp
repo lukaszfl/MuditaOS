@@ -86,8 +86,6 @@ namespace gui
             }
             return false;
         };
-
-        onLoadCallback = [&](std::shared_ptr<EventsRecord> event) { checkBox->setImageVisible(false); };
     }
 
     bool CheckBoxWithLabelItem::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim)

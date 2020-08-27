@@ -2,7 +2,6 @@
 #include "application-calendar/ApplicationCalendar.hpp"
 #include "application-calendar/models/MonthModel.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
-#include "application-calendar/models/AllEventsModel.hpp"
 #include "application-calendar/data/CalendarData.hpp"
 #include "NoEvents.hpp"
 #include <module-services/service-db/messages/QueryMessage.hpp>
@@ -56,15 +55,16 @@ namespace gui
             assert(actualMonthBox != nullptr);
 
             uint32_t numb      = cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1;
+            date::year_month_day actualDate = date::year_month_day{
+                date::floor<date::days>(std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime()))};
             std::string number = std::to_string(numb);
             if (!isDayEmpty) {
                 this->dotImage->setVisible(true);
             }
             this->dayNumber->setText(number);
             this->activeItem = true;
-            if (numb == utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) &&
-                (actualMonthBox->monthFilterValue % 100000000) / 1000000 ==
-                    utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month) &&
+            if (numb == unsigned(actualDate.day()) &&
+                (actualMonthBox->monthFilterValue % 100000000) / 1000000 == unsigned(actualDate.month()) &&
                 actualMonthBox->monthFilterValue / 100000000 + 2000 ==
                     utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year)) {
                 this->dayNumber->setFont(style::window::font::mediumbold);
@@ -161,11 +161,11 @@ namespace gui
             };
         }
         else {
-            if (yearUInt / 100000000 + 2000 ==
-                    utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) &&
-                monthUInt / 1000000 == utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month)) {
+            date::year_month_day actualDate = date::year_month_day{
+                date::floor<date::days>(std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime()))};
+            if (actualYear == actualDate.year() && model->getMonth() == actualDate.month()) {
                 focusChangedCallback = [=](Item &item) {
-                    setFocusOnElement(utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) - 1);
+                    setFocusOnElement(unsigned(actualDate.day()) - 1);
                     return true;
                 };
             }
