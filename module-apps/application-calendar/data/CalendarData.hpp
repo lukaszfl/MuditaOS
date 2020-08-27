@@ -36,7 +36,12 @@ class WeekDaysRepeatData : public gui::SwitchData
     bool weekDays[7];
 
   public:
-    WeekDaysRepeatData()          = default;
+    WeekDaysRepeatData()
+    {
+        for (uint32_t i = 0; i < 7; i++) {
+            weekDays[i] = false;
+        }
+    }
     virtual ~WeekDaysRepeatData() = default;
     [[nodiscard]] auto getData(const uint32_t &weekDay) const -> bool
     {
@@ -44,7 +49,12 @@ class WeekDaysRepeatData : public gui::SwitchData
     };
     virtual void setData(const uint32_t &weekDay)
     {
-        weekDays[weekDay] = true;
+        if (weekDays[weekDay]) {
+            weekDays[weekDay] = false;
+        }
+        else {
+            weekDays[weekDay] = true;
+        }
     };
 };
 
