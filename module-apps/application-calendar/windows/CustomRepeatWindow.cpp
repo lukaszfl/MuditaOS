@@ -46,12 +46,12 @@ namespace gui
 
         auto recievedData = dynamic_cast<WeekDaysRepeatData *>(data);
         if (recievedData != nullptr) {
-            weekDaysOptData = std::make_unique<WeekDaysRepeatData>(*recievedData);
+            weekDaysOptData = std::make_shared<WeekDaysRepeatData>(*recievedData);
         }
         else {
-            weekDaysOptData = std::make_unique<WeekDaysRepeatData>();
+            weekDaysOptData = std::make_shared<WeekDaysRepeatData>();
         }
-        customRepeatModel->loadData();
+        customRepeatModel->loadData(weekDaysOptData);
     }
 
     bool CustomRepeatWindow::onInput(const InputEvent &inputEvent)

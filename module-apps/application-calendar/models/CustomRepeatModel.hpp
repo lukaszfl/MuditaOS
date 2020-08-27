@@ -2,7 +2,7 @@
 #include "Application.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include "application-calendar/widgets/CalendarListItem.hpp"
-#include <module-apps/application-calendar/data/CalendarData.hpp>
+#include "module-apps/application-calendar/data/CalendarData.hpp"
 #include "InternalModel.hpp"
 #include <ListItemProvider.hpp>
 
@@ -13,7 +13,7 @@ class CustomRepeatModel : public app::InternalModel<gui::CalendarListItem *>, pu
   public:
     CustomRepeatModel(app::Application *app);
 
-    void loadData();
+    void loadData(const std::shared_ptr<WeekDaysRepeatData> &data);
 
     [[nodiscard]] unsigned int getMinimalItemHeight() const override;
     [[nodiscard]] unsigned int requestRecordsCount() override;
@@ -26,5 +26,5 @@ class CustomRepeatModel : public app::InternalModel<gui::CalendarListItem *>, pu
     }
 
   private:
-    void createData();
+    void createData(const std::shared_ptr<WeekDaysRepeatData> &data);
 };
