@@ -32,7 +32,21 @@ class OptionParser
                 dataDB += (1 << i);
             }
         }
-        LOG_DEBUG("!!!!!!!");
+        return dataDB;
+    }
+
+    uint32_t getNoCustomValue(uint32_t dataDB)
+    {
+        /// Set all bits in custom field to zero
+        /// DataDB input is not modifyed
+        uint32_t startBit        = 16;
+        uint32_t numberOfOptions = 7;
+        for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
+            if (dataDB & (1 << i)) {
+                dataDB -= (1 << i);
+            }
+        }
+        LOG_DEBUG("DATA DB: %u", dataDB);
         return dataDB;
     }
 };

@@ -51,8 +51,8 @@ class EventsTable : public Table<EventsTableRow, EventsTableFields>
                                    "_id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                    "title TEXT,"
                                    "description TEXT,"
-                                   "date_from INTEGER,"
-                                   "date_till INTEGER,"
+                                   "date_from DATETIME,"
+                                   "date_till DATETIME,"
                                    "reminder INTEGER,"
                                    "repeat INTEGER,"
                                    "time_zone INTEGER);";

@@ -40,16 +40,6 @@ namespace gui
 
     void NewEditEventWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
-        if (mode == ShowMode::GUI_SHOW_RETURN) {
-            auto recievedData = dynamic_cast<WeekDaysRepeatData *>(data);
-            if (recievedData != nullptr) {
-                auto parser         = new OptionParser();
-                auto uniqueData     = std::make_unique<WeekDaysRepeatData>(*recievedData);
-                eventRecord->repeat = parser->getDatabaseFieldValue(std::move(uniqueData));
-                newEditEventModel->loadData(eventRecord);
-            }
-        }
-
         switch (eventAction) {
         case EventAction::None:
             break;
@@ -61,9 +51,28 @@ namespace gui
             setTitle(utils::localize.get("app_calendar_edit_event_title"));
             break;
         }
+
         if (mode == ShowMode::GUI_SHOW_INIT) {
+            auto rec = dynamic_cast<EventRecordData *>(data);
+            if (rec != nullptr) {
+                eventRecord = rec->getData();
+                newEditEventModel->setRepeatOptionValue(eventRecord->repeat);
+                prevWindowName = rec->getWindowName();
+            }
             list->rebuildList();
             newEditEventModel->loadData(eventRecord);
+        }
+        if (mode == ShowMode::GUI_SHOW_RETURN) {
+            auto recievedData = dynamic_cast<WeekDaysRepeatData *>(data);
+            if (recievedData != nullptr) {
+                auto parser     = new OptionParser();
+                auto uniqueData = std::make_unique<WeekDaysRepeatData>(*recievedData);
+                //                if(eventRecord->repeat<6){
+                //
+                //                }
+                eventRecord->repeat = eventRecord->repeat + parser->getDatabaseFieldValue(std::move(uniqueData));
+                newEditEventModel->loadData(eventRecord);
+            }
         }
     }
 
@@ -98,13 +107,6 @@ namespace gui
     {
         if (data == nullptr) {
             return false;
-        }
-        auto rec = dynamic_cast<EventRecordData *>(data);
-        if (rec != nullptr) {
-
-            eventRecord = rec->getData();
-            newEditEventModel->setRepeatOptionValue(eventRecord->repeat);
-            prevWindowName = rec->getWindowName();
         }
 
         if (data->getDescription() == "Edit") {
