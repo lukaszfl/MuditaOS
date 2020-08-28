@@ -28,7 +28,6 @@ namespace style
             const inline int month_year_height = 60;
             const inline int week_days_number  = 7;
             const inline int max_weeks_number  = 6;
-            const inline int max_time_length   = 4;
 
             const inline int cross_x    = 48;
             const inline int cross_y    = 55;
