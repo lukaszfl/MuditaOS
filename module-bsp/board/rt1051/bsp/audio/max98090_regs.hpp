@@ -546,6 +546,28 @@ typedef struct
 
 } max98090_reg_rspk_vol_ctrl_t;
 
+// Dynamic Range Control (DRC) Timing Register
+// Check MAX98090 datasheet Table 53 for available configurations
+#define MAX98090_REG_DRC_TIM 0x33
+typedef struct
+{
+    uint8_t drcatk : 3;
+    uint8_t unused : 1;
+    uint8_t drcrls : 3;
+    uint8_t drcen : 1;
+
+} max98090_reg_drc_tim_t;
+
+// Dynamic Range Control (DRC) Compressor Register
+// Check MAX98090 datasheet Table 55 for available configurations
+#define MAX98090_REG_DRC_CMP 0x34
+typedef struct
+{
+    uint8_t drcthc : 5;
+    uint8_t drccmp : 3;
+
+} max98090_reg_drc_cmp_t;
+
 // Receiver and Left Line Output Volume Control Register
 // Check MAX98090 datasheet Table 60 for available configurations
 #define MAX98090_REG_RECV_VOL_CTRL 0x39

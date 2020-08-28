@@ -29,7 +29,7 @@ CodecMAX98090::~CodecMAX98090()
 {
     Reset();
 }
-
+#define HARMAN_PARAMS_ON 1
 CodecRetCode CodecMAX98090::Start(const CodecParams &param)
 {
 
@@ -188,6 +188,93 @@ CodecRetCode CodecMAX98090::Start(const CodecParams &param)
             i2cAddr.subAddress = MAX98090_REG_PLAYBACK_QUICK_SETUP;
             i2c->Write(i2cAddr, (uint8_t *)&q_playback_setup, 1);
 
+#if HARMAN_PARAMS_ON
+            /* set playback input gain to +3dB */
+
+            max98090_reg_playback_gainlevel_conf_t playback_gainlevel = {0};
+            playback_gainlevel.dvg                                    = 0x01;
+            playback_gainlevel.dv                                     = 0x03;
+            i2cAddr.subAddress                                        = MAX98090_REG_PLAYBACK_GAIN_LEVEL_CONF;
+            i2c->Write(i2cAddr, (uint8_t *)&playback_gainlevel, 1);
+
+            // Equalizer
+            qfilter_coefficients_t band1_filter = {0};
+            qfilter_coefficients_t band2_filter = {0};
+            qfilter_coefficients_t band3_filter = {0};
+            qfilter_coefficients_t band4_filter = {0};
+            qfilter_coefficients_t band5_filter = {0};
+
+            /*
+                        qfilter_CalculateCoeffs(FilterHighPass, 700, currentParams.GetSampleRateVal(), 0.7, 3.0,
+               &band1_filter); qfilter_CalculateCoeffs(FilterPeak, 1370, currentParams.GetSampleRateVal(), 1.4, -3.0,
+               &band2_filter); qfilter_CalculateCoeffs(FilterPeak, 3000, currentParams.GetSampleRateVal(), 2.0, -8.0,
+               &band3_filter); qfilter_CalculateCoeffs(FilterLowPass, 4000, currentParams.GetSampleRateVal(), 3.0, -7.0,
+               &band4_filter); qfilter_CalculateCoeffs(FilterFlat, 0, currentParams.GetSampleRateVal(), 1.0, 0.0,
+               &band5_filter);
+            */
+            qfilter_CalculateCoeffs(FilterHighPass, 550, currentParams.GetSampleRateVal(), 0.7, 1.0, &band1_filter);
+            qfilter_CalculateCoeffs(FilterPeak, 700, currentParams.GetSampleRateVal(), 0.7, 3.0, &band2_filter);
+            qfilter_CalculateCoeffs(FilterPeak, 1370, currentParams.GetSampleRateVal(), 1.4, -3.0, &band3_filter);
+            qfilter_CalculateCoeffs(FilterPeak, 3000, currentParams.GetSampleRateVal(), 2.0, -8.0, &band4_filter);
+            qfilter_CalculateCoeffs(FilterPeak, 4000, currentParams.GetSampleRateVal(), 3.0, -7.0, &band5_filter);
+
+            // BAND1
+            WriteFilterCoeff(band1_filter.b0, 0x46);
+            WriteFilterCoeff(band1_filter.b1, 0x49);
+            WriteFilterCoeff(band1_filter.b2, 0x4C);
+            WriteFilterCoeff(band1_filter.a1, 0x4F);
+            WriteFilterCoeff(band1_filter.a2, 0x52);
+
+            // BAND2
+            WriteFilterCoeff(band2_filter.b0, 0x55);
+            WriteFilterCoeff(band2_filter.b1, 0x58);
+            WriteFilterCoeff(band2_filter.b2, 0x5B);
+            WriteFilterCoeff(band2_filter.a1, 0x5E);
+            WriteFilterCoeff(band2_filter.a2, 0x61);
+
+            // BAND3
+            WriteFilterCoeff(band3_filter.b0, 0x64);
+            WriteFilterCoeff(band3_filter.b1, 0x67);
+            WriteFilterCoeff(band3_filter.b2, 0x6A);
+            WriteFilterCoeff(band3_filter.a1, 0x6D);
+            WriteFilterCoeff(band3_filter.a2, 0x70);
+
+            // BAND4
+            WriteFilterCoeff(band4_filter.b0, 0x73);
+            WriteFilterCoeff(band4_filter.b1, 0x76);
+            WriteFilterCoeff(band4_filter.b2, 0x79);
+            WriteFilterCoeff(band4_filter.a1, 0x7C);
+            WriteFilterCoeff(band4_filter.a2, 0x7F);
+
+            // BAND5
+            WriteFilterCoeff(band5_filter.b0, 0x82);
+            WriteFilterCoeff(band5_filter.b1, 0x85);
+            WriteFilterCoeff(band5_filter.b2, 0x88);
+            WriteFilterCoeff(band5_filter.a1, 0x8B);
+            WriteFilterCoeff(band5_filter.a2, 0x8E);
+
+            // Enable 5-band filter
+            max98090_reg_dsp_biquadfilter_enable_t filter = {0};
+            filter.eq5banden                              = 1;
+            i2cAddr.subAddress                            = MAX98090_REG_DSP_BIQUAD_FILTER_ENABLE;
+            i2c->Write(i2cAddr, (uint8_t *)&filter, 1);
+
+            // Dynamic Range Control
+            max98090_reg_drc_cmp_t drccmp = {0};
+            drccmp.drcthc                 = 0x11; //-17dB
+            drccmp.drccmp                 = 0x04; // INF:1
+            i2cAddr.subAddress            = MAX98090_REG_DRC_CMP;
+            i2c->Write(i2cAddr, (uint8_t *)&drccmp, 1);
+
+            max98090_reg_drc_tim_t drctim = {0};
+            drctim.drcatk                 = 0x05; // 12.5 ms
+            drctim.drcrls                 = 0x06; // 125 ms
+            drctim.drcen                  = 0x01; // enable
+
+            i2cAddr.subAddress = MAX98090_REG_DRC_TIM;
+            i2c->Write(i2cAddr, (uint8_t *)&drctim, 1);
+
+#else
             qfilter_coefficients_t band1_filter = {0};
             qfilter_coefficients_t band2_filter = {0};
             qfilter_coefficients_t band3_filter = {0};
@@ -223,7 +310,7 @@ CodecRetCode CodecMAX98090::Start(const CodecParams &param)
             filter.eq3banden                              = 1;
             i2cAddr.subAddress                            = MAX98090_REG_DSP_BIQUAD_FILTER_ENABLE;
             i2c->Write(i2cAddr, (uint8_t *)&filter, 1);
-
+#endif
         } break;
 
         default:
@@ -293,9 +380,19 @@ CodecRetCode CodecMAX98090::Start(const CodecParams &param)
         }
 
         // Turn on DC blocking filters
+#if HARMAN_PARAMS_ON
+        max98090_reg_playback_dspfilter_conf_t dspfilter = {0};
+        dspfilter.ahpf                                   = 0x01;
+        dspfilter.dhpf                                   = 0x01;
+        dspfilter.mode                                   = 0x00;
+        dspfilter.dhf                                    = 0x00;
+        i2cAddr.subAddress                               = MAX98090_REG_PLAYBACK_DSP_FILTER_CONF;
+        i2c->Write(i2cAddr, (uint8_t *)&dspfilter, 1);
+#else
         uint8_t mask       = (1 << 6) | (1 << 5); // set 6th and 7th bit (AHPF and DHPF)
         i2cAddr.subAddress = MAX98090_REG_PLAYBACK_DSP_FILTER_CONF;
         i2c->Modify(i2cAddr, mask, true, 1);
+#endif
     }
 
     // Store param configuration
