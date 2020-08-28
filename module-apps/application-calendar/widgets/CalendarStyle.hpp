@@ -26,7 +26,6 @@ namespace style
             const inline int month_year_height = 60;
             const inline int week_days_number  = 7;
             const inline int max_weeks_number  = 6;
-            const inline int max_time_length   = 4;
 
             const inline int cross_x    = 48;
             const inline int cross_y    = 55;
@@ -46,6 +45,14 @@ namespace style
                 const inline std::string date_text_2 = "February 2019";
                 const inline std::string date_text_3 = "March 2019";
             } // namespace test
+
+            namespace time
+            {
+                const inline int max_time_length   = 2;
+                const inline int max_hour_24H_mode = 23;
+                const inline int max_hour_12H_mode = 12;
+                const inline int max_minutes       = 59;
+            } // namespace time
 
             namespace item
             {
