@@ -64,12 +64,11 @@ namespace gui
 
         eventRecord = item->getData();
         prevWindowName         = item->getWindowName();
-        uint32_t start_time    = this->eventRecord->date_from % 10000;
-        uint32_t month_and_day = (this->eventRecord->date_from % 100000000 - start_time) / 10000;
-        auto dayUInt           = static_cast<unsigned>(month_and_day % 100);
-        std::string monthStr =
-            utils::time::Locale::get_month(utils::time::Locale::Month(((month_and_day - dayUInt) / 100) - 1));
-        setTitle(std::to_string(dayUInt) + " " + monthStr);
+        std::chrono::system_clock::time_point start_tp =
+            std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime() + 7200);
+        auto startDate       = date::year_month_day{date::floor<date::days>(start_tp)};
+        std::string monthStr = utils::time::Locale::get_month(utils::time::Locale::Month(unsigned(startDate.month())));
+        setTitle(std::to_string(unsigned(startDate.day())) + " " + monthStr);
 
         return true;
     }

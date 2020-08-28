@@ -8,9 +8,6 @@ namespace gui
 {
     namespace timeConstants
     {
-        const inline int max_hour_24H_mode   = 23;
-        const inline int max_hour_12H_mode   = 12;
-        const inline int max_minutes         = 59;
         const inline std::string before_noon = "AM";
         const inline std::string after_noon  = "PM";
     } // namespace timeConstants

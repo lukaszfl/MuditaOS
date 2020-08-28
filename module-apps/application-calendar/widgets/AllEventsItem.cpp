@@ -3,6 +3,7 @@
 #include <Style.hpp>
 #include <gui/widgets/Label.hpp>
 #include <time/time_conversion.hpp>
+#include <module-utils/date/include/date/date.h>
 
 namespace gui
 {
@@ -50,12 +51,12 @@ namespace gui
 
     UTF8 AllEventsItem::getLabelMarker() const
     {
-        uint32_t start_time    = this->record->date_from % 10000;
-        uint32_t month_and_day = (this->record->date_from % 100000000 - start_time) / 10000;
-        unsigned int dayUInt   = static_cast<unsigned>(month_and_day % 100);
-        std::string monthStr =
-            utils::time::Locale::get_month(utils::time::Locale::Month(((month_and_day - dayUInt) / 100) - 1));
-        return std::to_string(dayUInt) + " " + monthStr;
+        std::chrono::system_clock::time_point start_tp =
+            std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime() + 7200);
+        auto startDate = date::year_month_day{date::floor<date::days>(start_tp)};
+
+        std::string monthStr = utils::time::Locale::get_month(utils::time::Locale::Month(unsigned(startDate.month())));
+        return std::to_string(unsigned(startDate.day())) + " " + monthStr;
     }
 
     void AllEventsItem::setEvent(std::shared_ptr<EventsRecord> rec)
@@ -63,18 +64,31 @@ namespace gui
         this->record = rec;
         if (rec != nullptr) {
             description->setText(this->record->title.c_str());
-            std::string start_time = std::to_string(this->record->date_from % 10000);
-            if (this->record->date_from % 10000 == 0 && this->record->date_till % 10000 == 2359) {
+
+            std::chrono::system_clock::time_point start_tp =
+                std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime() + 7200);
+            auto start_time = date::make_time(
+                std::chrono::duration_cast<std::chrono::minutes>(start_tp - date::floor<date::days>(start_tp)));
+            std::chrono::system_clock::time_point end_tp =
+                std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime() + 10800);
+            auto end_time = date::make_time(
+                std::chrono::duration_cast<std::chrono::minutes>(end_tp - date::floor<date::days>(end_tp)));
+
+            if (start_time.hours().count() == 0 && start_time.minutes().count() == 0 &&
+                end_time.hours().count() == style::window::calendar::time::max_hour_24H_mode &&
+                end_time.minutes().count() == style::window::calendar::time::max_minutes) {
                 startTime->setText(utils::localize.get("app_calendar_all_day"));
             }
             else {
-                if (start_time.length() < style::window::calendar::max_time_length) {
-                    start_time.insert(0, style::window::calendar::max_time_length - start_time.length(), '0');
+                auto start_h   = std::to_string(start_time.hours().count());
+                auto start_min = std::to_string(start_time.minutes().count());
+                if (start_h.length() < style::window::calendar::time::max_time_length) {
+                    start_h.insert(0, style::window::calendar::time::max_time_length / 2, '0');
                 }
-                std::string text = start_time.substr(0, style::window::calendar::max_time_length / 2) + ":" +
-                                   start_time.substr(style::window::calendar::max_time_length / 2,
-                                                     style::window::calendar::max_time_length);
-                startTime->setText(text);
+                if (start_min.length() < style::window::calendar::time::max_time_length) {
+                    start_min.insert(0, style::window::calendar::time::max_time_length / 2, '0');
+                }
+                startTime->setText(start_h + ":" + start_min);
             }
         }
     }
