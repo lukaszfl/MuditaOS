@@ -68,10 +68,11 @@ void BluetoothCommon::close()
 {
     LOG_INFO("close!");
     // TODO destroy semaphore
-    set_rts(false);
-    set_irq(false);
+    // set_rts(false);
+    // set_irq(false);
     is_open = false;
-    set_reset(false);
+    // set_reset(false);
+    LPUART_Deinit(BSP_BLUETOOTH_UART_BASE);
 }
 
 void BluetoothCommon::sleep_ms(ssize_t ms)
@@ -189,11 +190,11 @@ void BluetoothCommon::configure_uart_io()
     gpio_init_structure.direction     = kGPIO_DigitalOutput;
     gpio_init_structure.interruptMode = kGPIO_IntRisingOrFallingEdge;
     gpio_init_structure.outputLogic   = 1;
-    GPIO_PinInit(BSP_BLUETOOTH_UART_RTS_PORT, BSP_BLUETOOTH_UART_RTS_PIN, &gpio_init_structure);
+    //GPIO_PinInit(BSP_BLUETOOTH_UART_RTS_PORT, BSP_BLUETOOTH_UART_RTS_PIN, &gpio_init_structure);
     gpio_init_structure.direction     = kGPIO_DigitalInput;
     gpio_init_structure.interruptMode = kGPIO_IntRisingOrFallingEdge;
     gpio_init_structure.outputLogic   = 0;
-    GPIO_PinInit(BSP_BLUETOOTH_UART_CTS_PORT, BSP_BLUETOOTH_UART_CTS_PIN, &gpio_init_structure);
+    //GPIO_PinInit(BSP_BLUETOOTH_UART_CTS_PORT, BSP_BLUETOOTH_UART_CTS_PIN, &gpio_init_structure);
     gpio_init_structure.direction     = kGPIO_DigitalOutput;
     gpio_init_structure.interruptMode = kGPIO_NoIntmode;
     GPIO_PinInit(BSP_BLUETOOTH_OSC_EN_PORT, BSP_BLUETOOTH_OSC_EN_PIN, &gpio_init_structure);
