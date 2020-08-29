@@ -15,8 +15,7 @@ namespace gui
     class DayEventsWindow : public gui::AppWindow
     {
         std::string dayMonthTitle;
-        uint32_t filterFrom;
-        uint32_t filterTill;
+        std::string filterFrom;
         gui::Image *leftArrowImage                               = nullptr;
         gui::Image *newDayEventImage                             = nullptr;
         gui::ListView *dayEventsList                             = nullptr;

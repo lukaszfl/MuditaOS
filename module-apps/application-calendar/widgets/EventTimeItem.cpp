@@ -157,12 +157,14 @@ namespace gui
             }
             if (this->descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_end")) {
 
-                record->date_till = record->date_till - record->date_till % 10000;
-                record->date_till = record->date_till + hour * 100 + atoi(minuteInput->getText().c_str());
+                //                record->date_till = record->date_till - record->date_till % 10000;
+                //                record->date_till = record->date_till + hour * 100 +
+                //                atoi(minuteInput->getText().c_str());
             }
             else if (this->descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_start")) {
-                record->date_from = record->date_from - record->date_from % 10000;
-                record->date_from = record->date_from + hour * 100 + atoi(minuteInput->getText().c_str());
+                //                record->date_from = record->date_from - record->date_from % 10000;
+                //                record->date_from = record->date_from + hour * 100 +
+                //                atoi(minuteInput->getText().c_str());
             }
         };
 

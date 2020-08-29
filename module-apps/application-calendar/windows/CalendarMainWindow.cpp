@@ -75,7 +75,10 @@ namespace gui
             this->activatedCallback = [=](gui::Item &item) {
                 auto data           = std::make_unique<DayMonthData>();
                 auto month          = actualMonthBox->month;
-                auto filter         = actualMonthBox->monthFilterValue + numb * 10000;
+                // auto filter         = actualMonthBox->monthFilterValue + numb * 10000;
+                auto datefilter = actualDate.year() / actualDate.month() / date::day(numb);
+                auto monthModel = new MonthModel();
+                auto filter     = monthModel->parseDateToDB(datefilter);
                 data->setData(number + " " + month, filter);
                 if (isDayEmpty) {
                     auto application = dynamic_cast<app::ApplicationCalendar *>(app);
@@ -350,17 +353,16 @@ namespace gui
 
     void CalendarMainWindow::filterRequest()
     {
-        monthModel             = std::make_unique<MonthModel>(actualDate);
-        date::year actualYear  = monthModel->getYear();
-        int yearInt            = static_cast<decltype(yearInt)>(actualYear) - 2000;
-        uint32_t yearUInt      = yearInt * 100000000;
-        unsigned int monthUInt = static_cast<unsigned>(monthModel->getMonth()) * 1000000;
-        auto filter            = yearUInt + monthUInt;
-        LOG_DEBUG("filter:  %i", filter);
+        //        monthModel             = std::make_unique<MonthModel>(actualDate);
+        //        date::year actualYear  = monthModel->getYear();
+        //        int yearInt            = static_cast<decltype(yearInt)>(actualYear) - 2000;
+        //        uint32_t yearUInt      = yearInt * 100000000;
+        //        unsigned int monthUInt = static_cast<unsigned>(monthModel->getMonth()) * 1000000;
+        //        auto filter            = yearUInt + monthUInt;
+        auto filter = monthModel->parseDateToDB(actualDate);
+        LOG_DEBUG("filter:  %s", filter.c_str());
         DBServiceAPI::GetQuery(
-            application,
-            db::Interface::Name::Events,
-            std::make_unique<db::query::events::GetFiltered>(filter, filter + monthModel->getLastDay() * 10000 + 2359));
+            application, db::Interface::Name::Events, std::make_unique<db::query::events::GetFiltered>(filter));
     }
 
     bool CalendarMainWindow::onDatabaseMessage(sys::Message *msgl)
@@ -372,7 +374,9 @@ namespace gui
             if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(temp.get())) {
                 unique_ptr<vector<EventsRecord>> records = response->getResult();
                 for (auto &rec : *records) {
-                    isDayEmpty[((rec.date_from % 1000000 - rec.date_from % 10000) / 10000) - 1] = false;
+                    date::year_month_day recordDate = monthModel->parseDateFromDB(rec.date_from);
+                    uint32_t dayNumb                = static_cast<uint32_t>(recordDate.day());
+                    isDayEmpty[dayNumb]             = false;
                 }
                 refresh();
                 return true;
@@ -385,11 +389,7 @@ namespace gui
                 else {
                     auto appCalendar = dynamic_cast<app::ApplicationCalendar *>(application);
                     assert(appCalendar != nullptr);
-                    auto filter =
-                        (utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) - 2000) *
-                            100000000 +
-                        utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month) * 1000000 +
-                        utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) * 10000;
+                    auto filter = monthModel->parseDateToDB(actualDate);
                     appCalendar->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main"),
                                                         filter,
                                                         style::window::calendar::name::all_events_window);

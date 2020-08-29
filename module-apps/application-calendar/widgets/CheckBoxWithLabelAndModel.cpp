@@ -52,12 +52,14 @@ namespace gui
         };
 
         onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
-            checkBox->setImageVisible(event->date_from % 10000 == 0 && event->date_till % 10000 == 2359);
+            /// TODO: !!!!
+            // checkBox->setImageVisible(event->date_from % 10000 == 0 && event->date_till % 10000 == 2359);
         };
         onSaveCallback = [&](std::shared_ptr<EventsRecord> event) {
             if (checkBox->isChecked()) {
-                event->date_from = event->date_from - event->date_from % 10000;
-                event->date_till = event->date_till - event->date_till % 10000 + 2359;
+                /// TODO: !!!!
+                //                event->date_from = event->date_from - event->date_from % 10000;
+                //                event->date_till = event->date_till - event->date_till % 10000 + 2359;
             }
         };
     }

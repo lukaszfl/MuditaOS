@@ -85,12 +85,10 @@ namespace gui
             std::unique_ptr<EventRecordData> data = std::make_unique<EventRecordData>();
             data->setDescription("New");
             auto rec = new EventsRecord();
-            auto filter =
-                (utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) - 2000) * 100000000 +
-                utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month) * 1000000 +
-                utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) * 10000;
+            /// MOCK: TODO:
+            auto filter    = "2020-10-20 00:00";
             rec->date_from = filter;
-            rec->date_till = filter + 2359;
+            rec->date_till = "2020-10-20 23:59";
             auto event     = std::make_shared<EventsRecord>(*rec);
             data->setData(event);
             data->setWindowName(style::window::calendar::name::all_events_window);
@@ -121,11 +119,8 @@ namespace gui
                     if (records->size() == 0) {
                         auto app = dynamic_cast<app::ApplicationCalendar *>(application);
                         assert(application != nullptr);
-                        auto filter =
-                            (utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Year) - 2000) *
-                                100000000 +
-                            utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Month) * 1000000 +
-                            utils::time::Time().get_date_time_sub_value(utils::time::GetParameters::Day) * 10000;
+                        /// MOCK: TODO:
+                        auto filter = "2020-10-20 19:45";
                         app->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main"),
                                                     filter,
                                                     style::window::calendar::name::all_events_window);
