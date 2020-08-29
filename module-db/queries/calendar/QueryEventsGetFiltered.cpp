@@ -2,8 +2,7 @@
 
 namespace db::query::events
 {
-    GetFiltered::GetFiltered(const uint32_t &date_from, const uint32_t &date_till)
-        : Query(Query::Type::Read), date_from(date_from), date_till(date_till)
+    GetFiltered::GetFiltered(std::string date_filter) : Query(Query::Type::Read), date_filter(date_filter)
     {}
 
     auto GetFiltered::debugInfo() const -> std::string

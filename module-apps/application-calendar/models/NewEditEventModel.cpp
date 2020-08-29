@@ -9,6 +9,7 @@
 #include <module-db/queries/calendar/QueryEventsAdd.hpp>
 #include <module-db/queries/calendar/QueryEventsEdit.hpp>
 #include <module-apps/application-calendar/data/CalendarData.hpp>
+#include "application-calendar/models/MonthModel.hpp"
 
 NewEditEventModel::NewEditEventModel(app::Application *app, bool mode24H) : application(app), mode24H(mode24H)
 {}
@@ -93,7 +94,13 @@ void NewEditEventModel::loadData(std::shared_ptr<EventsRecord> record)
 {
     list->clear();
     eraseInternalData();
-    auto isAllDayEvent = [&]() -> bool { return record->date_from % 10000 == 0 && record->date_till % 10000 == 2359; };
+    /// TODO: MOCK To przeliczenie w sumie nie jest zle (moze warto z tego skorzystac i napisac na tej podstawie parser
+    /// dla godzin i minut
+    auto hourMinuteFrom =
+        std::atoi(record->date_from.substr(12, 2).c_str()) * 1000 + std::atoi(record->date_from.substr(16, 2).c_str());
+    auto hourMinuteTill =
+        std::atoi(record->date_till.substr(12, 2).c_str()) * 1000 + std::atoi(record->date_till.substr(16, 2).c_str());
+    auto isAllDayEvent = [&]() -> bool { return hourMinuteFrom == 0 && hourMinuteTill == 2359; };
 
     createData(isAllDayEvent());
 
@@ -144,9 +151,8 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
     if (edit) {
         auto record = event.get();
         if (record->title != "") {
-            DBServiceAPI::GetQuery(application,
-                                   db::Interface::Name::Events,
-                                   std::make_unique<db::query::events::Edit>(*record, record->date_from));
+            DBServiceAPI::GetQuery(
+                application, db::Interface::Name::Events, std::make_unique<db::query::events::Edit>(*record));
             if (event->repeat) {
                 auto repeatObject = new AddRepeatedEvents(application);
                 repeatObject->addRepeatedEvents(std::move(event));
@@ -165,18 +171,20 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
             }
             if (application->getPrevWindow() == style::window::calendar::name::no_events_window) {
                 // TODO: Create method in month model to convert filter to date time
-                auto data         = std::make_unique<DayMonthData>();
-                auto filter       = record->date_from - record->date_from % 10000;
-                uint32_t yearInt  = record->date_from - record->date_from % 100000000;
-                auto year         = date::year((yearInt + 2000) / 100000000);
-                uint32_t monthInt = record->date_from - record->date_from % 1000000 - yearInt;
-                auto month        = date::month(monthInt / 1000000);
-                auto dayInt       = (filter - yearInt - monthInt) / 10000;
-                auto day          = date::day(dayInt);
-                auto monthModel   = std::make_unique<MonthModel>(year / month / day);
-                auto monthTxt     = monthModel->getMonthText();
-                auto dayTxt       = std::to_string(dayInt);
-                data->setData(monthTxt + " " + dayTxt, filter);
+                auto data = std::make_unique<DayMonthData>();
+                //                auto filter       = record->date_from - record->date_from % 10000;
+                //                uint32_t yearInt  = record->date_from - record->date_from % 100000000;
+                //                auto year         = date::year((yearInt + 2000) / 100000000);
+                //                uint32_t monthInt = record->date_from - record->date_from % 1000000 - yearInt;
+                //                auto month        = date::month(monthInt / 1000000);
+                //                auto dayInt       = (filter - yearInt - monthInt) / 10000;
+                //                auto day          = date::day(dayInt);
+                //                auto monthModel   = std::make_unique<MonthModel>(year / month / day);
+                //                auto monthTxt     = monthModel->getMonthText();
+                //                auto dayTxt       = std::to_string(dayInt);
+                ////TODO: MOCK
+
+                data->setData(record->date_from.substr(6, 2) + " " + record->date_from.substr(9, 2), record->date_from);
 
                 application->switchWindow(gui::name::window::main_window);
                 application->switchWindow(windowName, std::move(data));

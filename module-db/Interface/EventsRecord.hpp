@@ -30,16 +30,10 @@ namespace db::query::events
 struct EventsRecord : public Record
 {
     std::string title;
-    std::string description;
-    // date and time when event will begin
-    uint32_t date_from = 0;
-    // date and time when event will end
-    uint32_t date_till = 0;
-    // date and time of the event reminder
+    std::string date_from;
+    std::string date_till;
     uint32_t reminder = 0;
-    // repeat the event daily
     uint32_t repeat    = 0;
-    uint32_t time_zone = 0;
 
     EventsRecord()  = default;
     ~EventsRecord() = default;
@@ -62,10 +56,10 @@ class EventsRecordInterface : public RecordInterface<EventsRecord, EventsRecordF
     bool Add(const EventsRecord &rec) override final;
     bool RemoveByID(uint32_t id) override final;
     bool RemoveByField(EventsRecordField field, const char *str) override final;
-    bool Update(const EventsRecord &rec, const uint32_t &dateFromCheckVal);
+    bool Update(const EventsRecord &rec);
     EventsRecord GetByID(uint32_t id) override final;
     uint32_t GetCount() override final;
-    std::unique_ptr<std::vector<EventsRecord>> Select(uint32_t from, uint32_t till);
+    std::unique_ptr<std::vector<EventsRecord>> Select(std::string date_filter);
     std::unique_ptr<std::vector<EventsRecord>> GetLimitOffset(uint32_t offset, uint32_t limit) override final;
     std::unique_ptr<std::vector<EventsRecord>> GetLimitOffsetByField(uint32_t offset,
                                                                      uint32_t limit,

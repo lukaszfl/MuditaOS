@@ -62,7 +62,7 @@ class DayMonthData : public gui::SwitchData
 {
   protected:
     std::string dayMonth;
-    uint32_t dateFilter;
+    std::string dateFilter;
 
   public:
     DayMonthData()          = default;
@@ -72,12 +72,12 @@ class DayMonthData : public gui::SwitchData
         return dayMonth;
     };
 
-    uint32_t getDateFilter()
+    std::string getDateFilter()
     {
         return dateFilter;
     };
 
-    virtual void setData(std::string dayMonthText, const uint32_t &dateNumb)
+    virtual void setData(std::string dayMonthText, const std::string &dateNumb)
     {
         dayMonth   = dayMonthText;
         dateFilter = dateNumb;

@@ -104,7 +104,7 @@ namespace app
     {}
 
     void ApplicationCalendar::switchToNoEventsWindow(const std::string &title,
-                                                     const uint32_t &dateFilter,
+                                                     const std::string &dateFilter,
                                                      const std::string &goBackWindow)
     {
         auto dialog = dynamic_cast<gui::NoEvents *>(getWindow(style::window::calendar::name::no_events_window));

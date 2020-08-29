@@ -37,7 +37,7 @@ namespace app
         void createUserInterface() override;
         void destroyUserInterface() override;
         void switchToNoEventsWindow(const std::string &title,
-                                    const uint32_t &dateFilter,
+                                    const std::string &dateFilter,
                                     const std::string &goBackWindow);
         void applyRepeatAndReminderMap();
 
