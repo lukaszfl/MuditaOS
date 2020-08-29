@@ -30,9 +30,8 @@ namespace gui
     }
     void DayEventsWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
-        DBServiceAPI::GetQuery(application,
-                               db::Interface::Name::Events,
-                               std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill));
+        DBServiceAPI::GetQuery(
+            application, db::Interface::Name::Events, std::make_unique<db::query::events::GetFiltered>(filterFrom));
         setTitle(dayMonthTitle);
         auto dataRecieved = dynamic_cast<PrevWindowData *>(data);
         if (dataRecieved != nullptr) {
@@ -55,9 +54,7 @@ namespace gui
 
         dayMonthTitle = item->getDayMonthText();
         filterFrom    = item->getDateFilter();
-        filterTill    = item->getDateFilter() + 2359;
-        LOG_DEBUG("FILTER 1: %d", filterFrom);
-        LOG_DEBUG("FILTER 2: %d", filterTill);
+        LOG_DEBUG("FILTER 1: %s", filterFrom.c_str());
         setTitle(dayMonthTitle);
         if (dayMonthTitle == "") {
             return false;
@@ -106,7 +103,6 @@ namespace gui
             data->setDescription("New");
             auto rec       = new EventsRecord();
             rec->date_from = filterFrom;
-            rec->date_till = filterTill;
             auto event     = std::make_shared<EventsRecord>(*rec);
             data->setData(event);
             data->setWindowName(style::window::calendar::name::day_events_window);

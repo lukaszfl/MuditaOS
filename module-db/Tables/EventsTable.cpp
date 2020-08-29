@@ -22,14 +22,236 @@ bool EventsTable::add(EventsTableRow entry)
 {
     return db->execute(
         "INSERT or IGNORE INTO events (title, description, date_from, date_till, reminder, repeat, time_zone) "
-        "VALUES ('%q','%q', %lu, %lu, %lu, %lu, %lu);",
+        "VALUES ('%q', '%q','%q', %lu, %lu);",
         entry.title.c_str(),
-        entry.description.c_str(),
-        entry.date_from,
-        entry.date_till,
+        entry.date_from.c_str(),
+        entry.date_till.c_str(),
         entry.reminder,
-        entry.repeat,
-        entry.time_zone);
+        entry.repeat);
+}
+
+bool EventsTable::addDaily(EventsTableRow entry)
+{
+    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
+                       "('Repeated event', datetime('%q',('+1 day')),datetime('%q',('+1 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+2 day')),datetime('%q',('+2 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+3 day')),datetime('%q',('+3 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+4 day')),datetime('%q',('+4 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+5 day')),datetime('%q',('+5 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+6 day')),datetime('%q',('+6 day'), %u, %u);",
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat);
+}
+
+bool EventsTable::addWeekly(EventsTableRow entry)
+{
+    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
+                       "('Repeated event', datetime('%q',('+7 week')),datetime('%q',('+7 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+14 week')),datetime('%q',('+14 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+21 week')),datetime('%q',('+21 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+28 week')),datetime('%q',('+28 day'), %u, %u);",
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat);
+}
+
+bool EventsTable::addTwoWeeks(EventsTableRow entry)
+{
+    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
+                       "('Repeated event', datetime('%q',('+14 day')),datetime('%q',('+14 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+28 day')),datetime('%q',('+28 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+42 day')),datetime('%q',('+42 day'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+56 day')),datetime('%q',('+56 day'), %u, %u);",
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat);
+}
+
+bool EventsTable::addMonth(EventsTableRow entry)
+{
+    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
+                       "('Repeated event', datetime('%q',('+1 month')),datetime('%q',('+1 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+2 month')),datetime('%q',('+2 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+3 month')),datetime('%q',('+3 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+4 month')),datetime('%q',('+4 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+5 month')),datetime('%q',('+5 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+6 month')),datetime('%q',('+6 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+7 month')),datetime('%q',('+7 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+8 month')),datetime('%q',('+8 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+9 month')),datetime('%q',('+9 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+10 month')),datetime('%q',('+10 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+11 month')),datetime('%q',('+11 month'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+12 month')),datetime('%q',('+12 month'), %u, %u);",
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat);
+}
+
+bool EventsTable::addYear(EventsTableRow entry)
+{
+    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
+                       "('Repeated event', datetime('%q',('+1 year')),datetime('%q',('+1 year'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+2 year')),datetime('%q',('+2 year'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+3 year')),datetime('%q',('+3 year'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+4 year')),datetime('%q',('+4 year'), %u, %u),"
+                       "('Repeated event', datetime('%q',('+5 year')),datetime('%q',('+5 year'), %u, %u);",
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       entry.date_till.c_str(),
+                       entry.reminder,
+                       entry.repeat);
+}
+
+bool EventsTable::addCustom(EventsTableRow entry, int weekDayOffset)
+{
+    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
+                       "('Repeated event', datetime('%q',('%i day')),datetime('%q',('%i day'), %u, %u);",
+                       entry.title.c_str(),
+                       entry.date_from.c_str(),
+                       weekDayOffset,
+                       entry.date_till.c_str(),
+                       weekDayOffset,
+                       entry.reminder,
+                       entry.repeat);
 }
 
 bool EventsTable::removeById(uint32_t id)
@@ -57,16 +279,15 @@ bool EventsTable::removeByField(EventsTableFields field, const char *str)
 
 bool EventsTable::update(EventsTableRow entry)
 {
-    return db->execute("UPDATE events SET title= '%q', description = '%q', date_from = %u, date_till = %u, reminder "
-                       "= %u, repeat = %u, time_zone = %u WHERE _id = %u;",
-                       entry.title.c_str(),
-                       entry.description.c_str(),
-                       entry.date_from,
-                       entry.date_till,
-                       entry.reminder,
-                       entry.repeat,
-                       entry.time_zone,
-                       entry.ID);
+    return db->execute(
+        "UPDATE events SET title= '%q', description = '%q', date_from = '%q', date_till = '%q', reminder "
+        "= %u, repeat = %u WHERE _id = %u;",
+        entry.title.c_str(),
+        entry.date_from.c_str(),
+        entry.date_till.c_str(),
+        entry.reminder,
+        entry.repeat,
+        entry.ID);
 }
 
 EventsTableRow EventsTable::getById(uint32_t id)
@@ -82,19 +303,20 @@ EventsTableRow EventsTable::getById(uint32_t id)
     return EventsTableRow{
         (*retQuery)[0].getUInt32(), // ID
         (*retQuery)[1].getString(), // title
-        (*retQuery)[2].getString(), // description
-        (*retQuery)[3].getUInt32(), // date_from
-        (*retQuery)[4].getUInt32(), // date_till
+        (*retQuery)[3].getString(), // date_from
+        (*retQuery)[4].getString(), // date_till
         (*retQuery)[5].getUInt32(), // reminder
-        (*retQuery)[6].getUInt32(), // repeat
-        (*retQuery)[7].getUInt32()  // time_zone
+        (*retQuery)[6].getUInt32()  // repeat
 
     };
 }
 
-std::vector<EventsTableRow> EventsTable::selectByDatePeriod(uint32_t date_from, uint32_t date_till)
+std::vector<EventsTableRow> EventsTable::selectByDatePeriod(std::string date_filter)
 {
-    auto retQuery = db->query("SELECT * FROM events WHERE date_from >= %u AND date_till <= %u;", date_from, date_till);
+    /// TODO: Rework unit tests
+    auto retQuery = db->query("SELECT * FROM events WHERE date_till > date('%q') AND date_till < date('%q','+1 day');",
+                              date_filter.c_str(),
+                              date_filter.c_str());
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return std::vector<EventsTableRow>();
@@ -106,12 +328,10 @@ std::vector<EventsTableRow> EventsTable::selectByDatePeriod(uint32_t date_from, 
         ret.push_back(EventsTableRow{
             (*retQuery)[0].getUInt32(), // ID
             (*retQuery)[1].getString(), // title
-            (*retQuery)[2].getString(), // description
-            (*retQuery)[3].getUInt32(), // date_from
-            (*retQuery)[4].getUInt32(), // date_till
+            (*retQuery)[3].getString(), // date_from
+            (*retQuery)[4].getString(), // date_till
             (*retQuery)[5].getUInt32(), // reminder
-            (*retQuery)[6].getUInt32(), // repeat
-            (*retQuery)[7].getUInt32()  // time_zone
+            (*retQuery)[6].getUInt32()  // repeat
         });
 
     } while (retQuery->nextRow());
@@ -134,12 +354,11 @@ std::vector<EventsTableRow> EventsTable::getLimitOffset(uint32_t offset, uint32_
         ret.push_back(EventsTableRow{
             (*retQuery)[0].getUInt32(), // ID
             (*retQuery)[1].getString(), // title
-            (*retQuery)[2].getString(), // description
-            (*retQuery)[3].getUInt32(), // date_from
-            (*retQuery)[4].getUInt32(), // date_till
+            (*retQuery)[3].getString(), // date_from
+            (*retQuery)[4].getString(), // date_till
             (*retQuery)[5].getUInt32(), // reminder
-            (*retQuery)[6].getUInt32(), // repeat
-            (*retQuery)[7].getUInt32()  // time_zone
+            (*retQuery)[6].getUInt32()  // repeat
+
         });
     } while (retQuery->nextRow());
 
@@ -149,7 +368,7 @@ std::vector<EventsTableRow> EventsTable::getLimitOffset(uint32_t offset, uint32_
 std::vector<EventsTableRow> EventsTable::getLimitOffsetByDate(uint32_t offset, uint32_t limit)
 {
 
-    auto retQuery = db->query("SELECT * from events ORDER BY date_from LIMIT %u OFFSET %u;", limit, offset);
+    auto retQuery = db->query("SELECT * from events ORDER BY datetime(date_from) LIMIT %u OFFSET %u;", limit, offset);
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return std::vector<EventsTableRow>();
@@ -161,12 +380,10 @@ std::vector<EventsTableRow> EventsTable::getLimitOffsetByDate(uint32_t offset, u
         ret.push_back(EventsTableRow{
             (*retQuery)[0].getUInt32(), // ID
             (*retQuery)[1].getString(), // title
-            (*retQuery)[2].getString(), // description
-            (*retQuery)[3].getUInt32(), // date_from
-            (*retQuery)[4].getUInt32(), // date_till
+            (*retQuery)[3].getString(), // date_from
+            (*retQuery)[4].getString(), // date_till
             (*retQuery)[5].getUInt32(), // reminder
-            (*retQuery)[6].getUInt32(), // repeat
-            (*retQuery)[7].getUInt32()  // time_zone
+            (*retQuery)[6].getUInt32()  // repeat
         });
     } while (retQuery->nextRow());
 

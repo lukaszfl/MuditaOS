@@ -13,8 +13,8 @@
 #include <vector>
 
 EventsRecord::EventsRecord(const EventsTableRow &tableRow)
-    : Record{tableRow.ID}, title{tableRow.title}, description{tableRow.description}, date_from{tableRow.date_from},
-      date_till{tableRow.date_till}, reminder{tableRow.reminder}, repeat{tableRow.repeat}, time_zone{tableRow.time_zone}
+    : Record{tableRow.ID}, title{tableRow.title}, date_from{tableRow.date_from}, date_till{tableRow.date_till},
+      reminder{tableRow.reminder}, repeat{tableRow.repeat}
 {}
 
 EventsRecordInterface::EventsRecordInterface(EventsDB *eventsDb) : eventsDb(eventsDb)
@@ -23,20 +23,18 @@ EventsRecordInterface::EventsRecordInterface(EventsDB *eventsDb) : eventsDb(even
 bool EventsRecordInterface::Add(const EventsRecord &rec)
 {
     eventsDb->events.add(EventsTableRow{{.ID = rec.ID},
-                                        .title       = rec.title,
-                                        .description = rec.description,
-                                        .date_from   = rec.date_from,
-                                        .date_till   = rec.date_till,
-                                        .reminder    = rec.reminder,
-                                        .repeat      = rec.repeat,
-                                        .time_zone   = rec.time_zone});
+                                        .title     = rec.title,
+                                        .date_from = rec.date_from,
+                                        .date_till = rec.date_till,
+                                        .reminder  = rec.reminder,
+                                        .repeat    = rec.repeat});
 
     return true;
 }
 
-std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::Select(uint32_t from, uint32_t till)
+std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::Select(std::string filter)
 {
-    auto rows = eventsDb->events.selectByDatePeriod(from, till);
+    auto rows = eventsDb->events.selectByDatePeriod(filter);
 
     auto records = std::make_unique<std::vector<EventsRecord>>();
 
@@ -91,22 +89,20 @@ std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::GetLimitOffset
     return records;
 }
 
-bool EventsRecordInterface::Update(const EventsRecord &rec, const uint32_t &checkValue)
+bool EventsRecordInterface::Update(const EventsRecord &rec)
 {
     auto entry = eventsDb->events.getById(rec.ID);
-    if (!entry.isValid() || entry.date_from != checkValue) {
+    if (!entry.isValid()) {
         LOG_DEBUG("IS NOT VALID");
         return false;
     }
 
     return eventsDb->events.update(EventsTableRow{{.ID = rec.ID},
-                                                  .title       = rec.title,
-                                                  .description = rec.description,
-                                                  .date_from   = rec.date_from,
-                                                  .date_till   = rec.date_till,
-                                                  .reminder    = rec.reminder,
-                                                  .repeat      = rec.repeat,
-                                                  .time_zone   = rec.time_zone});
+                                                  .title     = rec.title,
+                                                  .date_from = rec.date_from,
+                                                  .date_till = rec.date_till,
+                                                  .reminder  = rec.reminder,
+                                                  .repeat    = rec.repeat});
 }
 
 bool EventsRecordInterface::RemoveByID(uint32_t id)
@@ -191,7 +187,7 @@ std::unique_ptr<db::query::events::GetAllLimitedResult> EventsRecordInterface::r
 std::unique_ptr<db::query::events::GetFilteredResult> EventsRecordInterface::runQueryImpl(
     const db::query::events::GetFiltered *query)
 {
-    auto records = Select(query->date_from, query->date_till);
+    auto records = Select(query->date_filter);
     return std::make_unique<db::query::events::GetFilteredResult>(std::move(records));
 }
 
@@ -210,6 +206,6 @@ std::unique_ptr<db::query::events::RemoveResult> EventsRecordInterface::runQuery
 
 std::unique_ptr<db::query::events::EditResult> EventsRecordInterface::runQueryImpl(const db::query::events::Edit *query)
 {
-    bool ret = Update(query->getRecord(), query->getDateFrom());
+    bool ret = Update(query->getRecord());
     return std::make_unique<db::query::events::EditResult>(ret);
 }

@@ -56,7 +56,8 @@ namespace gui
             auto rec = dynamic_cast<EventRecordData *>(data);
             if (rec != nullptr) {
                 eventRecord = rec->getData();
-                newEditEventModel->setRepeatOptionValue(eventRecord->repeat);
+                /// TODO:
+                // newEditEventModel->setRepeatOptionValue(eventRecord->repeat);
                 prevWindowName = rec->getWindowName();
             }
             list->rebuildList();
