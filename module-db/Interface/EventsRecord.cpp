@@ -176,6 +176,12 @@ uint32_t EventsRecordInterface::GetCount()
     return eventsDb->events.count();
 }
 
+EventsRecord EventsRecordInterface::getClosestInsideDay(uint32_t start_date, uint32_t day_date)
+{
+    EventsRecord event = static_cast<EventsRecord>(eventsDb->events.getClosestInsideDay(start_date, day_date));
+    return event;
+}
+
 std::unique_ptr<db::QueryResult> EventsRecordInterface::runQuery(std::shared_ptr<db::Query> query)
 {
     if (typeid(*query) == typeid(db::query::events::Get)) {

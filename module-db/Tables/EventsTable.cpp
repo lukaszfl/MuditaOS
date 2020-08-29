@@ -517,7 +517,8 @@ uint32_t EventsTable::countByFieldId(const char *field, uint32_t id)
 }
 
 // mlucki
-EventsTypedTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32_t day_date)
+#if 0
+EventsTypedTableRow EventsTable::getClosestInsideDay1(uint32_t start_date, uint32_t day_date)
 {
     /*
     select 'event' as type, date_from as my_date,* from (select * from events where date_from >= 141020142 and
@@ -525,7 +526,7 @@ EventsTypedTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32
     * from events where reminder >= 141020142 and reminder_fired = -1 ORDER BY reminder LIMIT 1) order by my_date  LIMIT
     1
      */
-    auto retQuery = db->query("SELECT 2 AS type, date_from AS date_selected,* FROM "
+    auto retQuery1 = db->query("SELECT 2 AS type, date_from AS date_selected,* FROM "
                               "(SELECT * from events WHERE date_from >= %u AND date_from < %u AND event_fired = -1 "
                               "ORDER BY date_from LIMIT 1) "
                               "UNION ALL "
@@ -537,6 +538,23 @@ EventsTypedTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32
                               day_date,
                               start_date,
                               day_date);
+
+    //select * from events where (date_from - reminder) >= 141020142 and event_fired = -1 ORDER BY (date_from - reminder)  LIMIT 1
+    //select datetime(date_from, '+' || reminder || ' minutes') AS calc_dt, * from events where calc_dt >= "2020-08-17 17:20" and event_fired = -1 and reminder <> -1 ORDER BY (calc_dt) LIMIT 1
+    //select datetime(date_from, '+' || reminder || ' minutes') AS calc_dt, * from events where calc_dt >= "2020-08-17 17:20" and calc_dt <= datetime("2020-08-17", "+1 day", "-1 second") and event_fired = -1 and reminder <> -1 ORDER BY (calc_dt) LIMIT 1
+
+    auto retQuery= db->query("SELECT DATETIME(date_from, '+' || reminder || ' minutes') AS calc_dt, * "
+                               "FROM events "
+                               "WHERE calc_dt >= %u "
+                               "AND calc_dt <= DATETIME(%u, '+1 day', '-1 second') "
+                               "AND event_fired = -1 "
+                               "AND reminder <> -1 "
+                               "ORDER BY calc_dt "
+                               "LIMIT 1",
+                               start_date,
+                               day_date);
+
+
 
     // mlucki
     // I tu zaczynają się małe schody:
@@ -551,7 +569,7 @@ EventsTypedTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32
     EventsTypedTableRow ret;
 
     return EventsTypedTableRow{
-        (*retQuery)[2].getUInt32(), // ID
+        /*(*retQuery)[2].getUInt32(), // ID
         (*retQuery)[3].getString(), // title
         (*retQuery)[4].getString(), // description
         (*retQuery)[5].getUInt32(), // date_from
@@ -560,6 +578,43 @@ EventsTypedTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32
         (*retQuery)[8].getUInt32(), // repeat
         (*retQuery)[9].getUInt32(), // time_zone
         (*retQuery)[1].getUInt32(), // date_selected
-        EventsTypedTableRow::typeFromUint((*retQuery)[0].getUInt32()),
+        EventsTypedTableRow::typeFromUint((*retQuery)[0].getUInt32()),*/
+    };
+}
+#endif
+
+EventsTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32_t day_date)
+{
+    // select * from events where (date_from - reminder) >= 141020142 and event_fired = -1 ORDER BY (date_from -
+    // reminder)  LIMIT 1 select datetime(date_from, '+' || reminder || ' minutes') AS calc_dt, * from events where
+    // calc_dt >= "2020-08-17 17:20" and event_fired = -1 and reminder <> -1 ORDER BY (calc_dt) LIMIT 1 select
+    // datetime(date_from, '+' || reminder || ' minutes') AS calc_dt, * from events where calc_dt >= "2020-08-17 17:20"
+    // and calc_dt <= datetime("2020-08-17", "+1 day", "-1 second") and event_fired = -1 and reminder <> -1 ORDER BY
+    // (calc_dt) LIMIT 1
+
+    auto retQuery = db->query("SELECT DATETIME(date_from, '+' || reminder || ' minutes') AS calc_dt, * "
+                              "FROM events "
+                              "WHERE calc_dt >= %u "
+                              "AND calc_dt <= DATETIME(%u, '+1 day', '-1 second') "
+                              "AND event_fired = -1 "
+                              "AND reminder <> -1 "
+                              "ORDER BY calc_dt "
+                              "LIMIT 1",
+                              start_date,
+                              day_date);
+
+    if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
+        return EventsTableRow();
+    }
+
+    return EventsTableRow{
+        (*retQuery)[1].getUInt32(), // ID
+        (*retQuery)[2].getString(), // title
+        (*retQuery)[3].getString(), // description
+        (*retQuery)[4].getUInt32(), // date_from
+        (*retQuery)[5].getUInt32(), // date_till
+        (*retQuery)[6].getUInt32(), // reminder
+        (*retQuery)[7].getUInt32(), // repeat
+        (*retQuery)[8].getUInt32()  // time_zone
     };
 }

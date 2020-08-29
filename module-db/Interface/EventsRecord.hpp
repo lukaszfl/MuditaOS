@@ -78,6 +78,8 @@ class EventsRecordInterface : public RecordInterface<EventsRecord, EventsRecordF
                                                                      const char *str) override final;
     std::unique_ptr<std::vector<EventsRecord>> GetLimitOffsetByDate(uint32_t offset, uint32_t limit);
 
+    EventsRecord getClosestInsideDay(uint32_t start_date, uint32_t day_date);
+
     std::unique_ptr<db::QueryResult> runQuery(std::shared_ptr<db::Query> query) override;
 
   private:
