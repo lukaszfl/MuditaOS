@@ -155,13 +155,24 @@ namespace gui
             if (!mode24H) {
                 hour = convertTimeTo24hMode(hour, mode12hInput->getText());
             }
+            auto hourStr = std::to_string(hour);
+            if (hourStr.length() < style::window::calendar::time::max_time_length) {
+                hourStr.insert(0, style::window::calendar::time::max_time_length / 2, '0');
+            }
+            if (minuteInput->getText().length() < style::window::calendar::time::max_time_length) {
+                std::string minute = minuteInput->getText();
+                minuteInput->setText(minute.insert(0, style::window::calendar::time::max_time_length / 2, '0'));
+            }
             if (this->descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_end")) {
-
+                record->date_till = record->date_till.substr(0, 11);
+                record->date_till = record->date_till + hourStr + ":" + minuteInput->getText().c_str();
                 //                record->date_till = record->date_till - record->date_till % 10000;
                 //                record->date_till = record->date_till + hour * 100 +
                 //                atoi(minuteInput->getText().c_str());
             }
             else if (this->descriptionLabel->getText() == utils::localize.get("app_calendar_new_edit_event_start")) {
+                record->date_from = record->date_from.substr(0, 11);
+                record->date_from = record->date_from + hourStr + ":" + minuteInput->getText().c_str();
                 //                record->date_from = record->date_from - record->date_from % 10000;
                 //                record->date_from = record->date_from + hour * 100 +
                 //                atoi(minuteInput->getText().c_str());

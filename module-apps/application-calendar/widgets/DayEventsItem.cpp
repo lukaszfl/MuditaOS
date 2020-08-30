@@ -48,12 +48,16 @@ namespace gui
         if (rec != nullptr) {
             description->setText(this->record->title.c_str());
 
-            std::chrono::system_clock::time_point start_tp =
-                std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime() + 7200);
+            struct tm tm;
+            strptime(record->date_from.c_str(), "%Y-%m-%d %H:%M", &tm);
+            auto eventStartTime = std::mktime(&tm);
+            strptime(record->date_till.c_str(), "%Y-%m-%d %H:%M", &tm);
+            auto eventEndTime = std::mktime(&tm);
+
+            std::chrono::system_clock::time_point start_tp = std::chrono::system_clock::from_time_t(eventStartTime);
             auto start_time = date::make_time(
                 std::chrono::duration_cast<std::chrono::minutes>(start_tp - date::floor<date::days>(start_tp)));
-            std::chrono::system_clock::time_point end_tp =
-                std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime() + 10800);
+            std::chrono::system_clock::time_point end_tp = std::chrono::system_clock::from_time_t(eventEndTime);
             auto end_time = date::make_time(
                 std::chrono::duration_cast<std::chrono::minutes>(end_tp - date::floor<date::days>(end_tp)));
 

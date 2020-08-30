@@ -30,8 +30,6 @@ namespace gui
         bottomBar->setText(gui::BottomBar::Side::RIGHT, utils::localize.get(style::strings::common::back));
         bottomBar->setText(gui::BottomBar::Side::LEFT, utils::localize.get(style::strings::common::options));
 
-        setTitle(utils::time::Time().str("%d %B"));
-
         bodyList = new gui::ListView(this,
                                      style::window::calendar::listView_x,
                                      style::window::calendar::listView_y,
