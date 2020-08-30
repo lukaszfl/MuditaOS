@@ -12,7 +12,6 @@
 #include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-apps/application-calendar/ApplicationCalendar.hpp>
-#include <module-apps/application-calendar/data/CalendarData.hpp>
 
 namespace gui
 {

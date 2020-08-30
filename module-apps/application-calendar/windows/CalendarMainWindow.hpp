@@ -58,7 +58,7 @@ namespace gui
 
         ~MonthBox() override = default;
         std::string month;
-        uint32_t monthFilterValue;
+        date::year_month monthFilterValue;
     };
 
     class CalendarMainWindow : public gui::AppWindow
