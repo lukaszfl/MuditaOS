@@ -32,7 +32,20 @@ void MessageHandler::processMessage()
     auto handler = EndpointFactory::create(context, OwnerServicePtr);
 
     if (handler != nullptr) {
-        handler->handle(context);
+        auto ret = handler->handle(context);
+        if ( ret != nullptr ) 
+        {
+            /// here it would be nice to check if we really want to send first ten change state
+            /// maybe we would rather - change state first, then send data - to avoid races
+            /// ( race: we send response, pc sends data while we didn;t change state yet )
+            if (auto response = ret->getResponse() != NoCommResponse() ) 
+            {
+                putToSendQueue(response->encode());
+            }
+            if( auto message = ret->getMessage() != nullptr ) {
+                sys::Bus::SendUnicast(message, service::name::service_desktop, ownerServicePtr);
+            }
+        }
     }
     else {
         LOG_ERROR("No way to handle!");

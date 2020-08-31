@@ -5,9 +5,88 @@
 #include "Context.hpp"
 #include "Service/Service.hpp"
 #include <string>
+#include <memory>
 
 namespace ParserStateMachine
 {
+
+    class MessageHandler;
+
+    struct CommunicationResponse
+    {
+        EndpointType endpoint;
+        http::Code::OK status;
+        json11::Json uuid;
+        json11::Json body;
+        std::string encode()
+        { /// here encode it all
+            /// and dump str
+            return "";
+        }
+    };
+
+    class StateSwitchResult : HandleResult
+    {
+        sys::Service *owner = nullptr;
+        std::unique_ptr<sys::Message> message = nullptr;
+        CommunicationResponse response;
+
+      public:
+        StateSwitchResult()
+        {
+        }
+
+      private:
+
+        unique_ptr<sys::Message> getMessage() final
+        {
+            return std::move(message);
+        }
+
+        CommunicationResponse &getResponse() final
+        {
+            return response;
+        }
+
+      public:
+        void setMessage(std::unique_ptr<sys::Message> to_send) 
+        {
+            message = std::move(to_send);
+        }
+
+        void setResponse(CommunicationResponse resp)
+        {
+            response = resp;
+        }
+    };
+
+    class HandleResult
+    {
+        friend MessageHandler;
+        public:
+            HandleResult() = default;
+            virtual ~HandleResult() = default;
+        private:
+            /// run state switches / change context of app
+            virtual void execute() = 0;
+            /// send response via interface
+            virtual json11::Json respond() = 0;
+    };
+
+    class NoneResult : public HandleResult
+    {
+        public:
+            NoneResult() = default;
+            void execute() final {};
+            json11::Json respond() final {};
+    };
+
+    using EpResult = std::unique_ptr<HandleResult>;
+
+    inline auto DefaultResult() 
+    {
+        return std::make_unique<NoneResult>();
+    }
 
     class Endpoint
     {
@@ -15,7 +94,7 @@ namespace ParserStateMachine
       public:
         Endpoint(sys::Service *_ownerServicePtr) : ownerServicePtr(_ownerServicePtr){};
         virtual ~Endpoint()                                  = default;
-        virtual auto handle(Context &context) -> std::string = 0;
+        virtual auto handle(Context &context) -> EpResult = 0;
         auto c_str() -> const char *
         {
             return debugName.c_str();
@@ -34,6 +113,7 @@ namespace ParserStateMachine
             return responseStr;
         }
 
+        // then here return ComResponse
         static auto createSimpleResponse(sys::ReturnCodes status, int endpoint, uint32_t uuid, json11::Json body)
             -> std::string
         {

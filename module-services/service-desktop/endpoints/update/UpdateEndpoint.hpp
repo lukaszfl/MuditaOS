@@ -7,13 +7,12 @@ using namespace ParserStateMachine;
 
 class UpdateEndpoint : public Endpoint
 {
+  private:
+    auto run(Context &context) -> EpResult;
+    auto getUpdates(Context &context) -> EpResult;
 
   public:
-    UpdateEndpoint(sys::Service *ownerServicePtr) : Endpoint(ownerServicePtr)
-    {
-        debugName = "UpdateEndpoint";
-    }
-    auto handle(Context &context) -> std::string override;
-    auto run(Context &context) -> sys::ReturnCodes;
-    auto getUpdates(Context &context) -> sys::ReturnCodes;
+    UpdateEndpoint(sys::Service *ownerServicePtr);
+
+    auto handle(Context &context) -> EpResult;
 };
