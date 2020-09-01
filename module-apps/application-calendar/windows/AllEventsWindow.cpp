@@ -87,8 +87,8 @@ namespace gui
             auto rec = new EventsRecord();
             /// MOCK: TODO:
             auto filter    = "2020-10-20 00:00";
-            rec->date_from = filter;
-            rec->date_till = "2020-10-20 23:59";
+            rec->date_from = TimePointFromString(filter);
+            rec->date_till = TimePointFromString("2020-10-20 23:59");
             auto event     = std::make_shared<EventsRecord>(*rec);
             data->setData(event);
             data->setWindowName(style::window::calendar::name::all_events_window);

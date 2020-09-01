@@ -2,7 +2,7 @@
 
 namespace db::query::events
 {
-    GetFiltered::GetFiltered(std::string date_filter) : Query(Query::Type::Read), date_filter(date_filter)
+    GetFiltered::GetFiltered(TimePoint date_filter) : Query(Query::Type::Read), date_filter(date_filter)
     {}
 
     auto GetFiltered::debugInfo() const -> std::string
