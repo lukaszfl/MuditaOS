@@ -360,7 +360,7 @@ namespace gui
         //        unsigned int monthUInt = static_cast<unsigned>(monthModel->getMonth()) * 1000000;
         //        auto filter            = yearUInt + monthUInt;
         auto filter = monthModel->parseDateToDB(actualDate);
-        LOG_DEBUG("filter:  %s", filter.c_str());
+        LOG_DEBUG("filter:  %s", TimePointToString(filter).c_str());
         DBServiceAPI::GetQuery(
             application, db::Interface::Name::Events, std::make_unique<db::query::events::GetFiltered>(filter));
     }

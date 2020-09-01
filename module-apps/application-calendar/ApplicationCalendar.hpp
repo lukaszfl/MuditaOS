@@ -4,6 +4,7 @@
 #include "Service/Message.hpp"
 #include "SystemManager/SystemManager.hpp"
 #include "gui/widgets/Label.hpp"
+#include <module-utils/date/include/date/dateCommon.h>
 
 namespace app
 {
@@ -37,7 +38,7 @@ namespace app
         void createUserInterface() override;
         void destroyUserInterface() override;
         void switchToNoEventsWindow(const std::string &title,
-                                    const std::string &dateFilter,
+                                    const TimePoint &dateFilter,
                                     const std::string &goBackWindow);
         void applyRepeatAndReminderMap();
 

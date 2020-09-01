@@ -96,10 +96,10 @@ void NewEditEventModel::loadData(std::shared_ptr<EventsRecord> record)
     eraseInternalData();
     /// TODO: MOCK To przeliczenie w sumie nie jest zle (moze warto z tego skorzystac i napisac na tej podstawie parser
     /// dla godzin i minut
-    auto hourMinuteFrom =
-        std::atoi(record->date_from.substr(12, 2).c_str()) * 1000 + std::atoi(record->date_from.substr(16, 2).c_str());
-    auto hourMinuteTill =
-        std::atoi(record->date_till.substr(12, 2).c_str()) * 1000 + std::atoi(record->date_till.substr(16, 2).c_str());
+    auto hourMinuteFrom = std::atoi(TimePointToString(record->date_from).substr(12, 2).c_str()) * 1000 +
+                          std::atoi(TimePointToString(record->date_from).substr(16, 2).c_str());
+    auto hourMinuteTill = std::atoi(TimePointToString(record->date_till).substr(12, 2).c_str()) * 1000 +
+                          std::atoi(TimePointToString(record->date_till).substr(16, 2).c_str());
     auto isAllDayEvent = [&]() -> bool { return hourMinuteFrom == 0 && hourMinuteTill == 2359; };
 
     createData(isAllDayEvent());
@@ -184,7 +184,9 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
                 //                auto dayTxt       = std::to_string(dayInt);
                 ////TODO: MOCK
 
-                data->setData(record->date_from.substr(6, 2) + " " + record->date_from.substr(9, 2), record->date_from);
+                data->setData(TimePointToString(record->date_from).substr(6, 2) + " " +
+                                  TimePointToString(record->date_from).substr(9, 2),
+                              record->date_from);
 
                 application->switchWindow(gui::name::window::main_window);
                 application->switchWindow(windowName, std::move(data));
