@@ -9,7 +9,6 @@
 #include <module-db/queries/calendar/QueryEventsAdd.hpp>
 #include <module-db/queries/calendar/QueryEventsEdit.hpp>
 #include <module-apps/application-calendar/data/CalendarData.hpp>
-#include "application-calendar/models/MonthModel.hpp"
 
 NewEditEventModel::NewEditEventModel(app::Application *app, bool mode24H) : application(app), mode24H(mode24H)
 {}

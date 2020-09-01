@@ -85,7 +85,7 @@ namespace gui
                 }
                 title->setText(start_h + ":" + start_min + " - " + end_h + ":" + end_min);
             }
-            if (record->reminder == 0xFFFFFF) {
+            if (record->reminder == style::window::calendar::reminder::never) {
                 clock->setVisible(false);
             }
         }

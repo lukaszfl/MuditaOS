@@ -1,6 +1,7 @@
 #pragma once
 #include "Application.hpp"
 #include "CalendarListItem.hpp"
+#include "application-calendar/widgets/CalendarStyle.hpp"
 #include <module-apps/application-calendar/data/CalendarData.hpp>
 #include <Label.hpp>
 #include <Image.hpp>
@@ -8,7 +9,16 @@
 
 namespace gui
 {
-    const std::array<uint32_t, 10> reminderTimeOptions = {0xFFFFFF, 0, 5, 15, 30, 100, 200, 10000, 20000, 70000};
+    const std::array<uint32_t, 10> reminderTimeOptions = {style::window::calendar::reminder::never,
+                                                          style::window::calendar::reminder::event_time,
+                                                          style::window::calendar::reminder::five_min_before,
+                                                          style::window::calendar::reminder::fifteen_min_before,
+                                                          style::window::calendar::reminder::thirty_min_before,
+                                                          style::window::calendar::reminder::one_hour_before,
+                                                          style::window::calendar::reminder::two_hour_before,
+                                                          style::window::calendar::reminder::one_day_before,
+                                                          style::window::calendar::reminder::two_days_before,
+                                                          style::window::calendar::reminder::one_week_before};
 
     class SeveralOptionsItem : public CalendarListItem
     {

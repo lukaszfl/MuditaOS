@@ -38,7 +38,7 @@ class WeekDaysRepeatData : public gui::SwitchData
   public:
     WeekDaysRepeatData()
     {
-        for (uint32_t i = 0; i < 7; i++) {
+        for (uint32_t i = 0; i < style::window::calendar::week_days_number; i++) {
             weekDays[i] = false;
         }
     }
