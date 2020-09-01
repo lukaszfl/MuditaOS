@@ -3,16 +3,17 @@
 #include "module-db/Interface/EventsRecord.hpp"
 #include <Common/Query.hpp>
 #include <string>
+#include <module-utils/date/include/date/dateCommon.h>
 
 namespace db::query::events
 {
     class GetFiltered : public Query
     {
       public:
-        GetFiltered(std::string date_filter);
+        GetFiltered(TimePoint date_filter);
         [[nodiscard]] auto debugInfo() const -> std::string override;
 
-        std::string date_filter;
+        TimePoint date_filter;
     };
 
     class GetFilteredResult : public QueryResult
