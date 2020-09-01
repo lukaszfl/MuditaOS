@@ -122,7 +122,7 @@ namespace gui
                         /// MOCK: TODO:
                         auto filter = "2020-10-20 19:45";
                         app->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main"),
-                                                    filter,
+                                                    TimePointFromString(filter),
                                                     style::window::calendar::name::all_events_window);
                     }
                 }

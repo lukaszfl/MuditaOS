@@ -54,7 +54,7 @@ namespace gui
 
         dayMonthTitle = item->getDayMonthText();
         filterFrom    = item->getDateFilter();
-        LOG_DEBUG("FILTER 1: %s", filterFrom.c_str());
+        LOG_DEBUG("FILTER 1: %s", TimePointToString(filterFrom).c_str());
         setTitle(dayMonthTitle);
         if (dayMonthTitle == "") {
             return false;

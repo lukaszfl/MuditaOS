@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <module-utils/date/include/date/dateCommon.h>
 
 class MonthModel
 {
@@ -31,6 +32,6 @@ class MonthModel
     std::string getMonthYearText();
     std::string getMonthText();
     std::vector<std::string> split(const std::string &s, char delim);
-    date::year_month_day parseDateFromDB(std::string dateDB);
-    std::string parseDateToDB(date::year_month_day date);
+    YearMonthDay parseDateFromDB(TimePoint dateDB);
+    TimePoint parseDateToDB(YearMonthDay date);
 };

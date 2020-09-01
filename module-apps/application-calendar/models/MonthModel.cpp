@@ -47,8 +47,9 @@ std::vector<std::string> MonthModel::split(const std::string &s, char delim)
     return elems;
 }
 
-date::year_month_day MonthModel::parseDateFromDB(std::string dateDB)
+YearMonthDay MonthModel::parseDateFromDB(TimePoint dateDB)
 {
+    /*
     std::string yearStr = dateDB.substr(0, 4);
     LOG_DEBUG("DAY!!!!!!!!!!! : %s", yearStr.c_str());
     std::string monthStr = dateDB.substr(6, 2);
@@ -57,11 +58,13 @@ date::year_month_day MonthModel::parseDateFromDB(std::string dateDB)
     LOG_DEBUG("YEAR!!!!!!!!!!! : %s", dayStr.c_str());
 
     return date::year(atoi(yearStr.c_str())) / date::month(atoi(monthStr.c_str())) / date::day(atoi(dayStr.c_str()));
+    */
+    return TimePointToYearMonthDay(dateDB);
 }
 
-std::string MonthModel::parseDateToDB(date::year_month_day date)
+TimePoint MonthModel::parseDateToDB(YearMonthDay date)
 {
-    int yearUInt        = static_cast<decltype(yearUInt)>(date.year());
+    /*int yearUInt        = static_cast<decltype(yearUInt)>(date.year());
     std::string yearStr = std::to_string(yearUInt);
 
     unsigned int monthUInt = static_cast<unsigned>(date.month());
@@ -70,7 +73,8 @@ std::string MonthModel::parseDateToDB(date::year_month_day date)
     unsigned int dayUInt = static_cast<unsigned>(date.day());
     std::string dayStr   = std::to_string(dayUInt);
 
-    return yearStr + "-" + monthStr + "-" + dayStr;
+    return yearStr + "-" + monthStr + "-" + dayStr;*/
+    return TimePointFromYearMonthDay(date);
 }
 
 std::string MonthModel::getMonthText()
