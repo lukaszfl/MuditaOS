@@ -2,7 +2,7 @@
 #include "Application.hpp"
 #include <module-db/Interface/EventsRecord.hpp>
 
-enum Repeat
+enum class Repeat
 {
     Never = 0,
     Daily,
@@ -17,7 +17,7 @@ class AddRepeatedEvents
 {
     // std::shared_ptr<EventsRecord> event
     app::Application *application = nullptr;
-    Repeat repeatOption;
+    Repeat repeatOption           = Repeat::Never;
 
   public:
     AddRepeatedEvents(app::Application *app) : application(app){};

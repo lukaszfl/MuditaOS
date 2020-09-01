@@ -1,6 +1,3 @@
-//
-// Created by tomasz on 24.08.2020.
-//
 #include "AddRepeatedEvents.hpp"
 #include <module-db/Interface/EventsRecord.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
@@ -71,27 +68,27 @@ void AddRepeatedEvents::addCustom(std::shared_ptr<EventsRecord> event)
 void AddRepeatedEvents::addRepeatedEvents(std::shared_ptr<EventsRecord> event)
 {
     switch (event->repeat) {
-    case Daily: {
+    case static_cast<unsigned int>(Repeat::Daily): {
         addDaily(event);
         break;
     }
-    case Weekly: {
+    case static_cast<unsigned int>(Repeat::Weekly): {
         addWeekly(event);
         break;
     }
-    case TwoWeeks: {
+    case static_cast<unsigned int>(Repeat::TwoWeeks): {
         addTwoWeeks(event);
         break;
     }
-    case Month: {
+    case static_cast<unsigned int>(Repeat::Month): {
         addMonth(event);
         break;
     }
-    case Year: {
+    case static_cast<unsigned int>(Repeat::Year): {
         addYear(event);
         break;
     }
-    case Custom: {
+    case static_cast<unsigned int>(Repeat::Custom): {
         addCustom(event);
         break;
     }
