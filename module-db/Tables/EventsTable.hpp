@@ -5,12 +5,13 @@
 #include <Database/Database.hpp>
 #include <Common/Common.hpp>
 #include <utf8/UTF8.hpp>
+#include <module-utils/date/include/date/dateCommon.h>
 
 struct EventsTableRow : public Record
 {
     std::string title;
-    std::string date_from = 0;
-    std::string date_till = 0;
+    TimePoint date_from = TIME_POINT_INVALID;
+    TimePoint date_till = TIME_POINT_INVALID;
     uint32_t reminder  = 0;
     uint32_t repeat    = 0;
 };
@@ -39,7 +40,7 @@ class EventsTable : public Table<EventsTableRow, EventsTableFields>
     bool removeByField(EventsTableFields field, const char *str) override final;
     bool update(EventsTableRow entry) override final;
     EventsTableRow getById(uint32_t id) override final;
-    std::vector<EventsTableRow> selectByDatePeriod(std::string date_filter);
+    std::vector<EventsTableRow> selectByDatePeriod(TimePoint date_filter);
     uint32_t count() override final;
     uint32_t countByFieldId(const char *field, uint32_t id) override final;
     std::vector<EventsTableRow> getLimitOffset(uint32_t offset, uint32_t limit) override final;

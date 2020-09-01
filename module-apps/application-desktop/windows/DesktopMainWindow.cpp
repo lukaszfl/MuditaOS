@@ -33,6 +33,8 @@
 #include <service-appmgr/ApplicationManager.hpp>
 #include <time/time_conversion.hpp>
 
+#include <module-utils/date/include/date/dateCommon.h>
+
 namespace style
 {
     const auto design_time_offset          = 106;
@@ -114,8 +116,114 @@ namespace gui
         }
     }
 
+    void time_Tests()
+    {
+
+        TimePoint date_from = TIME_POINT_INVALID;
+        date_from           = std::chrono::system_clock::now();
+
+        // std::time_t tt = system_clock::to_time_t(date_from);
+        // std::chrono::system_clock::time_point tp =
+        // std::chrono::system_clock::from_time_t(appCalendar->getCurrentTimeStamp());
+
+        // konwersja na string
+        string s1 = date::format("%F %T", time_point_cast<seconds>(system_clock::now()));
+        // string s2 =  date::format("%F %T\n", time_point_cast<seconds>(system_clock::now()));
+        string s2 = date::format("%F %T", time_point_cast<seconds>(date_from));
+
+        /*TimePoint date_to = date::parse("%F %T", s2);
+
+        std::stringstream str( "28.08.2017 03:59:55.0007" );
+        str.imbue( std::locale() );
+        std::chrono::time_point< std::chrono::system_clock, std::chrono::microseconds > result;
+        date::from_stream( str, "%d.%m.%Y %H:%M:%S", result );
+        std::cout << result.time_since_epoch().count();*/
+
+        /*TimePoint date_to;
+        date::from_stream( s1, "%d-%m-%Y %H:%M:%S", date_to );
+        date::to_stream(s1, "%d-%m-%Y %H:%M:%S", date_to)
+        date::parse( s1, "%d-%m-%Y %H:%M:%S", date_to );*/
+        // string f = "%d-%m-%Y %H:%M:%S";
+        // TimePoint date_to = date::parse(f, date_to, s1);
+
+        TimePoint date_to;
+        std::chrono::system_clock::time_point tp;
+        std::istringstream ss{"2010-12-30T01:20:30.123456Z"};
+        // ss >> date::parse("%FT%TZ", date_to);
+        std::istringstream(s1) >> date::parse("%F %T", date_to);
+
+        string s3 = date::format("%F %T", time_point_cast<seconds>(date_to));
+        // date::parse("%FT%TZ", date_to, ss);
+
+        TimePoint date1 = std::chrono::system_clock::now();
+        string xx1      = TimePointToString(date1);
+        TimePoint date2;
+        date2      = TimePointFromString(xx1.c_str());
+        string xx2 = TimePointToString(date2);
+
+        date2      = TimePointFromString("1990-12-11 23:13:22");
+        string xx3 = TimePointToString(date2);
+
+        // time_t tt = system_clock::to_time_t(date1);
+        // auto ymd = date::year_month_day{date1};
+
+        // parse("%a, %d %b %Y %T %z", tp);
+
+        // konwersja ze string
+        // string g1 = "1991-12-11 23:13:22";
+        //_TimePoint n1 = g1.c_str();
+        //_TimePoint n1 = std::chrono::system_clock::now();
+        //_TimePoint n1 = std::chrono::system_clock::now();
+        // TimePoint n1 = std::chrono::system_clock::now();
+        [[maybe_unused]] date::year_month_day dt10 = date::year_month_day{
+            date::floor<date::days>(std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime()))};
+
+        [[maybe_unused]] date::year_month_day dt11 = date::year_month_day{
+            date::floor<date::days>(std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime()))};
+
+        [[maybe_unused]] auto dt12 = date::year_month_day{date::floor<date::days>(date2)};
+
+        [[maybe_unused]] auto dt13 = date::year_month_day{date::floor<date::days>(date2)};
+
+        //[[maybe_unused]]
+        // date::year_month_day yearMonthDayFirst = 2021 / 11 / 1;
+
+        //[[maybe_unused]]
+        // auto dt13= date::hh_mm_ss{date::floor<seconds>(date2)};
+        // date::hh_mm_ss<std::chrono::seconds> tod{std::chrono::seconds(secs)};
+        // auto dt13 = date::hh_mm_ss;
+
+        //[[maybe_unused]]
+        // date::year_month_day dt11 = date::year_month_day{date2};
+
+        if (s1 != s1)
+            return;
+        if (date_from != date_to)
+            return;
+
+        /*
+        int main()
+        {
+            std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+            std::time_t t_c = std::chrono::system_clock::to_time_t(now - std::chrono::hours(24));
+            std::cout << "24 hours ago, the time was "
+                      << std::put_time(std::localtime(&t_c), "%F %T") << '\n';
+
+            std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+            std::cout << "Hello World\n";
+            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+            std::cout << "Printing took "
+                      << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+                      << "us.\n";
+        }
+         */
+    }
+
     void DesktopMainWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
+        //***************************************************************************
+        time_Tests();
+        //***************************************************************************
 
         // update time
         time->setText(topBar->getTimeString());

@@ -32,7 +32,7 @@ bool EventsRecordInterface::Add(const EventsRecord &rec)
     return true;
 }
 
-std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::Select(std::string filter)
+std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::Select(TimePoint filter)
 {
     auto rows = eventsDb->events.selectByDatePeriod(filter);
 

@@ -6,6 +6,7 @@
 #include <utf8/UTF8.hpp>
 #include <cstdint>
 #include <vector>
+#include <module-utils/date/include/date/dateCommon.h>
 
 // fw declarations
 namespace db::query::events
@@ -30,8 +31,8 @@ namespace db::query::events
 struct EventsRecord : public Record
 {
     std::string title;
-    std::string date_from;
-    std::string date_till;
+    TimePoint date_from;
+    TimePoint date_till;
     uint32_t reminder = 0;
     uint32_t repeat    = 0;
 
@@ -59,7 +60,7 @@ class EventsRecordInterface : public RecordInterface<EventsRecord, EventsRecordF
     bool Update(const EventsRecord &rec);
     EventsRecord GetByID(uint32_t id) override final;
     uint32_t GetCount() override final;
-    std::unique_ptr<std::vector<EventsRecord>> Select(std::string date_filter);
+    std::unique_ptr<std::vector<EventsRecord>> Select(TimePoint date_filter);
     std::unique_ptr<std::vector<EventsRecord>> GetLimitOffset(uint32_t offset, uint32_t limit) override final;
     std::unique_ptr<std::vector<EventsRecord>> GetLimitOffsetByField(uint32_t offset,
                                                                      uint32_t limit,
