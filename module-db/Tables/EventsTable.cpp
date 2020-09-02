@@ -20,14 +20,13 @@ bool EventsTable::create()
 
 bool EventsTable::add(EventsTableRow entry)
 {
-    return db->execute(
-        "INSERT or IGNORE INTO events (title, description, date_from, date_till, reminder, repeat, time_zone) "
-        "VALUES ('%q', '%q','%q', %lu, %lu);",
-        entry.title.c_str(),
-        TimePointToString(entry.date_from).c_str(),
-        TimePointToString(entry.date_till).c_str(),
-        entry.reminder,
-        entry.repeat);
+    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) "
+                       "VALUES ('%q', '%q','%q', %lu, %lu);",
+                       entry.title.c_str(),
+                       TimePointToString(entry.date_from).c_str(),
+                       TimePointToString(entry.date_till).c_str(),
+                       entry.reminder,
+                       entry.repeat);
 }
 
 bool EventsTable::addDaily(EventsTableRow entry)
@@ -279,15 +278,14 @@ bool EventsTable::removeByField(EventsTableFields field, const char *str)
 
 bool EventsTable::update(EventsTableRow entry)
 {
-    return db->execute(
-        "UPDATE events SET title= '%q', description = '%q', date_from = '%q', date_till = '%q', reminder "
-        "= %u, repeat = %u WHERE _id = %u;",
-        entry.title.c_str(),
-        TimePointToString(entry.date_from).c_str(),
-        TimePointToString(entry.date_till).c_str(),
-        entry.reminder,
-        entry.repeat,
-        entry.ID);
+    return db->execute("UPDATE events SET title= '%q', date_from = '%q', date_till = '%q', reminder "
+                       "= %u, repeat = %u WHERE _id = %u;",
+                       entry.title.c_str(),
+                       TimePointToString(entry.date_from).c_str(),
+                       TimePointToString(entry.date_till).c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.ID);
 }
 
 EventsTableRow EventsTable::getById(uint32_t id)
@@ -311,12 +309,12 @@ EventsTableRow EventsTable::getById(uint32_t id)
     };
 }
 
-std::vector<EventsTableRow> EventsTable::selectByDatePeriod(TimePoint date_filter)
+std::vector<EventsTableRow> EventsTable::selectByDatePeriod(TimePoint date_filter, TimePoint filter_till)
 {
     /// TODO: Rework unit tests
-    auto retQuery = db->query("SELECT * FROM events WHERE date_till > date('%q') AND date_till < date('%q','+1 day');",
+    auto retQuery = db->query("SELECT * FROM events WHERE date_till > date('%q') AND date_till < date('%q');",
                               TimePointToString(date_filter).c_str(),
-                              TimePointToString(date_filter).c_str());
+                              TimePointToString(filter_till).c_str());
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return std::vector<EventsTableRow>();

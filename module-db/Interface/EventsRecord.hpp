@@ -60,7 +60,7 @@ class EventsRecordInterface : public RecordInterface<EventsRecord, EventsRecordF
     bool Update(const EventsRecord &rec);
     EventsRecord GetByID(uint32_t id) override final;
     uint32_t GetCount() override final;
-    std::unique_ptr<std::vector<EventsRecord>> Select(TimePoint date_filter);
+    std::unique_ptr<std::vector<EventsRecord>> Select(TimePoint filter_from, TimePoint filter_till);
     std::unique_ptr<std::vector<EventsRecord>> GetLimitOffset(uint32_t offset, uint32_t limit) override final;
     std::unique_ptr<std::vector<EventsRecord>> GetLimitOffsetByField(uint32_t offset,
                                                                      uint32_t limit,

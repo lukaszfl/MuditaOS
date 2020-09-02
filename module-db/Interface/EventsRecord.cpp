@@ -32,9 +32,9 @@ bool EventsRecordInterface::Add(const EventsRecord &rec)
     return true;
 }
 
-std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::Select(TimePoint filter)
+std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::Select(TimePoint filter_from, TimePoint filter_till)
 {
-    auto rows = eventsDb->events.selectByDatePeriod(filter);
+    auto rows = eventsDb->events.selectByDatePeriod(filter_from, filter_till);
 
     auto records = std::make_unique<std::vector<EventsRecord>>();
 
@@ -187,7 +187,7 @@ std::unique_ptr<db::query::events::GetAllLimitedResult> EventsRecordInterface::r
 std::unique_ptr<db::query::events::GetFilteredResult> EventsRecordInterface::runQueryImpl(
     const db::query::events::GetFiltered *query)
 {
-    auto records = Select(query->date_filter);
+    auto records = Select(query->filter_from, query->filter_till);
     return std::make_unique<db::query::events::GetFilteredResult>(std::move(records));
 }
 

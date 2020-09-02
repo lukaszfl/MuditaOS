@@ -62,10 +62,9 @@ namespace gui
 
         eventRecord = item->getData();
         prevWindowName         = item->getWindowName();
-        std::chrono::system_clock::time_point start_tp =
-            std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime() + 7200);
-        auto startDate       = date::year_month_day{date::floor<date::days>(start_tp)};
-        std::string monthStr = utils::time::Locale::get_month(utils::time::Locale::Month(unsigned(startDate.month())));
+        auto startDate         = TimePointToYearMonthDay(eventRecord->date_from);
+        std::string monthStr =
+            utils::time::Locale::get_month(utils::time::Locale::Month(unsigned(startDate.month()) - 1));
         setTitle(std::to_string(unsigned(startDate.day())) + " " + monthStr);
 
         return true;

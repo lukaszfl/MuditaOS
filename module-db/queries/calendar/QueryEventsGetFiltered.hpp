@@ -10,10 +10,11 @@ namespace db::query::events
     class GetFiltered : public Query
     {
       public:
-        GetFiltered(TimePoint date_filter);
+        GetFiltered(TimePoint filter_from, TimePoint filter_till);
         [[nodiscard]] auto debugInfo() const -> std::string override;
 
-        TimePoint date_filter;
+        TimePoint filter_from;
+        TimePoint filter_till;
     };
 
     class GetFilteredResult : public QueryResult
