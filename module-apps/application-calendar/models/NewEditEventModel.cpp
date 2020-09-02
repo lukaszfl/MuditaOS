@@ -1,14 +1,13 @@
 #include "NewEditEventModel.hpp"
 #include "application-calendar/widgets/CheckBoxWithLabelAndModel.hpp"
 #include "application-calendar/widgets/AddRepeatedEvents.hpp"
-#include "application-calendar/models/MonthModel.hpp"
+#include "module-apps/application-calendar/data/CalendarData.hpp"
 #include <ListView.hpp>
-#include <Utils.hpp>
 #include <BottomBar.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsAdd.hpp>
 #include <module-db/queries/calendar/QueryEventsEdit.hpp>
-#include <module-apps/application-calendar/data/CalendarData.hpp>
+#include <time/time_conversion.hpp>
 
 NewEditEventModel::NewEditEventModel(app::Application *app, bool mode24H) : application(app), mode24H(mode24H)
 {}
@@ -93,13 +92,13 @@ void NewEditEventModel::loadData(std::shared_ptr<EventsRecord> record)
 {
     list->clear();
     eraseInternalData();
-    /// TODO: MOCK To przeliczenie w sumie nie jest zle (moze warto z tego skorzystac i napisac na tej podstawie parser
-    /// dla godzin i minut
-    auto hourMinuteFrom = std::atoi(TimePointToString(record->date_from).substr(12, 2).c_str()) * 1000 +
-                          std::atoi(TimePointToString(record->date_from).substr(16, 2).c_str());
-    auto hourMinuteTill = std::atoi(TimePointToString(record->date_till).substr(12, 2).c_str()) * 1000 +
-                          std::atoi(TimePointToString(record->date_till).substr(16, 2).c_str());
-    auto isAllDayEvent = [&]() -> bool { return hourMinuteFrom == 0 && hourMinuteTill == 2359; };
+    auto start_time    = TimePointToHourMinSec(record->date_from);
+    auto end_time      = TimePointToHourMinSec(record->date_till);
+    auto isAllDayEvent = [&]() -> bool {
+        return start_time.hours().count() == 0 && start_time.minutes().count() == 0 &&
+               end_time.hours().count() == style::window::calendar::time::max_hour_24H_mode &&
+               end_time.minutes().count() == style::window::calendar::time::max_minutes;
+    };
 
     createData(isAllDayEvent());
 
@@ -146,7 +145,6 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
     }
     ////event->repeat = repeat->dataFromRecord
     // event->repeat = repeat->getRepeatOptionValue();
-    // TODO: Change bool edit to existing enum
     if (edit) {
         auto record = event.get();
         if (record->title != "") {
@@ -169,23 +167,11 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
                 repeatObject->addRepeatedEvents(std::move(event));
             }
             if (application->getPrevWindow() == style::window::calendar::name::no_events_window) {
-                // TODO: Create method in month model to convert filter to date time
                 auto data = std::make_unique<DayMonthData>();
-                //                auto filter       = record->date_from - record->date_from % 10000;
-                //                uint32_t yearInt  = record->date_from - record->date_from % 100000000;
-                //                auto year         = date::year((yearInt + 2000) / 100000000);
-                //                uint32_t monthInt = record->date_from - record->date_from % 1000000 - yearInt;
-                //                auto month        = date::month(monthInt / 1000000);
-                //                auto dayInt       = (filter - yearInt - monthInt) / 10000;
-                //                auto day          = date::day(dayInt);
-                //                auto monthModel   = std::make_unique<MonthModel>(year / month / day);
-                //                auto monthTxt     = monthModel->getMonthText();
-                //                auto dayTxt       = std::to_string(dayInt);
-                ////TODO: MOCK
-
-                data->setData(TimePointToString(record->date_from).substr(6, 2) + " " +
-                                  TimePointToString(record->date_from).substr(9, 2),
-                              record->date_from);
+                auto startDate = TimePointToYearMonthDay(record->date_from);
+                std::string monthStr =
+                    utils::time::Locale::get_month(utils::time::Locale::Month(unsigned(startDate.month()) - 1));
+                data->setData(std::to_string(unsigned(startDate.day())) + " " + monthStr, record->date_from);
 
                 application->switchWindow(gui::name::window::main_window);
                 application->switchWindow(windowName, std::move(data));

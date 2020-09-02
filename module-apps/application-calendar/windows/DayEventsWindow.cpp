@@ -1,6 +1,6 @@
 #include "DayEventsWindow.hpp"
 #include "application-calendar/data/CalendarData.hpp"
-
+#include "module-apps/application-calendar/ApplicationCalendar.hpp"
 #include <gui/widgets/Window.hpp>
 #include <gui/widgets/Label.hpp>
 #include <gui/widgets/Item.hpp>
@@ -11,7 +11,6 @@
 #include <module-services/service-db/messages/QueryMessage.hpp>
 #include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
-#include <module-apps/application-calendar/ApplicationCalendar.hpp>
 
 namespace gui
 {
@@ -29,12 +28,14 @@ namespace gui
     }
     void DayEventsWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
-        DBServiceAPI::GetQuery(
-            application, db::Interface::Name::Events, std::make_unique<db::query::events::GetFiltered>(filterFrom));
+        auto filterTill = filterFrom + std::chrono::hours(style::window::calendar::time::max_hour_24H_mode + 1);
+        DBServiceAPI::GetQuery(application,
+                               db::Interface::Name::Events,
+                               std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill));
         setTitle(dayMonthTitle);
-        auto dataRecieved = dynamic_cast<PrevWindowData *>(data);
-        if (dataRecieved != nullptr) {
-            if (dataRecieved->getData() == PrevWindow::DELETE) {
+        auto dataReceived = dynamic_cast<PrevWindowData *>(data);
+        if (dataReceived != nullptr) {
+            if (dataReceived->getData() == PrevWindow::DELETE) {
                 checkEmpty = true;
             }
         }
@@ -102,6 +103,7 @@ namespace gui
             data->setDescription("New");
             auto rec       = new EventsRecord();
             rec->date_from = filterFrom;
+            rec->date_till = filterFrom;
             auto event     = std::make_shared<EventsRecord>(*rec);
             data->setData(event);
             data->setWindowName(style::window::calendar::name::day_events_window);

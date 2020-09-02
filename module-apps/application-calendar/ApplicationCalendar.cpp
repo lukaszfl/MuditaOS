@@ -12,7 +12,6 @@
 #include <time/time_conversion.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsAdd.hpp>
-#include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
 #include <module-services/service-db/messages/QueryMessage.hpp>
 
 namespace app
@@ -129,7 +128,6 @@ namespace app
             return true;
         };
         dialog->update(meta);
-        // TODO: Set prev window always as main window
         switchWindow(gui::name::window::main_window);
         switchWindow(dialog->getName());
         LOG_DEBUG("Switch to no events window");
