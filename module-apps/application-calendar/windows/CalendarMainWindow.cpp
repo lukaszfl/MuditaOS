@@ -55,8 +55,7 @@ namespace gui
             assert(actualMonthBox != nullptr);
 
             uint32_t numb      = cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1;
-            date::year_month_day actualDate = date::year_month_day{
-                date::floor<date::days>(std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime()))};
+            date::year_month_day actualDate = TimePointToYearMonthDay(TimePointNow());
             std::string number = std::to_string(numb);
             if (!isDayEmpty) {
                 this->dotImage->setVisible(true);
@@ -74,10 +73,8 @@ namespace gui
             this->activatedCallback = [=](gui::Item &item) {
                 auto data           = std::make_unique<DayMonthData>();
                 auto month          = actualMonthBox->month;
-                // auto filter         = actualMonthBox->monthFilterValue + numb * 10000;
-                auto datefilter = actualDate.year() / actualDate.month() / date::day(numb);
-                auto monthModel = new MonthModel();
-                auto filter     = monthModel->parseDateToDB(datefilter) + " 00:00";
+                auto dateFilter     = actualDate.year() / actualDate.month() / date::day(numb);
+                auto filter         = TimePointFromYearMonthDay(dateFilter);
                 data->setData(number + " " + month, filter);
                 if (isDayEmpty) {
                     auto application = dynamic_cast<app::ApplicationCalendar *>(app);
@@ -159,8 +156,7 @@ namespace gui
             };
         }
         else {
-            date::year_month_day actualDate = date::year_month_day{
-                date::floor<date::days>(std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime()))};
+            date::year_month_day actualDate = TimePointToYearMonthDay(TimePointNow());
             if (model->getYear() == actualDate.year() && model->getMonth() == actualDate.month()) {
                 focusChangedCallback = [=](Item &item) {
                     setFocusOnElement(unsigned(actualDate.day()) - 1);
@@ -304,8 +300,6 @@ namespace gui
         AppWindow::buildInterface();
 
         LOG_DEBUG("Start build interface for calendar main window");
-        [[maybe_unused]] auto app = dynamic_cast<app::ApplicationCalendar *>(application);
-        assert(app != nullptr);
 
         setTitle(utils::localize.get("app_calendar_title_main"));
 
@@ -348,16 +342,14 @@ namespace gui
 
     void CalendarMainWindow::filterRequest()
     {
-        //        monthModel             = std::make_unique<MonthModel>(actualDate);
-        //        date::year actualYear  = monthModel->getYear();
-        //        int yearInt            = static_cast<decltype(yearInt)>(actualYear) - 2000;
-        //        uint32_t yearUInt      = yearInt * 100000000;
-        //        unsigned int monthUInt = static_cast<unsigned>(monthModel->getMonth()) * 1000000;
-        //        auto filter            = yearUInt + monthUInt;
-        auto filter = monthModel->parseDateToDB(actualDate);
-        LOG_DEBUG("filter:  %s", TimePointToString(filter).c_str());
-        DBServiceAPI::GetQuery(
-            application, db::Interface::Name::Events, std::make_unique<db::query::events::GetFiltered>(filter));
+        YearMonthDay date_from = actualDate.year() / actualDate.month() / 1;
+        YearMonthDay date_till = actualDate.year() / actualDate.month() / date::last;
+        auto filter_from       = TimePointFromYearMonthDay(date_from);
+        auto filter_till       = TimePointFromYearMonthDay(date_till);
+        LOG_DEBUG("filter:  %s", TimePointToString(filter_till).c_str());
+        DBServiceAPI::GetQuery(application,
+                               db::Interface::Name::Events,
+                               std::make_unique<db::query::events::GetFiltered>(filter_from, filter_till));
     }
 
     bool CalendarMainWindow::onDatabaseMessage(sys::Message *msgl)
@@ -371,7 +363,7 @@ namespace gui
                 for (auto &rec : *records) {
                     date::year_month_day recordDate = monthModel->parseDateFromDB(rec.date_from);
                     uint32_t dayNumb                = static_cast<uint32_t>(recordDate.day());
-                    isDayEmpty[dayNumb]             = false;
+                    isDayEmpty[dayNumb - 1]         = false;
                 }
                 refresh();
                 return true;
@@ -406,16 +398,6 @@ namespace gui
             dayFocusedBefore   = day->getDayNumber();
         }
         filterRequest();
-
-        //        auto dataRecieved = dynamic_cast<PrevWindowData*>(data);
-        //        if (dataRecieved!= nullptr) {
-        //            if (dataRecieved->getData() == PrevWindow::ADD) {
-        //                auto data           = std::make_unique<DayMonthData>();
-        //                auto actualMonth = monthBox->month;
-        //                auto filter         = monthBox->monthFilterValue + numb * 10000;
-        //                data->setData(number + " " + month, filter);
-        //            }
-        //        }
     }
 
 } // namespace gui

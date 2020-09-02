@@ -1,5 +1,6 @@
 #include "EventDetailDescriptionItem.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
+#include "application-calendar/data/TimeDisplayParser.hpp"
 #include <Style.hpp>
 #include <time/time_conversion.hpp>
 #include <module-utils/date/include/date/date.h>
@@ -65,44 +66,7 @@ namespace gui
         title->setText(utils::localize.get("app_calendar_event_detail"));
         onLoadCallback = [&](std::shared_ptr<EventsRecord> event) {
             description->setText(event->title);
-
-            struct tm tm;
-            strptime(event->date_from.c_str(), "%Y-%m-%d %H:%M", &tm);
-            auto eventStartTime = std::mktime(&tm);
-            strptime(event->date_till.c_str(), "%Y-%m-%d %H:%M", &tm);
-            auto eventEndTime = std::mktime(&tm);
-
-            std::chrono::system_clock::time_point start_tp = std::chrono::system_clock::from_time_t(eventStartTime);
-            auto start_time = date::make_time(
-                std::chrono::duration_cast<std::chrono::minutes>(start_tp - date::floor<date::days>(start_tp)));
-            std::chrono::system_clock::time_point end_tp = std::chrono::system_clock::from_time_t(eventEndTime);
-            auto end_time = date::make_time(
-                std::chrono::duration_cast<std::chrono::minutes>(end_tp - date::floor<date::days>(end_tp)));
-
-            if (start_time.hours().count() == 0 && start_time.minutes().count() == 0 &&
-                end_time.hours().count() == style::window::calendar::time::max_hour_24H_mode &&
-                end_time.minutes().count() == style::window::calendar::time::max_minutes) {
-                eventTime->setText(utils::localize.get("app_calendar_all_day"));
-            }
-            else {
-                auto start_h   = std::to_string(start_time.hours().count());
-                auto start_min = std::to_string(start_time.minutes().count());
-                auto end_h     = std::to_string(end_time.hours().count());
-                auto end_min   = std::to_string(end_time.minutes().count());
-                if (start_h.length() < style::window::calendar::time::max_time_length) {
-                    start_h.insert(0, style::window::calendar::time::max_time_length / 2, '0');
-                }
-                if (start_min.length() < style::window::calendar::time::max_time_length) {
-                    start_min.insert(0, style::window::calendar::time::max_time_length / 2, '0');
-                }
-                if (end_h.length() < style::window::calendar::time::max_time_length) {
-                    end_h.insert(0, style::window::calendar::time::max_time_length / 2, '0');
-                }
-                if (end_min.length() < style::window::calendar::time::max_time_length) {
-                    end_min.insert(0, style::window::calendar::time::max_time_length / 2, '0');
-                }
-                eventTime->setText(start_h + ":" + start_min + " - " + end_h + ":" + end_min);
-            }
+            eventTime->setText(TimeDisplayParser().getTimeString(event));
         };
     }
 

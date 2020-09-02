@@ -1,17 +1,15 @@
 #include "AllEventsWindow.hpp"
+#include "module-apps/application-calendar/ApplicationCalendar.hpp"
+#include "module-apps/application-calendar/data/CalendarData.hpp"
 #include <gui/widgets/Window.hpp>
 #include <gui/widgets/BottomBar.hpp>
 #include <gui/widgets/TopBar.hpp>
 #include <service-appmgr/ApplicationManager.hpp>
 
 #include <module-services/service-db/messages/QueryMessage.hpp>
-#include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
 #include <module-db/queries/calendar/QueryEventsGetAllLimited.hpp>
-#include <module-db/queries/calendar/QueryEventsGetAll.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
-#include <module-apps/application-calendar/data/CalendarData.hpp>
 #include <time/time_conversion.hpp>
-#include <module-apps/application-calendar/ApplicationCalendar.hpp>
 
 namespace gui
 {
@@ -56,9 +54,9 @@ namespace gui
     void AllEventsWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
         allEventsList->rebuildList();
-        auto dataRecieved = dynamic_cast<PrevWindowData *>(data);
-        if (dataRecieved != nullptr) {
-            if (dataRecieved->getData() == PrevWindow::DELETE) {
+        auto dataReceived = dynamic_cast<PrevWindowData *>(data);
+        if (dataReceived != nullptr) {
+            if (dataReceived->getData() == PrevWindow::DELETE) {
                 checkEmpty = true;
             }
         }
@@ -85,8 +83,8 @@ namespace gui
             std::unique_ptr<EventRecordData> data = std::make_unique<EventRecordData>();
             data->setDescription("New");
             auto rec = new EventsRecord();
-            rec->date_from = getFilter() + " 00:00";
-            rec->date_till = getFilter() + " 23:59";
+            rec->date_from = TimePointNow();
+            rec->date_till = TimePointNow();
             auto event     = std::make_shared<EventsRecord>(*rec);
             data->setData(event);
             data->setWindowName(style::window::calendar::name::all_events_window);
@@ -104,23 +102,6 @@ namespace gui
         return false;
     }
 
-    std::string AllEventsWindow::getFilter()
-    {
-        std::chrono::system_clock::time_point start_tp =
-            std::chrono::system_clock::from_time_t(utils::time::Timestamp().getTime() + 7200);
-        auto actualDate = date::year_month_day{date::floor<date::days>(start_tp)};
-        int yearUInt    = static_cast<decltype(yearUInt)>(actualDate.year());
-        auto monthStr   = std::to_string(unsigned(actualDate.month()));
-        auto dayStr     = std::to_string(unsigned(actualDate.day()));
-        if (monthStr.length() < style::window::calendar::time::max_time_length) {
-            monthStr.insert(0, style::window::calendar::time::max_time_length / 2, '0');
-        }
-        if (dayStr.length() < style::window::calendar::time::max_time_length) {
-            dayStr.insert(0, style::window::calendar::time::max_time_length / 2, '0');
-        }
-        return std::to_string(yearUInt) + "-" + monthStr + "-" + dayStr;
-    }
-
     bool AllEventsWindow::onDatabaseMessage(sys::Message *msgl)
     {
         auto msg = dynamic_cast<db::QueryResponse *>(msgl);
@@ -134,7 +115,7 @@ namespace gui
                     if (records->size() == 0) {
                         auto app = dynamic_cast<app::ApplicationCalendar *>(application);
                         assert(application != nullptr);
-                        auto filter = getFilter() + " 00:00";
+                        auto filter = std::chrono::system_clock::now();
                         app->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main"),
                                                     filter,
                                                     style::window::calendar::name::all_events_window);
