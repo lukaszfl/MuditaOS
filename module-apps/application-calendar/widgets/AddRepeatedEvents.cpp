@@ -2,7 +2,7 @@
 #include <module-db/Interface/EventsRecord.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsAdd.hpp>
-#include <module-utils/date/include/date/dateCommon.h>
+#include <module-apps/application-calendar/data/dateCommon.h>
 
 void AddRepeatedEvents::addDaily(std::shared_ptr<EventsRecord> event)
 {
