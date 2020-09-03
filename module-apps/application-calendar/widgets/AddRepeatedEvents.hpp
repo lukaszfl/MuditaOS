@@ -15,7 +15,6 @@ enum class Repeat
 
 class AddRepeatedEvents
 {
-    // std::shared_ptr<EventsRecord> event
     app::Application *application = nullptr;
     Repeat repeatOption           = Repeat::Never;
 

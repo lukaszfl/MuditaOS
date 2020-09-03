@@ -1,7 +1,6 @@
+#include "NewEditEventWindow.hpp"
 #include <module-db/Interface/EventsRecord.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
-#include <module-db/queries/calendar/QueryEventsAdd.hpp>
-#include "NewEditEventWindow.hpp"
 
 namespace gui
 {
@@ -64,15 +63,15 @@ namespace gui
             newEditEventModel->loadData(eventRecord);
         }
         if (mode == ShowMode::GUI_SHOW_RETURN) {
-            auto recievedData = dynamic_cast<WeekDaysRepeatData *>(data);
-            if (recievedData != nullptr) {
+            auto receivedData = dynamic_cast<WeekDaysRepeatData *>(data);
+            if (receivedData != nullptr) {
                 auto parser     = new OptionParser();
-                auto uniqueData = std::make_unique<WeekDaysRepeatData>(*recievedData);
+                auto uniqueData = std::make_unique<WeekDaysRepeatData>(*receivedData);
                 //                if(eventRecord->repeat<6){
                 //
                 //                }
                 eventRecord->repeat = eventRecord->repeat + parser->getDatabaseFieldValue(std::move(uniqueData));
-                newEditEventModel->loadData(eventRecord);
+                newEditEventModel->loadRepeat(eventRecord);
             }
         }
     }

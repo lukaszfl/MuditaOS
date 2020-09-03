@@ -301,10 +301,10 @@ EventsTableRow EventsTable::getById(uint32_t id)
     return EventsTableRow{
         (*retQuery)[0].getUInt32(),                              // ID
         (*retQuery)[1].getString(),                              // title
-        TimePointFromString((*retQuery)[3].getString().c_str()), // date_from
-        TimePointFromString((*retQuery)[4].getString().c_str()), // date_till
-        (*retQuery)[5].getUInt32(),                              // reminder
-        (*retQuery)[6].getUInt32()                               // repeat
+        TimePointFromString((*retQuery)[2].getString().c_str()), // date_from
+        TimePointFromString((*retQuery)[3].getString().c_str()), // date_till
+        (*retQuery)[4].getUInt32(),                              // reminder
+        (*retQuery)[5].getUInt32()                               // repeat
 
     };
 }
@@ -352,10 +352,10 @@ std::vector<EventsTableRow> EventsTable::getLimitOffset(uint32_t offset, uint32_
         ret.push_back(EventsTableRow{
             (*retQuery)[0].getUInt32(),                              // ID
             (*retQuery)[1].getString(),                              // title
-            TimePointFromString((*retQuery)[3].getString().c_str()), // date_from
-            TimePointFromString((*retQuery)[4].getString().c_str()), // date_till
-            (*retQuery)[5].getUInt32(),                              // reminder
-            (*retQuery)[6].getUInt32()                               // repeat
+            TimePointFromString((*retQuery)[2].getString().c_str()), // date_from
+            TimePointFromString((*retQuery)[3].getString().c_str()), // date_till
+            (*retQuery)[4].getUInt32(),                              // reminder
+            (*retQuery)[5].getUInt32()                               // repeat
 
         });
     } while (retQuery->nextRow());
