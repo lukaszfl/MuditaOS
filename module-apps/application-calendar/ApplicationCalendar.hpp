@@ -4,7 +4,7 @@
 #include "Service/Message.hpp"
 #include "SystemManager/SystemManager.hpp"
 #include "gui/widgets/Label.hpp"
-#include <module-utils/date/include/date/dateCommon.h>
+#include <module-apps/application-calendar/data/dateCommon.h>
 
 namespace app
 {

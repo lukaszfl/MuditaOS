@@ -6,7 +6,7 @@
 #include <utf8/UTF8.hpp>
 #include <cstdint>
 #include <vector>
-#include <module-utils/date/include/date/dateCommon.h>
+#include <module-apps/application-calendar/data/dateCommon.h>
 
 // fw declarations
 namespace db::query::events
