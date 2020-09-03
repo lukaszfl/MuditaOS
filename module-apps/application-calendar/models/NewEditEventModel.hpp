@@ -25,6 +25,7 @@ class NewEditEventModel : public app::InternalModel<gui::CalendarListItem *>, pu
     NewEditEventModel(app::Application *app, bool mode24H = false);
 
     void loadData(std::shared_ptr<EventsRecord> record);
+    void loadRepeat(const std::shared_ptr<EventsRecord> &record);
     void loadDataWithoutTimeItem();
     void reloadDataWithTimeItem();
     void saveData(std::shared_ptr<EventsRecord> event, bool edit, const std::string &windowName);

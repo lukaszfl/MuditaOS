@@ -31,7 +31,7 @@ namespace gui
         setTitle(utils::localize.get("app_calendar_custom_repeat_title"));
         list = new gui::ListView(this,
                                  style::window::calendar::listView_x,
-                                 style::window::calendar::listView_y - 8,
+                                 style::window::calendar::listView_y,
                                  style::window::calendar::listView_w,
                                  style::window::calendar::listView_h,
                                  customRepeatModel);

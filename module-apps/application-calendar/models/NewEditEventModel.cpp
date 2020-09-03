@@ -111,6 +111,13 @@ void NewEditEventModel::loadData(std::shared_ptr<EventsRecord> record)
     list->rebuildList();
 }
 
+void NewEditEventModel::loadRepeat(const std::shared_ptr<EventsRecord> &record)
+{
+    if (repeat->onLoadCallback) {
+        repeat->onLoadCallback(record);
+    }
+}
+
 void NewEditEventModel::loadDataWithoutTimeItem()
 {
     internalData.erase(std::find(internalData.begin(), internalData.end(), startTime));

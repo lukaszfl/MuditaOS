@@ -7,7 +7,7 @@
 void AddRepeatedEvents::addDaily(std::shared_ptr<EventsRecord> event)
 {
     auto record = event.get();
-    for (uint32_t i = 1; i <= 7; i++) {
+    for (uint32_t i = 1; i < 7; i++) {
         record->date_from += date::days{1};
         record->date_from += date::days{1};
         DBServiceAPI::GetQuery(
