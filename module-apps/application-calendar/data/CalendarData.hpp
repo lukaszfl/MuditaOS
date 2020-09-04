@@ -1,6 +1,7 @@
 #pragma once
 #include "module-db/Interface/EventsRecord.hpp"
 #include <module-utils/date/include/date/date.h>
+#include "application-calendar/widgets/CalendarStyle.hpp"
 
 class EventRecordData : public gui::SwitchData
 {
