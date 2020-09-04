@@ -95,6 +95,13 @@ inline auto TimePointToHourMinSec(const TimePoint &tp)
     return date::make_time(tp - dp);
 }
 
+// 0: Monday, 1: Tuesday ... 6: Sunday
+inline unsigned int WeekdayIndexFromTimePoint(const TimePoint &tp)
+{
+    auto ymw = date::year_month_weekday{floor<date::days>(tp)};
+    return ymw.weekday().iso_encoding() - 1;
+}
+
 #if 0
 class _TimePoint : public TimePoint
 {
