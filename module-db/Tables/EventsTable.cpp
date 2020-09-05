@@ -592,7 +592,7 @@ EventsTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32_t da
     // and calc_dt <= datetime("2020-08-17", "+1 day", "-1 second") and event_fired = -1 and reminder <> -1 ORDER BY
     // (calc_dt) LIMIT 1
 
-    auto retQuery = db->query("SELECT DATETIME(date_from, '+' || reminder || ' minutes') AS calc_dt, * "
+    auto retQuery = db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes') AS calc_dt, * "
                               "FROM events "
                               "WHERE calc_dt >= %u "
                               "AND calc_dt <= DATETIME(%u, '+1 day', '-1 second') "
