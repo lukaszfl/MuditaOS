@@ -20,8 +20,50 @@ bool EventsTable::create()
 
 bool EventsTable::add(EventsTableRow entry)
 {
-    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) "
+    // Standard INSERT
+    /*return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) "
                        "VALUES ('%q', '%q','%q', %lu, %lu);",
+                       entry.title.c_str(),
+                       TimePointToString(entry.date_from).c_str(),
+                       TimePointToString(entry.date_till).c_str(),
+                       entry.reminder,
+                       entry.repeat);*/
+
+    /*
+        // Prevent duplicates using concatenation
+        return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) "
+                           "SELECT '%q', '%q','%q', %lu, %lu "
+                           "WHERE NOT EXISTS "
+                           "(SELECT title || '_' || date_from || '_' || date_till || '_' || reminder || '_' || repeat As
+       C " "FROM events " "WHERE C = '%q' || '_' || '%q' || '_' || '%q' || '_' || %lu || '_' || %lu);",
+                           entry.title.c_str(),
+                           TimePointToString(entry.date_from).c_str(),
+                           TimePointToString(entry.date_till).c_str(),
+                           entry.reminder,
+                           entry.repeat,
+                           entry.title.c_str(),
+                           TimePointToString(entry.date_from).c_str(),
+                           TimePointToString(entry.date_till).c_str(),
+                           entry.reminder,
+                           entry.repeat
+                           );
+    */
+
+    // Prevent duplicates using ANDs:
+    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) "
+                       "SELECT '%q', '%q','%q', %lu, %lu "
+                       "WHERE NOT EXISTS "
+                       "(SELECT 1 FROM events e "
+                       "WHERE e.title='%q' "
+                       "AND e.date_from='%q' "
+                       "AND e.date_till='%q' "
+                       "AND e.reminder=%lu "
+                       "AND e.repeat=%lu );",
+                       entry.title.c_str(),
+                       TimePointToString(entry.date_from).c_str(),
+                       TimePointToString(entry.date_till).c_str(),
+                       entry.reminder,
+                       entry.repeat,
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
