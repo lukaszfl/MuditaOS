@@ -174,7 +174,7 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
                 repeatObject->addRepeatedEvents(std::move(event));
             }
             if (application->getPrevWindow() == style::window::calendar::name::no_events_window) {
-                auto data = std::make_unique<DayMonthData>();
+                auto data      = std::make_unique<DayMonthData>();
                 auto startDate = TimePointToYearMonthDay(record->date_from);
                 std::string monthStr =
                     utils::time::Locale::get_month(utils::time::Locale::Month(unsigned(startDate.month()) - 1));

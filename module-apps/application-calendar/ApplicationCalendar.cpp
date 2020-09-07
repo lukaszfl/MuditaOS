@@ -30,7 +30,7 @@ namespace app
     {
         auto retMsg = Application::DataReceivedHandler(msgl);
         // if message was handled by application's template there is no need to process further.
-        if (dynamic_cast<sys::ResponseMessage *>(retMsg.get())->retCode == sys::ReturnCodes::Success) {
+        if (retMsg && (dynamic_cast<sys::ResponseMessage *>(retMsg.get())->retCode == sys::ReturnCodes::Success)) {
             return retMsg;
         }
         // this variable defines whether message was processed.
@@ -108,10 +108,10 @@ namespace app
     {
         auto dialog = dynamic_cast<gui::NoEvents *>(getWindow(style::window::calendar::name::no_events_window));
         assert(dialog != nullptr);
-        auto meta   = dialog->meta;
-        meta.text   = "app_calendar_no_events_information";
-        meta.title  = title;
-        meta.icon   = "phonebook_empty_grey_circle_W_G";
+        auto meta  = dialog->meta;
+        meta.text  = "app_calendar_no_events_information";
+        meta.title = title;
+        meta.icon  = "phonebook_empty_grey_circle_W_G";
 
         meta.action = [=]() -> bool {
             LOG_DEBUG("Switch to new event window");

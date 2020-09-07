@@ -60,9 +60,9 @@ namespace gui
             return false;
         }
 
-        eventRecord = item->getData();
-        prevWindowName         = item->getWindowName();
-        auto startDate         = TimePointToYearMonthDay(eventRecord->date_from);
+        eventRecord    = item->getData();
+        prevWindowName = item->getWindowName();
+        auto startDate = TimePointToYearMonthDay(eventRecord->date_from);
         std::string monthStr =
             utils::time::Locale::get_month(utils::time::Locale::Month(unsigned(startDate.month()) - 1));
         setTitle(std::to_string(unsigned(startDate.day())) + " " + monthStr);
