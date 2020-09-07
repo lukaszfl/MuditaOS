@@ -54,9 +54,9 @@ namespace gui
             auto actualMonthBox = dynamic_cast<gui::MonthBox *>(parent);
             assert(actualMonthBox != nullptr);
 
-            uint32_t numb      = cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1;
+            uint32_t numb = cellIndex - firstWeekOffset - style::window::calendar::week_days_number + 1;
             date::year_month_day actualDate = TimePointToYearMonthDay(TimePointNow());
-            std::string number = std::to_string(numb);
+            std::string number              = std::to_string(numb);
             if (!isDayEmpty) {
                 this->dotImage->setVisible(true);
             }
@@ -71,10 +71,10 @@ namespace gui
                 this->dayNumber->setFont(style::window::font::medium);
             }
             this->activatedCallback = [=](gui::Item &item) {
-                auto data           = std::make_unique<DayMonthData>();
-                auto month          = actualMonthBox->month;
-                auto dateFilter     = actualDate.year() / actualDate.month() / date::day(numb);
-                auto filter         = TimePointFromYearMonthDay(dateFilter);
+                auto data       = std::make_unique<DayMonthData>();
+                auto month      = actualMonthBox->month;
+                auto dateFilter = actualDate.year() / actualDate.month() / date::day(numb);
+                auto filter     = TimePointFromYearMonthDay(dateFilter);
                 data->setData(number + " " + month, filter);
                 if (isDayEmpty) {
                     auto application = dynamic_cast<app::ApplicationCalendar *>(app);
@@ -116,8 +116,8 @@ namespace gui
 
         assert(parent);
         parent->addWidget(this);
-        month                  = model->getMonthText();
-        monthFilterValue       = model->getYear() / model->getMonth();
+        month            = model->getMonthText();
+        monthFilterValue = model->getYear() / model->getMonth();
         grid.x = dayWidth;
         grid.y = dayHeight;
 

@@ -23,7 +23,7 @@ class OptionParser
 
     uint32_t getDatabaseFieldValue(std::unique_ptr<WeekDaysRepeatData> weekDayOptions)
     {
-        uint32_t dataDB          = 0;
+        uint32_t dataDB                = 0;
         const uint32_t startBit        = 16;
         const uint32_t numberOfOptions = 7;
         for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {

@@ -83,9 +83,9 @@ namespace style
             {
                 namespace dayEvents
                 {
-                    const inline int title_w       = 255;
-                    const inline int box_height    = style::window::label::small_h;
-                    const inline int height        = 100;
+                    const inline int title_w    = 255;
+                    const inline int box_height = style::window::label::small_h;
+                    const inline int height     = 100;
                 } // namespace dayEvents
 
                 namespace allEvents

@@ -44,7 +44,7 @@ namespace gui
             return false;
         }
 
-        eventRecord = item->getData();
+        eventRecord      = item->getData();
         goBackWindowName = item->getWindowName();
         clearOptions();
         addOptions(eventsOptionsList());
