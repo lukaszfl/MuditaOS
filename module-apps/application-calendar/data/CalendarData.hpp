@@ -34,7 +34,7 @@ class EventRecordData : public gui::SwitchData
 class WeekDaysRepeatData : public gui::SwitchData
 {
   protected:
-    bool weekDays[7];
+    bool weekDays[style::window::calendar::week_days_number];
 
   public:
     WeekDaysRepeatData()
@@ -46,10 +46,18 @@ class WeekDaysRepeatData : public gui::SwitchData
     virtual ~WeekDaysRepeatData() = default;
     [[nodiscard]] auto getData(const uint32_t &weekDay) const -> bool
     {
+        if (weekDay >= style::window::calendar::week_days_number) {
+            LOG_ERROR("Weekday out of range (%d)", weekDay);
+            return false;
+        }
         return weekDays[weekDay];
     };
     virtual void setData(const uint32_t &weekDay)
     {
+        if (weekDay >= style::window::calendar::week_days_number) {
+            LOG_ERROR("Weekday out of range (%d)", weekDay);
+            return;
+        }
         if (weekDays[weekDay]) {
             weekDays[weekDay] = false;
         }

@@ -33,8 +33,6 @@
 #include <service-appmgr/ApplicationManager.hpp>
 #include <time/time_conversion.hpp>
 
-#include <module-apps/application-calendar/data/dateCommon.h>
-
 namespace style
 {
     const auto design_time_offset          = 106;
