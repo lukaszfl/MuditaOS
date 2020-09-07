@@ -33,13 +33,12 @@ namespace gui
         uint32_t getDayNumber()
         {
             std::string text = dayNumber->getText();
-            if (auto result = std::atoi(text.c_str())) {
-                return result;
-            }
-            else {
+            auto result      = std::atoi(text.c_str());
+            if (result == 0 || result > 31) {
                 LOG_ERROR("Wrong day number!");
-                return 1;
+                return 0;
             }
+            return result;
         }
     };
 

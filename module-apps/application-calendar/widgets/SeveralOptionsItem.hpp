@@ -22,18 +22,6 @@ namespace gui
 
     class SeveralOptionsItem : public CalendarListItem
     {
-        ////Information to DB DOCUMENTATION
-        enum class CustomRepeatOption
-        {
-            MONDAYS   = 0x10000,
-            TUESDAYS  = 0x20000,
-            WENSDAYS  = 0x40000,
-            THURSDAYS = 0x80000,
-            FRIDAYS   = 0x100000,
-            SATURDAYS = 0x200000,
-            SUNDAYS   = 0x400000
-        };
-
         app::Application *application = nullptr;
         gui::VBox *vBox               = nullptr;
         gui::HBox *hBox               = nullptr;

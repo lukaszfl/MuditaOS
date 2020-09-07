@@ -71,7 +71,7 @@ namespace gui
                 uint32_t i = 0;
                 for (auto it : items) {
                     auto item = dynamic_cast<CheckBoxWithLabelItem *>(it);
-                    if (item->checkBox->isChecked()) {
+                    if (item && item->checkBox->isChecked()) {
                         LOG_DEBUG("IS CHECKED!!!");
                         weekDaysOptData->setData(i);
                     }
