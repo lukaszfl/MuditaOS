@@ -2,6 +2,7 @@
 #include "module-apps/application-calendar/widgets/CalendarStyle.hpp"
 #include <Utils.hpp>
 #include <module-db/Interface/EventsRecord.hpp>
+#include <time/time_locale.hpp>
 
 class TimeDisplayParser
 {
@@ -10,10 +11,10 @@ class TimeDisplayParser
     std::string getAMorPM(bool is_am)
     {
         if (is_am) {
-            return "AM";
+            return utils::localize.get(utils::time::Locale::getAM());
         }
         else {
-            return "PM";
+            return utils::localize.get(utils::time::Locale::getPM());
         }
     }
 

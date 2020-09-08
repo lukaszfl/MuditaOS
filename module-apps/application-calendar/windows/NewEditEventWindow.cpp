@@ -67,9 +67,6 @@ namespace gui
             if (receivedData != nullptr) {
                 auto parser     = new OptionParser();
                 auto uniqueData = std::make_unique<WeekDaysRepeatData>(*receivedData);
-                //                if(eventRecord->repeat<6){
-                //
-                //                }
                 eventRecord->repeat = eventRecord->repeat + parser->getDatabaseFieldValue(std::move(uniqueData));
                 newEditEventModel->loadRepeat(eventRecord);
             }

@@ -49,31 +49,11 @@ std::vector<std::string> MonthModel::split(const std::string &s, char delim)
 
 YearMonthDay MonthModel::parseDateFromDB(TimePoint dateDB)
 {
-    /*
-    std::string yearStr = dateDB.substr(0, 4);
-    LOG_DEBUG("DAY!!!!!!!!!!! : %s", yearStr.c_str());
-    std::string monthStr = dateDB.substr(6, 2);
-    LOG_DEBUG("MONTH!!!!!!!!!!! : %s", monthStr.c_str());
-    std::string dayStr = dateDB.substr(9, 2);
-    LOG_DEBUG("YEAR!!!!!!!!!!! : %s", dayStr.c_str());
-
-    return date::year(atoi(yearStr.c_str())) / date::month(atoi(monthStr.c_str())) / date::day(atoi(dayStr.c_str()));
-    */
     return TimePointToYearMonthDay(dateDB);
 }
 
 TimePoint MonthModel::parseDateToDB(YearMonthDay date)
 {
-    /*int yearUInt        = static_cast<decltype(yearUInt)>(date.year());
-    std::string yearStr = std::to_string(yearUInt);
-
-    unsigned int monthUInt = static_cast<unsigned>(date.month());
-    std::string monthStr   = utils::time::Locale::get_month(utils::time::Locale::Month(monthUInt - 1));
-
-    unsigned int dayUInt = static_cast<unsigned>(date.day());
-    std::string dayStr   = std::to_string(dayUInt);
-
-    return yearStr + "-" + monthStr + "-" + dayStr;*/
     return TimePointFromYearMonthDay(date);
 }
 
