@@ -206,7 +206,7 @@ namespace gui
             if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(temp.get())) {
                 unique_ptr<vector<EventsRecord>> records = response->getResult();
                 for (auto &rec : *records) {
-                    date::year_month_day recordDate = monthModel->parseDateFromDB(rec.date_from);
+                    date::year_month_day recordDate = TimePointToYearMonthDay(rec.date_from);
                     uint32_t dayNumb                = static_cast<uint32_t>(recordDate.day());
                     isDayEmpty[dayNumb - 1]         = false;
                 }
@@ -221,7 +221,7 @@ namespace gui
                 else {
                     auto appCalendar = dynamic_cast<app::ApplicationCalendar *>(application);
                     assert(appCalendar != nullptr);
-                    auto filter = monthModel->parseDateToDB(actualDate);
+                    auto filter = TimePointFromYearMonthDay(actualDate);
                     appCalendar->switchToNoEventsWindow(utils::localize.get("app_calendar_title_main"),
                                                         filter,
                                                         style::window::calendar::name::all_events_window);

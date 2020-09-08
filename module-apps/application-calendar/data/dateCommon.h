@@ -102,29 +102,4 @@ inline unsigned int WeekdayIndexFromTimePoint(const TimePoint &tp)
     return ymw.weekday().iso_encoding() - 1;
 }
 
-#if 0
-class _TimePoint : public TimePoint
-{
-  public:
-    _TimePoint(){};
-
-    std::string ToString()
-    {
-        return date::format("%F %T", time_point_cast<seconds>(*this));
-    }
-
-    void FromString(const char* s1)
-    {
-        std::istringstream(s1) >> date::parse("%F %T", *this);
-    }
-
-    /*_TimePoint operator=(const char* s1)
-    {
-        _TimePoint tp;
-        std::istringstream(s1) >> date::parse("%F %T", tp);
-        return tp;
-    }*/
-};
-#endif
-
 #endif // DATECOMMON_H
