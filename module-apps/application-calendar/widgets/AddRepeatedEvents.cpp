@@ -3,7 +3,7 @@
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsAdd.hpp>
 #include <module-apps/application-calendar/data/dateCommon.h>
-#include "../data/OptionParser.hpp"
+#include <module-apps/application-calendar/data/OptionParser.hpp>
 
 void AddRepeatedEvents::addDaily(std::shared_ptr<EventsRecord> event)
 {

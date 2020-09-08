@@ -171,8 +171,7 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
             item->onSaveCallback(event);
         }
     }
-    ////event->repeat = repeat->dataFromRecord
-    // event->repeat = repeat->getRepeatOptionValue();
+
     if (edit) {
         auto record = event.get();
         if (record->title != "") {
