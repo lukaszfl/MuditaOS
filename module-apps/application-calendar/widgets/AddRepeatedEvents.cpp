@@ -10,7 +10,7 @@ void AddRepeatedEvents::addDaily(std::shared_ptr<EventsRecord> event)
     auto record = event.get();
     for (uint32_t i = 1; i < 7; i++) {
         record->date_from += date::days{1};
-        record->date_from += date::days{1};
+        record->date_till += date::days{1};
         DBServiceAPI::GetQuery(
             application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
     }
@@ -21,7 +21,7 @@ void AddRepeatedEvents::addWeekly(std::shared_ptr<EventsRecord> event)
     auto record = event.get();
     for (uint32_t i = 1; i <= 4; i++) {
         record->date_from += date::days{7};
-        record->date_from += date::days{7};
+        record->date_till += date::days{7};
         DBServiceAPI::GetQuery(
             application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
     }
@@ -31,7 +31,7 @@ void AddRepeatedEvents::addTwoWeeks(std::shared_ptr<EventsRecord> event)
     auto record = event.get();
     for (uint32_t i = 1; i <= 4; i++) {
         record->date_from += date::days{14};
-        record->date_from += date::days{14};
+        record->date_till += date::days{14};
         DBServiceAPI::GetQuery(
             application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
     }
@@ -41,7 +41,7 @@ void AddRepeatedEvents::addMonth(std::shared_ptr<EventsRecord> event)
     auto record = event.get();
     for (uint32_t i = 1; i <= 4; i++) {
         record->date_from += date::months{1};
-        record->date_from += date::months{1};
+        record->date_till += date::months{1};
         DBServiceAPI::GetQuery(
             application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
     }
@@ -51,7 +51,7 @@ void AddRepeatedEvents::addYear(std::shared_ptr<EventsRecord> event)
     auto record = event.get();
     for (uint32_t i = 1; i <= 4; i++) {
         record->date_from += date::years{1};
-        record->date_from += date::years{1};
+        record->date_till += date::years{1};
         DBServiceAPI::GetQuery(
             application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
     }

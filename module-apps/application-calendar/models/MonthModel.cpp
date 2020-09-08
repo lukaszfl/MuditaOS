@@ -47,16 +47,6 @@ std::vector<std::string> MonthModel::split(const std::string &s, char delim)
     return elems;
 }
 
-YearMonthDay MonthModel::parseDateFromDB(TimePoint dateDB)
-{
-    return TimePointToYearMonthDay(dateDB);
-}
-
-TimePoint MonthModel::parseDateToDB(YearMonthDay date)
-{
-    return TimePointFromYearMonthDay(date);
-}
-
 std::string MonthModel::getMonthText()
 {
     unsigned int monthUInt = static_cast<unsigned>(month);

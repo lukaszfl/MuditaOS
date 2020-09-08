@@ -32,6 +32,4 @@ class MonthModel
     std::string getMonthYearText();
     std::string getMonthText();
     std::vector<std::string> split(const std::string &s, char delim);
-    YearMonthDay parseDateFromDB(TimePoint dateDB);
-    TimePoint parseDateToDB(YearMonthDay date);
 };
