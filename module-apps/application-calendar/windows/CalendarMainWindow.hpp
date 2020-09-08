@@ -4,6 +4,8 @@
 #include "Application.hpp"
 #include "application-calendar/ApplicationCalendar.hpp"
 #include "application-calendar/models/MonthModel.hpp"
+#include "application-calendar/widgets/DayLabel.hpp"
+#include "application-calendar/widgets/MonthBox.hpp"
 #include <gui/widgets/GridLayout.hpp>
 #include <map>
 #include <vector>
@@ -11,54 +13,6 @@
 
 namespace gui
 {
-    class CalendarMainWindow;
-
-    class DayLabel : public Rect
-    {
-        gui::VBox *vBox       = nullptr;
-        gui::Label *dayNumber = nullptr;
-        gui::Image *dotImage  = nullptr;
-
-      public:
-        DayLabel(app::Application *app,
-                 gui::Item *parent,
-                 const uint32_t &cellIndex,
-                 const uint32_t &firstWeekOffset,
-                 const uint32_t &width,
-                 const uint32_t &height,
-                 bool isDayEmpty);
-        ~DayLabel() override = default;
-
-        bool onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) override;
-        uint32_t getDayNumber()
-        {
-            std::string text = dayNumber->getText();
-            auto result      = std::atoi(text.c_str());
-            if (result == 0 || result > 31) {
-                LOG_ERROR("Wrong day number!");
-                return 0;
-            }
-            return result;
-        }
-    };
-
-    class MonthBox : public GridLayout
-    {
-      public:
-        MonthBox(app::Application *app,
-                 gui::Item *parent,
-                 const int &offsetTop,
-                 const uint32_t &width,
-                 const uint32_t &height,
-                 const uint32_t &dayWidth,
-                 const uint32_t &dayHeight,
-                 const std::unique_ptr<MonthModel> &model,
-                 bool *isDayEmpty);
-
-        ~MonthBox() override = default;
-        std::string month;
-        date::year_month monthFilterValue;
-    };
 
     class CalendarMainWindow : public gui::AppWindow
     {

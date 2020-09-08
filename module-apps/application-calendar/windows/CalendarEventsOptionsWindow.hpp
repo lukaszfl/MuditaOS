@@ -7,7 +7,7 @@ namespace gui
 {
     class CalendarEventsOptions : public OptionWindow
     {
-        std::shared_ptr<EventsRecord> eventRecord = nullptr;
+        std::shared_ptr<EventsRecord> eventRecord;
         std::string goBackWindowName;
 
       public:
