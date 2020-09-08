@@ -28,6 +28,27 @@ void NewEditEventModel::requestRecords(const uint32_t offset, const uint32_t lim
     list->onProviderDataUpdate();
 }
 
+uint32_t NewEditEventModel::getRepeatOptionValue()
+{
+    if (repeat != nullptr) {
+        return repeat->repeatOptionValue;
+    }
+    else {
+        LOG_ERROR("Repeat option value returned before assigned!");
+        return 0;
+    }
+}
+
+void NewEditEventModel::setRepeatOptionValue(const uint32_t &value)
+{
+    if (repeat != nullptr) {
+        repeat->repeatOptionValue = value;
+    }
+    else {
+        LOG_ERROR("Value not assigned. Repeat option item was not ready!");
+    }
+}
+
 gui::ListItem *NewEditEventModel::getItem(gui::Order order)
 {
     return getRecord(order);

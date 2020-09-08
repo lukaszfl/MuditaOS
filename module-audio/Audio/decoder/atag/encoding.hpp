@@ -66,10 +66,11 @@ namespace atag
             const int utf8_length = [src, length] {
                 int size = 0;
                 for (auto i = 0; (i < length) && src[i]; ++i) {
-                    if (src[i] < 128)
+                    ++size;
+                    /*if (src[i] < 128)
                         ++size;
                     else
-                        size += 2;
+                        size += 2;*/
                 }
                 return size;
             }();
@@ -77,13 +78,14 @@ namespace atag
             // TODO should we terminate early if we encounter a null character (currently we do)
             for (auto i = 0; (i < length) && (*src != 0); ++i) {
                 // ISO-8859-1 and UTF-8 are the same for the first 127 characters.
-                if (*src < 128) {
+                utf8.push_back(*src++);
+                /*if (*src < 128) {
                     utf8.push_back(*src++);
                 }
                 else {
                     utf8.push_back(192 | *src++ >> 6);
                     utf8.push_back(128 | (*src++ & 63));
-                }
+                }*/
             }
             return utf8;
         }
