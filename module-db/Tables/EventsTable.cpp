@@ -45,12 +45,13 @@ bool EventsTable::add(EventsTableRow entry)
 bool EventsTable::addDaily(EventsTableRow entry)
 {
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('Repeated event', datetime('%q',('+1 day')),datetime('%q',('+1 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+2 day')),datetime('%q',('+2 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+3 day')),datetime('%q',('+3 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+4 day')),datetime('%q',('+4 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+5 day')),datetime('%q',('+5 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+6 day')),datetime('%q',('+6 day'), %u, %u);",
+                       "('%q', datetime('%q',('+0 day')),datetime('%q',('+0 day')), %u, %u),"
+                       "('%q', datetime('%q',('+1 day')),datetime('%q',('+1 day')), %u, %u),"
+                       "('%q', datetime('%q',('+2 day')),datetime('%q',('+2 day')), %u, %u),"
+                       "('%q', datetime('%q',('+3 day')),datetime('%q',('+3 day')), %u, %u),"
+                       "('%q', datetime('%q',('+4 day')),datetime('%q',('+4 day')), %u, %u),"
+                       "('%q', datetime('%q',('+5 day')),datetime('%q',('+5 day')), %u, %u),"
+                       "('%q', datetime('%q',('+6 day')),datetime('%q',('+6 day')), %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
@@ -85,11 +86,13 @@ bool EventsTable::addDaily(EventsTableRow entry)
 
 bool EventsTable::addWeekly(EventsTableRow entry)
 {
+    LOG_DEBUG("ENTRY DATE FROM: %s", TimePointToString(entry.date_from).c_str());
+    LOG_DEBUG("ENTRY DATE FROM: %s", TimePointToString(entry.date_till).c_str());
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('Repeated event', datetime('%q',('+7 week')),datetime('%q',('+7 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+14 week')),datetime('%q',('+14 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+21 week')),datetime('%q',('+21 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+28 week')),datetime('%q',('+28 day'), %u, %u);",
+                       "('%q', datetime('%q',('+0 day')),datetime('%q',('+0 day')), %u, %u),"
+                       "('%q', datetime('%q',('+7 day')),datetime('%q',('+7 day')), %u, %u),"
+                       "('%q', datetime('%q',('+14 day')),datetime('%q',('+14 day')), %u, %u),"
+                       "('%q', datetime('%q',('+21 day')),datetime('%q',('+21 day')), %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
@@ -115,10 +118,10 @@ bool EventsTable::addWeekly(EventsTableRow entry)
 bool EventsTable::addTwoWeeks(EventsTableRow entry)
 {
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('Repeated event', datetime('%q',('+14 day')),datetime('%q',('+14 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+28 day')),datetime('%q',('+28 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+42 day')),datetime('%q',('+42 day'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+56 day')),datetime('%q',('+56 day'), %u, %u);",
+                       "('%q', datetime('%q',('+0 day')),datetime('%q',('+0 day')), %u, %u),"
+                       "('%q', datetime('%q',('+14 day')),datetime('%q',('+14 day')), %u, %u),"
+                       "('%q', datetime('%q',('+28 day')),datetime('%q',('+28 day')), %u, %u),"
+                       "('%q', datetime('%q',('+42 day')),datetime('%q',('+42 day')), %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
@@ -144,18 +147,24 @@ bool EventsTable::addTwoWeeks(EventsTableRow entry)
 bool EventsTable::addMonth(EventsTableRow entry)
 {
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('Repeated event', datetime('%q',('+1 month')),datetime('%q',('+1 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+2 month')),datetime('%q',('+2 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+3 month')),datetime('%q',('+3 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+4 month')),datetime('%q',('+4 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+5 month')),datetime('%q',('+5 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+6 month')),datetime('%q',('+6 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+7 month')),datetime('%q',('+7 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+8 month')),datetime('%q',('+8 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+9 month')),datetime('%q',('+9 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+10 month')),datetime('%q',('+10 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+11 month')),datetime('%q',('+11 month'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+12 month')),datetime('%q',('+12 month'), %u, %u);",
+                       "('%q', datetime('%q',('+0 month')),datetime('%q',('+0 month')), %u, %u),"
+                       "('%q', datetime('%q',('+1 month')),datetime('%q',('+1 month')), %u, %u),"
+                       "('%q', datetime('%q',('+2 month')),datetime('%q',('+2 month')), %u, %u),"
+                       "('%q', datetime('%q',('+3 month')),datetime('%q',('+3 month')), %u, %u),"
+                       "('%q', datetime('%q',('+4 month')),datetime('%q',('+4 month')), %u, %u),"
+                       "('%q', datetime('%q',('+5 month')),datetime('%q',('+5 month')), %u, %u),"
+                       "('%q', datetime('%q',('+6 month')),datetime('%q',('+6 month')), %u, %u),"
+                       "('%q', datetime('%q',('+7 month')),datetime('%q',('+7 month')), %u, %u),"
+                       "('%q', datetime('%q',('+8 month')),datetime('%q',('+8 month')), %u, %u),"
+                       "('%q', datetime('%q',('+9 month')),datetime('%q',('+9 month')), %u, %u),"
+                       "('%q', datetime('%q',('+10 month')),datetime('%q',('+10 month')), %u, %u),"
+                       "('%q', datetime('%q',('+11 month')),datetime('%q',('+11 month')), %u, %u);"
+                       "('%q', datetime('%q',('+12 month')),datetime('%q',('+12 month')), %u, %u);",
+                       entry.title.c_str(),
+                       TimePointToString(entry.date_from).c_str(),
+                       TimePointToString(entry.date_till).c_str(),
+                       entry.reminder,
+                       entry.repeat,
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
@@ -221,11 +230,11 @@ bool EventsTable::addMonth(EventsTableRow entry)
 bool EventsTable::addYear(EventsTableRow entry)
 {
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('Repeated event', datetime('%q',('+1 year')),datetime('%q',('+1 year'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+2 year')),datetime('%q',('+2 year'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+3 year')),datetime('%q',('+3 year'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+4 year')),datetime('%q',('+4 year'), %u, %u),"
-                       "('Repeated event', datetime('%q',('+5 year')),datetime('%q',('+5 year'), %u, %u);",
+                       "('%q', datetime('%q',('+0 year')),datetime('%q',('+0 year')), %u, %u),"
+                       "('%q', datetime('%q',('+1 year')),datetime('%q',('+1 year')), %u, %u),"
+                       "('%q', datetime('%q',('+2 year')),datetime('%q',('+2 year')), %u, %u),"
+                       "('%q', datetime('%q',('+3 year')),datetime('%q',('+3 year')), %u, %u),"
+                       "('%q', datetime('%q',('+4 year')),datetime('%q',('+4 year')), %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),

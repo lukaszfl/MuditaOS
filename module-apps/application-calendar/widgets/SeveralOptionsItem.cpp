@@ -150,10 +150,10 @@ namespace gui
             }
             if (event.keyCode == gui::KeyCode::KEY_LF && actualVectorIndex == optionsNames.size() - 1 &&
                 descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_repeat")) {
-                auto parser            = new OptionParser();
+                OptionParser parser;
                 auto weekDayRepeatData = std::make_unique<WeekDaysRepeatData>();
                 assert(weekDayRepeatData != nullptr);
-                auto weekDayData = parser->setWeekDayOptions(repeatOptionValue, std::move(weekDayRepeatData));
+                auto weekDayData = parser.setWeekDayOptions(repeatOptionValue, std::move(weekDayRepeatData));
                 application->switchWindow(style::window::calendar::name::custom_repeat_window, std::move(weekDayData));
                 return true;
             }

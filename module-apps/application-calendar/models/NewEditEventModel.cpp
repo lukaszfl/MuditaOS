@@ -177,10 +177,10 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
         if (record->title != "") {
             DBServiceAPI::GetQuery(
                 application, db::Interface::Name::Events, std::make_unique<db::query::events::Edit>(*record));
-            if (event->repeat) {
-                auto repeatObject = new AddRepeatedEvents(application);
-                repeatObject->addRepeatedEvents(std::move(event));
-            }
+            //            if (event->repeat) {
+            //                auto repeatObject = new AddRepeatedEvents(application);
+            //                repeatObject->addRepeatedEvents(std::move(event));
+            //            }
         }
         application->switchWindow(windowName);
     }
@@ -189,10 +189,10 @@ void NewEditEventModel::saveData(std::shared_ptr<EventsRecord> event, bool edit,
         if (record->title != "") {
             DBServiceAPI::GetQuery(
                 application, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
-            if (event->repeat) {
-                auto repeatObject = new AddRepeatedEvents(application);
-                repeatObject->addRepeatedEvents(std::move(event));
-            }
+            //            if (event->repeat) {
+            //                auto repeatObject = new AddRepeatedEvents(application);
+            //                repeatObject->addRepeatedEvents(std::move(event));
+            //            }
             if (application->getPrevWindow() == style::window::calendar::name::no_events_window) {
                 auto data      = std::make_unique<DayMonthData>();
                 auto startDate = TimePointToYearMonthDay(record->date_from);
