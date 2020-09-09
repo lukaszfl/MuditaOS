@@ -25,7 +25,7 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/EventTimeItem.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/SeveralOptionsItem.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/TextWithLabelItem.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/widgets/CheckBoxWithLabelAndModel.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/widgets/NewEventCheckBoxWithLabel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/AddRepeatedEvents.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/DayLabel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/MonthBox.cpp"

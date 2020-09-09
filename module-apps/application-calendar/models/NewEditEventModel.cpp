@@ -1,5 +1,5 @@
 #include "NewEditEventModel.hpp"
-#include "application-calendar/widgets/CheckBoxWithLabelAndModel.hpp"
+#include "application-calendar/widgets/NewEventCheckBoxWithLabel.hpp"
 #include "application-calendar/widgets/AddRepeatedEvents.hpp"
 #include "module-apps/application-calendar/data/CalendarData.hpp"
 #include <ListView.hpp>
@@ -65,7 +65,7 @@ void NewEditEventModel::createData(bool allDayEvent)
         [app]() { app->getCurrentWindow()->bottomBarRestoreFromTemporaryMode(); },
         [app]() { app->getCurrentWindow()->selectSpecialCharacter(); });
 
-    allDayEventCheckBox = new gui::CheckBoxWithLabelAndModel(
+    allDayEventCheckBox = new gui::NewEventCheckBoxWithLabel(
         application, utils::localize.get("app_calendar_new_edit_event_allday"), true, this);
 
     startTime = new gui::EventTimeItem(

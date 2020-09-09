@@ -1,9 +1,9 @@
-#include "CheckBoxWithLabelAndModel.hpp"
+#include "NewEventCheckBoxWithLabel.hpp"
 
 namespace gui
 {
 
-    CheckBoxWithLabelAndModel::CheckBoxWithLabelAndModel(app::Application *application,
+    NewEventCheckBoxWithLabel::NewEventCheckBoxWithLabel(app::Application *application,
                                                          const std::string &description,
                                                          bool checkIsOnLeftBarSide,
                                                          NewEditEventModel *model)
@@ -17,7 +17,7 @@ namespace gui
         applyCallbacks();
     }
 
-    void CheckBoxWithLabelAndModel::applyCallbacks()
+    void NewEventCheckBoxWithLabel::applyCallbacks()
     {
         focusChangedCallback = [&](Item &item) {
             if (focus) {
