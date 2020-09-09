@@ -22,12 +22,37 @@ EventsRecordInterface::EventsRecordInterface(EventsDB *eventsDb) : eventsDb(even
 
 bool EventsRecordInterface::Add(const EventsRecord &rec)
 {
-    eventsDb->events.add(EventsTableRow{{.ID = rec.ID},
-                                        .title     = rec.title,
-                                        .date_from = rec.date_from,
-                                        .date_till = rec.date_till,
-                                        .reminder  = rec.reminder,
-                                        .repeat    = rec.repeat});
+    auto entry = EventsTableRow{{.ID = rec.ID},
+                                .title     = rec.title,
+                                .date_from = rec.date_from,
+                                .date_till = rec.date_till,
+                                .reminder  = rec.reminder,
+                                .repeat    = rec.repeat};
+
+    switch (rec.repeat) {
+    case 0: {
+        return eventsDb->events.add(entry);
+    }
+    case 1: {
+        return eventsDb->events.addDaily(entry);
+    }
+    case 2: {
+        return eventsDb->events.addWeekly(entry);
+    }
+    case 3: {
+        return eventsDb->events.addTwoWeeks(entry);
+    }
+    case 4: {
+        return eventsDb->events.addMonth(entry);
+    }
+    case 5: {
+        return eventsDb->events.addYear(entry);
+    }
+    default: {
+        // eventsDb->events.addCustom(entry);
+        break;
+    }
+    }
 
     return true;
 }
@@ -91,18 +116,46 @@ std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::GetLimitOffset
 
 bool EventsRecordInterface::Update(const EventsRecord &rec)
 {
-    auto entry = eventsDb->events.getById(rec.ID);
-    if (!entry.isValid()) {
+    auto record = eventsDb->events.getById(rec.ID);
+    if (!record.isValid()) {
         LOG_DEBUG("IS NOT VALID");
         return false;
     }
 
-    return eventsDb->events.update(EventsTableRow{{.ID = rec.ID},
-                                                  .title     = rec.title,
-                                                  .date_from = rec.date_from,
-                                                  .date_till = rec.date_till,
-                                                  .reminder  = rec.reminder,
-                                                  .repeat    = rec.repeat});
+    auto entry = EventsTableRow{{.ID = rec.ID},
+                                .title     = rec.title,
+                                .date_from = rec.date_from,
+                                .date_till = rec.date_till,
+                                .reminder  = rec.reminder,
+                                .repeat    = rec.repeat};
+
+    bool result = eventsDb->events.update(entry);
+
+    switch (rec.repeat) {
+    case 0: {
+        return (eventsDb->events.add(entry) && result);
+    }
+    case 1: {
+        return (eventsDb->events.addDaily(entry) && result);
+    }
+    case 2: {
+        return (eventsDb->events.addWeekly(entry) && result);
+    }
+    case 3: {
+        return (eventsDb->events.addTwoWeeks(entry) && result);
+    }
+    case 4: {
+        return (eventsDb->events.addMonth(entry) && result);
+    }
+    case 5: {
+        return (eventsDb->events.addYear(entry) && result);
+    }
+    default: {
+        // eventsDb->events.addCustom(entry);
+        break;
+    }
+    }
+    return false;
 }
 
 bool EventsRecordInterface::RemoveByID(uint32_t id)
