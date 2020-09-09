@@ -30,15 +30,14 @@ unsigned int AllEventsModel::getMinimalItemHeight() const
 
 gui::ListItem *AllEventsModel::getItem(gui::Order order)
 {
-    auto *item = new gui::AllEventsItem();
     auto record = getRecord(order);
-    if (record != nullptr) {
-        item->setEvent(record);
-    }
-    else {
+    if (record == nullptr) {
         LOG_DEBUG("Empty record in AllEventsModel::GetItem");
         return nullptr;
     }
+
+    auto *item = new gui::AllEventsItem();
+    item->setEvent(record);
     item->activatedCallback = [=](gui::Item &item) {
         LOG_INFO("Switch to event details window");
         auto rec  = std::make_unique<EventsRecord>(*record);
