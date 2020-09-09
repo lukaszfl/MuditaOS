@@ -29,7 +29,7 @@ namespace gui
         this->dayNumber->setMargins(gui::Margins(0, 11, 0, 0));
         this->dayNumber->activeItem = false;
 
-        this->dotImage = new gui::Image(vBox, 0, 0, 0, 0, "dot_12px_hard_alpha_W_G");
+        this->dotImage = new gui::Image(this, width / 2 - 7, height - 13, 0, 0, "dot_12px_hard_alpha_W_G");
         this->dotImage->setMinimumSize(11, 11);
         this->dotImage->setAlignment(
             gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
