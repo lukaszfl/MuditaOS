@@ -68,7 +68,8 @@ namespace gui
             this->activatedCallback = [=](gui::Item &item) {
                 auto data       = std::make_unique<DayMonthData>();
                 auto month      = actualMonthBox->month;
-                auto dateFilter = actualDate.year() / actualDate.month() / date::day(numb);
+                auto dateFilter = actualMonthBox->monthFilterValue.year() / actualMonthBox->monthFilterValue.month() /
+                                  date::day(numb);
                 auto filter     = TimePointFromYearMonthDay(dateFilter);
                 data->setData(number + " " + month, filter);
                 if (isDayEmpty) {
