@@ -1,3 +1,14 @@
+[submodule "module-bluetooth/lib/btstack"]
+	path = module-bluetooth/lib/btstack
+	url = ../btstack-bluetopia.git
+	shallow = true
+[submodule "module-lwip/lib/lwip"]
+	path = module-lwip/lib/lwip
+	url = ../lwip.git
+	shallow = true
+[submodule "module-utils/tinyfsm"]
+	path = module-utils/tinyfsm
+	url = https://github.com/digint/tinyfsm.git
 [submodule "module-utils/microtar"]
 	path = module-utils/microtar
 	url = ../microtar.git
@@ -7,6 +18,9 @@
 [submodule "module-utils/crc32"]
 	path = module-utils/crc32
 	url = ../crc32
+[submodule "module-utils/sbini"]
+	path = module-utils/sbini
+	url = ../sbini
 [submodule "module-utils/re2"]
 	path = module-utils/re2
 	url = ../re2.git
