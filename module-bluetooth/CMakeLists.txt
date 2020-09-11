@@ -8,17 +8,8 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/BluetoothWorker.cpp
 )
 
-if(${BT_STACK} STREQUAL "Bluetopia")
-    if(NOT ${PROJECT_TARGET} STREQUAL "TARGET_Linux")
-        message("Build with bluetopia")
-        include(lib/Bluetopia.cmake)
-    else()
-        message("Nor bluetopia not bluekitchen - wont compile")
-    endif()
-else()
-    message("Build with BlueKitchen")
-    include(lib/btstack.cmake)
-endif()
+message("Build with BlueKitchen")
+include(lib/btstack.cmake)
 
 
 message("Sources: " ${SOURCES})
