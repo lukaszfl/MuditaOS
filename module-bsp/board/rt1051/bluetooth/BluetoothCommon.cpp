@@ -228,10 +228,8 @@ void BluetoothCommon::configure_lpuart()
 void BluetoothCommon::configure_cts_irq()
 {
     DisableIRQ(GPIO1_Combined_16_31_IRQn);
-    GPIO_PortEnableInterrupts(GPIO1, 0xFFFFFFFF);
-    // Clear all IRQs
     GPIO_PortClearInterruptFlags(GPIO1, 0xFFFFFFFF);
-    GPIO_PortDisableInterrupts(GPIO1, 0xFFFFFFFF);
+    GPIO_PortEnableInterrupts(GPIO1, (1 << BSP_BLUETOOTH_UART_CTS_PIN));
     EnableIRQ(GPIO1_Combined_16_31_IRQn);
     NVIC_SetPriority(GPIO1_Combined_16_31_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
 }
@@ -259,10 +257,17 @@ extern "C"
 {
     void GPIO1_Combined_16_31_IRQHandler(void)
     {
-        uint32_t irq_mask = GPIO_GetPinsInterruptFlags(GPIO2);
+        BaseType_t xHigherPriorityTaskWoken = 0;
+        uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO1);
+
         if (irq_mask & (1 << BSP_BLUETOOTH_UART_CTS_PIN)) {
-            // printf("CTS IRQ!\n");
+            LOG_DEBUG("CTS IRQ!\n");
         }
+
+        // Clear all IRQs
         GPIO_PortClearInterruptFlags(GPIO1, irq_mask);
+
+        // Switch context if necessary
+        portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
     }
 };

@@ -82,6 +82,7 @@ bool BluetoothWorker::scan()
 bool BluetoothWorker::set_visible()
 {
     LOG_ERROR("TODO");
+
     return false;
 }
 
