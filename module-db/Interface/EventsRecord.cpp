@@ -49,7 +49,7 @@ bool EventsRecordInterface::Add(const EventsRecord &rec)
         return eventsDb->events.addYear(entry);
     }
     default: {
-        // eventsDb->events.addCustom(entry);
+        eventsDb->events.addCustom(entry);
         break;
     }
     }
@@ -151,7 +151,7 @@ bool EventsRecordInterface::Update(const EventsRecord &rec)
         return (eventsDb->events.addYear(entry) && result);
     }
     default: {
-        // eventsDb->events.addCustom(entry);
+        eventsDb->events.addCustom(entry);
         break;
     }
     }

@@ -35,7 +35,7 @@ class EventsTable : public Table<EventsTableRow, EventsTableFields>
     bool addTwoWeeks(EventsTableRow entry);
     bool addMonth(EventsTableRow entry);
     bool addYear(EventsTableRow entry);
-    bool addCustom(EventsTableRow entry, int weekDayOffset);
+    bool addCustom(EventsTableRow entry);
     bool removeById(uint32_t id) override final;
     bool removeByField(EventsTableFields field, const char *str) override final;
     bool update(EventsTableRow entry) override final;

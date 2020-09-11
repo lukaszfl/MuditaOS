@@ -1,5 +1,7 @@
 #include "EventsTable.hpp"
 #include "module-db/Interface/EventsRecord.hpp"
+//#include <module-apps/application-calendar/widgets/CalendarStyle.hpp>
+//#include <module-apps/application-calendar/data/OptionParser.hpp>
 
 #include <log/log.hpp>
 #include <Utils.hpp>
@@ -44,42 +46,50 @@ bool EventsTable::add(EventsTableRow entry)
 
 bool EventsTable::addDaily(EventsTableRow entry)
 {
+    for (uint32_t i = 0; i < 7; i++) {
+        LOG_DEBUG("DATE!!!!!!!!!!:%s", TimePointToString(entry.date_from + date::days{i}).c_str());
+    }
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('%q', datetime('%q',('+0 day')),datetime('%q',('+0 day')), %u, %u),"
-                       "('%q', datetime('%q',('+1 day')),datetime('%q',('+1 day')), %u, %u),"
-                       "('%q', datetime('%q',('+2 day')),datetime('%q',('+2 day')), %u, %u),"
-                       "('%q', datetime('%q',('+3 day')),datetime('%q',('+3 day')), %u, %u),"
-                       "('%q', datetime('%q',('+4 day')),datetime('%q',('+4 day')), %u, %u),"
-                       "('%q', datetime('%q',('+5 day')),datetime('%q',('+5 day')), %u, %u),"
-                       "('%q', datetime('%q',('+6 day')),datetime('%q',('+6 day')), %u, %u);",
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{1}).c_str(),
+                       TimePointToString(entry.date_till + date::days{1}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{2}).c_str(),
+                       TimePointToString(entry.date_till + date::days{2}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{3}).c_str(),
+                       TimePointToString(entry.date_till + date::days{3}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{4}).c_str(),
+                       TimePointToString(entry.date_till + date::days{4}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{5}).c_str(),
+                       TimePointToString(entry.date_till + date::days{5}).c_str(),
+                       entry.reminder,
+                       entry.repeat,
+                       entry.title.c_str(),
+                       TimePointToString(entry.date_from + date::days{6}).c_str(),
+                       TimePointToString(entry.date_till + date::days{6}).c_str(),
                        entry.reminder,
                        entry.repeat);
 }
@@ -89,28 +99,28 @@ bool EventsTable::addWeekly(EventsTableRow entry)
     LOG_DEBUG("ENTRY DATE FROM: %s", TimePointToString(entry.date_from).c_str());
     LOG_DEBUG("ENTRY DATE FROM: %s", TimePointToString(entry.date_till).c_str());
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('%q', datetime('%q',('+0 day')),datetime('%q',('+0 day')), %u, %u),"
-                       "('%q', datetime('%q',('+7 day')),datetime('%q',('+7 day')), %u, %u),"
-                       "('%q', datetime('%q',('+14 day')),datetime('%q',('+14 day')), %u, %u),"
-                       "('%q', datetime('%q',('+21 day')),datetime('%q',('+21 day')), %u, %u);",
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{7}).c_str(),
+                       TimePointToString(entry.date_till + date::days{7}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{14}).c_str(),
+                       TimePointToString(entry.date_till + date::days{14}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{21}).c_str(),
+                       TimePointToString(entry.date_till + date::days{21}).c_str(),
                        entry.reminder,
                        entry.repeat);
 }
@@ -118,111 +128,113 @@ bool EventsTable::addWeekly(EventsTableRow entry)
 bool EventsTable::addTwoWeeks(EventsTableRow entry)
 {
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('%q', datetime('%q',('+0 day')),datetime('%q',('+0 day')), %u, %u),"
-                       "('%q', datetime('%q',('+14 day')),datetime('%q',('+14 day')), %u, %u),"
-                       "('%q', datetime('%q',('+28 day')),datetime('%q',('+28 day')), %u, %u),"
-                       "('%q', datetime('%q',('+42 day')),datetime('%q',('+42 day')), %u, %u);",
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{14}).c_str(),
+                       TimePointToString(entry.date_till + date::days{14}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{28}).c_str(),
+                       TimePointToString(entry.date_till + date::days{28}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::days{42}).c_str(),
+                       TimePointToString(entry.date_till + date::days{42}).c_str(),
                        entry.reminder,
                        entry.repeat);
 }
 
 bool EventsTable::addMonth(EventsTableRow entry)
 {
+    for (uint32_t i = 0; i < 12; i++) {
+        LOG_DEBUG("DATE!!!!!!!!!!:%s", TimePointToString(entry.date_from + date::months{i}).c_str());
+    }
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('%q', datetime('%q',('+0 month')),datetime('%q',('+0 month')), %u, %u),"
-                       "('%q', datetime('%q',('+1 month')),datetime('%q',('+1 month')), %u, %u),"
-                       "('%q', datetime('%q',('+2 month')),datetime('%q',('+2 month')), %u, %u),"
-                       "('%q', datetime('%q',('+3 month')),datetime('%q',('+3 month')), %u, %u),"
-                       "('%q', datetime('%q',('+4 month')),datetime('%q',('+4 month')), %u, %u),"
-                       "('%q', datetime('%q',('+5 month')),datetime('%q',('+5 month')), %u, %u),"
-                       "('%q', datetime('%q',('+6 month')),datetime('%q',('+6 month')), %u, %u),"
-                       "('%q', datetime('%q',('+7 month')),datetime('%q',('+7 month')), %u, %u),"
-                       "('%q', datetime('%q',('+8 month')),datetime('%q',('+8 month')), %u, %u),"
-                       "('%q', datetime('%q',('+9 month')),datetime('%q',('+9 month')), %u, %u),"
-                       "('%q', datetime('%q',('+10 month')),datetime('%q',('+10 month')), %u, %u),"
-                       "('%q', datetime('%q',('+11 month')),datetime('%q',('+11 month')), %u, %u);"
-                       "('%q', datetime('%q',('+12 month')),datetime('%q',('+12 month')), %u, %u);",
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{1}).c_str(),
+                       TimePointToString(entry.date_till, date::months{1}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{2}).c_str(),
+                       TimePointToString(entry.date_till, date::months{2}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{3}).c_str(),
+                       TimePointToString(entry.date_till, date::months{3}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{4}).c_str(),
+                       TimePointToString(entry.date_till, date::months{4}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{5}).c_str(),
+                       TimePointToString(entry.date_till, date::months{5}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{6}).c_str(),
+                       TimePointToString(entry.date_till, date::months{6}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{7}).c_str(),
+                       TimePointToString(entry.date_till, date::months{7}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{8}).c_str(),
+                       TimePointToString(entry.date_till, date::months{8}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{9}).c_str(),
+                       TimePointToString(entry.date_till, date::months{9}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{10}).c_str(),
+                       TimePointToString(entry.date_till, date::months{10}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{11}).c_str(),
+                       TimePointToString(entry.date_till, date::months{11}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from, date::months{12}).c_str(),
+                       TimePointToString(entry.date_till, date::months{12}).c_str(),
                        entry.reminder,
                        entry.repeat);
 }
@@ -230,49 +242,91 @@ bool EventsTable::addMonth(EventsTableRow entry)
 bool EventsTable::addYear(EventsTableRow entry)
 {
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('%q', datetime('%q',('+0 year')),datetime('%q',('+0 year')), %u, %u),"
-                       "('%q', datetime('%q',('+1 year')),datetime('%q',('+1 year')), %u, %u),"
-                       "('%q', datetime('%q',('+2 year')),datetime('%q',('+2 year')), %u, %u),"
-                       "('%q', datetime('%q',('+3 year')),datetime('%q',('+3 year')), %u, %u),"
-                       "('%q', datetime('%q',('+4 year')),datetime('%q',('+4 year')), %u, %u);",
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u),"
+                       "('%q', '%q','%q', %u, %u);",
                        entry.title.c_str(),
                        TimePointToString(entry.date_from).c_str(),
                        TimePointToString(entry.date_till).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::years{1}).c_str(),
+                       TimePointToString(entry.date_till + date::years{1}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::years{2}).c_str(),
+                       TimePointToString(entry.date_till + date::years{2}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::years{3}).c_str(),
+                       TimePointToString(entry.date_till + date::years{3}).c_str(),
                        entry.reminder,
                        entry.repeat,
                        entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       TimePointToString(entry.date_till).c_str(),
+                       TimePointToString(entry.date_from + date::years{4}).c_str(),
+                       TimePointToString(entry.date_till + date::years{4}).c_str(),
                        entry.reminder,
                        entry.repeat);
 }
 
-bool EventsTable::addCustom(EventsTableRow entry, int weekDayOffset)
+std::vector<bool> parseOptions(const uint32_t &dataDB)
 {
-    return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
-                       "('Repeated event', datetime('%q',('%i day')),datetime('%q',('%i day'), %u, %u);",
-                       entry.title.c_str(),
-                       TimePointToString(entry.date_from).c_str(),
-                       weekDayOffset,
-                       TimePointToString(entry.date_till).c_str(),
-                       weekDayOffset,
-                       entry.reminder,
-                       entry.repeat);
+    const uint32_t startBit        = 16;
+    const uint32_t numberOfOptions = 7;
+    std::vector<bool> weekDayOptions;
+    for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
+        weekDayOptions.push_back(false);
+    }
+    for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
+        if (dataDB & (1 << i)) {
+            LOG_DEBUG("SET OPTION ARRAY!!!%u", i);
+            weekDayOptions[i - startBit] = true;
+        }
+    }
+    return weekDayOptions;
+}
+
+std::string concatenate(const char *format, ...)
+{
+    std::string result = format;
+    return result;
+}
+
+bool EventsTable::addCustom(EventsTableRow entry)
+{
+    // OptionParser parser;
+    std::vector<bool> weekDayOptions;
+    weekDayOptions = parseOptions(entry.repeat);
+
+    std::string request = "INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES ";
+    //    for (uint32_t i = 0; i < 7 ;i++)
+    //    {
+    //        if (weekDayOptions[i]){
+    request = request + concatenate("('%q', datetime('%q',('+%u year')),datetime('%q',('+%u year')), %u, %u), ",
+                                    entry.title.c_str(),
+                                    TimePointToString(entry.date_from).c_str(),
+                                    1,
+                                    TimePointToString(entry.date_till).c_str(),
+                                    1,
+                                    entry.reminder,
+                                    entry.repeat);
+
+    request = request + concatenate("('%q', datetime('%q',('+%u day')),datetime('%q',('+%u day')), %u, %u); ",
+                                    entry.title.c_str(),
+                                    TimePointToString(entry.date_from).c_str(),
+                                    2,
+                                    TimePointToString(entry.date_till).c_str(),
+                                    2,
+                                    entry.reminder,
+                                    entry.repeat);
+    //        }
+    //    }
+    return db->execute(request.c_str());
 }
 
 bool EventsTable::removeById(uint32_t id)
