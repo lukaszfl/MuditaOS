@@ -138,4 +138,5 @@ inline unsigned int WeekdayIndexFromTimePoint(const TimePoint &tp)
     return ymw.weekday().iso_encoding() - 1;
 }
 
-#endif // DATECOMMON_H
+#endif
+// DATECOMMON_H

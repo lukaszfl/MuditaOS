@@ -5,6 +5,7 @@
 #include "SystemManager/SystemManager.hpp"
 #include "gui/widgets/Label.hpp"
 #include <module-apps/application-calendar/data/dateCommon.h>
+#include "application-calendar/widgets/CalendarStyle.hpp"
 
 namespace app
 {
@@ -40,10 +41,8 @@ namespace app
         void switchToNoEventsWindow(const std::string &title,
                                     const TimePoint &dateFilter,
                                     const std::string &goBackWindow);
-        void applyRepeatAndReminderMap();
 
-        std::map<uint32_t, std::string> reminderOptions;
-        std::map<uint32_t, std::string> repeatOptions;
+        static std::map<uint32_t, std::string> reminderOptions;
+        static std::map<uint32_t, std::string> repeatOptions;
     };
-
 } /* namespace app */

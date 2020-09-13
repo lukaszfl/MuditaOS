@@ -106,39 +106,45 @@ namespace gui
 
                 if (this->descriptionLabel->getText() ==
                     utils::localize.get("app_calendar_new_edit_event_start").c_str()) {
-                    auto hour = atoi(hourInput->getText().c_str()) + 1;
-                    if (!mode24H) {
-                        if (mode12hInput->getText() == timeConstants::after_noon) {
-                            if (hour == style::window::calendar::time::max_hour_12H_mode) {
-                                hour = style::window::calendar::time::max_hour_12H_mode - 1;
-                                secondItem->minuteInput->setText(
-                                    std::to_string(style::window::calendar::time::max_minutes));
+                    try {
+                        auto hour = std::stoi(hourInput->getText().c_str()) + 1;
+                        if (!mode24H) {
+                            if (mode12hInput->getText() == timeConstants::after_noon) {
+                                if (hour == style::window::calendar::time::max_hour_12H_mode) {
+                                    hour = style::window::calendar::time::max_hour_12H_mode - 1;
+                                    secondItem->minuteInput->setText(
+                                        std::to_string(style::window::calendar::time::max_minutes));
+                                }
+                                else {
+                                    secondItem->minuteInput->setText(minuteInput->getText());
+                                }
+                                secondItem->mode12hInput->setText(mode12hInput->getText());
                             }
                             else {
+                                if (hour == style::window::calendar::time::max_hour_12H_mode) {
+                                    secondItem->mode12hInput->setText(timeConstants::after_noon);
+                                }
                                 secondItem->minuteInput->setText(minuteInput->getText());
                             }
-                            secondItem->mode12hInput->setText(mode12hInput->getText());
+                            if (hour > style::window::calendar::time::max_hour_12H_mode) {
+                                hour = 1;
+                                secondItem->mode12hInput->setText(mode12hInput->getText());
+                                secondItem->minuteInput->setText(minuteInput->getText());
+                            }
                         }
                         else {
-                            if (hour == style::window::calendar::time::max_hour_12H_mode) {
-                                secondItem->mode12hInput->setText(timeConstants::after_noon);
+                            secondItem->minuteInput->setText(minuteInput->getText());
+                            if (hour > style::window::calendar::time::max_hour_24H_mode) {
+                                hour = style::window::calendar::time::max_hour_24H_mode;
+                                secondItem->minuteInput->setText(minuteInput->getText());
                             }
-                            secondItem->minuteInput->setText(minuteInput->getText());
                         }
-                        if (hour > style::window::calendar::time::max_hour_12H_mode) {
-                            hour = 1;
-                            secondItem->mode12hInput->setText(mode12hInput->getText());
-                            secondItem->minuteInput->setText(minuteInput->getText());
-                        }
+                        secondItem->hourInput->setText(std::to_string(hour));
                     }
-                    else {
-                        secondItem->minuteInput->setText(minuteInput->getText());
-                        if (hour > style::window::calendar::time::max_hour_24H_mode) {
-                            hour = style::window::calendar::time::max_hour_24H_mode;
-                            secondItem->minuteInput->setText(minuteInput->getText());
-                        }
+                    catch (std::exception &e) {
+                        LOG_ERROR("EventTimeItem::applyInputCallbacks: %s", e.what());
+                        return false;
                     }
-                    secondItem->hourInput->setText(std::to_string(hour));
                 }
                 return true;
             }
