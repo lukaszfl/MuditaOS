@@ -6,7 +6,6 @@
 #include "windows/EventDetailWindow.hpp"
 #include "windows/NewEditEventWindow.hpp"
 #include "windows/CustomRepeatWindow.hpp"
-#include "application-calendar/widgets/CalendarStyle.hpp"
 #include "NoEvents.hpp"
 #include "Dialog.hpp"
 #include <time/time_conversion.hpp>
@@ -16,6 +15,26 @@
 
 namespace app
 {
+    map<uint32_t, std::string> ApplicationCalendar::reminderOptions = {
+        {style::window::calendar::reminder::never, "app_calendar_reminder_never"},
+        {style::window::calendar::reminder::event_time, "app_calendar_reminder_event_time"},
+        {style::window::calendar::reminder::five_min_before, "app_calendar_reminder_5_min_before"},
+        {style::window::calendar::reminder::fifteen_min_before, "app_calendar_reminder_15_min_before"},
+        {style::window::calendar::reminder::thirty_min_before, "app_calendar_reminder_30_min_before"},
+        {style::window::calendar::reminder::one_hour_before, "app_calendar_reminder_1_hour_before"},
+        {style::window::calendar::reminder::two_hour_before, "app_calendar_reminder_2_hour_before"},
+        {style::window::calendar::reminder::one_day_before, "app_calendar_reminder_1_day_before"},
+        {style::window::calendar::reminder::two_days_before, "app_calendar_reminder_2_days_before"},
+        {style::window::calendar::reminder::one_week_before, "app_calendar_reminder_1_week_before"}};
+
+    map<uint32_t, std::string> ApplicationCalendar::repeatOptions = {
+        {style::window::calendar::repeat::never, "app_calendar_repeat_never"},
+        {style::window::calendar::repeat::daily, "app_calendar_repeat_daily"},
+        {style::window::calendar::repeat::weekly, "app_calendar_repeat_weekly"},
+        {style::window::calendar::repeat::two_weeks, "app_calendar_repeat_two_weeks"},
+        {style::window::calendar::repeat::month, "app_calendar_repeat_month"},
+        {style::window::calendar::repeat::year, "app_calendar_repeat_year"},
+        {style::window::calendar::repeat::custom, "app_calendar_repeat_custom"}};
 
     ApplicationCalendar::ApplicationCalendar(std::string name,
                                              std::string parent,
@@ -23,7 +42,6 @@ namespace app
                                              sys::ServicePriority priority)
         : Application(name, parent, false, stackDepth, priority)
     {
-        applyRepeatAndReminderMap();
     }
 
     sys::Message_t ApplicationCalendar::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
@@ -131,27 +149,6 @@ namespace app
         switchWindow(gui::name::window::main_window);
         switchWindow(dialog->getName());
         LOG_DEBUG("Switch to no events window");
-    }
-
-    void ApplicationCalendar::applyRepeatAndReminderMap()
-    {
-        reminderOptions[style::window::calendar::reminder::never]              = "app_calendar_reminder_never";
-        reminderOptions[style::window::calendar::reminder::event_time]         = "app_calendar_reminder_event_time";
-        reminderOptions[style::window::calendar::reminder::five_min_before]    = "app_calendar_reminder_5_min_before";
-        reminderOptions[style::window::calendar::reminder::fifteen_min_before] = "app_calendar_reminder_15_min_before";
-        reminderOptions[style::window::calendar::reminder::thirty_min_before]  = "app_calendar_reminder_30_min_before";
-        reminderOptions[style::window::calendar::reminder::one_hour_before]    = "app_calendar_reminder_1_hour_before";
-        reminderOptions[style::window::calendar::reminder::two_hour_before]    = "app_calendar_reminder_2_hour_before";
-        reminderOptions[style::window::calendar::reminder::one_day_before]     = "app_calendar_reminder_1_day_before";
-        reminderOptions[style::window::calendar::reminder::two_days_before]    = "app_calendar_reminder_2_days_before";
-        reminderOptions[style::window::calendar::reminder::one_week_before]    = "app_calendar_reminder_1_week_before";
-        repeatOptions[style::window::calendar::repeat::never]                  = "app_calendar_repeat_never";
-        repeatOptions[style::window::calendar::repeat::daily]                  = "app_calendar_repeat_daily";
-        repeatOptions[style::window::calendar::repeat::weekly]                 = "app_calendar_repeat_weekly";
-        repeatOptions[style::window::calendar::repeat::two_weeks]              = "app_calendar_repeat_two_weeks";
-        repeatOptions[style::window::calendar::repeat::month]                  = "app_calendar_repeat_month";
-        repeatOptions[style::window::calendar::repeat::year]                   = "app_calendar_repeat_year";
-        repeatOptions[style::window::calendar::repeat::custom]                 = "app_calendar_repeat_custom";
     }
 
 } /* namespace app */

@@ -24,7 +24,7 @@ namespace gui
             Add,
             Edit
         };
-        std::string prevWindowName;
+        std::string prevWindowName                           = "";
         std::shared_ptr<EventsRecord> eventRecord            = nullptr;
         gui::ListView *list                                  = nullptr;
         std::shared_ptr<NewEditEventModel> newEditEventModel = nullptr;

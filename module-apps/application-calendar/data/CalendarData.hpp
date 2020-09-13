@@ -93,15 +93,16 @@ class DayMonthData : public gui::SwitchData
     };
 };
 
-enum PrevWindow
-{
-    DELETE = 0,
-    EDTIT,
-    ADD
-};
-
 class PrevWindowData : public gui::SwitchData
 {
+  public:
+    enum PrevWindow
+    {
+        DELETE = 0,
+        EDTIT,
+        ADD
+    };
+
   protected:
     PrevWindow prevWindow;
 

@@ -22,16 +22,7 @@ namespace gui
         ~DayLabel() override = default;
 
         bool onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) override;
-        uint32_t getDayNumber()
-        {
-            std::string text = dayNumber->getText();
-            auto result      = std::atoi(text.c_str());
-            if (result == 0 || result > 31) {
-                LOG_ERROR("Wrong day number!");
-                return 0;
-            }
-            return result;
-        }
+        uint32_t getDayNumber();
     };
 
 } /* namespace gui */

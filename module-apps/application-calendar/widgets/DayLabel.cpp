@@ -90,6 +90,23 @@ namespace gui
         }
     }
 
+    uint32_t DayLabel::getDayNumber()
+    {
+        std::string text = dayNumber->getText();
+        try {
+            auto result = std::stoi(text.c_str());
+            if (result == 0 || result > 31) {
+                LOG_ERROR("Wrong day number!");
+                return 0;
+            }
+            return result;
+        }
+        catch (std::exception &e) {
+            LOG_ERROR("DayLabel::getDayNumber: %s", e.what());
+            return 0;
+        }
+    }
+
     bool DayLabel::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim)
     {
         this->vBox->setPosition(0, 0);

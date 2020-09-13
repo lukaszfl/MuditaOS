@@ -5,16 +5,16 @@
 class OptionParser
 {
   private:
-    const int START_BIT   = 16;
-    const int OPTIONS_NUM = 7;
+    constexpr static const int start_bit   = 16;
+    constexpr static const int options_num = 7;
 
   public:
     OptionParser() = default;
     std::unique_ptr<WeekDaysRepeatData> setWeekDayOptions(const uint32_t &dataDB,
                                                           std::unique_ptr<WeekDaysRepeatData> weekDayOptions)
     {
-        const uint32_t startBit        = START_BIT;
-        const uint32_t numberOfOptions = OPTIONS_NUM;
+        const uint32_t startBit        = start_bit;
+        const uint32_t numberOfOptions = options_num;
         for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
             if (dataDB & (1 << i)) {
                 LOG_DEBUG("SET OPTION ARRAY!!!%u", i);
@@ -26,9 +26,9 @@ class OptionParser
 
     uint32_t getDatabaseFieldValue(std::unique_ptr<WeekDaysRepeatData> weekDayOptions)
     {
-        uint32_t dataDB                = START_BIT;
-        const uint32_t startBit        = 16;
-        const uint32_t numberOfOptions = OPTIONS_NUM;
+        uint32_t dataDB                = 0;
+        const uint32_t startBit        = start_bit;
+        const uint32_t numberOfOptions = options_num;
         for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
             if (weekDayOptions->getData(i - startBit)) {
                 LOG_DEBUG("GET DB VALUE!!!");
@@ -42,8 +42,8 @@ class OptionParser
     {
         /// Set all bits in custom field to zero
         /// DataDB input is not modifyed
-        const uint32_t startBit        = START_BIT;
-        const uint32_t numberOfOptions = OPTIONS_NUM;
+        const uint32_t startBit        = start_bit;
+        const uint32_t numberOfOptions = options_num;
         for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
             if (dataDB & (1 << i)) {
                 dataDB -= (1 << i);
