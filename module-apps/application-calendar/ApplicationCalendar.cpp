@@ -15,7 +15,7 @@
 
 namespace app
 {
-    map<Reminder, std::string> ApplicationCalendar::reminderOptions = {
+    const map<Reminder, const char *> ApplicationCalendar::reminderOptions = {
         {Reminder::never, "app_calendar_reminder_never"},
         {Reminder::event_time, "app_calendar_reminder_event_time"},
         {Reminder::five_min_before, "app_calendar_reminder_5_min_before"},
@@ -27,13 +27,14 @@ namespace app
         {Reminder::two_days_before, "app_calendar_reminder_2_days_before"},
         {Reminder::one_week_before, "app_calendar_reminder_1_week_before"}};
 
-    map<Repeat, std::string> ApplicationCalendar::repeatOptions = {{Repeat::never, "app_calendar_repeat_never"},
-                                                                   {Repeat::daily, "app_calendar_repeat_daily"},
-                                                                   {Repeat::weekly, "app_calendar_repeat_weekly"},
-                                                                   {Repeat::two_weeks, "app_calendar_repeat_two_weeks"},
-                                                                   {Repeat::month, "app_calendar_repeat_month"},
-                                                                   {Repeat::year, "app_calendar_repeat_year"},
-                                                                   {Repeat::custom, "app_calendar_repeat_custom"}};
+    const map<Repeat, const char *> ApplicationCalendar::repeatOptions = {
+        {Repeat::never, "app_calendar_repeat_never"},
+        {Repeat::daily, "app_calendar_repeat_daily"},
+        {Repeat::weekly, "app_calendar_repeat_weekly"},
+        {Repeat::two_weeks, "app_calendar_repeat_two_weeks"},
+        {Repeat::month, "app_calendar_repeat_month"},
+        {Repeat::year, "app_calendar_repeat_year"},
+        {Repeat::custom, "app_calendar_repeat_custom"}};
 
     ApplicationCalendar::ApplicationCalendar(std::string name,
                                              std::string parent,

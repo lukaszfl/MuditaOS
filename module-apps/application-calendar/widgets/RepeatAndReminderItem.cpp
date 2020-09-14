@@ -83,11 +83,11 @@ namespace gui
                 repeat->setText("app_calendar_custom_repeat_title");
             }
             else {
-                repeat->setText(
-                    utils::localize.get(app::ApplicationCalendar::repeatOptions[static_cast<Repeat>(event->repeat)]));
+                repeat->setText(utils::localize.get(
+                    app::ApplicationCalendar::repeatOptions.at(static_cast<Repeat>(event->repeat))));
             }
-            reminder->setText(
-                utils::localize.get(app::ApplicationCalendar::reminderOptions[static_cast<Reminder>(event->reminder)]));
+            reminder->setText(utils::localize.get(
+                app::ApplicationCalendar::reminderOptions.at(static_cast<Reminder>(event->reminder))));
         };
     }
 

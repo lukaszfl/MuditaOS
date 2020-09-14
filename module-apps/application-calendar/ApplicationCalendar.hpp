@@ -42,7 +42,7 @@ namespace app
                                     const TimePoint &dateFilter,
                                     const std::string &goBackWindow);
 
-        static std::map<Reminder, std::string> reminderOptions;
-        static std::map<Repeat, std::string> repeatOptions;
+        static const std::map<Reminder, const char *> reminderOptions;
+        static const std::map<Repeat, const char *> repeatOptions;
     };
 } /* namespace app */
