@@ -30,8 +30,14 @@ namespace gui
         void prepareForTimeMode();
         bool isPm(const std::string &text);
         void validateHour();
-        void validateHourFor12hMode();
-        void validateHourFor24hMode();
+        void validateHourFor12hMode(std::chrono::hours start_hour,
+                                    std::chrono::minutes end_hour,
+                                    uint32_t start_minutes,
+                                    uint32_t end_minutes);
+        void validateHourFor24hMode(std::chrono::hours start_hour,
+                                    std::chrono::minutes end_hour,
+                                    uint32_t start_minutes,
+                                    uint32_t end_minutes);
 
       public:
         EventTimeItem(const std::string &description,

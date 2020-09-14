@@ -2,7 +2,8 @@
 
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include "application-calendar/models/NewEditEventModel.hpp"
-#include <module-apps/application-calendar/data/CalendarData.hpp>
+#include "module-apps/application-calendar/data/CalendarData.hpp"
+#include "module-apps/application-calendar/data/OptionParser.hpp"
 #include "windows/AppWindow.hpp"
 #include "Application.hpp"
 #include <gui/widgets/Item.hpp>
@@ -11,7 +12,6 @@
 #include <gui/widgets/ListItem.hpp>
 #include <ListView.hpp>
 #include <Utils.hpp>
-#include <module-apps/application-calendar/data/OptionParser.hpp>
 
 namespace gui
 {

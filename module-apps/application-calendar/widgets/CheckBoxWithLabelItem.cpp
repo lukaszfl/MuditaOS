@@ -3,14 +3,16 @@
 #include "windows/AppWindow.hpp"
 #include <ListView.hpp>
 #include <Style.hpp>
+#include <Utils.hpp>
 
 namespace gui
 {
 
     CheckBoxWithLabelItem::CheckBoxWithLabelItem(app::Application *application,
                                                  const std::string &description,
+                                                 std::shared_ptr<WeekDaysRepeatData> data,
                                                  bool checkIsOnLeftBarSide)
-        : app(application), checkIsOnLeftBarSide(checkIsOnLeftBarSide)
+        : app(application), checkBoxData(std::move(data)), checkIsOnLeftBarSide(checkIsOnLeftBarSide)
     {
         app = application;
         assert(app != nullptr);
@@ -63,6 +65,9 @@ namespace gui
         descriptionLabel->setText(description);
 
         applyCallbacks();
+        if (checkBoxData != nullptr) {
+            setCheckBoxes();
+        }
     }
 
     void CheckBoxWithLabelItem::applyCallbacks()
@@ -86,6 +91,31 @@ namespace gui
             }
             return false;
         };
+    }
+
+    void CheckBoxWithLabelItem::setCheckBoxes()
+    {
+        if (descriptionLabel->getText() == utils::localize.get(style::strings::common::Monday)) {
+            checkBox->setImageVisible(checkBoxData->getData(date::Monday.iso_encoding() - 1));
+        }
+        else if (descriptionLabel->getText() == utils::localize.get(style::strings::common::Tuesday)) {
+            checkBox->setImageVisible(checkBoxData->getData(date::Tuesday.iso_encoding() - 1));
+        }
+        else if (descriptionLabel->getText() == utils::localize.get(style::strings::common::Wednesday)) {
+            checkBox->setImageVisible(checkBoxData->getData(date::Wednesday.iso_encoding() - 1));
+        }
+        else if (descriptionLabel->getText() == utils::localize.get(style::strings::common::Thursday)) {
+            checkBox->setImageVisible(checkBoxData->getData(date::Thursday.iso_encoding() - 1));
+        }
+        else if (descriptionLabel->getText() == utils::localize.get(style::strings::common::Friday)) {
+            checkBox->setImageVisible(checkBoxData->getData(date::Friday.iso_encoding() - 1));
+        }
+        else if (descriptionLabel->getText() == utils::localize.get(style::strings::common::Saturday)) {
+            checkBox->setImageVisible(checkBoxData->getData(date::Saturday.iso_encoding() - 1));
+        }
+        else if (descriptionLabel->getText() == utils::localize.get(style::strings::common::Sunday)) {
+            checkBox->setImageVisible(checkBoxData->getData(date::Sunday.iso_encoding() - 1));
+        }
     }
 
     bool CheckBoxWithLabelItem::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim)

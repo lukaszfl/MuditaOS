@@ -4,8 +4,6 @@
 #include <ListView.hpp>
 #include <gui/widgets/Label.hpp>
 #include <Style.hpp>
-#include <time/time_conversion.hpp>
-#include <module-utils/date/include/date/date.h>
 
 namespace gui
 {
@@ -30,7 +28,7 @@ namespace gui
         title->setFont(style::window::font::bigbold);
         title->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
 
-        clock = new gui::Image(hBox, 0, 0, 0, 0, "small_tick");
+        clock = new gui::Image(hBox, 0, 0, 0, 0, "small_tick_W_M");
         clock->setAlignment(gui::Alignment{gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center});
 
         description = new gui::Label(vBox, 0, 0, 0, 0);

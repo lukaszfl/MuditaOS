@@ -1,8 +1,8 @@
 #include "EventDetailWindow.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
+#include "module-apps/application-calendar/data/CalendarData.hpp"
 #include <gui/widgets/Window.hpp>
 #include <time/time_conversion.hpp>
-#include <module-apps/application-calendar/data/CalendarData.hpp>
 
 namespace gui
 {

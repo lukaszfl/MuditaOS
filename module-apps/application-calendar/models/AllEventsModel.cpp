@@ -1,10 +1,10 @@
 #include "AllEventsModel.hpp"
 #include "application-calendar/widgets/AllEventsItem.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
+#include "module-apps/application-calendar/data/CalendarData.hpp"
 #include <ListView.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <queries/calendar/QueryEventsGetAllLimited.hpp>
-#include <module-apps/application-calendar/data/CalendarData.hpp>
 
 AllEventsModel::AllEventsModel(app::Application *app) : DatabaseModel(app)
 {

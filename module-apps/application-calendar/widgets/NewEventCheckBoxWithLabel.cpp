@@ -7,7 +7,7 @@ namespace gui
                                                          const std::string &description,
                                                          bool checkIsOnLeftBarSide,
                                                          NewEditEventModel *model)
-        : CheckBoxWithLabelItem(application, description, checkIsOnLeftBarSide), model(model)
+        : CheckBoxWithLabelItem(application, description, nullptr, checkIsOnLeftBarSide), model(model)
     {
         app = application;
         assert(app != nullptr);

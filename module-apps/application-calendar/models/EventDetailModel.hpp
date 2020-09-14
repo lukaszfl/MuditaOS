@@ -2,10 +2,10 @@
 
 #include "application-calendar/widgets/CalendarStyle.hpp"
 #include "application-calendar/widgets/CalendarListItem.hpp"
+#include "module-apps/application-calendar/ApplicationCalendar.hpp"
 #include "Application.hpp"
 #include "InternalModel.hpp"
 #include <ListItemProvider.hpp>
-#include <module-apps/application-calendar/ApplicationCalendar.hpp>
 
 class EventDetailModel : public app::InternalModel<gui::CalendarListItem *>, public gui::ListItemProvider
 {
