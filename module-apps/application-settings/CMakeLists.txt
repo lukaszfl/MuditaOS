@@ -26,6 +26,7 @@ target_sources( ${PROJECT_NAME}
         windows/CellularPassthroughWindow.cpp
         windows/FotaWindow.cpp
         windows/Fota.cpp
+        windows/SettingsChange.cpp
 
     PUBLIC
         ApplicationSettings.hpp
