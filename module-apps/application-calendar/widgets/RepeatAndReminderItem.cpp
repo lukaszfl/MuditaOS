@@ -12,7 +12,6 @@ namespace gui
         activeItem = false;
         setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
         setMinimumSize(style::window::default_body_width, style::window::calendar::item::repeatAndReminder::height);
-        setMargins(gui::Margins(style::margins::small, 0, 0, 0));
 
         hBox = new HBox(this, 0, 0, 0, 0);
         hBox->setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);

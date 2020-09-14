@@ -1,11 +1,11 @@
 #include "SeveralOptionsItem.hpp"
 #include "application-calendar/widgets/CalendarStyle.hpp"
+#include "module-apps/application-calendar/ApplicationCalendar.hpp"
+#include "module-apps/application-calendar/data/CalendarData.hpp"
+#include "module-apps/application-calendar/data/OptionParser.hpp"
 #include <Style.hpp>
 #include <Utils.hpp>
 #include <module-db/Interface/EventsRecord.hpp>
-#include <module-apps/application-calendar/ApplicationCalendar.hpp>
-#include <module-apps/application-calendar/data/CalendarData.hpp>
-#include <module-apps/application-calendar/data/OptionParser.hpp>
 
 namespace gui
 {
