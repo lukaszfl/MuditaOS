@@ -9,7 +9,7 @@
 #include <ListView.hpp>
 #include <gui/widgets/Item.hpp>
 #include <gui/widgets/Label.hpp>
-#include <module-apps/application-calendar/data/dateCommon.h>
+#include <module-apps/application-calendar/data/dateCommon.hpp>
 
 namespace gui
 {

@@ -167,7 +167,7 @@ namespace gui
                 }
             }
             else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
-                record->reminder = reminderTimeOptions[actualVectorIndex];
+                record->reminder = static_cast<uint32_t>(reminderTimeOptions[actualVectorIndex]);
             }
         };
 
@@ -185,7 +185,9 @@ namespace gui
                 optionLabel->setText(optionsNames[actualVectorIndex]);
             }
             else if (descriptionLabel->getText() == utils::localize.get("app_calendar_event_detail_reminder")) {
-                actualVectorIndex = std::find(reminderTimeOptions.begin(), reminderTimeOptions.end(), event->reminder) -
+                actualVectorIndex = std::find(reminderTimeOptions.begin(),
+                                              reminderTimeOptions.end(),
+                                              static_cast<Reminder>(event->reminder)) -
                                     reminderTimeOptions.begin();
                 optionLabel->setText(optionsNames[actualVectorIndex]);
             }

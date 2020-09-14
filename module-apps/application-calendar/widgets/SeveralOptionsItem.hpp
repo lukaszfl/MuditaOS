@@ -9,16 +9,16 @@
 
 namespace gui
 {
-    const std::array<uint32_t, 10> reminderTimeOptions = {style::window::calendar::reminder::never,
-                                                          style::window::calendar::reminder::event_time,
-                                                          style::window::calendar::reminder::five_min_before,
-                                                          style::window::calendar::reminder::fifteen_min_before,
-                                                          style::window::calendar::reminder::thirty_min_before,
-                                                          style::window::calendar::reminder::one_hour_before,
-                                                          style::window::calendar::reminder::two_hour_before,
-                                                          style::window::calendar::reminder::one_day_before,
-                                                          style::window::calendar::reminder::two_days_before,
-                                                          style::window::calendar::reminder::one_week_before};
+    const std::array<Reminder, 10> reminderTimeOptions = {Reminder::never,
+                                                          Reminder::event_time,
+                                                          Reminder::five_min_before,
+                                                          Reminder::fifteen_min_before,
+                                                          Reminder::thirty_min_before,
+                                                          Reminder::one_hour_before,
+                                                          Reminder::two_hour_before,
+                                                          Reminder::one_day_before,
+                                                          Reminder::two_days_before,
+                                                          Reminder::one_week_before};
 
     class SeveralOptionsItem : public CalendarListItem
     {
