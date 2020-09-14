@@ -63,10 +63,6 @@ namespace gui
         void setAlignment(const Alignment &value) override;
         void onProviderDataUpdate();
         void clear();
-        uint32_t getElementsCount()
-        {
-            return elementsCount;
-        }
 
         // virtual methods from Item
         std::list<DrawCommand *> buildDrawList() override;

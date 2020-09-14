@@ -100,7 +100,7 @@ namespace style
                 namespace checkBox
                 {
                     const inline int height              = 44;
-                    const inline int margin_top          = style::margins::very_big + style::margins::small;
+                    const inline int margin_top          = 18;
                     const inline int input_box_label_w   = style::window::label::big_h;
                     const inline int description_label_w = 280;
                 } // namespace checkBox

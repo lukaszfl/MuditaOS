@@ -12,8 +12,8 @@ namespace db::query::events
         GetAllLimited(const uint32_t &offset, const uint32_t &limit);
         [[nodiscard]] auto debugInfo() const -> std::string override;
 
-        uint32_t offset;
-        uint32_t limit;
+        uint32_t offset = 0;
+        uint32_t limit  = 0;
     };
 
     class GetAllLimitedResult : public QueryResult

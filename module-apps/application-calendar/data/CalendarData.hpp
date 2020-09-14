@@ -15,7 +15,7 @@ class EventRecordData : public gui::SwitchData
     virtual ~EventRecordData() = default;
     std::shared_ptr<EventsRecord> getData()
     {
-        return std::move(record);
+        return record;
     };
     virtual void setData(std::shared_ptr<EventsRecord> rec)
     {
