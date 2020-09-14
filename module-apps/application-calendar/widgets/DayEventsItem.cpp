@@ -49,7 +49,7 @@ namespace gui
         if (rec != nullptr) {
             description->setText(this->record->title.c_str());
             title->setText(TimeDisplayParser().getTimeString(record));
-            if (record->reminder == style::window::calendar::reminder::never) {
+            if (record->reminder == static_cast<uint32_t>(Reminder::never)) {
                 clock->setVisible(false);
             }
         }

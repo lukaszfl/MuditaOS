@@ -388,9 +388,10 @@ EventsTableRow EventsTable::getById(uint32_t id)
 std::vector<EventsTableRow> EventsTable::selectByDatePeriod(TimePoint date_filter, TimePoint filter_till)
 {
     /// TODO: Rework unit tests
-    auto retQuery = db->query("SELECT * FROM events WHERE date_till > date('%q') AND date_till < date('%q');",
-                              TimePointToString(date_filter).c_str(),
-                              TimePointToString(filter_till).c_str());
+    auto retQuery =
+        db->query("SELECT * FROM events WHERE date_till >= date('%q') AND date_till < date('%q', 'start of day');",
+                  TimePointToString(date_filter).c_str(),
+                  TimePointToString(filter_till + date::days{1}).c_str());
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return std::vector<EventsTableRow>();

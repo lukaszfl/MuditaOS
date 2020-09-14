@@ -2,21 +2,10 @@
 #include "Application.hpp"
 #include <module-db/Interface/EventsRecord.hpp>
 
-enum class Repeat
-{
-    Never = 0,
-    Daily,
-    Weekly,
-    TwoWeeks,
-    Month,
-    Year,
-    Custom
-};
-
 class AddRepeatedEvents
 {
     app::Application *application = nullptr;
-    Repeat repeatOption           = Repeat::Never;
+    Repeat repeatOption           = Repeat::never;
 
   public:
     AddRepeatedEvents(app::Application *app) : application(app){};

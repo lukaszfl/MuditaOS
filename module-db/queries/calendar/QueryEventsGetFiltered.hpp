@@ -3,7 +3,7 @@
 #include "module-db/Interface/EventsRecord.hpp"
 #include <Common/Query.hpp>
 #include <string>
-#include <module-apps/application-calendar/data/dateCommon.h>
+#include <module-apps/application-calendar/data/dateCommon.hpp>
 
 namespace db::query::events
 {

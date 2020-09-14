@@ -4,7 +4,7 @@
 #include "Service/Message.hpp"
 #include "SystemManager/SystemManager.hpp"
 #include "gui/widgets/Label.hpp"
-#include <module-apps/application-calendar/data/dateCommon.h>
+#include <module-apps/application-calendar/data/dateCommon.hpp>
 #include "application-calendar/widgets/CalendarStyle.hpp"
 
 namespace app
@@ -42,7 +42,7 @@ namespace app
                                     const TimePoint &dateFilter,
                                     const std::string &goBackWindow);
 
-        static std::map<uint32_t, std::string> reminderOptions;
-        static std::map<uint32_t, std::string> repeatOptions;
+        static std::map<Reminder, std::string> reminderOptions;
+        static std::map<Repeat, std::string> repeatOptions;
     };
 } /* namespace app */

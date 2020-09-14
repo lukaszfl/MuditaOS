@@ -9,6 +9,31 @@ using Clock        = system_clock;
 using TimePoint    = time_point<Clock>;
 using YearMonthDay = date::year_month_day;
 
+enum class Reminder
+{
+    never,
+    event_time,
+    five_min_before,
+    fifteen_min_before,
+    thirty_min_before,
+    one_hour_before,
+    two_hour_before,
+    one_day_before,
+    two_days_before,
+    one_week_before
+};
+
+enum class Repeat
+{
+    never,
+    daily,
+    weekly,
+    two_weeks,
+    month,
+    year,
+    custom
+};
+
 constexpr TimePoint TIME_POINT_INVALID = TimePoint::min();
 
 inline std::tm CreateTmStruct(int year, int month, int day, int hour, int minutes, int seconds)

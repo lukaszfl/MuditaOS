@@ -54,7 +54,7 @@ namespace style
                 const inline int max_minutes       = 59;
             } // namespace time
 
-            namespace reminder
+            /*namespace reminder
             {
                 const inline int never              = 0xFFFFFF;
                 const inline int event_time         = 0;
@@ -77,7 +77,7 @@ namespace style
                 const inline int month     = 4;
                 const inline int year      = 5;
                 const inline int custom    = 6;
-            } // namespace repeat
+            } // namespace repeat*/
 
             namespace item
             {

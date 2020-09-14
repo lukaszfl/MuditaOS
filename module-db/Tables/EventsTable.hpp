@@ -5,7 +5,7 @@
 #include <Database/Database.hpp>
 #include <Common/Common.hpp>
 #include <utf8/UTF8.hpp>
-#include <module-apps/application-calendar/data/dateCommon.h>
+#include <module-apps/application-calendar/data/dateCommon.hpp>
 
 struct EventsTableRow : public Record
 {

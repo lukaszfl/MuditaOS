@@ -2,7 +2,7 @@
 #include <module-db/Interface/EventsRecord.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-db/queries/calendar/QueryEventsAdd.hpp>
-#include <module-apps/application-calendar/data/dateCommon.h>
+#include <module-apps/application-calendar/data/dateCommon.hpp>
 #include <module-apps/application-calendar/data/OptionParser.hpp>
 
 void AddRepeatedEvents::addDaily(std::shared_ptr<EventsRecord> event)
@@ -95,23 +95,23 @@ void AddRepeatedEvents::addCustom(std::shared_ptr<EventsRecord> event)
 void AddRepeatedEvents::addRepeatedEvents(std::shared_ptr<EventsRecord> event)
 {
     switch (event->repeat) {
-    case static_cast<unsigned int>(Repeat::Daily): {
+    case static_cast<unsigned int>(Repeat::daily): {
         addDaily(event);
         break;
     }
-    case static_cast<unsigned int>(Repeat::Weekly): {
+    case static_cast<unsigned int>(Repeat::weekly): {
         addWeekly(event);
         break;
     }
-    case static_cast<unsigned int>(Repeat::TwoWeeks): {
+    case static_cast<unsigned int>(Repeat::two_weeks): {
         addTwoWeeks(event);
         break;
     }
-    case static_cast<unsigned int>(Repeat::Month): {
+    case static_cast<unsigned int>(Repeat::month): {
         addMonth(event);
         break;
     }
-    case static_cast<unsigned int>(Repeat::Year): {
+    case static_cast<unsigned int>(Repeat::year): {
         addYear(event);
         break;
     }
