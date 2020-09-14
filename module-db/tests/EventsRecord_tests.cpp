@@ -33,25 +33,26 @@ TEST_CASE("Events Record tests")
     {
         EventsRecord testRec;
         REQUIRE(testRec.title == "");
-        REQUIRE(testRec.description == "");
-        REQUIRE(testRec.date_from == 0);
-        REQUIRE(testRec.date_till == 0);
+        REQUIRE(testRec.date_from == TIME_POINT_INVALID);
+        REQUIRE(testRec.date_till == TIME_POINT_INVALID);
         REQUIRE(testRec.reminder == 0);
         REQUIRE(testRec.repeat == 0);
-        REQUIRE(testRec.time_zone == 0);
     }
 
     SECTION("Constructor from EventsTableRow")
     {
-        EventsTableRow tableRow{{.ID = 10}, "Event3", "Desc3", 1910201424, 1910201536, 1, 2, 1};
+        EventsTableRow tableRow{{.ID = 10},
+                                "Event3",
+                                TimePointFromString("2019-10-20 14:24"),
+                                TimePointFromString("2019-10-20 15:36"),
+                                1,
+                                2};
         EventsRecord testRec(tableRow);
         REQUIRE(testRec.title == "Event3");
-        REQUIRE(testRec.description == "Desc3");
-        REQUIRE(testRec.date_from == 1910201424);
-        REQUIRE(testRec.date_till == 1910201536);
+        REQUIRE(testRec.date_from == TimePointFromString("2019-10-20 14:24"));
+        REQUIRE(testRec.date_till == TimePointFromString("2019-10-20 15:36"));
         REQUIRE(testRec.reminder == 1);
         REQUIRE(testRec.repeat == 2);
-        REQUIRE(testRec.time_zone == 1);
         REQUIRE(testRec.isValid());
     }
 
@@ -61,15 +62,14 @@ TEST_CASE("Events Record tests")
     auto numberOfEvents = eventsRecordInterface.GetCount();
     REQUIRE(numberOfEvents == 0);
 
-    EventsTableRow tableRow{{.ID = 10}, "Event1", "Desc1", 1910201424, 1910201536, 1, 2, 1};
+    EventsTableRow tableRow{
+        {.ID = 10}, "Event1", TimePointFromString("2019-10-20 14:24"), TimePointFromString("2019-10-20 15:36"), 1, 2};
     auto rec = EventsRecord(tableRow);
     REQUIRE(rec.title == "Event1");
-    REQUIRE(rec.description == "Desc1");
-    REQUIRE(rec.date_from == 1910201424);
-    REQUIRE(rec.date_till == 1910201536);
+    REQUIRE(rec.date_from == TimePointFromString("2019-10-20 14:24"));
+    REQUIRE(rec.date_till == TimePointFromString("2019-10-20 15:36"));
     REQUIRE(rec.reminder == 1);
     REQUIRE(rec.repeat == 2);
-    REQUIRE(rec.time_zone == 1);
     REQUIRE(rec.isValid());
 
     REQUIRE(eventsRecordInterface.Add(rec));
@@ -82,12 +82,10 @@ TEST_CASE("Events Record tests")
         auto entry = eventsRecordInterface.GetByID(1);
         REQUIRE(entry.ID == 1);
         REQUIRE(entry.title == "Event1");
-        REQUIRE(entry.description == "Desc1");
-        REQUIRE(entry.date_from == 1910201424);
-        REQUIRE(entry.date_till == 1910201536);
+        REQUIRE(entry.date_from == TimePointFromString("2019-10-20 14:24"));
+        REQUIRE(entry.date_till == TimePointFromString("2019-10-20 15:36"));
         REQUIRE(entry.reminder == 1);
         REQUIRE(entry.repeat == 2);
-        REQUIRE(entry.time_zone == 1);
         REQUIRE(entry.isValid());
     }
 
@@ -96,24 +94,21 @@ TEST_CASE("Events Record tests")
         auto entry = eventsRecordInterface.GetByID(100);
         REQUIRE(entry.ID == DB_ID_NONE);
         REQUIRE(entry.title == "");
-        REQUIRE(entry.description == "");
-        REQUIRE(entry.date_from == 0);
-        REQUIRE(entry.date_till == 0);
+        REQUIRE(entry.date_from == TIME_POINT_INVALID);
+        REQUIRE(entry.date_till == TIME_POINT_INVALID);
         REQUIRE(entry.reminder == 0);
         REQUIRE(entry.repeat == 0);
-        REQUIRE(entry.time_zone == 0);
         REQUIRE_FALSE(entry.isValid());
     }
 
-    EventsTableRow tableRow2{{.ID = 10}, "Event2", "Desc2", 2510201424, 2510201536, 1, 2, 1};
+    EventsTableRow tableRow2{
+        {.ID = 10}, "Event2", TimePointFromString("2025-10-20 14:24"), TimePointFromString("2025-10-20 15:36"), 1, 2};
     auto rec2 = EventsRecord(tableRow2);
     REQUIRE(rec2.title == "Event2");
-    REQUIRE(rec2.description == "Desc2");
-    REQUIRE(rec2.date_from == 2510201424);
-    REQUIRE(rec2.date_till == 2510201536);
+    REQUIRE(rec2.date_from == TimePointFromString("2025-10-20 14:24"));
+    REQUIRE(rec2.date_till == TimePointFromString("2025-10-20 15:36"));
     REQUIRE(rec2.reminder == 1);
     REQUIRE(rec2.repeat == 2);
-    REQUIRE(rec2.time_zone == 1);
     REQUIRE(rec2.isValid());
 
     REQUIRE(eventsRecordInterface.Add(rec2));
@@ -150,17 +145,16 @@ TEST_CASE("Events Record tests")
 
         SECTION("Get table rows by SELECT")
         {
-            auto retOffsetLimit = eventsRecordInterface.Select(1810201424, 1911201536);
+            auto retOffsetLimit = eventsRecordInterface.Select(TimePointFromString("2018-10-20 14:24"),
+                                                               TimePointFromString("2019-10-20 15:36"));
             REQUIRE(retOffsetLimit->size() == 1);
             auto entry = retOffsetLimit->back();
             REQUIRE(entry.ID == 1);
             REQUIRE(entry.title == "Event1");
-            REQUIRE(entry.description == "Desc1");
-            REQUIRE(entry.date_from == 1910201424);
-            REQUIRE(entry.date_till == 1910201536);
+            REQUIRE(entry.date_from == TimePointFromString("2018-10-20 14:24"));
+            REQUIRE(entry.date_till == TimePointFromString("2019-10-20 15:36"));
             REQUIRE(entry.reminder == 1);
             REQUIRE(entry.repeat == 2);
-            REQUIRE(entry.time_zone == 1);
             REQUIRE(entry.isValid());
         }
     }
@@ -168,33 +162,28 @@ TEST_CASE("Events Record tests")
     SECTION("Entry update value")
     {
         auto entryPre        = eventsRecordInterface.GetByID(1);
-        auto checkV          = entryPre.date_from;
         entryPre.title       = "newTitle";
-        entryPre.description = "newDesc";
-        entryPre.date_from   = 1999999999;
-        entryPre.date_till   = 1999999999;
-        REQUIRE(eventsRecordInterface.Update(entryPre, checkV));
+        entryPre.date_from   = TimePointFromString("2019-12-31 23:59");
+        entryPre.date_till   = TimePointFromString("2019-12-31 23:59");
+        REQUIRE(eventsRecordInterface.Update(entryPre));
 
         auto entry = eventsRecordInterface.GetByID(1);
         REQUIRE(entry.ID == entryPre.ID);
         REQUIRE(entry.title == entryPre.title);
-        REQUIRE(entry.description == entryPre.description);
         REQUIRE(entry.date_from == entryPre.date_from);
         REQUIRE(entry.date_till == entryPre.date_till);
         REQUIRE(entry.reminder == entryPre.reminder);
         REQUIRE(entry.repeat == entryPre.repeat);
-        REQUIRE(entry.time_zone == entryPre.time_zone);
     }
 
-    EventsTableRow tableRow3{{.ID = 3}, "Event3", "Desc3", 2110201424, 2110201536, 1, 2, 1};
+    EventsTableRow tableRow3{
+        {.ID = 3}, "Event3", TimePointFromString("2021-10-20 14:24"), TimePointFromString("2021-10-20 15:36"), 1, 2};
     auto rec3 = EventsRecord(tableRow3);
     REQUIRE(rec3.title == "Event3");
-    REQUIRE(rec3.description == "Desc3");
-    REQUIRE(rec3.date_from == 2110201424);
-    REQUIRE(rec3.date_till == 2110201536);
+    REQUIRE(rec3.date_from == TimePointFromString("2018-10-20 14:24"));
+    REQUIRE(rec3.date_till == TimePointFromString("2021-10-20 15:36"));
     REQUIRE(rec3.reminder == 1);
     REQUIRE(rec3.repeat == 2);
-    REQUIRE(rec3.time_zone == 1);
     REQUIRE(rec3.isValid());
 
     REQUIRE(eventsRecordInterface.Add(rec3));
@@ -202,29 +191,26 @@ TEST_CASE("Events Record tests")
     numberOfEvents = eventsRecordInterface.GetCount();
     REQUIRE(numberOfEvents == 3);
 
-    auto getQuery =
-        [&](uint32_t id, std::string title, std::string description, uint32_t date_from, uint32_t date_till) {
-            auto query  = std::make_shared<db::query::events::Get>(id);
-            auto ret    = eventsRecordInterface.runQuery(query);
-            auto result = dynamic_cast<db::query::events::GetResult *>(ret.get());
-            REQUIRE(result != nullptr);
-            auto record = result->getResult();
-            REQUIRE(record.isValid());
-            REQUIRE(record.title == title);
-            REQUIRE(record.description == description);
-            REQUIRE(record.date_from == date_from);
-            REQUIRE(record.date_till == date_till);
+    auto getQuery = [&](uint32_t id, std::string title, TimePoint date_from, TimePoint date_till) {
+        auto query  = std::make_shared<db::query::events::Get>(id);
+        auto ret    = eventsRecordInterface.runQuery(query);
+        auto result = dynamic_cast<db::query::events::GetResult *>(ret.get());
+        REQUIRE(result != nullptr);
+        auto record = result->getResult();
+        REQUIRE(record.isValid());
+        REQUIRE(record.title == title);
+        REQUIRE(record.date_from == date_from);
+        REQUIRE(record.date_till == date_till);
 
-            return record.date_from;
-        };
+        return record.date_from;
+    };
 
     auto getFiltered = [&](uint32_t id,
                            std::string title,
-                           std::string description,
-                           uint32_t date_from,
-                           uint32_t date_till,
-                           uint32_t filter_from,
-                           uint32_t filter_till) {
+                           TimePoint date_from,
+                           TimePoint date_till,
+                           TimePoint filter_from,
+                           TimePoint filter_till) {
         auto query  = std::make_shared<db::query::events::GetFiltered>(filter_from, filter_till);
         auto ret    = eventsRecordInterface.runQuery(query);
         auto result = dynamic_cast<db::query::events::GetFilteredResult *>(ret.get());
@@ -233,7 +219,6 @@ TEST_CASE("Events Record tests")
         auto record  = records->back();
         REQUIRE(record.isValid());
         REQUIRE(record.title == title);
-        REQUIRE(record.description == description);
         REQUIRE(record.date_from == date_from);
         REQUIRE(record.date_till == date_till);
     };
@@ -245,28 +230,25 @@ TEST_CASE("Events Record tests")
         REQUIRE(result != nullptr);
         auto records    = result->getResult();
         auto buffRecord = new EventsRecord();
-        auto buff       = buffRecord;
         for (auto record : *records) {
             REQUIRE(record.isValid());
             REQUIRE(record.date_from >= buffRecord->date_from);
             buffRecord = &record;
         }
-        delete buff;
         REQUIRE(records->size() == limit);
         auto count = result->getCountResult();
         return count;
     };
 
-    auto AddQuery =
-        [&](uint32_t id, std::string title, std::string description, uint32_t date_from, uint32_t date_till) {
-            EventsTableRow tableRow2{{.ID = id}, title, description, date_from, date_till, 1, 2, 1};
-            auto record = EventsRecord(tableRow2);
-            auto query  = std::make_shared<db::query::events::Add>(record);
-            auto ret    = eventsRecordInterface.runQuery(query);
-            auto result = dynamic_cast<db::query::events::AddResult *>(ret.get());
-            REQUIRE(result != nullptr);
-            REQUIRE(result->getResult());
-        };
+    auto AddQuery = [&](uint32_t id, std::string title, TimePoint date_from, TimePoint date_till) {
+        EventsTableRow tableRow2{{.ID = id}, title, date_from, date_till, 1, 2, 1};
+        auto record = EventsRecord(tableRow2);
+        auto query  = std::make_shared<db::query::events::Add>(record);
+        auto ret    = eventsRecordInterface.runQuery(query);
+        auto result = dynamic_cast<db::query::events::AddResult *>(ret.get());
+        REQUIRE(result != nullptr);
+        REQUIRE(result->getResult());
+    };
 
     auto RemoveQuery = [&](uint32_t id) {
         auto query  = std::make_shared<db::query::events::Remove>(id);
@@ -278,16 +260,13 @@ TEST_CASE("Events Record tests")
 
     auto EditQuery = [&](uint32_t id,
                          std::string title,
-                         std::string description,
-                         uint32_t date_from,
-                         uint32_t date_till,
+                         TimePoint date_from,
+                         TimePoint date_till,
                          uint32_t reminder,
-                         uint32_t repeat,
-                         uint32_t time_zone,
-                         uint32_t checkV) {
-        EventsTableRow tableRow2{{.ID = id}, title, description, date_from, date_till, reminder, repeat, time_zone};
+                         uint32_t repeat) {
+        EventsTableRow tableRow2{{.ID = id}, title, date_from, date_till, reminder, repeat};
         auto record = EventsRecord(tableRow2);
-        auto query  = std::make_shared<db::query::events::Edit>(record, checkV);
+        auto query  = std::make_shared<db::query::events::Edit>(record);
         auto ret    = eventsRecordInterface.runQuery(query);
         auto result = dynamic_cast<db::query::events::EditResult *>(ret.get());
         REQUIRE(result != nullptr);
@@ -300,28 +279,31 @@ TEST_CASE("Events Record tests")
         auto recordGet = resultGet->getResult();
         REQUIRE(recordGet.isValid());
         REQUIRE(recordGet.title == title);
-        REQUIRE(recordGet.description == description);
         REQUIRE(recordGet.date_from == date_from);
         REQUIRE(recordGet.date_till == date_till);
         REQUIRE(recordGet.reminder == reminder);
         REQUIRE(recordGet.repeat == repeat);
-        REQUIRE(recordGet.time_zone == time_zone);
     };
 
     SECTION("Get via query")
     {
-        getQuery(3, "Event3", "Desc3", 2110201424, 2110201536);
+        getQuery(3, "Event3", TimePointFromString("2021-10-20 14:24"), TimePointFromString("2021-10-20 15:36"));
     }
 
     SECTION("GetFiltered via query")
     {
-        getFiltered(1, "Event1", "Desc1", 1910201424, 1910201536, 1810201424, 1912201536);
+        getFiltered(1,
+                    "Event1",
+                    TimePointFromString("2019-10-20 14:24"),
+                    TimePointFromString("2019-10-20 15:36"),
+                    TimePointFromString("2018-10-20 14:24"),
+                    TimePointFromString("2019-10-20 15:36"));
     }
 
     SECTION("Add via query")
     {
-        AddQuery(3, "Event3", "Desc3", 2610201424, 2210201536);
-        getQuery(4, "Event3", "Desc3", 2610201424, 2210201536);
+        AddQuery(3, "Event3", TimePointFromString("2026-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
+        getQuery(4, "Event3", TimePointFromString("2026-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
     }
 
     SECTION("Remove via query")
@@ -337,8 +319,7 @@ TEST_CASE("Events Record tests")
 
     SECTION("Update via query")
     {
-        uint32_t checkV = getQuery(2, "Event2", "Desc2", 2510201424, 2510201536);
-        EditQuery(2, "Event3", "Desc2", 2110201424, 2110201536, 1, 2, 2, checkV);
+        EditQuery(2, "Event3", TimePointFromString("2021-10-20 14:24"), TimePointFromString("2021-10-20 15:36"), 1, 2);
     }
 
     SECTION("Get All via query")
@@ -353,10 +334,10 @@ TEST_CASE("Events Record tests")
 
     SECTION("Get All Limited via query")
     {
-        AddQuery(3, "Event1", "Desc1", 2610201424, 2210201536);
-        AddQuery(3, "Event2", "Desc2", 2010201424, 2210201536);
-        AddQuery(3, "Event3", "Desc3", 2510201424, 2210201536);
-        AddQuery(3, "Event4", "Desc4", 1910201424, 2210201536);
+        AddQuery(3, "Event1", TimePointFromString("2026-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
+        AddQuery(3, "Event2", TimePointFromString("2020-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
+        AddQuery(3, "Event3", TimePointFromString("2025-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
+        AddQuery(3, "Event4", TimePointFromString("2019-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
         auto count1     = getAllLimited(0, 2);
         auto count2     = getAllLimited(2, 5);
         auto &eventsTbl = eventsDb.events;

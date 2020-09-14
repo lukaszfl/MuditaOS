@@ -134,10 +134,9 @@ namespace app
             LOG_DEBUG("Switch to new event window");
             std::unique_ptr<EventRecordData> eventData = std::make_unique<EventRecordData>();
             eventData->setDescription("New");
-            auto rec       = new EventsRecord();
-            rec->date_from = dateFilter;
-            rec->date_till = dateFilter;
-            auto event     = std::make_shared<EventsRecord>(*rec);
+            auto event       = std::make_shared<EventsRecord>();
+            event->date_from = dateFilter;
+            event->date_till = dateFilter;
             eventData->setData(event);
             eventData->setWindowName(goBackWindow);
             switchWindow(
