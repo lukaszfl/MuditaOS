@@ -77,7 +77,6 @@ namespace atag
             // TODO should we terminate early if we encounter a null character (currently we do)
             for (auto i = 0; (i < length) && (*src != 0); ++i) {
                 // ISO-8859-1 and UTF-8 are the same for the first 127 characters.
-                utf8.push_back(*src++);
                 if (*src < 128) {
                     utf8.push_back(*src++);
                 }
