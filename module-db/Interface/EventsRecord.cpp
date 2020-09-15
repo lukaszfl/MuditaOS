@@ -29,23 +29,23 @@ bool EventsRecordInterface::Add(const EventsRecord &rec)
                                 .reminder  = rec.reminder,
                                 .repeat    = rec.repeat};
 
-    switch (rec.repeat) {
-    case 0: {
+    switch (RepeatOption(rec.repeat)) {
+    case RepeatOption::Never: {
         return eventsDb->events.add(entry);
     }
-    case 1: {
+    case RepeatOption::Daily: {
         return eventsDb->events.addDaily(entry);
     }
-    case 2: {
+    case RepeatOption::Weekly: {
         return eventsDb->events.addWeekly(entry);
     }
-    case 3: {
+    case RepeatOption::TwoWeeks: {
         return eventsDb->events.addTwoWeeks(entry);
     }
-    case 4: {
+    case RepeatOption::Month: {
         return eventsDb->events.addMonth(entry);
     }
-    case 5: {
+    case RepeatOption::Year: {
         return eventsDb->events.addYear(entry);
     }
     default: {
@@ -131,23 +131,48 @@ bool EventsRecordInterface::Update(const EventsRecord &rec)
 
     bool result = eventsDb->events.update(entry);
 
-    switch (rec.repeat) {
-    case 0: {
+    switch (RepeatOption(rec.repeat)) {
+    case RepeatOption::Never: {
+        return eventsDb->events.add(entry);
+    }
+    case RepeatOption::Daily: {
+        return eventsDb->events.addDaily(entry);
+    }
+    case RepeatOption::Weekly: {
+        return eventsDb->events.addWeekly(entry);
+    }
+    case RepeatOption::TwoWeeks: {
+        return eventsDb->events.addTwoWeeks(entry);
+    }
+    case RepeatOption::Month: {
+        return eventsDb->events.addMonth(entry);
+    }
+    case RepeatOption::Year: {
+        return eventsDb->events.addYear(entry);
+    }
+    default: {
+        eventsDb->events.addCustom(entry);
+        break;
+    }
+    }
+
+    switch (RepeatOption(rec.repeat)) {
+    case RepeatOption::Never: {
         return (eventsDb->events.add(entry) && result);
     }
-    case 1: {
+    case RepeatOption::Daily: {
         return (eventsDb->events.addDaily(entry) && result);
     }
-    case 2: {
+    case RepeatOption::Weekly: {
         return (eventsDb->events.addWeekly(entry) && result);
     }
-    case 3: {
+    case RepeatOption::TwoWeeks: {
         return (eventsDb->events.addTwoWeeks(entry) && result);
     }
-    case 4: {
+    case RepeatOption::Month: {
         return (eventsDb->events.addMonth(entry) && result);
     }
-    case 5: {
+    case RepeatOption::Year: {
         return (eventsDb->events.addYear(entry) && result);
     }
     default: {

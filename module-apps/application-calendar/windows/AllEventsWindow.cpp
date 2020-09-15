@@ -56,7 +56,7 @@ namespace gui
         allEventsList->rebuildList();
         auto dataReceived = dynamic_cast<PrevWindowData *>(data);
         if (dataReceived != nullptr) {
-            if (dataReceived->getData() == PrevWindowData::PrevWindow::DELETE) {
+            if (dataReceived->getData() == PrevWindowData::PrevWindow::Delete) {
                 checkEmpty = true;
             }
         }

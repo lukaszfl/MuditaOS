@@ -63,7 +63,7 @@ namespace gui
             DBServiceAPI::GetQuery(
                 application, db::Interface::Name::Events, std::make_unique<db::query::events::Remove>(eventRecord->ID));
             auto data = make_unique<PrevWindowData>();
-            data->setData(PrevWindowData::PrevWindow::DELETE);
+            data->setData(PrevWindowData::PrevWindow::Delete);
             application->switchWindow(goBackWindowName, std::move(data));
             return true;
         };
