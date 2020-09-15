@@ -96,12 +96,13 @@ namespace gui
                 uint32_t hours;
                 uint32_t minutes;
                 uint32_t autofill_hour;
+
                 try {
                     hours = std::stoi(hourInput->getText().c_str());
                 }
                 catch (std::exception &e) {
                     LOG_ERROR("EventTimeItem::applyInputCallbacks hours: %s", e.what());
-                    return false;
+                    return true;
                 }
 
                 try {
@@ -109,7 +110,7 @@ namespace gui
                 }
                 catch (std::exception &e) {
                     LOG_ERROR("EventTimeItem::applyInputCallbacks minutes: %s", e.what());
-                    return false;
+                    return true;
                 }
 
                 if (mode24H && hours > style::window::calendar::time::max_hour_24H_mode) {
@@ -171,8 +172,8 @@ namespace gui
 
         onSaveCallback = [&](std::shared_ptr<EventsRecord> record) {
             validateHour();
-            auto hours   = std::chrono::hours(atoi(hourInput->getText().c_str()));
-            auto minutes = std::chrono::minutes(atoi(minuteInput->getText().c_str()));
+            auto hours   = std::chrono::hours(std::stoi(hourInput->getText().c_str()));
+            auto minutes = std::chrono::minutes(std::stoi(minuteInput->getText().c_str()));
             if (!mode24H) {
                 hours = date::make24(hours, isPm(mode12hInput->getText()));
             }

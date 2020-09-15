@@ -188,7 +188,7 @@ namespace gui
     void CalendarMainWindow::filterRequest()
     {
         YearMonthDay date_from = actualDate.year() / actualDate.month() / 1;
-        YearMonthDay date_till = actualDate.year() / actualDate.month() / date::last;
+        YearMonthDay date_till = date_from + date::months{1};
         auto filter_from       = TimePointFromYearMonthDay(date_from);
         auto filter_till       = TimePointFromYearMonthDay(date_till);
         LOG_DEBUG("filter:  %s", TimePointToString(filter_till).c_str());

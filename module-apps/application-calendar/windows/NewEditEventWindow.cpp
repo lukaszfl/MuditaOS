@@ -54,7 +54,7 @@ namespace gui
         if (mode == ShowMode::GUI_SHOW_INIT) {
             auto rec = dynamic_cast<EventRecordData *>(data);
             if (rec != nullptr) {
-                eventRecord = rec->getData();
+                eventRecord    = rec->getData();
                 prevWindowName = rec->getWindowName();
             }
             newEditEventModel->loadData(eventRecord);
@@ -62,8 +62,8 @@ namespace gui
         if (mode == ShowMode::GUI_SHOW_RETURN) {
             auto receivedData = dynamic_cast<WeekDaysRepeatData *>(data);
             if (receivedData != nullptr) {
-                auto parser     = new OptionParser();
-                auto uniqueData = std::make_unique<WeekDaysRepeatData>(*receivedData);
+                auto parser         = new OptionParser();
+                auto uniqueData     = std::make_unique<WeekDaysRepeatData>(*receivedData);
                 eventRecord->repeat = eventRecord->repeat + parser->getDatabaseFieldValue(std::move(uniqueData));
                 newEditEventModel->loadRepeat(eventRecord);
             }

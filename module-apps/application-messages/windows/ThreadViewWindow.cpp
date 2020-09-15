@@ -16,6 +16,7 @@
 #include <time/time_conversion.hpp>
 #include <log/log.hpp>
 #include <Style.hpp>
+#include <OptionWindow.hpp>
 
 #include <memory>
 #include <cassert>
@@ -70,7 +71,7 @@ namespace gui
         inputMessage->activatedCallback = [&](gui::Item &item) {
             auto app = dynamic_cast<app::ApplicationMessages *>(application);
             assert(app != nullptr);
-            if (app->handleSendSmsFromThread(contact->numbers[0].number, inputMessage->inputText->getText())) {
+            if (app->handleSendSmsFromThread(*number, inputMessage->inputText->getText())) {
                 LOG_ERROR("handleSendSmsFromThread failed");
             }
             inputMessage->inputText->clear();
@@ -368,10 +369,14 @@ namespace gui
                 cleanView();
                 SMS.thread = pdata->thread->ID;
                 showMessages(Action::Init);
-                auto ret = DBServiceAPI::ContactGetByID(application, pdata->thread->contactID);
+                auto ret = DBServiceAPI::ContactGetByIDWithTemporary(application, pdata->thread->contactID);
                 contact  = std::make_shared<ContactRecord>(ret->front());
                 // should be name number for now - easier to handle
                 setTitle(ret->front().getFormattedName());
+                auto retNumber = DBServiceAPI::GetNumberById(application, pdata->thread->numberID, numberIdTimeout);
+                assert(retNumber != nullptr);
+                number = std::move(retNumber);
+                LOG_INFO("Phone number for thread: %s", number->getFormatted().c_str());
             }
         }
         if (auto pdata = dynamic_cast<SMSTextData *>(data)) {
