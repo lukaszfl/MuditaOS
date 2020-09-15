@@ -2,6 +2,7 @@ target_sources( ${PROJECT_NAME}
 
 	PRIVATE
 		"${CMAKE_CURRENT_LIST_DIR}/ApplicationCalendar.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/data/CalendarData.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/models/MonthModel.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/CalendarMainWindow.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/DayEventsWindow.cpp"

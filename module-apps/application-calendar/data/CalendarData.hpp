@@ -1,6 +1,6 @@
 #pragma once
 #include "module-db/Interface/EventsRecord.hpp"
-#include <module-utils/date/include/date/date.h>
+#include <module-gui/gui/SwitchData.hpp>
 #include "application-calendar/widgets/CalendarStyle.hpp"
 
 class EventRecordData : public gui::SwitchData
@@ -37,34 +37,10 @@ class WeekDaysRepeatData : public gui::SwitchData
     bool weekDays[style::window::calendar::week_days_number];
 
   public:
-    WeekDaysRepeatData()
-    {
-        for (uint32_t i = 0; i < style::window::calendar::week_days_number; i++) {
-            weekDays[i] = false;
-        }
-    }
+    WeekDaysRepeatData();
     virtual ~WeekDaysRepeatData() = default;
-    [[nodiscard]] auto getData(const uint32_t &weekDay) const -> bool
-    {
-        if (weekDay >= style::window::calendar::week_days_number) {
-            LOG_ERROR("Weekday out of range (%d)", weekDay);
-            return false;
-        }
-        return weekDays[weekDay];
-    };
-    virtual void setData(const uint32_t &weekDay)
-    {
-        if (weekDay >= style::window::calendar::week_days_number) {
-            LOG_ERROR("Weekday out of range (%d)", weekDay);
-            return;
-        }
-        if (weekDays[weekDay]) {
-            weekDays[weekDay] = false;
-        }
-        else {
-            weekDays[weekDay] = true;
-        }
-    };
+    [[nodiscard]] auto getData(const uint32_t &weekDay) const -> bool;
+    virtual void setData(const uint32_t &weekDay);
 };
 
 class DayMonthData : public gui::SwitchData

@@ -95,7 +95,7 @@ namespace gui
         std::string text = dayNumber->getText();
         try {
             auto result = std::stoi(text.c_str());
-            if (result == 0 || result > 31) {
+            if (result == 0 || result > max_month_day) {
                 LOG_ERROR("Wrong day number!");
                 return 0;
             }
