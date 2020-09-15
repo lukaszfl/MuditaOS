@@ -86,26 +86,6 @@ inline std::string TimePointToString(const TimePoint &tp)
 {
     return date::format("%F %T", time_point_cast<seconds>(tp));
 }
-/*
-inline std::string TimePointToString(const TimePoint &tp, date::days days)
-{
-    date::year_month_day yearMonthDay = date::year_month_day{date::floor<date::days>(tp)};
-    TimePoint timePoint;
-    if ((yearMonthDay.year() / yearMonthDay.month() /
-date::day((static_cast<unsigned>(yearMonthDay.day())+days.count()))).ok())
-    {
-        timePoint = date::sys_days{yearMonthDay.year() / yearMonthDay.month() / (yearMonthDay.day()+days)};
-    }
-    else
-    {
-        date::year_month_day_last yearMonthDayLast = yearMonthDay.year() / yearMonthDay.month()++ / date::last;
-        date::day incrementedDays =  date::day(days.count()) - (yearMonthDayLast.day() - yearMonthDay.day());
-        yearMonthDay = yearMonthDay.year() / (yearMonthDay.month()+date::months{1}) / incrementedDays;
-        timePoint = date::sys_days{yearMonthDay.year() / yearMonthDay.month() / yearMonthDay.day()};
-    }
-    return date::format("%F %T", time_point_cast<seconds>(timePoint));
-}
- */
 
 inline std::string TimePointToString(const TimePoint &tp, date::months months)
 {
