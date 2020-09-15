@@ -92,7 +92,12 @@ class BluetoothWorker : private sys::Worker
 
     bool start_pan();
 
+    bool play_audio();
+
+    bool stop_audio();
+
     Error aud_init();
     /// bluetooth stack id in use
     unsigned long active_features;
+    void initAudioBT();
 };

@@ -11,13 +11,13 @@ else()
     message(FATAL_ERROR "Invalid target!")
 endif()
 
-set( SOURCES 
+set( SOURCES
     "Application.cpp"
-    "UiCommonActions.cpp" 
-    "windows/AppWindow.cpp" 
+    "UiCommonActions.cpp"
+    "windows/AppWindow.cpp"
     "windows/OptionWindow.cpp"
-    "windows/Options.cpp" 
-    "windows/Dialog.cpp" 
+    "windows/Options.cpp"
+    "windows/Dialog.cpp"
     "windows/NoEvents.cpp"
     "widgets/SearchBox.cpp"
     )
@@ -26,17 +26,17 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES} ${BOARD_SOURCES})
 
 set(APPLICATIONS
     clock
-    calendar
+    #calendar
     viewer
     desktop
     settings
     call
-    notes
-    phonebook
-    messages
-    calllog
-    special-input
-    antenna
+    #notes
+    #phonebook
+    #messages
+    #calllog
+    #special-input
+    #antenna
     music-player
 )
 
@@ -45,7 +45,7 @@ foreach(app IN LISTS APPLICATIONS)
     string(TOUPPER ${app} app_upper)
     string(REPLACE "-" "_" app_macro_name ${app_upper})
     option(ENABLE_APP_${app_macro_name} "Enable application ${app}" ON)
-    
+
     if(ENABLE_APP_${app_macro_name})
         message("Enabling application: ${app}")
         add_subdirectory( application-${app} )

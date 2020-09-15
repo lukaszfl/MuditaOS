@@ -13,6 +13,8 @@ class BluetoothMessage : public sys::DataMessage
         Scan,
         PAN,
         Visible,
+        Play,
+        Stop
     };
     enum Request req = Request::None;
     BluetoothMessage(enum Request req = None) : sys::DataMessage(MessageType::BluetoothRequest), req(req){};

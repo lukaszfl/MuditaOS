@@ -7,8 +7,8 @@ using namespace bsp;
 const char *c_str(Bt::Error::Code code)
 {
     switch (code) {
-    case Bt::Error::Code::Succes:
-        return "Succes";
+    case Bt::Error::Code::Success:
+        return "Success";
     case Bt::Error::Code::NotReady:
         return "NotReady";
     case Bt::Error::Code::SystemError:
@@ -52,7 +52,7 @@ bool BluetoothWorker::run()
         std::string name = "PurePhone";
         Bt::set_name(name);
         // set local namne
-        // set discoverable (on)
+        Bt::GAP::set_visibility(true);
         // Bt::GAP::
         Bt::run_stack(&this->bt_worker_task);
         return true;
@@ -69,7 +69,7 @@ bool BluetoothWorker::scan()
     // if state inactive -> return not ready or queue?
     // state active - change what? (BT [ON] on display? )
     auto ret = Bt::GAP::scan();
-    if (ret.err != Bt::Error::Succes) {
+    if (ret.err != Bt::Error::Success) {
         LOG_ERROR("Cant start scan!: %s %" PRIu32 "", c_str(ret.err), ret.lib_code);
         return false;
     }
@@ -82,6 +82,9 @@ bool BluetoothWorker::scan()
 bool BluetoothWorker::set_visible()
 {
     LOG_ERROR("TODO");
+    static bool visibility = true;
+    Bt::GAP::set_visibility(visibility);
+    visibility ^= 1;
 
     return false;
 }
@@ -90,7 +93,7 @@ bool BluetoothWorker::start_pan()
 {
     Bt::PAN::bnep_setup();
     auto err = Bt::PAN::bnep_start();
-    if (err.err != Bt::Error::Succes) {
+    if (err.err != Bt::Error::Success) {
         LOG_ERROR("PAN setup error: %s %" PRIu32, c_str(err.err), err.lib_code);
     }
     return false;
@@ -177,4 +180,19 @@ bool BluetoothWorker::handleMessage(uint32_t queueID)
     }
 
     return true;
+}
+
+void BluetoothWorker::initAudioBT()
+{}
+
+bool BluetoothWorker::play_audio()
+{
+    Bt::A2DP::init();
+    Bt::A2DP::start();
+    return false;
+}
+bool BluetoothWorker::stop_audio()
+{
+    Bt::A2DP::stop();
+    return false;
 }

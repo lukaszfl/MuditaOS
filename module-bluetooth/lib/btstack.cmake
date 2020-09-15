@@ -151,6 +151,29 @@ set(BOARD_DIR_SOURCES
             ${BT_COMMON}
             ${BT_CLASSIC}
             ${BNEP_LWIP}
+            #${BT_STACK_ROOT}/3rd-party/hxcmod-player/mods/nao-deceased_by_disease.c
+            ${BT_STACK_ROOT}/3rd-party/hxcmod-player/hxcmod.c
+            ${BT_STACK_ROOT}/src/classic/btstack_sbc_encoder_bluedroid.c
+            ${BT_STACK_ROOT}/src/classic/a2dp_source.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_encoder.c
+            ${BT_STACK_ROOT}/src/classic/avdtp_util.c
+            ${BT_STACK_ROOT}/src/classic/avdtp_source.c
+            ${BT_STACK_ROOT}/src/classic/avdtp.c
+            ${BT_STACK_ROOT}/src/classic/avrcp.c
+            ${BT_STACK_ROOT}/src/classic/avdtp_acceptor.c
+            ${BT_STACK_ROOT}/src/classic/avdtp_initiator.c
+            ${BT_STACK_ROOT}/src/classic/sdp_client.c
+            ${BT_STACK_ROOT}/src/classic/avrcp_target.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_analysis.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_dct.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_dct_coeffs.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_enc_bit_alloc_mono.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_enc_bit_alloc_ste.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_enc_bit_alloc_ste.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_enc_coeffs.c
+            ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_packing.c
+
+
     )
 
 if(${PROJECT_TARGET} STREQUAL "TARGET_Linux")
