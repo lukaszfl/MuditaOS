@@ -17,10 +17,20 @@ namespace Bt
         /// THIS have to be called prior to Bt system start!
         Error register_scan();
         Error scan();
+        Error set_visibility(bool visibility);
     }; // namespace GAP
     namespace PAN
     {
         Error bnep_start();
         Error bnep_setup();
     } // namespace PAN
+
+    namespace A2DP
+    {
+        Error init();
+        void start();
+        void stop();
+        static void source_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+        static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+    } // namespace A2DP
 };    // namespace Bt
