@@ -78,6 +78,13 @@ sys::Message_t ServiceBluetooth::DataReceivedHandler(sys::DataMessage *msg, sys:
                 worker->set_visible();
                 break;
 
+            case BluetoothMessage::Play:
+                worker->play_audio();
+                break;
+            case BluetoothMessage::Stop:
+                worker->stop_audio();
+                break;
+
             default:
                 break;
             }

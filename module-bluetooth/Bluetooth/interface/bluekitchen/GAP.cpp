@@ -240,5 +240,12 @@ namespace Bt
             }
             return Error();
         }
+
+        Error set_visibility(bool visibility)
+        {
+            gap_discoverable_control(visibility);
+            LOG_INFO("Visibility: %s", visibility ? "true" : "false");
+            return Error();
+        }
     } // namespace GAP
 } // namespace Bt
