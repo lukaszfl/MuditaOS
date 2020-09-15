@@ -9,6 +9,8 @@ using Clock        = system_clock;
 using TimePoint    = time_point<Clock>;
 using YearMonthDay = date::year_month_day;
 
+const inline int max_month_day = 48;
+
 enum class Reminder
 {
     never,
