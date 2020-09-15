@@ -271,7 +271,7 @@ namespace gui
         }
     }
 
-    Padding Item::getPadding()
+    Padding Item::getPadding() const
     {
         return padding;
     }

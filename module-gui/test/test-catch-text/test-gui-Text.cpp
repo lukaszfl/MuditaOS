@@ -46,7 +46,7 @@ namespace gui
       public:
         unsigned int linesSize()
         {
-            return lines.get().size();
+            return lines->get().size();
         }
 
         void drawLines() override
@@ -57,7 +57,7 @@ namespace gui
 
         auto &linesGet()
         {
-            return lines.get();
+            return lines->get();
         }
 
         [[nodiscard]] auto *getInputMode()
@@ -87,7 +87,7 @@ TEST_CASE("Text drawLines")
 
     SECTION("all multiline visible")
     {
-        unsigned int lines_count = 5;
+        unsigned int lines_count = 4;
         auto testline            = mockup::multiLineString(lines_count);
         auto text                = TestText();
         text.setSize(300, 500);
@@ -123,7 +123,8 @@ TEST_CASE("Text buildDrawList")
 TEST_CASE("handle input mode ABC/abc/1234")
 {
     utils::localize.Switch(utils::Lang::En); /// needed to load input mode
-
+    auto &fontmanager = mockup::fontManager();
+    auto font         = fontmanager.getFont(0);
     auto text      = gui::TestText();
     auto modes     = {InputMode::ABC, InputMode::abc, InputMode::digit};
     auto str       = text.getText();
@@ -135,6 +136,7 @@ TEST_CASE("handle input mode ABC/abc/1234")
         },
         gui::InputEvent::State::keyReleasedShort);
     text.setInputMode(new InputMode(modes));
+    text.setFont(font);
 
     SECTION("ABC -> abc")
     {
