@@ -1,11 +1,7 @@
-#include "BluetoothWorker.hpp"
-#include "Device.hpp"
-#include "Service/Bus.hpp"
 #include <Bluetooth/Device.hpp>
-#include <Bluetooth/Error.hpp>
 #include <log/log.hpp>
-#include <module-services/service-bluetooth/messages/BluetoothMessage.hpp>
 #include <vector>
+#include <Bluetooth/Error.hpp>
 
 extern "C"
 {
@@ -13,11 +9,33 @@ extern "C"
 };
 
 btstack_packet_callback_registration_t cb_handler;
+enum DEVICE_STATE
+{
+    REMOTE_NAME_REQUEST,
+    REMOTE_NAME_INQUIRED,
+    REMOTE_NAME_FETCHED
+};
+
+struct Devicei : public Device
+{
+  public:
+    bd_addr_t address;
+    uint8_t pageScanRepetitionMode;
+    uint16_t clockOffset;
+    enum DEVICE_STATE state;
+
+    Devicei(std::string name = "") : name(name)
+    {}
+    virtual ~Devicei()
+    {}
+    void address_set(bd_addr_t *addr)
+    {
+        memcpy(&address, addr, sizeof address);
+    }
+    std::string name;
+};
 
 std::vector<Devicei> devices;
-
-static int start_scan(void);
-static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
 static int getDeviceIndexForAddress(std::vector<Devicei> &devs, bd_addr_t addr)
 {
@@ -37,57 +55,6 @@ enum STATE
     DONE
 };
 enum STATE state = INIT;
-
-namespace Bt
-{
-    namespace GAP
-    {
-        static sys::Service *ownerService = nullptr;
-
-        void setOwnerService(sys::Service *service)
-        {
-            ownerService = service;
-        }
-
-        Error register_scan()
-        {
-            LOG_INFO("GAP register scan!");
-            /// -> this have to be called prior to power on!
-            hci_set_inquiry_mode(INQUIRY_MODE_RSSI_AND_EIR);
-            cb_handler.callback = &packet_handler;
-            hci_add_event_handler(&cb_handler);
-            return Error();
-        }
-
-        Error scan()
-        {
-            LOG_INFO("Start scan if active: %d: %d", hci_get_state(), state);
-            if (hci_get_state() == HCI_STATE_WORKING) {
-                if (int ret = start_scan() != 0) {
-                    LOG_ERROR("Start scan error!: 0x%X", ret);
-                    return Error(Error::LibraryError, ret);
-                }
-            }
-            else {
-                return Error(Error::NotReady);
-            }
-            return Error();
-        }
-
-        void stopScan()
-        {
-            gap_inquiry_stop();
-            LOG_INFO("Scan stopped!");
-        }
-
-        Error set_visibility(bool visibility)
-        {
-            gap_discoverable_control(visibility);
-            LOG_INFO("Visibility: %s", visibility ? "true" : "false");
-            return Error();
-        }
-    } // namespace GAP
-} // namespace Bt
 
 #define INQUIRY_INTERVAL 5
 static int start_scan(void)
@@ -125,9 +92,9 @@ static void continue_remote_names(void)
 {
     if (has_more_remote_name_requests()) {
         do_next_remote_name_request();
-        start_scan();
         return;
     }
+    start_scan();
 }
 
 static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
@@ -196,7 +163,6 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
                 memcpy(name_buffer, gap_event_inquiry_result_get_name(packet), name_len);
                 name_buffer[name_len] = 0;
                 LOG_INFO(", name '%s'", name_buffer);
-                dev.name  = std::string{name_buffer};
                 dev.state = REMOTE_NAME_FETCHED;
                 ;
             }
@@ -204,8 +170,6 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
                 dev.state = REMOTE_NAME_REQUEST;
             }
             devices.push_back(dev);
-            std::shared_ptr<BluetoothScanMessage> msg = std::make_shared<BluetoothScanMessage>(devices);
-            auto ret = sys::Bus::SendUnicast(msg, "ApplicationSettings", Bt::GAP::ownerService, 5000);
         } break;
 
         case GAP_EVENT_INQUIRY_COMPLETE:
@@ -246,3 +210,42 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
         break;
     }
 }
+
+namespace Bt
+{
+    namespace GAP
+    {
+
+        Error register_scan()
+        {
+            LOG_INFO("GAP register scan!");
+            /// -> this have to be called prior to power on!
+            hci_set_inquiry_mode(INQUIRY_MODE_RSSI_AND_EIR);
+            cb_handler.callback = &packet_handler;
+            hci_add_event_handler(&cb_handler);
+            return Error();
+        }
+
+        Error scan()
+        {
+            LOG_INFO("Start scan if active: %d: %d", hci_get_state(), state);
+            if (hci_get_state() == HCI_STATE_WORKING) {
+                if (int ret = start_scan() != 0) {
+                    LOG_ERROR("Start scan error!: 0x%X", ret);
+                    return Error(Error::LibraryError, ret);
+                }
+            }
+            else {
+                return Error(Error::NotReady);
+            }
+            return Error();
+        }
+
+        Error set_visibility(bool visibility)
+        {
+            gap_discoverable_control(visibility);
+            LOG_INFO("Visibility: %s", visibility ? "true" : "false");
+            return Error();
+        }
+    } // namespace GAP
+} // namespace Bt

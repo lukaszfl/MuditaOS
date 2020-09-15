@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Device.hpp"
-#include "Service/Worker.hpp"
-#include "interface/profiles/Profile.hpp"
 #include <FreeRTOS.h>
+#include <task.h>
 #include <bsp/bluetooth/Bluetooth.hpp>
 #include <memory>
-#include <task.h>
 #include <vector>
+
+#include "Device.hpp"
+#include "Service/Worker.hpp"
 
 struct HCI;
 
@@ -95,13 +95,9 @@ class BluetoothWorker : private sys::Worker
     bool play_audio();
 
     bool stop_audio();
-    void set_addr(bd_addr_t addr);
 
     Error aud_init();
     /// bluetooth stack id in use
     unsigned long active_features;
     void initAudioBT();
-    void stop_scan();
-
-    std::shared_ptr<Bt::Profile> currentProfile = nullptr;
 };

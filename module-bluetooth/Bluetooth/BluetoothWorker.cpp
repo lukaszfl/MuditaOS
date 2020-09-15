@@ -1,12 +1,6 @@
 #include "BluetoothWorker.hpp"
-#include "BtCommand.hpp"
-#include "interface/profiles/A2DP.hpp"
 #include "log/log.hpp"
-
-extern "C"
-{
-#include "module-bluetooth/lib/btstack/src/btstack_util.h"
-};
+#include "BtCommand.hpp"
 
 using namespace bsp;
 
@@ -31,7 +25,6 @@ BluetoothWorker::BluetoothWorker(sys::Service *service) : Worker(service)
         {"qBtIO", sizeof(Bt::Message), 10},
         {"qBtWork", sizeof(Bt::EvtWorker), 10},
     });
-    currentProfile = std::make_shared<Bt::A2DP>();
 };
 
 BluetoothWorker::~BluetoothWorker()
@@ -69,7 +62,7 @@ bool BluetoothWorker::run()
 bool BluetoothWorker::scan()
 {
     std::vector<Device> empty;
-    Bt::GAP::setOwnerService(service);
+
     auto ret = Bt::GAP::scan();
     if (ret.err != Bt::Error::Success) {
         LOG_ERROR("Cant start scan!: %s %" PRIu32 "", c_str(ret.err), ret.lib_code);
@@ -77,14 +70,8 @@ bool BluetoothWorker::scan()
     }
     else {
         LOG_INFO("Scan started!");
-        // open new scan window
         return true;
     }
-}
-
-void BluetoothWorker::stop_scan()
-{
-    Bt::GAP::stopScan();
 }
 
 bool BluetoothWorker::set_visible()
@@ -117,7 +104,6 @@ BluetoothWorker::Error BluetoothWorker::aud_init()
     return err;
 }
 
-#include <module-bluetooth/Bluetooth/interface/profiles/A2DP.hpp>
 #include <sstream>
 
 bool BluetoothWorker::handleMessage(uint32_t queueID)
@@ -192,31 +178,12 @@ void BluetoothWorker::initAudioBT()
 
 bool BluetoothWorker::play_audio()
 {
-    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
-    if (profile != nullptr) {
-        profile->init();
-        profile->start();
-    }
-
-    //    A2DPInstance.init();
-    //    A2DPInstance.start();
-    //    Bt::HSP::init();
-    //   Bt::HSP::start();
+    Bt::A2DP::init();
+    Bt::A2DP::start();
     return false;
 }
 bool BluetoothWorker::stop_audio()
 {
-    //    Bt::HSP::stop();
-    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
-    if (profile != nullptr) {
-        profile->stop();
-    }
+    Bt::A2DP::stop();
     return false;
-}
-void BluetoothWorker::set_addr(bd_addr_t addr)
-{
-    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
-    if (profile != nullptr) {
-        profile->setDeviceAddress(addr);
-    }
 }
