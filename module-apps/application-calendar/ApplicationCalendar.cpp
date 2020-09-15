@@ -41,8 +41,7 @@ namespace app
                                              uint32_t stackDepth,
                                              sys::ServicePriority priority)
         : Application(name, parent, false, stackDepth, priority)
-    {
-    }
+    {}
 
     sys::Message_t ApplicationCalendar::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
     {

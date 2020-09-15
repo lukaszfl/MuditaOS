@@ -389,9 +389,9 @@ std::vector<EventsTableRow> EventsTable::selectByDatePeriod(TimePoint date_filte
 {
     /// TODO: Rework unit tests
     auto retQuery =
-        db->query("SELECT * FROM events WHERE date_till >= date('%q') AND date_till < date('%q', 'start of day');",
+        db->query("SELECT * FROM events WHERE date_from >= date('%q') AND date_till < date('%q', 'start of day');",
                   TimePointToString(date_filter).c_str(),
-                  TimePointToString(filter_till + date::days{1}).c_str());
+                  TimePointToString(filter_till).c_str());
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return std::vector<EventsTableRow>();

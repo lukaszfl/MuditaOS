@@ -70,7 +70,7 @@ namespace gui
                 auto month      = actualMonthBox->month;
                 auto dateFilter = actualMonthBox->monthFilterValue.year() / actualMonthBox->monthFilterValue.month() /
                                   date::day(numb);
-                auto filter     = TimePointFromYearMonthDay(dateFilter);
+                auto filter = TimePointFromYearMonthDay(dateFilter);
                 data->setData(number + " " + month, filter);
                 if (isDayEmpty) {
                     auto application = dynamic_cast<app::ApplicationCalendar *>(app);
