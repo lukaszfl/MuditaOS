@@ -28,6 +28,16 @@ namespace db::query::events
 
 } // namespace db::query::events
 
+enum class RepeatOption
+{
+    Never    = 0,
+    Daily    = 1,
+    Weekly   = 2,
+    TwoWeeks = 3,
+    Month    = 4,
+    Year     = 5
+};
+
 struct EventsRecord : public Record
 {
     std::string title;

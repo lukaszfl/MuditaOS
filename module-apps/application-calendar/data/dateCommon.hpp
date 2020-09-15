@@ -2,12 +2,14 @@
 #define DATECOMMON_H
 
 #include <module-utils/date/include/date/date.h>
+#include <time/time_conversion.hpp>
 
 using namespace std::chrono;
 
 using Clock        = system_clock;
 using TimePoint    = time_point<Clock>;
 using YearMonthDay = date::year_month_day;
+using YearMonthDayLast = date::year_month_day_last;
 
 const inline int max_month_day = 48;
 
@@ -79,9 +81,15 @@ inline time_t GetAsUTCTime(int year, int month, int day, int hour = 0, int minut
     return basetime + GetDiffLocalWithUTCTime();
 }
 
+inline TimePoint TimePointFromTimeT(const time_t &time)
+{
+    return system_clock::from_time_t(time);
+}
+
 inline TimePoint TimePointNow()
 {
-    return system_clock::now();
+    auto timestamp = new utils::time::Timestamp();
+    return TimePointFromTimeT(timestamp->getTime());
 }
 
 inline std::string TimePointToString(const TimePoint &tp)
@@ -92,15 +100,29 @@ inline std::string TimePointToString(const TimePoint &tp)
 inline std::string TimePointToString(const TimePoint &tp, date::months months)
 {
     date::year_month_day yearMonthDay = date::year_month_day{date::floor<date::days>(tp)};
-    TimePoint timePoint;
-    if ((static_cast<unsigned>(yearMonthDay.month()) + months.count()) <= 12) {
+    date::year_month_day yearMonthDayLast = yearMonthDay.year() / yearMonthDay.month() / date::last;
 
-        timePoint = date::sys_days{yearMonthDay.year() / (yearMonthDay.month() + months) / yearMonthDay.day()};
+    TimePoint timePoint;
+
+    if ((static_cast<unsigned>(yearMonthDay.month()) + months.count()) <= 12) {
+        if (yearMonthDayLast.day() == yearMonthDay.day()) {
+            yearMonthDayLast = yearMonthDay.year() / (yearMonthDay.month() + months) / date::last;
+            timePoint = date::sys_days{yearMonthDayLast.year() / yearMonthDayLast.month() / yearMonthDayLast.day()};
+        }
+        else {
+            timePoint = date::sys_days{yearMonthDay.year() / (yearMonthDay.month() + months) / yearMonthDay.day()};
+        }
     }
     else {
         date::month incrementedMonths = date::month(months.count()) - (date::month(12) - yearMonthDay.month());
         yearMonthDay                  = (yearMonthDay.year() + date::years{1}) / incrementedMonths / yearMonthDay.day();
-        timePoint                     = date::sys_days{yearMonthDay.year() / yearMonthDay.month() / yearMonthDay.day()};
+        if (yearMonthDayLast.day() == yearMonthDay.day()) {
+            yearMonthDayLast = yearMonthDay.year() / incrementedMonths / date::last;
+            timePoint = date::sys_days{yearMonthDayLast.year() / yearMonthDayLast.month() / yearMonthDayLast.day()};
+        }
+        else {
+            timePoint = date::sys_days{yearMonthDay.year() / yearMonthDay.month() / yearMonthDay.day()};
+        }
     }
     return date::format("%F %T", time_point_cast<seconds>(timePoint));
 }
@@ -110,11 +132,6 @@ inline TimePoint TimePointFromString(const char *s1)
     TimePoint tp;
     std::istringstream(s1) >> date::parse("%F %T", tp);
     return tp;
-}
-
-inline TimePoint TimePointFromTimeT(const time_t &time)
-{
-    return system_clock::from_time_t(time);
 }
 
 inline time_t TimePointToTimeT(const TimePoint &tp)

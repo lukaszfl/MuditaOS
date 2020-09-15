@@ -74,9 +74,9 @@ class PrevWindowData : public gui::SwitchData
   public:
     enum PrevWindow
     {
-        DELETE = 0,
-        EDTIT,
-        ADD
+        Delete = 0,
+        Edit,
+        Add
     };
 
   protected:
