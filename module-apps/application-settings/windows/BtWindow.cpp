@@ -89,9 +89,21 @@ namespace gui
             return true;
         });
 
-        add_box_label(box, "  -> Visibility", [=](Item &) {
-            LOG_DEBUG("Callback visibility");
+        add_box_label(box, "  -> Set visible", [=](Item &) {
+            LOG_DEBUG("Callback set visibility");
             message_bt(application, BluetoothMessage::Request::Visible);
+            return true;
+        });
+
+        add_box_label(box, "  -> Play", [=](Item &) {
+            LOG_DEBUG("Start playback");
+            message_bt(application, BluetoothMessage::Request::Play);
+            return true;
+        });
+
+        add_box_label(box, "  -> Stop", [=](Item &) {
+            LOG_DEBUG("Stop playback");
+            message_bt(application, BluetoothMessage::Request::Stop);
             return true;
         });
 
