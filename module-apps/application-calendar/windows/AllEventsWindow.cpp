@@ -82,10 +82,9 @@ namespace gui
             LOG_DEBUG("Switch to new event window");
             std::unique_ptr<EventRecordData> data = std::make_unique<EventRecordData>();
             data->setDescription("New");
-            auto rec       = new EventsRecord();
-            rec->date_from = TimePointNow();
-            rec->date_till = TimePointNow();
-            auto event     = std::make_shared<EventsRecord>(*rec);
+            auto event       = std::make_shared<EventsRecord>();
+            event->date_from = TimePointNow();
+            event->date_till = TimePointNow();
             data->setData(event);
             data->setWindowName(style::window::calendar::name::all_events_window);
             application->switchWindow(
