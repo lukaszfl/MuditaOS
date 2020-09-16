@@ -1,8 +1,11 @@
 #include "bsp/magnetometer/magnetometer.hpp"
 #include "ALS31300.hpp"
-
 #include "bsp/BoardDefinitions.hpp"
+
 #include "drivers/i2c/DriverI2C.hpp"
+
+#include <board/rt1051/bsp/usb_cdc/driver/osa/usb_osa.h>                 // just for the define to populate
+#include <module-bsp/board/rt1051/bsp/usb_cdc/driver/include/usb_misc.h> // for endian-swapping macro
 
 #include "fsl_common.h"
 
@@ -35,12 +38,13 @@ namespace bsp
 
             uint8_t buf[4];
             i2c->Read(addr, buf, 4);
-            auto tempMSB = buf[0] && 0b111111;
+            auto tempMSB =
+                USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) & 0b111111; // it comes as big-endian, but we are little-endian
 
             addr.subAddress = ALS31300_MEASUREMENTS_LSB_REG;
             i2c->Read(addr, buf, 4);
 
-            auto tempLSB = buf[0] && 0b111111;
+            auto tempLSB = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) & 0b111111;
             return als31300_temperature_convert((tempMSB << 6) | (tempLSB));
         }
 
