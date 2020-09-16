@@ -46,9 +46,6 @@ bool EventsTable::add(EventsTableRow entry)
 
 bool EventsTable::addDaily(EventsTableRow entry)
 {
-    for (uint32_t i = 0; i < 7; i++) {
-        LOG_DEBUG("DATE!!!!!!!!!!:%s", TimePointToString(entry.date_from + date::days{i}).c_str());
-    }
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
                        "('%q', '%q','%q', %u, %u),"
                        "('%q', '%q','%q', %u, %u),"
@@ -96,8 +93,6 @@ bool EventsTable::addDaily(EventsTableRow entry)
 
 bool EventsTable::addWeekly(EventsTableRow entry)
 {
-    LOG_DEBUG("ENTRY DATE FROM: %s", TimePointToString(entry.date_from).c_str());
-    LOG_DEBUG("ENTRY DATE FROM: %s", TimePointToString(entry.date_till).c_str());
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
                        "('%q', '%q','%q', %u, %u),"
                        "('%q', '%q','%q', %u, %u),"
@@ -156,9 +151,6 @@ bool EventsTable::addTwoWeeks(EventsTableRow entry)
 
 bool EventsTable::addMonth(EventsTableRow entry)
 {
-    for (uint32_t i = 0; i < 12; i++) {
-        LOG_DEBUG("DATE!!!!!!!!!!:%s", TimePointToString(entry.date_from + date::months{i}).c_str());
-    }
     return db->execute("INSERT or IGNORE INTO events (title, date_from, date_till, reminder, repeat) VALUES"
                        "('%q', '%q','%q', %u, %u),"
                        "('%q', '%q','%q', %u, %u),"
@@ -284,7 +276,7 @@ std::vector<bool> parseOptions(const uint32_t &dataDB)
     }
     for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
         if (dataDB & (1 << i)) {
-            LOG_DEBUG("SET OPTION ARRAY!!!%u", i);
+            LOG_DEBUG("SET OPTION ARRAY! %d", static_cast<int>(i));
             weekDayOptions[i - startBit] = true;
         }
     }
@@ -387,7 +379,6 @@ EventsTableRow EventsTable::getById(uint32_t id)
 
 std::vector<EventsTableRow> EventsTable::selectByDatePeriod(TimePoint date_filter, TimePoint filter_till)
 {
-    /// TODO: Rework unit tests
     auto retQuery =
         db->query("SELECT * FROM events WHERE date_from >= date('%q') AND date_till < date('%q', 'start of day');",
                   TimePointToString(date_filter).c_str(),

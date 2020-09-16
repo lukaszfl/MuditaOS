@@ -17,7 +17,6 @@ class OptionParser
         const uint32_t numberOfOptions = options_num;
         for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
             if (dataDB & (1 << i)) {
-                LOG_DEBUG("SET OPTION ARRAY!!!%u", i);
                 weekDayOptions->setData(i - startBit);
             }
         }
@@ -31,7 +30,6 @@ class OptionParser
         const uint32_t numberOfOptions = options_num;
         for (uint32_t i = startBit; i < startBit + numberOfOptions; i++) {
             if (weekDayOptions->getData(i - startBit)) {
-                LOG_DEBUG("GET DB VALUE!!!");
                 dataDB += (1 << i);
             }
         }
@@ -49,7 +47,6 @@ class OptionParser
                 dataDB -= (1 << i);
             }
         }
-        LOG_DEBUG("DATA DB: %u", dataDB);
         return dataDB;
     }
 };

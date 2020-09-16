@@ -74,8 +74,8 @@ namespace app
 
     sys::ReturnCodes ApplicationCalendar::InitHandler()
     {
-        auto timestamp       = new utils::time::Timestamp();
-        applicationStartTime = timestamp->getTime();
+        utils::time::Timestamp timestamp;
+        applicationStartTime = timestamp.getTime();
         auto ret             = Application::InitHandler();
         createUserInterface();
         return ret;
@@ -133,7 +133,7 @@ namespace app
         meta.action = [=]() -> bool {
             LOG_DEBUG("Switch to new event window");
             std::unique_ptr<EventRecordData> eventData = std::make_unique<EventRecordData>();
-            eventData->setDescription("New");
+            eventData->setDescription(style::window::calendar::new_event);
             auto event       = std::make_shared<EventsRecord>();
             event->date_from = dateFilter;
             event->date_till = dateFilter;

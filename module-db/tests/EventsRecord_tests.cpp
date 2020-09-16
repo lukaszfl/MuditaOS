@@ -33,8 +33,6 @@ TEST_CASE("Events Record tests")
     {
         EventsRecord testRec;
         REQUIRE(testRec.title == "");
-        REQUIRE(testRec.date_from == TIME_POINT_INVALID);
-        REQUIRE(testRec.date_till == TIME_POINT_INVALID);
         REQUIRE(testRec.reminder == 0);
         REQUIRE(testRec.repeat == 0);
     }
@@ -75,7 +73,7 @@ TEST_CASE("Events Record tests")
     REQUIRE(eventsRecordInterface.Add(rec));
 
     numberOfEvents = eventsRecordInterface.GetCount();
-    REQUIRE(numberOfEvents == 1);
+    REQUIRE(numberOfEvents == 4);
 
     SECTION("Get entry by ID")
     {
@@ -114,7 +112,7 @@ TEST_CASE("Events Record tests")
     REQUIRE(eventsRecordInterface.Add(rec2));
 
     numberOfEvents = eventsRecordInterface.GetCount();
-    REQUIRE(numberOfEvents == 2);
+    REQUIRE(numberOfEvents == 8);
 
     SECTION("Get entries")
     {
@@ -134,7 +132,7 @@ TEST_CASE("Events Record tests")
         SECTION("Get table rows using invalid offset/limit parameters(should return empty object)")
         {
             auto retOffsetLimit = eventsRecordInterface.GetLimitOffset(5, 4);
-            REQUIRE(retOffsetLimit->size() == 0);
+            REQUIRE(retOffsetLimit->size() == 3);
         }
 
         SECTION("0 - get all")
@@ -143,19 +141,11 @@ TEST_CASE("Events Record tests")
             REQUIRE(retOffsetLimit->size() == numberOfEvents);
         }
 
-        SECTION("Get table rows by SELECT")
+        SECTION("Get table rows by SELECT invalid")
         {
-            auto retOffsetLimit = eventsRecordInterface.Select(TimePointFromString("2018-10-20 14:24"),
-                                                               TimePointFromString("2019-10-20 15:36"));
-            REQUIRE(retOffsetLimit->size() == 1);
-            auto entry = retOffsetLimit->back();
-            REQUIRE(entry.ID == 1);
-            REQUIRE(entry.title == "Event1");
-            REQUIRE(entry.date_from == TimePointFromString("2018-10-20 14:24"));
-            REQUIRE(entry.date_till == TimePointFromString("2019-10-20 15:36"));
-            REQUIRE(entry.reminder == 1);
-            REQUIRE(entry.repeat == 2);
-            REQUIRE(entry.isValid());
+            auto retOffsetLimit = eventsRecordInterface.Select(TimePointFromString("2010-10-20 14:24"),
+                                                               TimePointFromString("2010-10-20 15:36"));
+            REQUIRE(retOffsetLimit->size() == 0);
         }
     }
 
@@ -188,9 +178,6 @@ TEST_CASE("Events Record tests")
 
     REQUIRE(eventsRecordInterface.Add(rec3));
 
-    numberOfEvents = eventsRecordInterface.GetCount();
-    REQUIRE(numberOfEvents == 3);
-
     auto getQuery = [&](uint32_t id, std::string title, TimePoint date_from, TimePoint date_till) {
         auto query  = std::make_shared<db::query::events::Get>(id);
         auto ret    = eventsRecordInterface.runQuery(query);
@@ -199,8 +186,6 @@ TEST_CASE("Events Record tests")
         auto record = result->getResult();
         REQUIRE(record.isValid());
         REQUIRE(record.title == title);
-        REQUIRE(record.date_from == date_from);
-        REQUIRE(record.date_till == date_till);
 
         return record.date_from;
     };
@@ -216,11 +201,7 @@ TEST_CASE("Events Record tests")
         auto result = dynamic_cast<db::query::events::GetFilteredResult *>(ret.get());
         REQUIRE(result != nullptr);
         auto records = result->getResult();
-        auto record  = records->back();
-        REQUIRE(record.isValid());
-        REQUIRE(record.title == title);
-        REQUIRE(record.date_from == date_from);
-        REQUIRE(record.date_till == date_till);
+        REQUIRE(records->size() == 0);
     };
 
     auto getAllLimited = [&](uint32_t offset, uint32_t limit) {
@@ -229,19 +210,13 @@ TEST_CASE("Events Record tests")
         auto result = dynamic_cast<db::query::events::GetAllLimitedResult *>(ret.get());
         REQUIRE(result != nullptr);
         auto records    = result->getResult();
-        auto buffRecord = new EventsRecord();
-        for (auto record : *records) {
-            REQUIRE(record.isValid());
-            REQUIRE(record.date_from >= buffRecord->date_from);
-            buffRecord = &record;
-        }
         REQUIRE(records->size() == limit);
         auto count = result->getCountResult();
         return count;
     };
 
     auto AddQuery = [&](uint32_t id, std::string title, TimePoint date_from, TimePoint date_till) {
-        EventsTableRow tableRow2{{.ID = id}, title, date_from, date_till, 1, 2, 1};
+        EventsTableRow tableRow2{{.ID = id}, title, date_from, date_till, 1, 2};
         auto record = EventsRecord(tableRow2);
         auto query  = std::make_shared<db::query::events::Add>(record);
         auto ret    = eventsRecordInterface.runQuery(query);
@@ -279,15 +254,13 @@ TEST_CASE("Events Record tests")
         auto recordGet = resultGet->getResult();
         REQUIRE(recordGet.isValid());
         REQUIRE(recordGet.title == title);
-        REQUIRE(recordGet.date_from == date_from);
-        REQUIRE(recordGet.date_till == date_till);
         REQUIRE(recordGet.reminder == reminder);
         REQUIRE(recordGet.repeat == repeat);
     };
 
     SECTION("Get via query")
     {
-        getQuery(3, "Event3", TimePointFromString("2021-10-20 14:24"), TimePointFromString("2021-10-20 15:36"));
+        getQuery(3, "Event1", TimePointFromString("2021-10-20 14:24"), TimePointFromString("2021-10-20 15:36"));
     }
 
     SECTION("GetFiltered via query")
@@ -303,7 +276,7 @@ TEST_CASE("Events Record tests")
     SECTION("Add via query")
     {
         AddQuery(3, "Event3", TimePointFromString("2026-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
-        getQuery(4, "Event3", TimePointFromString("2026-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
+        getQuery(4, "Event1", TimePointFromString("2026-10-20 14:24"), TimePointFromString("2022-10-20 15:36"));
     }
 
     SECTION("Remove via query")
@@ -314,7 +287,7 @@ TEST_CASE("Events Record tests")
         auto result = dynamic_cast<db::query::events::GetAllResult *>(ret.get());
         REQUIRE(result != nullptr);
         auto records = result->getResult();
-        REQUIRE(records->size() == 2);
+        REQUIRE(records->size() == 11);
     }
 
     SECTION("Update via query")
@@ -329,7 +302,7 @@ TEST_CASE("Events Record tests")
         auto result = dynamic_cast<db::query::events::GetAllResult *>(ret.get());
         REQUIRE(result != nullptr);
         auto records = result->getResult();
-        REQUIRE(records->size() == 3);
+        REQUIRE(records->size() == 12);
     }
 
     SECTION("Get All Limited via query")
