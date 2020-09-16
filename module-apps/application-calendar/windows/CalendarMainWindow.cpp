@@ -207,7 +207,7 @@ namespace gui
                 unique_ptr<vector<EventsRecord>> records = response->getResult();
                 for (auto &rec : *records) {
                     date::year_month_day recordDate = TimePointToYearMonthDay(rec.date_from);
-                    uint32_t dayNumb                = static_cast<uint32_t>(recordDate.day());
+                    uint32_t dayNumb                = static_cast<unsigned>(recordDate.day());
                     isDayEmpty[dayNumb - 1]         = false;
                 }
                 refresh();

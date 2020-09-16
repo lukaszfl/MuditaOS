@@ -61,7 +61,7 @@ namespace gui
             return true;
         }
         // process only if key is released
-        if ((inputEvent.state != InputEvent::State::keyReleasedShort))
+        if (!inputEvent.isShortPress())
             return false;
 
         switch (inputEvent.keyCode) {
@@ -72,7 +72,6 @@ namespace gui
                 for (auto it : items) {
                     auto item = dynamic_cast<CheckBoxWithLabelItem *>(it);
                     if (item && item->checkBox->isChecked()) {
-                        LOG_DEBUG("IS CHECKED!!!");
                         weekDaysOptData->setData(i);
                     }
                     ++i;

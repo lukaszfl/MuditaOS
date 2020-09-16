@@ -82,7 +82,7 @@ namespace gui
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_ENTER) {
             LOG_DEBUG("Save Event");
-            bool edit;
+            bool edit = true;
             if (eventAction == EventAction::Edit) {
                 edit = true;
             }
@@ -103,10 +103,10 @@ namespace gui
             return false;
         }
 
-        if (data->getDescription() == "Edit") {
+        if (data->getDescription() == style::window::calendar::edit_event) {
             eventAction = EventAction::Edit;
         }
-        else if (data->getDescription() == "New") {
+        else if (data->getDescription() == style::window::calendar::new_event) {
             eventAction = EventAction::Add;
         }
         return true;

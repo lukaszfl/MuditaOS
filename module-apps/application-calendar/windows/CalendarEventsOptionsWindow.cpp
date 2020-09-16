@@ -59,7 +59,7 @@ namespace gui
         assert(dialog != nullptr);
         auto meta   = dialog->meta;
         meta.action = [=]() -> bool {
-            LOG_INFO("Delete calendar event %d", eventRecord->ID);
+            LOG_INFO("Delete calendar event %d", static_cast<int>(eventRecord->ID));
             DBServiceAPI::GetQuery(
                 application, db::Interface::Name::Events, std::make_unique<db::query::events::Remove>(eventRecord->ID));
             auto data = make_unique<PrevWindowData>();

@@ -11,7 +11,7 @@ WeekDaysRepeatData::WeekDaysRepeatData()
 [[nodiscard]] auto WeekDaysRepeatData::getData(const uint32_t &weekDay) const -> bool
 {
     if (weekDay >= style::window::calendar::week_days_number) {
-        LOG_ERROR("Weekday out of range (%d)", weekDay);
+        LOG_ERROR("Weekday out of range (%d)", static_cast<int>(weekDay));
         return false;
     }
     return weekDays[weekDay];
@@ -20,7 +20,7 @@ WeekDaysRepeatData::WeekDaysRepeatData()
 void WeekDaysRepeatData::setData(const uint32_t &weekDay)
 {
     if (weekDay >= style::window::calendar::week_days_number) {
-        LOG_ERROR("Weekday out of range (%d)", weekDay);
+        LOG_ERROR("Weekday out of range (%d)", static_cast<int>(weekDay));
         return;
     }
     if (weekDays[weekDay]) {

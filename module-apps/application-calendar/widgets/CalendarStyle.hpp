@@ -21,6 +21,8 @@ namespace style
                 const inline std::string custom_repeat_window = "CustomRepeat";
             } // namespace name
 
+            const inline std::string new_event  = "New";
+            const inline std::string edit_event = "Edit";
             const inline int day_cell_width    = 60;
             const inline int day_cell_height   = 55;
             const inline int month_year_height = 60;

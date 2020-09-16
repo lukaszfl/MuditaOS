@@ -88,8 +88,8 @@ inline TimePoint TimePointFromTimeT(const time_t &time)
 
 inline TimePoint TimePointNow()
 {
-    auto timestamp = new utils::time::Timestamp();
-    return TimePointFromTimeT(timestamp->getTime());
+    utils::time::Timestamp timestamp;
+    return TimePointFromTimeT(timestamp.getTime());
 }
 
 inline std::string TimePointToString(const TimePoint &tp)
