@@ -2,6 +2,10 @@
 
 // ALS31300 magnetometer driver
 
+/*
+ * Note: this device returns 32-bit register values in MSB order
+ */
+
 // there is no 0x01 register
 constexpr auto ALS31300_CONF_REG = 0x02;
 typedef struct
