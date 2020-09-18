@@ -120,6 +120,12 @@ namespace gui
     void BtWindow::destroyInterface()
     {
         erase();
+        invalidate();
+    }
+
+    void BtWindow::invalidate() noexcept
+    {
+        box = nullptr;
     }
 
     void BtWindow::onBeforeShow(ShowMode mode, SwitchData *data)
