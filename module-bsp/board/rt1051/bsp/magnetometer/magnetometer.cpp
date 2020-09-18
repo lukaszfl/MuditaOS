@@ -29,6 +29,28 @@ namespace bsp
                 DriverI2CParams{.baudrate = static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_I2C_BAUDRATE)});
 
             qHandleIrq = qHandle;
+
+            // init device
+            // enable only X axis
+            {
+                als31300_conf_reg reg;
+
+                addr.subAddress = ALS31300_CONF_REG;
+
+                uint8_t buf[4];
+                i2c->Read(addr, buf, 4);
+                *((uint32_t *)&reg) = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+                LOG_DEBUG("conf reg: %" PRIu32, *((uint32_t*)&reg) );
+
+                reg.channel_X_en = ALS31300_CONF_REG_CHANNEL_ENABLED;
+            }
+
+            // set loop mode to single - we don't want constant data flow
+//            als31300_pwr_reg reg;
+//            reg.I2C_loop_mode     = ALS31300_PWR_REG_LOOP_MODE_single;
+//            reg.sleep             = ALS31300_PWR_REG_SLEEP_MODE_LPDCM;
+//            reg.count_max_LP_mode = 6; // update every 500ms
+
             return kStatus_Success;
         }
 
@@ -45,8 +67,15 @@ namespace bsp
             i2c->Read(addr, buf, 4);
 
             auto tempLSB = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) & 0b111111;
-            return als31300_temperature_convert((tempMSB << 6) | (tempLSB));
+            float temp   = als31300_temperature_convert((tempMSB << 6) | (tempLSB));
+            return temp;
         }
+
+        // read magneto - slider only moves in the X axis
+//        uint32_t readAxis(Axis axis)
+//        {
+//
+//        }
 
         bool isPresent(void)
         {
