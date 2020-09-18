@@ -23,6 +23,9 @@ typedef struct
     uint8_t bandwidth : 3;
 } als31300_conf_reg;
 
+constexpr auto ALS31300_CONF_REG_CHANNEL_ENABLED  = 0b1;
+constexpr auto ALS31300_CONF_REG_CHANNEL_DISABLED = 0b0;
+
 // --------
 constexpr auto ALS31300_INT_REG = 0x03;
 
@@ -51,6 +54,14 @@ typedef struct
     uint8_t count_max_LP_mode : 3;
 } als31300_pwr_reg;
 
+constexpr auto ALS31300_PWR_REG_SLEEP_MODE_active = 0;
+constexpr auto ALS31300_PWR_REG_SLEEP_MODE_sleep  = 1;
+constexpr auto ALS31300_PWR_REG_SLEEP_MODE_LPDCM  = 2; // Low-Power Duty Cycle Mode
+
+constexpr auto ALS31300_PWR_REG_LOOP_MODE_single    = 0b00;
+constexpr auto ALS31300_PWR_REG_LOOP_MODE_fast_loop = 0b01;
+constexpr auto ALS31300_PWR_REG_LOOP_MODE_full_loop = 0b10;
+
 // --------
 constexpr auto ALS31300_MEASUREMENTS_MSB_REG = 0x28;
 
@@ -77,8 +88,17 @@ typedef struct
     bool int_eeprom_write_pending : 1;
 } als31300_measurements_LSB_reg;
 
-float als31300_temperature_convert( uint16_t temperature_12bit)
+float als31300_temperature_convert(uint16_t temperature_12bit)
 {
     const int32_t intermediate = temperature_12bit - 1708;
-    return intermediate * 0.07373046875;
+    return intermediate * 0.0737;
 }
+
+/////////////////////
+
+enum class Axis
+{
+    X,
+    Y,
+    Z,
+};
