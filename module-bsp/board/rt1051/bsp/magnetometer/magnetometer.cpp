@@ -31,25 +31,38 @@ namespace bsp
             qHandleIrq = qHandle;
 
             // init device
-            // enable only X axis
-            {
-                als31300_conf_reg reg;
+            uint8_t buf[4];
 
-                addr.subAddress = ALS31300_CONF_REG;
+            // CONFIGURATION register
+            addr.subAddress = ALS31300_CONF_REG;
+            i2c->Read(addr, buf, 4);
+            als31300_conf_reg reg_conf(USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf));
+            reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED;  // we want to detect stable positions
+            reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_ENABLED; // enable only X axis
+            reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
+            reg_conf.channel_Z_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
+            reg_conf.bandwidth        = 0; // longest unit measurement
+            USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(reg_conf, buf);
+            i2c->Write(addr, buf, 4);
 
-                uint8_t buf[4];
-                i2c->Read(addr, buf, 4);
-                *((uint32_t *)&reg) = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
-                LOG_DEBUG("conf reg: %" PRIu32, *((uint32_t*)&reg) );
+            //             check
+            //            i2c->Read(addr, buf, 4);
+            //            reg = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            //            LOG_DEBUG("conf reg: %" PRIu32, static_cast<uint32_t>(reg));
 
-                reg.channel_X_en = ALS31300_CONF_REG_CHANNEL_ENABLED;
+            // POWER register
+
+            addr.subAddress = ALS31300_PWR_REG;
+            als31300_pwr_reg reg_pwr;
+            reg_pwr.I2C_loop_mode     = ALS31300_PWR_REG_LOOP_MODE_single; // we don't want constant data flow
+            reg_pwr.sleep             = ALS31300_PWR_REG_SLEEP_MODE_LPDCM;
+            reg_pwr.count_max_LP_mode = 6U; // update every 500 ms
+            USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(reg_conf, buf);
+            i2c->Write(addr, buf, 4);
+
+            while (true) {
+                LOG_DEBUG("pole X: %d", getAxisX());
             }
-
-            // set loop mode to single - we don't want constant data flow
-//            als31300_pwr_reg reg;
-//            reg.I2C_loop_mode     = ALS31300_PWR_REG_LOOP_MODE_single;
-//            reg.sleep             = ALS31300_PWR_REG_SLEEP_MODE_LPDCM;
-//            reg.count_max_LP_mode = 6; // update every 500ms
 
             return kStatus_Success;
         }
@@ -72,10 +85,22 @@ namespace bsp
         }
 
         // read magneto - slider only moves in the X axis
-//        uint32_t readAxis(Axis axis)
-//        {
-//
-//        }
+        int16_t getAxisX()
+        {
+            addr.subAddress = ALS31300_MEASUREMENTS_MSB_REG;
+            uint8_t buf[4];
+            i2c->Read(addr, buf, 4);
+            auto xMSB = (USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) >>
+                        24 ) & 0xFF; // it comes as big-endian, but we are little-endian
+            addr.subAddress = ALS31300_MEASUREMENTS_LSB_REG;
+            i2c->Read(addr, buf, 4);
+
+            auto xLSB = (USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) >> 16) & 0xF;
+
+            int16_t x = int16_t(xMSB << 4 | xLSB);
+
+            return x;
+        }
 
         bool isPresent(void)
         {
