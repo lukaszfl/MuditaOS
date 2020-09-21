@@ -61,7 +61,7 @@ namespace gui
         setTitle(utils::localize.get("app_settings_bt"));
 
         LOG_INFO("Create box layout");
-        box = new gui::VBox(this, 0, title->offset_h(), style::window_width, 5 * style::window::label::default_h);
+        box = new gui::VBox(this, 0, title->offset_h(), style::window_width, 7 * style::window::label::default_h);
         box->setPenWidth(style::window::default_border_no_focus_w);
 
         // TODO WIP: it's just for usability now

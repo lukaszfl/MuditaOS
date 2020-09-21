@@ -134,13 +134,15 @@ list(APPEND TARGET_LIBRARIES_INCLUDES ${LWIP_INCLUDE_DIRS})
 list(APPEND TARGET_LIBRARIES_INCLUDES
     ${BT_STACK_ROOT}/platform/lwip
     )
-
 set(BOARD_DIR_SOURCES
             ${BT_INT}/Worker.cpp
             ${BT_INT}/GAP.cpp
             ${BT_INT}/PAN.cpp
+            ${BT_INT}/HSP.cpp
+            ${BT_INT}/SCO.cpp
+            ${BT_INT}/wavWriter.cpp
 
-            ${BT_GLU}/bluetooth_init_cc2564C_1.0.c
+        ${BT_GLU}/bluetooth_init_cc2564C_1.0.c
             ${BT_GLU}/btstack_uart_block_rt1051.cpp
             ${BT_GLU}/btstack_uart_block_rt1051.h
             ${BT_GLU}/hal_time_ms.c
@@ -151,7 +153,7 @@ set(BOARD_DIR_SOURCES
             ${BT_COMMON}
             ${BT_CLASSIC}
             ${BNEP_LWIP}
-            #${BT_STACK_ROOT}/3rd-party/hxcmod-player/mods/nao-deceased_by_disease.c
+            ${BT_STACK_ROOT}/3rd-party/hxcmod-player/mods/nao-deceased_by_disease.c
             ${BT_STACK_ROOT}/3rd-party/hxcmod-player/hxcmod.c
             ${BT_STACK_ROOT}/src/classic/btstack_sbc_encoder_bluedroid.c
             ${BT_STACK_ROOT}/src/classic/a2dp_source.c
@@ -160,10 +162,20 @@ set(BOARD_DIR_SOURCES
             ${BT_STACK_ROOT}/src/classic/avdtp_source.c
             ${BT_STACK_ROOT}/src/classic/avdtp.c
             ${BT_STACK_ROOT}/src/classic/avrcp.c
+            ${BT_STACK_ROOT}/src/classic/avrcp_controller.c
             ${BT_STACK_ROOT}/src/classic/avdtp_acceptor.c
             ${BT_STACK_ROOT}/src/classic/avdtp_initiator.c
             ${BT_STACK_ROOT}/src/classic/sdp_client.c
             ${BT_STACK_ROOT}/src/classic/avrcp_target.c
+            ${BT_STACK_ROOT}/src/classic/hsp_ag.c
+            ${BT_STACK_ROOT}/src/classic/hfp_msbc.c
+            ${BT_STACK_ROOT}/src/classic/btstack_cvsd_plc.c
+            ${BT_STACK_ROOT}/src/classic/btstack_sbc_plc.c
+            ${BT_STACK_ROOT}/src/classic/sdp_client_rfcomm.c
+
+
+            ${BT_STACK_ROOT}/src/classic/btstack_sbc_decoder_bluedroid.c
+            ${BT_STACK_ROOT}/src/btstack_ring_buffer.c
             ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_analysis.c
             ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_dct.c
             ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_dct_coeffs.c
@@ -173,6 +185,20 @@ set(BOARD_DIR_SOURCES
             ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_enc_coeffs.c
             ${BT_STACK_ROOT}/3rd-party/bluedroid/encoder/srce/sbc_packing.c
 
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/alloc.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/bitalloc.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/bitalloc-sbc.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/bitstream-decode.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/decoder-oina.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/decoder-private.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/decoder-sbc.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/dequant.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/framing.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/framing-sbc.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/oi_codec_version.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/synthesis-sbc.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/synthesis-dct8.c
+        ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/synthesis-8-generated.c
 
     )
 

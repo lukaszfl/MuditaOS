@@ -131,22 +131,6 @@ namespace bsp {
             void configure_cts_irq();
     };
 
-    /// definitions needed by BT stack
-    class Bluetopia : public BluetoothCommon {
-        public:
-            Bluetopia(unsigned int in_size=default_buff_size, unsigned int out_size=default_buff_size, int threshold=0);
-            virtual ~Bluetopia();
-            static Bluetopia *getInstance();
-
-            virtual ssize_t read(void *buf, size_t nbytes) override;
-            void wait_data();
-            void set_data();
-
-            void (*com_cb)(unsigned int transport_id, unsigned int datalen, unsigned char *buff, unsigned long param);
-            unsigned long com_cb_param;
-            long rx_thread;
-            TaskHandle_t thandle;
-    };
 
     class BlueKitchen : public BluetoothCommon {
         public:
