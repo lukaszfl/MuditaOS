@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <module-bsp/bsp/keyboard/key_codes.hpp>
 
 extern "C" {
 	#include "FreeRTOS.h"
@@ -20,6 +21,7 @@ namespace magnetometer{
 	bsp::Board GetBoard(void);
 	float getTemperature();
     int16_t getAxisX();
+    bsp::KeyCodes getDiscrete(int16_t raw_measurement);
 }
 
 }

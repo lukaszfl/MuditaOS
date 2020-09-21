@@ -61,7 +61,7 @@ namespace bsp
             i2c->Write(addr, buf, 4);
 
             while (true) {
-                LOG_DEBUG("pole X: %d", getAxisX());
+                LOG_DEBUG("pozycja: %d", static_cast<uint16_t>(getDiscrete(getAxisX())));
             }
 
             return kStatus_Success;
@@ -90,16 +90,14 @@ namespace bsp
             addr.subAddress = ALS31300_MEASUREMENTS_MSB_REG;
             uint8_t buf[4];
             i2c->Read(addr, buf, 4);
-            auto xMSB = (USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) >>
-                        24 ) & 0xFF; // it comes as big-endian, but we are little-endian
+            uint8_t xMSB = (USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) >> 24) &
+                           0xFF; // it arrives as big-endian, but we are little-endian
             addr.subAddress = ALS31300_MEASUREMENTS_LSB_REG;
             i2c->Read(addr, buf, 4);
 
-            auto xLSB = (USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) >> 16) & 0xF;
+            uint8_t xLSB = (USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) >> 16) & 0xF;
 
-            int16_t x = int16_t(xMSB << 4 | xLSB);
-
-            return x;
+            return als31300_measurement_sign_convert(xMSB << 4 | xLSB);
         }
 
         bool isPresent(void)
@@ -112,6 +110,23 @@ namespace bsp
                 return false;
             }
             return true;
+        }
+
+        bsp::KeyCodes getDiscrete(int16_t raw_measurement)
+        {
+            if (raw_measurement < -150 || raw_measurement > 150) {
+                return bsp::KeyCodes::Undefined;
+            }
+            else {
+                if (raw_measurement < -65) {
+                    return bsp::KeyCodes::SSwitchDown;
+                }
+                if (raw_measurement > 60) {
+                    return bsp::KeyCodes::SSwitchUp;
+                }
+                else
+                    return bsp::KeyCodes::SSwitchMid;
+            }
         }
 
         bsp::Board GetBoard(void)
