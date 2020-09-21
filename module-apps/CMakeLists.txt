@@ -26,17 +26,17 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES} ${BOARD_SOURCES})
 
 set(APPLICATIONS
     clock
-    #calendar
+    calendar
     viewer
     desktop
     settings
     call
-    #notes
-    #phonebook
-    #messages
-    #calllog
-    #special-input
-    #antenna
+    notes
+    phonebook
+    messages
+    calllog
+    special-input
+    antenna
     music-player
 )
 

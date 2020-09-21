@@ -80,7 +80,7 @@ std::unique_ptr<std::vector<ThreadRecord>> ThreadRecordInterface::GetLimitOffset
 {
     auto records = std::make_unique<std::vector<ThreadRecord>>();
 
-    ThreadsTableFields threadsField;
+    ThreadsTableFields threadsField = ThreadsTableFields();
     switch (field) {
     case ThreadRecordField::ContactID: {
         threadsField = ThreadsTableFields::ContactID;

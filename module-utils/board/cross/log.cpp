@@ -237,7 +237,7 @@ extern "C"
     {
         va_list args;
         va_start(args, fmt);
-        _log_Log(LOGTRACE, file, line, foo, fmt, args);
+        _log_Log(LOGWARN, file, line, foo, fmt, args);
         va_end(args);
     }
 

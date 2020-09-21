@@ -224,7 +224,7 @@ namespace Bt
         BaseType_t taskerr = 0;
         LOG_INFO("Past last moment for Bt registration prior to RUN state");
         hci_power_control(HCI_POWER_ON);
-        if ((taskerr = xTaskCreate(run_btstack, "BtStack", 1024, NULL, tskIDLE_PRIORITY, handle)) != pdPASS) {
+        if ((taskerr = xTaskCreate(run_btstack, "BtStack", 2048, NULL, tskIDLE_PRIORITY + 2, handle)) != pdPASS) {
             LOG_ERROR("BT Service failure! %lu", taskerr);
             return Error(Error::SystemError, taskerr);
         }
