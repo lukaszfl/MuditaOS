@@ -87,7 +87,6 @@ namespace sys
         void kill(std::shared_ptr<Service> const &toKill);
 
       private:
-        void TickHandler(uint32_t id) override;
 
         Message_t DataReceivedHandler(DataMessage *msg, ResponseMessage *resp) override;
 

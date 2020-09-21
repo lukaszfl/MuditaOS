@@ -25,9 +25,11 @@ namespace app
 {
 
     ApplicationCall::ApplicationCall(std::string name, std::string parent, bool startBackground)
-        : Application(name, parent, startBackground, app::call_stack_size),
-          timerCall(CreateAppTimer(1000, true, [=]() { timerCallCallback(); }))
-    {}
+        : Application(name, parent, startBackground, app::call_stack_size)
+    {
+          timerCall = std::make_unique<sys::Timer>("Call",this, 1000);
+          timerCall->connect([&](sys::Timer) { timerCallCallback(); });
+    }
 
     //  number of seconds after end call to switch back to previous application
     const inline utils::time::Duration delayToSwitchToPreviousApp = 3;
@@ -248,7 +250,7 @@ namespace app
         callStartTime       = utils::time::Timestamp();
         callDuration        = 0;
         callDelayedStopTime = 0;
-        timerCall.restart();
+        timerCall->reload();
     }
 
     void ApplicationCall::stopCallTimer()
@@ -256,7 +258,7 @@ namespace app
         callStartTime       = 0;
         callDuration        = 0;
         callDelayedStopTime = 0;
-        timerCall.stop();
+        timerCall->stop();
     }
 
     void ApplicationCall::destroyUserInterface()

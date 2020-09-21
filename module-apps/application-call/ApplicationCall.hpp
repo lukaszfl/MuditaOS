@@ -5,6 +5,7 @@
 #include "SystemManager/SystemManager.hpp"
 #include <service-cellular/api/CellularServiceAPI.hpp>
 #include <time/time_conversion.hpp>
+#include "Service/Timer.hpp"
 
 namespace app
 {
@@ -31,7 +32,7 @@ namespace app
         void RingingHandler(const CellularCallMessage *const msg);
 
       protected:
-        AppTimer timerCall;
+        std::unique_ptr<sys::Timer> timerCall;
         utils::time::Timestamp callStartTime = 0;
         utils::time::Duration callDuration;
         utils::time::Timestamp callDelayedStopTime = 0;
@@ -39,7 +40,6 @@ namespace app
 
       public:
         ApplicationCall(std::string name = name_call, std::string parent = "", bool startBackgound = false);
-        ~ApplicationCall() override = default;
         sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp) override;
         sys::ReturnCodes InitHandler() override;
         sys::ReturnCodes DeinitHandler() override;

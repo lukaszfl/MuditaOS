@@ -29,7 +29,7 @@ namespace app
     class ApplicationAntenna : public app::Application
     {
       protected:
-        AppTimer appTimer;
+        std::unique_ptr<sys::Timer> appTimer;
         void timerHandler(void);
         bool cellularRequestInProgress = false;
         bsp::cellular::antenna antenna;

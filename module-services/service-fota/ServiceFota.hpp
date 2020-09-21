@@ -35,10 +35,6 @@ namespace FotaService
 
         sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr) override;
 
-        // Invoked when timer ticked
-        void TickHandler(uint32_t id) override;
-
-        // Invoked during initialization
         sys::ReturnCodes InitHandler() override;
 
         sys::ReturnCodes DeinitHandler() override;
@@ -72,7 +68,7 @@ namespace FotaService
          */
         sys::Message_t handleRawProgress(sys::DataMessage *req, sys::ResponseMessage *response);
 
-        uint32_t connectionTimer = 0;
+        std::unique_ptr<sys::Timer> connectionTimer;
         void getApnConfiguration();
         void getConfig();
         void getActiveCotext();

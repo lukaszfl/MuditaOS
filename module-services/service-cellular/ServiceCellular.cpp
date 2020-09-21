@@ -21,6 +21,7 @@
 
 #include "Service/Message.hpp"
 #include "Service/Service.hpp"
+#include "Service/Timer.hpp"
 #include "ServiceCellular.hpp"
 #include "Service/Service.hpp"
 #include "Service/Message.hpp"
@@ -136,8 +137,10 @@ ServiceCellular::ServiceCellular() : sys::Service(serviceName, "", cellularStack
     busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
     busChannels.push_back(sys::BusChannels::ServiceDBNotifications);
 
-    callStateTimerId = CreateTimer(Ticks::MsToTicks(1000), true);
-    stateTimerId     = CreateTimer(Ticks::MsToTicks(1000), true);
+    callStateTimer = std::make_unique<sys::Timer>("call state",this, 1000);
+    callStateTimer->connect([&](sys::Timer &) { CallStateTimerHandler(); });
+    stateTimer     = std::make_unique<sys::Timer>("state", this, 1000);
+    stateTimer->connect([&](sys::Timer &) { handleStateTimer(); });
 
     ongoingCall.setStartCallAction([=](const CalllogRecord &rec) {
         auto call = DBServiceAPI::CalllogAdd(this, rec);
@@ -183,21 +186,6 @@ void ServiceCellular::CallStateTimerHandler()
     std::shared_ptr<CellularRequestMessage> msg =
         std::make_shared<CellularRequestMessage>(MessageType::CellularListCurrentCalls);
     sys::Bus::SendUnicast(msg, ServiceCellular::serviceName, this);
-}
-
-// Invoked when timer ticked
-void ServiceCellular::TickHandler(uint32_t id)
-{
-    if (id == callStateTimerId) {
-        CallStateTimerHandler();
-    }
-    else if (id == stateTimerId) {
-        LOG_INFO("State timer tick");
-        handleStateTimer();
-    }
-    else {
-        LOG_ERROR("Unrecognized timer ID = %" PRIu32, id);
-    }
 }
 
 sys::ReturnCodes ServiceCellular::InitHandler()
@@ -530,7 +518,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
                 break;
             }
             case CellularNotificationMessage::Type::CallAborted: {
-                stopTimer(callStateTimerId);
+                callStateTimer->stop();
                 auto ret    = ongoingCall.endCall();
                 responseMsg = std::make_shared<CellularResponseMessage>(ret);
                 break;
@@ -618,7 +606,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
                     auto msg =
                         std::make_shared<CellularNotificationMessage>(CellularNotificationMessage::Type::CallActive);
                     sys::Bus::SendMulticast(msg, sys::BusChannels::ServiceCellularNotifications, this);
-                    stopTimer(callStateTimerId);
+                    callStateTimer->stop();
                 }
             }
             catch (const std::exception &e) {
@@ -639,7 +627,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
         if (channel) {
             if (channel->cmd(at::AT::ATH)) {
                 AntennaServiceAPI::LockRequest(this, antenna::lockState::unlocked);
-                stopTimer(callStateTimerId);
+                callStateTimer->stop();
                 if (!ongoingCall.endCall(CellularCall::Forced::True)) {
                     LOG_ERROR("Failed to end ongoing call");
                 }
@@ -682,7 +670,7 @@ sys::Message_t ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl, sys:
             if (ret) {
                 responseMsg = std::make_shared<CellularResponseMessage>(true);
                 // activate call state timer
-                ReloadTimer(callStateTimerId);
+                callStateTimer->reload();
                 // Propagate "Ringing" notification into system
                 sys::Bus::SendMulticast(
                     std::make_shared<CellularCallMessage>(CellularCallMessage::Type::Ringing, msg->number),
@@ -1601,13 +1589,13 @@ bool ServiceCellular::handle_status_check(void)
 void ServiceCellular::startStateTimer(uint32_t timeout)
 {
     stateTimeout = timeout;
-    ReloadTimer(stateTimerId);
+    stateTimer->reload();
 }
 
 void ServiceCellular::stopStateTimer()
 {
     stateTimeout = 0;
-    stopTimer(stateTimerId);
+    stateTimer->stop();
 }
 
 void ServiceCellular::handleStateTimer(void)

@@ -55,92 +55,6 @@
 
 class vfs vfs;
 
-class BlinkyService : public sys::Service
-{
-
-  public:
-    BlinkyService(const std::string &name) : sys::Service(name)
-    {
-        timerBlinkyID = CreateTimer(5000, true);
-        // ReloadTimer(timer_id);
-    }
-
-    ~BlinkyService()
-    {}
-    //    DBThreadResponseMessage* threadResponse = reinterpret_cast<DBThreadResponseMessage*>(ret.second.get());
-    //    if((ret.first == sys::ReturnCodes::Success) && (threadResponse->retCode == true)){
-    //        return std::move(threadResponse->records);
-    //    }
-    //    else{
-    //        return std::make_unique<std::vector<ThreadRecord>>();
-    //    }
-    // Invoked upon receiving data message
-    sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr) override
-    {
-
-#if 0 // M.P: left here on purpose
-      // auto ret = AudioServiceAPI::PlaybackStart(this,"/home/mateusz/Music/limowreck.mp3");
-/*        auto ret = AudioServiceAPI::PlaybackStart(this,"sys/audio/limowreck.flac");
-        AudioServiceAPI::Stop(this);
-        AudioServiceAPI::PlaybackStart(this,"sys/audio/limowreck.flac");*/
-        //vTaskDelay(3000);
-        //AudioServiceAPI::SetOutputVolume(this,0.6);
-        //auto ret = AudioServiceAPI::RecordingStart(this,"sys/audio/rec1mono.wav");
-        //vTaskDelay(3000);
-        //ret = AudioServiceAPI::Stop(this);
-        //vTaskDelay(500);
-        //ret = AudioServiceAPI::PlaybackStart(this,"sys/audio/limowreck.flac");
-
-
-       //auto ret = AudioServiceAPI::RoutingStart(this);
-        /*
-         //AudioServiceAPI::RoutingRecordCtrl(this,true);
-         vTaskDelay(1000);
-         //AudioServiceAPI::RoutingSpeakerPhone(this,true);
-         vTaskDelay(2000);
-         AudioServiceAPI::Stop(this);*/
-
-        //auto ret = AudioServiceAPI::PlaybackStart(this,"sys/audio/limowreck.flac");
-
-#endif
-
-        return std::make_shared<sys::ResponseMessage>();
-    }
-
-    // Invoked when timer ticked
-    void TickHandler(uint32_t id) override
-    {
-
-#if 0 // M.P: left here on purpose
-        LOG_DEBUG("Blinky service tick!");
-
-        stopTimer(timerClockID);
-        std::shared_ptr<sys::DataMessage> msg = std::make_shared<sys::DataMessage>(static_cast<uint32_t >(MessageType::AudioSetInputGain));
-
-        sys::Bus::SendUnicast(msg,GetName(),this);
-#endif
-    }
-
-    // Invoked during initialization
-    sys::ReturnCodes InitHandler() override
-    {
-
-        return sys::ReturnCodes::Success;
-    }
-
-    sys::ReturnCodes DeinitHandler() override
-    {
-        return sys::ReturnCodes::Success;
-    }
-
-    sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode /*mode*/) override final
-    {
-        return sys::ReturnCodes::Success;
-    }
-
-    uint32_t timerBlinkyID = 0;
-};
-
 int main()
 {
 
@@ -174,7 +88,6 @@ int main()
         ret |=
             sys::SystemManager::CreateService(std::make_shared<EventManager>(service::name::evt_manager), sysmgr.get());
         ret |= sys::SystemManager::CreateService(std::make_shared<ServiceDB>(), sysmgr.get());
-        ret |= sys::SystemManager::CreateService(std::make_shared<BlinkyService>("Blinky"), sysmgr.get());
 //        ret |= sys::SystemManager::CreateService(std::make_shared<ServiceAntenna>(), sysmgr.get());
 #if defined(TARGET_Linux) && not defined(SERIAL_PORT)
         // For now disable pernamenlty Service cellular when there is no GSM configured

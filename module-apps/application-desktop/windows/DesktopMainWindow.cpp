@@ -15,6 +15,7 @@
 #include "Common.hpp"
 #include "BottomBar.hpp"
 #include "DesktopMainWindow.hpp"
+#include "GuiTimer.hpp"
 #include "application-messages/ApplicationMessages.hpp"
 #include "gui/widgets/Image.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
@@ -75,6 +76,14 @@ namespace gui
         dayText->setAlignment(Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Top));
 
         setVisibleState();
+
+        auto timer = std::make_unique<app::GuiTimer>("Example", application);
+        timer->setInterval(3000);
+        application->connect(std::move(timer), this);
+        this->timerCallback = [](Item &, Timer &) {
+            LOG_DEBUG("This is GuiTimer");
+            return false;
+        };
     }
 
     void DesktopMainWindow::destroyInterface()

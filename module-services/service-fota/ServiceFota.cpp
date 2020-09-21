@@ -1,3 +1,4 @@
+#include "Service/Timer.hpp"
 #include "api/FotaServiceAPI.hpp"
 
 #include "ServiceFota.hpp"
@@ -39,7 +40,12 @@ namespace FotaService
         busChannels.push_back(sys::BusChannels::ServiceFotaNotifications);
         busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
 
-        connectionTimer = CreateTimer(defaultTimer, true);
+        connectionTimer = std::make_unique<sys::Timer>("Fota", this, defaultTimer);
+        connectionTimer->connect([&](sys::Timer &) {
+            std::shared_ptr<InternetRequestMessage> msg =
+                std::make_shared<InternetRequestMessage>(MessageType::CellularListCurrentCalls);
+            sys::Bus::SendUnicast(msg, Service::serviceName, this);
+        });
         registerMessageHandlers();
     }
 
@@ -48,16 +54,6 @@ namespace FotaService
         LOG_INFO("[ServiceFota] Cleaning resources");
     }
 
-    // Invoked when timer ticked
-    void Service::TickHandler(uint32_t /*id*/)
-    {
-        std::shared_ptr<InternetRequestMessage> msg =
-            std::make_shared<InternetRequestMessage>(MessageType::CellularListCurrentCalls);
-
-        sys::Bus::SendUnicast(msg, Service::serviceName, this);
-    }
-
-    // Invoked during initialization
     sys::ReturnCodes Service::InitHandler()
     {
         return sys::ReturnCodes::Success;

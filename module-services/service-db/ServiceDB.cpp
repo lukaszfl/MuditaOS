@@ -580,11 +580,6 @@ sys::Message_t ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::Respo
     return responseMsg;
 }
 
-// Invoked when timer ticked
-void ServiceDB::TickHandler(uint32_t id)
-{}
-
-// Invoked during initialization
 sys::ReturnCodes ServiceDB::InitHandler()
 {
     Database::initialize();

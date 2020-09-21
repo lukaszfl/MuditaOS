@@ -70,9 +70,6 @@ sys::ReturnCodes ServiceAudio::SwitchPowerModeHandler(const sys::ServicePowerMod
     return sys::ReturnCodes::Success;
 }
 
-void ServiceAudio::TickHandler(uint32_t id)
-{}
-
 sys::Message_t ServiceAudio::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
 {
     std::shared_ptr<sys::ResponseMessage> responseMsg;

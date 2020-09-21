@@ -10,7 +10,6 @@
 #include <string>
 #include <algorithm>
 #include "thread.hpp"
-#include "timer.hpp"
 #include <typeindex>
 #include <functional>
 
@@ -18,35 +17,13 @@ namespace sys
 {
     using MessageHandler = std::function<Message_t(DataMessage *, ResponseMessage *)>;
 
-    class ServiceTimer : public Timer
-    {
-      public:
-        ServiceTimer(const std::string &name, TickType_t tick, bool isPeriodic, uint32_t idx, Service *service);
-
-        [[nodiscard]] uint32_t GetId() const
-        {
-            return m_id;
-        }
-        static uint32_t GetNextUniqueID()
-        {
-            return ++m_timers_unique_idx;
-        }
-
-        void Run() override;
-
-      private:
-        bool m_isPeriodic;
-        TickType_t m_interval;
-        uint32_t m_id;
-        Service *m_service;
-        static uint32_t m_timers_unique_idx;
-    };
-
     /// proxy has one objective - be friend for Service, so that Message which is not a friend could access
     /// one and only one entrypoint to messages entrypoint (MessageEntry)
     /// MessageEntry calls overridable DataReceivedHandler for Service instance and all Calls that are 100% neccessary
     /// for service
     struct Proxy;
+
+    class Timer;
 
     class Service : public cpp_freertos::Thread, public std::enable_shared_from_this<Service>
     {
@@ -60,22 +37,9 @@ namespace sys
                 uint32_t stackDepth      = 4096,
                 ServicePriority priority = ServicePriority::Idle);
 
-        virtual ~Service();
+         ~Service() override;
 
         void StartService();
-
-        // Create service timer
-        uint32_t CreateTimer(TickType_t interval, bool isPeriodic, const std::string &name = "");
-        // Reload service timer
-        void ReloadTimer(uint32_t id);
-        // Delete timer
-        void DeleteTimer(uint32_t id);
-        void setTimerPeriod(uint32_t id, uint32_t period);
-        /**
-         * @brief Stops a timer with specified ID
-         * @param id ID of the timer;
-         */
-        void stopTimer(uint32_t id);
 
         // Invoked for not processed already messages
         // override should in in either callback, function or whatever...
@@ -84,7 +48,7 @@ namespace sys
         // TODO register message -> function handler ;) add map/-> :( no can do: array/variant ) <-/ whatever for it
         // (with check if already registered sth Invoked when timer ticked
         // TODO this is crap - it should be done via message, in DataReceivedHandler :/
-        virtual void TickHandler(uint32_t id){};
+        // virtual void TickHandler(uint32_t id){};
 
         // Invoked during initialization
         virtual ReturnCodes InitHandler() = 0;
@@ -117,10 +81,6 @@ namespace sys
 
         void Run() override;
 
-        std::vector<std::unique_ptr<ServiceTimer>> timersList;
-
-        friend class ServiceTimer;
-
         std::map<std::type_index, MessageHandler> message_handlers;
 
       private:
@@ -130,6 +90,43 @@ namespace sys
         virtual auto MessageEntry(DataMessage *message, ResponseMessage *response) -> Message_t final;
 
         friend Proxy;
+
+        struct Timers
+        {
+
+            friend Timer;
+
+          private:
+            std::vector<Timer *> list;
+            auto attach(Timer *timer)
+            {
+                list.push_back(timer);
+            }
+
+            void detach(Timer *timer)
+            {
+                list.erase(std::find(list.begin(), list.end(), timer));
+            }
+          public:
+            void stop();
+            auto get(Timer *timer)
+            {
+                return std::find(list.begin(), list.end(), timer);
+            }
+            auto noTimer()
+            {
+                return std::end(list);
+            }
+        } timers;
+
+      public:
+        // TODO hide behind proxy too?
+        auto getTimers() -> auto &
+        {
+            return timers;
+        }
+
+        auto TimerHandle(SystemMessage& message) -> ReturnCodes;
     };
 
     struct Proxy
@@ -139,5 +136,4 @@ namespace sys
             return service->MessageEntry(message, response);
         }
     };
-
 } // namespace sys

@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 #include <functional>
+#include  <Timer.hpp>
 
 #include "KeyEvent.hpp"
 #include "Common.hpp"
@@ -38,6 +39,10 @@ namespace gui
 
     class Item
     {
+      private:
+        /// list of timers so that item could have it's timers in itself
+        std::list<std::unique_ptr<Timer>> timers;
+
       public:
         // flag that informs whether item has a focus
         bool focus;
@@ -127,6 +132,11 @@ namespace gui
         /// callback when element insides are changed
         /// @param `this` item
         std::function<bool(Item &)> contentCallback;
+        /// callback when timer is called on Item and onTimer is executed
+        /// @param `this` item
+        /// @param `timer` which triggered this callback
+        std::function<bool(Item &, Timer &)> timerCallback = nullptr;
+
         /// callback on navigation, called when item passes navigation to handle by it's children
         /// @attention when child handles navigation it should return true, so that parent won't perform action for that
         std::function<bool(const InputEvent &)> itemNavigation = nullptr;
@@ -167,6 +177,9 @@ namespace gui
         /// calls: none, inconsistent behaviour
         /// @note TODO should be fixed so that api would be consistent
         virtual bool onContent();
+        /// called on Timer event in application, triggeres timerCallback
+        /// @param timer timer element which triggered this action
+        virtual bool onTimer(Timer &timer);
 
         /// @}
 
@@ -310,6 +323,13 @@ namespace gui
             return this->widgetArea.size(axis) + this->widgetArea.pos(axis);
         };
         /// @}
+
+        /// adds timer to gui item
+        /// this is needed so that timer for element would live as long as element lives
+        void attachTimer(std::unique_ptr<Timer> &&timer)
+        {
+            timers.emplace_back(std::move(timer));
+        }
       protected:
         /// On change of position or size this method will recalculate visible part of the widget
         /// considering widgets hierarchy and calculate absolute position of drawing primitives.

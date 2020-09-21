@@ -509,4 +509,13 @@ namespace gui
         return false;
     }
 
+    auto Item::onTimer(Timer &timer) -> bool
+    {
+        if ( timerCallback != nullptr ) 
+        {
+            return timerCallback(*this, timer);
+        }
+        return false;
+    }
+
 } /* namespace gui */

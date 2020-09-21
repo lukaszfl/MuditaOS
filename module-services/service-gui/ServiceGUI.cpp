@@ -223,11 +223,6 @@ namespace sgui
         return std::make_shared<sys::ResponseMessage>();
     }
 
-    // Invoked when timer ticked
-    void ServiceGUI::TickHandler(uint32_t id)
-    {}
-
-    // Invoked during initialization
     sys::ReturnCodes ServiceGUI::InitHandler()
     {
 

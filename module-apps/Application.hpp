@@ -11,6 +11,7 @@
 
 #include <map>
 // module-gui
+#include "Timer.hpp"
 #include "gui/Common.hpp"
 //#include "gui/widgets/Window.hpp"
 #include "gui/input/Translator.hpp"
@@ -39,29 +40,7 @@ namespace app
 {
 
     class Application;
-
-    class AppTimer // this should inherit from ServiceTimer, but *bodge*
-    {
-      private:
-        uint32_t id                    = 0; // let's say 0 indicates not initalized timer
-        std::function<void()> callback = nullptr;
-        Application *parent            = nullptr;
-
-        void registerCallback(std::function<void()>);
-        AppTimer();
-
-      public:
-        AppTimer(Application *parent, uint32_t id, std::function<void()> callback, const std::string &name);
-        ~AppTimer();
-        void runCallback();
-        uint32_t getID();
-        static uint32_t getNextUniqueID();
-        // timer controls:
-        void restart();
-        void stop();
-        bool operator==(const AppTimer &rhs) const;
-        bool operator==(const uint32_t &rhs) const;
-    };
+    class GuiTimer;
 
     inline auto msgHandled() -> sys::Message_t
     {
@@ -129,10 +108,10 @@ namespace app
         sys::Message_t handleAppRefresh(sys::DataMessage *msgl);
         sys::Message_t handleSIMMessage(sys::DataMessage *msgl);
 
+        std::list<unique_ptr<app::GuiTimer>> gui_timers;
+
       public:
-        std::list<uint32_t> timerIDs;
-        std::list<AppTimer> appTimers; // @TODO decide on type
-        AppTimer longPressTimer;
+        unique_ptr<sys::Timer> longPressTimer;
         Application(std::string name,
                     std::string parent            = "",
                     bool startBackground          = false,
@@ -142,22 +121,6 @@ namespace app
 
         Application::State getState();
         void setState(State st);
-
-        /// @defgroup AppTimers Application timers
-        /// @note Please mind that timers are from Service and implementation in service should be revritten to send
-        /// notify instead of calling callback
-        ///       Right now timers can create races.
-        /// @{
-        /// Method to register callback function to be run on timer.
-        AppTimer CreateAppTimer(TickType_t interval,
-                                bool isPeriodic,
-                                std::function<void()> callback,
-                                const std::string &name = "");
-        /// Remove previousy registered AppTimer by object
-        void DeleteTimer(AppTimer &timer);
-        /// Remove previousy registered AppTimer by id
-        void DeleteTimer(uint32_t id);
-        /// @}
 
         /// Method responsible for rendering currently active window.
         /// 1. queries for static data for all windows form Store (i.e. battery level, sim card level)
@@ -313,9 +276,6 @@ namespace app
         SettingsRecord settings;
 
         void longPressTimerCallback();
-        /// function executing functions registered by CreateAppTimer
-        /// @param id - timer identification number
-        virtual void TickHandler(uint32_t id) override final;
         /// Method used to register all windows and widgets in application
         virtual void createUserInterface() = 0;
         /// Method closing application's windows.
@@ -350,6 +310,10 @@ namespace app
         /// getter for current wisible window in application
         /// @ingrup AppWindowStack
         gui::AppWindow *getCurrentWindow();
+        /// to avoid conflicts with connect below
+        using Service::connect;
+        /// connects item with GuiTimer and stores it in app
+        void connect(std::unique_ptr<GuiTimer> &&timer, gui::Item *item);
 
       protected:
         /// Flag defines whether keyboard input should be processed
