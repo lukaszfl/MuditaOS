@@ -10,11 +10,11 @@ monitor halt
 monitor memU32 0x401BC000 = 128;
 eval "monitor exec SetRTTAddr %p", &_SEGGER_RTT
 b main
-b HardFault_Handler
-b MemManage_Handler
-b BusFault_Handler
-b UsageFault_Handler
-b ResetISR
+# b HardFault_Handler
+# b MemManage_Handler
+# b BusFault_Handler
+# b UsageFault_Handler
+# b ResetISR
 end
 
 define target hookpost-remote

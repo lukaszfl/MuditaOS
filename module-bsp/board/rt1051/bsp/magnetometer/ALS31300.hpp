@@ -132,6 +132,20 @@ float als31300_temperature_convert(uint16_t temperature_12bit)
     return intermediate * 0.0737;
 }
 
+// NOTE: device sensitivity HW fixed at 4 LSB/Gauss == 0.4 LSB/mT
+// All measurements are supposed to be raw 4 LSB/Gauss. No need to introduce fractions
+constexpr auto bit_length_full_scale = 12;
+
+inline int16_t als31300_measurement_sign_convert(uint16_t raw_measurement, uint8_t bit_length = bit_length_full_scale)
+{
+    // via: https://stackoverflow.com/questions/16946801/n-bit-2s-binary-to-decimal-in-c
+    const auto sign_flag  = 1 << (bit_length - 1);
+    if (raw_measurement & sign_flag) {
+        raw_measurement |= -(1 << bit_length);
+    }
+    return raw_measurement;
+}
+
 /////////////////////
 
 enum class Axis
