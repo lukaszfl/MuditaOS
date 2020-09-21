@@ -273,7 +273,6 @@ static int audio_initialize(int sample_rate)
     memset(audio_output_ring_buffer_storage, 0, sizeof(audio_output_ring_buffer_storage));
     btstack_ring_buffer_init(
         &audio_output_ring_buffer, audio_output_ring_buffer_storage, sizeof(audio_output_ring_buffer_storage));
-
     // config and setup audio playback
     const btstack_audio_sink_t *audio_sink = btstack_audio_sink_get_instance();
     if (!audio_sink)

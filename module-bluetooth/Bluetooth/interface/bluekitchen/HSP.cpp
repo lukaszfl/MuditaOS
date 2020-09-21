@@ -11,6 +11,7 @@ extern "C"
 #include "SCO.hpp"
 #include "btstack_stdin.h"
 #include <btstack_defines.h>
+#include "btstack_run_loop_freertos.h"
 };
 
 using namespace Bt;
@@ -182,6 +183,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *event
                     sco_handle = hsp_subevent_audio_connection_complete_get_handle(event);
                     printf("Audio connection established with SCO handle 0x%04x.\n", sco_handle);
                     hci_request_sco_can_send_now_event();
+                    btstack_run_loop_freertos_trigger();
                 }
                 break;
             case HSP_SUBEVENT_AUDIO_DISCONNECTION_COMPLETE:
