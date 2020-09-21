@@ -178,15 +178,15 @@ void BluetoothWorker::initAudioBT()
 
 bool BluetoothWorker::play_audio()
 {
-    // Bt::A2DP::init();
-    // Bt::A2DP::start();
-    Bt::HSP::init();
-    Bt::HSP::start();
+    Bt::A2DP::init();
+    Bt::A2DP::start();
+    //    Bt::HSP::init();
+    //   Bt::HSP::start();
     return false;
 }
 bool BluetoothWorker::stop_audio()
 {
-    Bt::HSP::stop();
-    // Bt::A2DP::stop();
+    //    Bt::HSP::stop();
+    Bt::A2DP::stop();
     return false;
 }
