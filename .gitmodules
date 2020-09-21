@@ -1,6 +1,6 @@
 [submodule "module-bluetooth/lib/btstack"]
 	path = module-bluetooth/lib/btstack
-	url = ../btstack-bluetopia.git
+	url = ../btstack.git
 	shallow = true
 [submodule "module-lwip/lib/lwip"]
 	path = module-lwip/lib/lwip
