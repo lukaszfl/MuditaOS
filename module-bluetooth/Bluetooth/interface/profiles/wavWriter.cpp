@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  *
  * Please inquire about commercial licensing options at
- * contact@profiles-gmbh.com
+ * contact@bluekitchen-gmbh.com
  *
  */
 
@@ -45,8 +45,8 @@
 #include "wavWriter.hpp"
 extern "C"
 {
-#include "btstack_debug.h"
 #include "btstack_util.h"
+#include "btstack_debug.h"
 };
 
 #include <vfs.hpp>

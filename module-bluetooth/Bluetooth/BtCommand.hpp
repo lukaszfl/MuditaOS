@@ -33,4 +33,11 @@ namespace Bt
         static void source_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
         static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
     } // namespace A2DP
+
+    namespace HSP
+    {
+        void init();
+        void start();
+        void stop();
+    } // namespace HSP
 };    // namespace Bt
