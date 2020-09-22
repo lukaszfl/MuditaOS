@@ -33,25 +33,24 @@ namespace bsp
             // init device
             uint8_t buf[4];
 
+            // GET WRITE ACCESS
+            addr.subAddress = ALS31300_CUSTOMER_ACCESS_REG;
+            USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(ALS31300_CUSTOMER_ACCESS_REG_code, buf);
+            i2c->Write(addr, buf, 4);
+
             // CONFIGURATION register
             addr.subAddress = ALS31300_CONF_REG;
             i2c->Read(addr, buf, 4);
             als31300_conf_reg reg_conf(USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf));
-            reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED;  // we want to detect stable positions
-            reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_ENABLED; // enable only X axis
-            reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
+            reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED; // we want to detect stable positions
+            reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_ENABLED;
+            reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_ENABLED;
             reg_conf.channel_Z_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
             reg_conf.bandwidth        = 0; // longest unit measurement
             USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(reg_conf, buf);
             i2c->Write(addr, buf, 4);
 
-            //             check
-            //            i2c->Read(addr, buf, 4);
-            //            reg = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
-            //            LOG_DEBUG("conf reg: %" PRIu32, static_cast<uint32_t>(reg));
-
             // POWER register
-
             addr.subAddress = ALS31300_PWR_REG;
             als31300_pwr_reg reg_pwr;
             reg_pwr.I2C_loop_mode     = ALS31300_PWR_REG_LOOP_MODE_single; // we don't want constant data flow
@@ -60,8 +59,24 @@ namespace bsp
             USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(reg_pwr, buf);
             i2c->Write(addr, buf, 4);
 
+            // INTERRUPTS
+            //            addr.subAddress          = ALS31300_INT_REG;
+            //            als31300_int_reg reg_int = 0;
+            //            reg_int.
+
+            //             check
+            //            i2c->Read(addr, buf, 4);
+            //            reg = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            //            LOG_DEBUG("conf reg: %" PRIu32, static_cast<uint32_t>(reg));
+
             while (true) {
-                LOG_DEBUG("pozycja: %d", static_cast<uint16_t>(getDiscrete(getAxisX())));
+                auto [newMeasurement, measurement] = getMeasurements();
+                LOG_DEBUG("%c, %d, %d, %d, >%.2f< \n",
+                          newMeasurement ? '!' : '.',
+                          measurement.X,
+                          measurement.Y,
+                          measurement.Z,
+                          measurement.tempC);
             }
 
             return kStatus_Success;
@@ -84,20 +99,32 @@ namespace bsp
             return temp;
         }
 
-        // read magneto - slider only moves in the X axis
-        int16_t getAxisX()
+        std::pair<bool, Measurements> getMeasurements()
         {
             addr.subAddress = ALS31300_MEASUREMENTS_MSB_REG;
             uint8_t buf[4];
             i2c->Read(addr, buf, 4);
-            uint8_t xMSB = (USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) >> 24) &
-                           0xFF; // it arrives as big-endian, but we are little-endian
-            addr.subAddress = ALS31300_MEASUREMENTS_LSB_REG;
-            i2c->Read(addr, buf, 4);
+            // is there anything new ?
+            als31300_measurements_MSB_reg reg_msb =
+                USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf); // it arrives as big-endian, but we are little-endian
+            if (reg_msb.new_data_flag != ALS31300_MEAS_REG_NEW_DATA_available) {
+                return std::make_pair(false, Measurements());
+            }
+            else {
+                Measurements meas;
 
-            uint8_t xLSB = (USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) >> 16) & 0xF;
+                addr.subAddress = ALS31300_MEASUREMENTS_LSB_REG;
+                i2c->Read(addr, buf, 4);
 
-            return als31300_measurement_sign_convert(xMSB << 4 | xLSB);
+                als31300_measurements_LSB_reg reg_lsb = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+
+                meas.X     = als31300_measurement_sign_convert(reg_msb.X_MSB << 4 | reg_lsb.X_LSB);
+                meas.Y     = als31300_measurement_sign_convert(reg_msb.Y_MSB << 4 | reg_lsb.Z_LSB);
+                meas.Z     = als31300_measurement_sign_convert(reg_msb.Z_MSB << 4 | reg_lsb.Z_LSB);
+                meas.tempC = als31300_temperature_convert((reg_msb.temperature_MSB << 6) | (reg_lsb.temperature_LSB));
+
+                return std::make_pair(true, meas);
+            }
         }
 
         bool isPresent(void)
@@ -112,16 +139,16 @@ namespace bsp
             return true;
         }
 
-        bsp::KeyCodes getDiscrete(int16_t raw_measurement)
+        bsp::KeyCodes getDiscrete(const Measurements &measurements)
         {
-            if (raw_measurement < -150 || raw_measurement > 150) {
+            if (measurements.X < -150 || measurements.X > 150) {
                 return bsp::KeyCodes::Undefined;
             }
             else {
-                if (raw_measurement < -65) {
+                if (measurements.X < -65) {
                     return bsp::KeyCodes::SSwitchDown;
                 }
-                if (raw_measurement > 60) {
+                if (measurements.X > 60) {
                     return bsp::KeyCodes::SSwitchUp;
                 }
                 else
