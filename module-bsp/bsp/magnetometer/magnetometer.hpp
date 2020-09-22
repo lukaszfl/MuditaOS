@@ -10,18 +10,29 @@ extern "C" {
 }
 
 #include "../common.hpp"
+#include "../../../../../../../usr/include/c++/10.2.0/utility"
 
 namespace bsp {
 
 namespace magnetometer{
 
-	int32_t init(xQueueHandle qHandle);
+    int32_t init(xQueueHandle qHandle);
+
+    struct Measurements {
+        int16_t X;
+        int16_t Y;
+        int16_t Z; // Z is useless
+        float tempC;
+    } typedef Measurements;
 
 	bool isPresent(void);
-	bsp::Board GetBoard(void);
-	float getTemperature();
-    int16_t getAxisX();
-    bsp::KeyCodes getDiscrete(int16_t raw_measurement);
+    bsp::Board GetBoard(void);
+    float getTemperature();
+
+    /// returns a pair of <new_data_read?, values>
+    std::pair<bool, Measurements> getMeasurements();
+
+    bsp::KeyCodes getDiscrete(const Measurements &measurements);
 }
 
 }

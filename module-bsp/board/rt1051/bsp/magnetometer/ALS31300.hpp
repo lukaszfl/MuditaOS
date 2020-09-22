@@ -111,6 +111,9 @@ typedef struct : als31300_reg
     uint8_t X_MSB : 8;
 } als31300_measurements_MSB_reg;
 
+constexpr auto ALS31300_MEAS_REG_NEW_DATA_available = 0b1;
+constexpr auto ALS31300_MEAS_REG_NEW_DATA_not_avail = 0b0;
+
 // --------
 constexpr auto ALS31300_MEASUREMENTS_LSB_REG = 0x29;
 
@@ -126,31 +129,28 @@ typedef struct : als31300_reg
     bool int_eeprom_write_pending : 1;
 } als31300_measurements_LSB_reg;
 
-float als31300_temperature_convert(uint16_t temperature_12bit)
+float als31300_temperature_convert(uint16_t raw_temperature)
 {
-    const int32_t intermediate = temperature_12bit - 1708;
+    const int32_t intermediate = raw_temperature - 1708;
     return intermediate * 0.0737;
 }
 
 // NOTE: device sensitivity HW fixed at 4 LSB/Gauss == 0.4 LSB/mT
 // All measurements are supposed to be raw 4 LSB/Gauss. No need to introduce fractions
-constexpr auto bit_length_full_scale = 12;
-
-inline int16_t als31300_measurement_sign_convert(uint16_t raw_measurement, uint8_t bit_length = bit_length_full_scale)
+constexpr auto ALS31300_MEAS_REG_bit_length_full_scale = 12;
+inline int16_t als31300_measurement_sign_convert(uint16_t raw_measurement,
+                                                 uint8_t bit_length = ALS31300_MEAS_REG_bit_length_full_scale)
 {
     // via: https://stackoverflow.com/questions/16946801/n-bit-2s-binary-to-decimal-in-c
-    const auto sign_flag  = 1 << (bit_length - 1);
+    const auto sign_flag = 1 << (bit_length - 1);
     if (raw_measurement & sign_flag) {
         raw_measurement |= -(1 << bit_length);
     }
     return raw_measurement;
 }
 
-/////////////////////
+// --------
+constexpr auto ALS31300_CUSTOMER_ACCESS_REG          = 0x35;
+constexpr uint32_t ALS31300_CUSTOMER_ACCESS_REG_code = 0x2C413534;
 
-enum class Axis
-{
-    X,
-    Y,
-    Z,
-};
+/////////////////////
