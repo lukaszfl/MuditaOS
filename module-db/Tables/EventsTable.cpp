@@ -556,7 +556,7 @@ EventsTypedTableRow EventsTable::getClosestInsideDay1(uint32_t start_date, uint3
 }
 #endif
 
-EventsTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32_t day_date)
+EventsTableRow EventsTable::getClosestInsideDay(TimePoint start_date, TimePoint day_date)
 {
     // select * from events where (date_from - reminder) >= 141020142 and event_fired = -1 ORDER BY (date_from -
     // reminder)  LIMIT 1 select datetime(date_from, '+' || reminder || ' minutes') AS calc_dt, * from events where
@@ -573,8 +573,8 @@ EventsTableRow EventsTable::getClosestInsideDay(uint32_t start_date, uint32_t da
                               "AND reminder <> -1 "
                               "ORDER BY calc_dt "
                               "LIMIT 1",
-                              start_date,
-                              day_date);
+                              TimePointToString(start_date).c_str(),
+                              TimePointToString(day_date).c_str());
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return EventsTableRow();

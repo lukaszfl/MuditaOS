@@ -176,7 +176,7 @@ uint32_t EventsRecordInterface::GetCount()
     return eventsDb->events.count();
 }
 
-EventsRecord EventsRecordInterface::getClosestInsideDay(uint32_t start_date, uint32_t day_date)
+EventsRecord EventsRecordInterface::getClosestInsideDay(TimePoint start_date, TimePoint day_date)
 {
     EventsRecord event = static_cast<EventsRecord>(eventsDb->events.getClosestInsideDay(start_date, day_date));
     return event;

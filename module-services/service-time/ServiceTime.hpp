@@ -11,6 +11,7 @@
 #define PUREPHONE_SERVICETIME_HPP
 
 #include "Service/Service.hpp"
+#include "ServiceTime.hpp"
 #include <functional>
 #include "MessageType.hpp"
 
@@ -69,6 +70,10 @@ class ServiceTime : public sys::Service
 {
   private:
     CalendarTimeEvents calendarEvents;
+
+  protected:
+    void SendReloadQuery();
+    void ReceiveReloadQuery();
 
   public:
     ServiceTime();
