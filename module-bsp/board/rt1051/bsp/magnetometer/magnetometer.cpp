@@ -57,7 +57,7 @@ namespace bsp
             reg_pwr.I2C_loop_mode     = ALS31300_PWR_REG_LOOP_MODE_single; // we don't want constant data flow
             reg_pwr.sleep             = ALS31300_PWR_REG_SLEEP_MODE_LPDCM;
             reg_pwr.count_max_LP_mode = 6U; // update every 500 ms
-            USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(reg_conf, buf);
+            USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(reg_pwr, buf);
             i2c->Write(addr, buf, 4);
 
             while (true) {
