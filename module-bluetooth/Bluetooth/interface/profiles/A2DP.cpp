@@ -8,79 +8,10 @@
 #include <Bluetooth/Error.hpp>
 #include <BtCommand.hpp>
 #include <vfs.hpp>
-
-extern "C"
-{
-#include "btstack.h"
-#include <lib/btstack/3rd-party/hxcmod-player/hxcmod.h>
-#include <lib/btstack/3rd-party/hxcmod-player/mods/mod.h>
-#include <classic/avdtp.h>
-#include "classic/avrcp.h"
-#include "classic/avrcp_browsing_controller.h"
-#include "classic/avrcp_browsing_target.h"
-#include "classic/avrcp_controller.h"
-#include "classic/avrcp_media_item_iterator.h"
-#include "classic/avrcp_target.h"
-#include <btstack_defines.h>
-};
+#include "A2DP.hpp"
 
 using namespace Bt;
 
-#define NUM_CHANNELS           2
-#define BYTES_PER_AUDIO_SAMPLE (2 * NUM_CHANNELS)
-#define AUDIO_TIMEOUT_MS       10
-#define TABLE_SIZE_441HZ       100
-
-#define SBC_STORAGE_SIZE 1030
-
-typedef enum
-{
-    STREAM_SINE = 0,
-    STREAM_MOD,
-    STREAM_PTS_TEST
-} stream_data_source_t;
-
-typedef struct
-{
-    uint16_t a2dp_cid;
-    uint8_t local_seid;
-    uint8_t remote_seid;
-    uint8_t stream_opened;
-    uint16_t avrcp_cid;
-
-    uint32_t time_audio_data_sent; // ms
-    uint32_t acc_num_missed_samples;
-    uint32_t samples_ready;
-    btstack_timer_source_t audio_timer;
-    uint8_t streaming;
-    int max_media_payload_size;
-
-    uint8_t sbc_storage[SBC_STORAGE_SIZE];
-    uint16_t sbc_storage_count;
-    uint8_t sbc_ready_to_send;
-
-    uint16_t volume;
-} a2dp_media_sending_context_t;
-
-typedef struct
-{
-    int reconfigure;
-    int num_channels;
-    int sampling_frequency;
-    int channel_mode;
-    int block_length;
-    int subbands;
-    int allocation_method;
-    int min_bitpool_value;
-    int max_bitpool_value;
-    int frames_per_buffer;
-} avdtp_media_codec_configuration_sbc_t;
-
-static uint8_t media_sbc_codec_capabilities[] = {
-    (AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO,
-    0xFF, //(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
-    2,
-    53};
 
 static bd_addr_t device_addr;
 
@@ -88,13 +19,13 @@ static uint8_t sdp_a2dp_source_service_buffer[150];
 static uint8_t sdp_avrcp_target_service_buffer[200];
 static uint8_t sdp_avrcp_controller_service_buffer[200];
 
-static avdtp_media_codec_configuration_sbc_t sbc_configuration;
+static A2DP_config::avdtp_media_codec_configuration_sbc_t sbc_configuration;
 static btstack_sbc_encoder_state_t sbc_encoder_state;
 
 static uint8_t media_sbc_codec_configuration[4];
-static a2dp_media_sending_context_t media_tracker;
+static A2DP_config::a2dp_media_sending_context_t media_tracker;
 
-static stream_data_source_t data_source;
+static A2DP_config::stream_data_source_t data_source;
 
 // static int sine_phase;
 static int sample_rate = 44100;
@@ -103,57 +34,7 @@ static int hxcmod_initialized;
 static modcontext mod_context;
 static tracker_buffer_state trkbuf;
 
-/* AVRCP Target context START */
-static const uint8_t subunit_info[] = {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
-                                       4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7};
 
-static uint32_t company_id   = 0x112233;
-static uint8_t companies_num = 1;
-static uint8_t companies[]   = {
-    0x00, 0x19, 0x58 // BT SIG registered CompanyID
-};
-
-static uint8_t events_num = 6;
-static uint8_t events[]   = {AVRCP_NOTIFICATION_EVENT_PLAYBACK_STATUS_CHANGED,
-                           AVRCP_NOTIFICATION_EVENT_TRACK_CHANGED,
-                           AVRCP_NOTIFICATION_EVENT_PLAYER_APPLICATION_SETTING_CHANGED,
-                           AVRCP_NOTIFICATION_EVENT_NOW_PLAYING_CONTENT_CHANGED,
-                           AVRCP_NOTIFICATION_EVENT_AVAILABLE_PLAYERS_CHANGED,
-                           AVRCP_NOTIFICATION_EVENT_ADDRESSED_PLAYER_CHANGED};
-
-typedef struct
-{
-    uint8_t track_id[8];
-    uint32_t song_length_ms;
-    avrcp_playback_status_t status;
-    uint32_t song_position_ms; // 0xFFFFFFFF if not supported
-} avrcp_play_status_info_t;
-
-avrcp_track_t tracks[] = {
-    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
-     1,
-     (char *)"Sine",
-     (char *)"Generated",
-     (char *)"A2DP Source Demo",
-     (char *)"monotone",
-     12345},
-    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02},
-     2,
-     (char *)"Nao-deceased",
-     (char *)"Decease",
-     (char *)"A2DP Source Demo",
-     (char *)"vivid",
-     12345},
-    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03},
-     3,
-     (char *)"aaaa",
-     (char *)"Decease",
-     (char *)"A2DP Source Demo",
-     (char *)"vivid",
-     12345},
-};
-int current_track_index;
-avrcp_play_status_info_t play_info;
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
 static const char *device_addr_string = "00:12:6F:E7:9D:05";
@@ -184,8 +65,8 @@ static int a2dp_source_and_avrcp_services_init(void)
     avdtp_stream_endpoint_t *local_stream_endpoint =
         a2dp_source_create_stream_endpoint(AVDTP_AUDIO,
                                            AVDTP_CODEC_SBC,
-                                           media_sbc_codec_capabilities,
-                                           sizeof(media_sbc_codec_capabilities),
+                                           A2DP_config::media_sbc_codec_capabilities,
+                                           sizeof(A2DP_config::media_sbc_codec_capabilities),
                                            media_sbc_codec_configuration,
                                            sizeof(media_sbc_codec_configuration));
     if (!local_stream_endpoint) {
@@ -302,7 +183,7 @@ static void produce_audio(int16_t *pcm_buffer, int num_samples)
 #endif
 }
 
-static int a2dp_demo_fill_sbc_audio_buffer(a2dp_media_sending_context_t *context)
+static int a2dp_demo_fill_sbc_audio_buffer(A2DP_config::a2dp_media_sending_context_t *context)
 {
     // perform sbc encodin
     int total_num_bytes_read                      = 0;
@@ -310,7 +191,7 @@ static int a2dp_demo_fill_sbc_audio_buffer(a2dp_media_sending_context_t *context
     while (context->samples_ready >= num_audio_samples_per_sbc_buffer &&
            (context->max_media_payload_size - context->sbc_storage_count) >= btstack_sbc_encoder_sbc_buffer_length()) {
 
-        int16_t pcm_frame[256 * NUM_CHANNELS];
+        int16_t pcm_frame[256 * A2DP_config::NUM_CHANNELS];
 
         produce_audio(pcm_frame, num_audio_samples_per_sbc_buffer);
         btstack_sbc_encoder_process_data(pcm_frame);
@@ -328,12 +209,13 @@ static int a2dp_demo_fill_sbc_audio_buffer(a2dp_media_sending_context_t *context
 
 static void a2dp_demo_audio_timeout_handler(btstack_timer_source_t *timer)
 {
-    a2dp_media_sending_context_t *context = (a2dp_media_sending_context_t *)btstack_run_loop_get_timer_context(timer);
-    btstack_run_loop_set_timer(&context->audio_timer, AUDIO_TIMEOUT_MS);
+    A2DP_config::a2dp_media_sending_context_t *context =
+        (A2DP_config::a2dp_media_sending_context_t *)btstack_run_loop_get_timer_context(timer);
+    btstack_run_loop_set_timer(&context->audio_timer, A2DP_config::AUDIO_TIMEOUT_MS);
     btstack_run_loop_add_timer(&context->audio_timer);
     uint32_t now = btstack_run_loop_get_time_ms();
 
-    uint32_t update_period_ms = AUDIO_TIMEOUT_MS;
+    uint32_t update_period_ms = A2DP_config::AUDIO_TIMEOUT_MS;
     if (context->time_audio_data_sent > 0) {
         update_period_ms = now - context->time_audio_data_sent;
     }
@@ -360,23 +242,23 @@ static void a2dp_demo_audio_timeout_handler(btstack_timer_source_t *timer)
     }
 }
 
-static void a2dp_demo_timer_start(a2dp_media_sending_context_t *context)
+static void a2dp_demo_timer_start(A2DP_config::a2dp_media_sending_context_t *context)
 {
     LOG_DEBUG("Timer start");
 
     context->max_media_payload_size =
-        btstack_min(a2dp_max_media_payload_size(context->a2dp_cid, context->local_seid), SBC_STORAGE_SIZE);
+        btstack_min(a2dp_max_media_payload_size(context->a2dp_cid, context->local_seid), A2DP_config::SBC_STORAGE_SIZE);
     context->sbc_storage_count = 0;
     context->sbc_ready_to_send = 0;
     context->streaming         = 1;
     btstack_run_loop_remove_timer(&context->audio_timer);
     btstack_run_loop_set_timer_handler(&context->audio_timer, a2dp_demo_audio_timeout_handler);
     btstack_run_loop_set_timer_context(&context->audio_timer, context);
-    btstack_run_loop_set_timer(&context->audio_timer, AUDIO_TIMEOUT_MS);
+    btstack_run_loop_set_timer(&context->audio_timer, A2DP_config::AUDIO_TIMEOUT_MS);
     btstack_run_loop_add_timer(&context->audio_timer);
 }
 
-static void a2dp_demo_timer_stop(a2dp_media_sending_context_t *context)
+static void a2dp_demo_timer_stop(A2DP_config::a2dp_media_sending_context_t *context)
 {
     LOG_DEBUG("Timer stop");
 
@@ -389,7 +271,7 @@ static void a2dp_demo_timer_stop(a2dp_media_sending_context_t *context)
     btstack_run_loop_remove_timer(&context->audio_timer);
 }
 
-static void dump_sbc_configuration(avdtp_media_codec_configuration_sbc_t *configuration)
+static void dump_sbc_configuration(A2DP_config::avdtp_media_codec_configuration_sbc_t *configuration)
 {
     LOG_INFO("Received media codec configuration:\n");
     LOG_INFO("    - num_channels: %d\n", configuration->num_channels);
@@ -572,7 +454,7 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
                  media_tracker.local_seid,
                  a2dp_subevent_stream_established_get_remote_seid(packet));
         media_tracker.stream_opened = 1;
-        data_source                 = STREAM_MOD;
+        data_source                 = A2DP_config::STREAM_MOD;
         status                      = a2dp_source_start_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
         break;
 
@@ -621,7 +503,7 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
         local_seid = a2dp_subevent_stream_suspended_get_local_seid(packet);
         cid        = a2dp_subevent_stream_suspended_get_a2dp_cid(packet);
 
-        play_info.status = AVRCP_PLAYBACK_STATUS_PAUSED;
+        A2DP_config::play_info.status = AVRCP_PLAYBACK_STATUS_PAUSED;
         if (media_tracker.avrcp_cid) {
             avrcp_target_set_playback_status(media_tracker.avrcp_cid, AVRCP_PLAYBACK_STATUS_PAUSED);
         }
@@ -636,7 +518,7 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
         break;
 
     case A2DP_SUBEVENT_STREAM_RELEASED:
-        play_info.status = AVRCP_PLAYBACK_STATUS_STOPPED;
+        A2DP_config::play_info.status = AVRCP_PLAYBACK_STATUS_STOPPED;
         cid              = a2dp_subevent_stream_released_get_a2dp_cid(packet);
         local_seid       = a2dp_subevent_stream_released_get_local_seid(packet);
 
@@ -652,7 +534,8 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
             LOG_INFO("A2DP Source: Stream released.\n");
         }
         if (media_tracker.avrcp_cid) {
-            avrcp_target_set_now_playing_info(media_tracker.avrcp_cid, NULL, sizeof(tracks) / sizeof(avrcp_track_t));
+            avrcp_target_set_now_playing_info(
+                media_tracker.avrcp_cid, NULL, sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
             avrcp_target_set_playback_status(media_tracker.avrcp_cid, AVRCP_PLAYBACK_STATUS_STOPPED);
         }
 
@@ -695,10 +578,13 @@ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
         media_tracker.avrcp_cid = local_cid;
         avrcp_subevent_connection_established_get_bd_addr(packet, event_addr);
 
-        avrcp_target_set_now_playing_info(media_tracker.avrcp_cid, NULL, sizeof(tracks) / sizeof(avrcp_track_t));
-        avrcp_target_set_unit_info(media_tracker.avrcp_cid, AVRCP_SUBUNIT_TYPE_AUDIO, company_id);
-        avrcp_target_set_subunit_info(
-            media_tracker.avrcp_cid, AVRCP_SUBUNIT_TYPE_AUDIO, (uint8_t *)subunit_info, sizeof(subunit_info));
+        avrcp_target_set_now_playing_info(
+            media_tracker.avrcp_cid, NULL, sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
+        avrcp_target_set_unit_info(media_tracker.avrcp_cid, AVRCP_SUBUNIT_TYPE_AUDIO, A2DP_config::company_id);
+        avrcp_target_set_subunit_info(media_tracker.avrcp_cid,
+                                      AVRCP_SUBUNIT_TYPE_AUDIO,
+                                      (uint8_t *)A2DP_config::subunit_info,
+                                      sizeof(A2DP_config::subunit_info));
 
         avrcp_controller_get_supported_events(media_tracker.avrcp_cid);
 
@@ -736,14 +622,20 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
         LOG_INFO("AVRCP Target: Volume set to %d%% (%d)\n", media_tracker.volume * 127 / 100, media_tracker.volume);
         break;
     case AVRCP_SUBEVENT_EVENT_IDS_QUERY:
-        status = avrcp_target_supported_events(media_tracker.avrcp_cid, events_num, events, sizeof(events));
+        status = avrcp_target_supported_events(
+            media_tracker.avrcp_cid, A2DP_config::events_num, A2DP_config::events, sizeof(A2DP_config::events));
         break;
     case AVRCP_SUBEVENT_COMPANY_IDS_QUERY:
-        status = avrcp_target_supported_companies(media_tracker.avrcp_cid, companies_num, companies, sizeof(companies));
+        status = avrcp_target_supported_companies(media_tracker.avrcp_cid,
+                                                  A2DP_config::companies_num,
+                                                  A2DP_config::companies,
+                                                  sizeof(A2DP_config::companies));
         break;
     case AVRCP_SUBEVENT_PLAY_STATUS_QUERY:
-        status = avrcp_target_play_status(
-            media_tracker.avrcp_cid, play_info.song_length_ms, play_info.song_position_ms, play_info.status);
+        status = avrcp_target_play_status(media_tracker.avrcp_cid,
+                                          A2DP_config::play_info.song_length_ms,
+                                          A2DP_config::play_info.song_position_ms,
+                                          A2DP_config::play_info.status);
         break;
         // case AVRCP_SUBEVENT_NOW_PLAYING_INFO_QUERY:
         //     status = avrcp_target_now_playing_info(avrcp_cid);
@@ -905,22 +797,24 @@ static void stdin_process(char cmd)
 
     case 'x':
         if (media_tracker.avrcp_cid) {
-            avrcp_target_set_now_playing_info(
-                media_tracker.avrcp_cid, &tracks[data_source], sizeof(tracks) / sizeof(avrcp_track_t));
+            avrcp_target_set_now_playing_info(media_tracker.avrcp_cid,
+                                              &A2DP_config::tracks[data_source],
+                                              sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
         }
         LOG_INFO("%c - Play sine.\n", cmd);
-        data_source = STREAM_SINE;
+        data_source = A2DP_config::STREAM_SINE;
         if (!media_tracker.stream_opened)
             break;
         status = a2dp_source_start_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
         break;
     case 'z':
         if (media_tracker.avrcp_cid) {
-            avrcp_target_set_now_playing_info(
-                media_tracker.avrcp_cid, &tracks[data_source], sizeof(tracks) / sizeof(avrcp_track_t));
+            avrcp_target_set_now_playing_info(media_tracker.avrcp_cid,
+                                              &A2DP_config::tracks[data_source],
+                                              sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
         }
         LOG_INFO("%c - Play mod.\n", cmd);
-        data_source = STREAM_MOD;
+        data_source = A2DP_config::STREAM_MOD;
         if (!media_tracker.stream_opened)
             break;
         status = a2dp_source_start_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
@@ -939,7 +833,7 @@ static void stdin_process(char cmd)
     case 'w':
         if (!media_tracker.stream_opened)
             break;
-        if (play_info.status == AVRCP_PLAYBACK_STATUS_PLAYING) {
+        if (A2DP_config::play_info.status == AVRCP_PLAYBACK_STATUS_PLAYING) {
             LOG_INFO("Stream cannot be reconfigured while playing, please pause stream first\n");
             break;
         }
@@ -953,7 +847,7 @@ static void stdin_process(char cmd)
     case 'e':
         if (!media_tracker.stream_opened)
             break;
-        if (play_info.status == AVRCP_PLAYBACK_STATUS_PLAYING) {
+        if (A2DP_config::play_info.status == AVRCP_PLAYBACK_STATUS_PLAYING) {
             LOG_INFO("Stream cannot be reconfigured while playing, please pause stream first\n");
             break;
         }
@@ -977,7 +871,7 @@ static void stdin_process(char cmd)
 void A2DP::start()
 {
     LOG_INFO("Starting playback to %s", bd_addr_to_str(device_addr));
-    data_source = STREAM_MOD;
+    data_source = A2DP_config::STREAM_MOD;
     a2dp_source_establish_stream(device_addr, media_tracker.local_seid, &media_tracker.a2dp_cid);
 }
 

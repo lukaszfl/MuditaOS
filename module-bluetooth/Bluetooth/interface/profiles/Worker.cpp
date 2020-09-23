@@ -9,7 +9,7 @@ extern "C"
 #include <stdlib.h>
 #include <signal.h>
 
-#include "btstack_config.h"
+#include "module-bluetooth/lib/btstack/src/btstack_config.h"
 
 #include <btstack_event.h>
 // #include <btstack_link_key_db_fs.h>
