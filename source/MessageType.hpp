@@ -195,6 +195,8 @@ enum class MessageType
 
     // bluetooth messages
     BluetoothRequest,
+    BluetoothScanResult,
+    BluetoothAddrResult,
 
     LwIP_request,
     EVM_GPIO,
