@@ -351,7 +351,7 @@ namespace gui
         auto line_x_position = padding.left;
         do {
             auto text_line = gui::TextLine(draw_cursor, w);
-            cursor += text_line.length();
+            draw_cursor += text_line.length();
 
             if (text_line.length() == 0 && end == TextBlock::End::None) {
                 debug_text("cant show more text from this document");
