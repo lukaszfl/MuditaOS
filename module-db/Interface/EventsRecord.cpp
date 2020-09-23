@@ -7,6 +7,7 @@
 #include <module-db/queries/calendar/QueryEventsEdit.hpp>
 #include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
 #include <module-db/queries/calendar/QueryEventsGetAllLimited.hpp>
+#include <module-db/queries/calendar/QueryEventsGetClosestInsideDay.hpp>
 #include <log/log.hpp>
 #include <Utils.hpp>
 #include <cassert>
@@ -176,10 +177,11 @@ uint32_t EventsRecordInterface::GetCount()
     return eventsDb->events.count();
 }
 
-EventsRecord EventsRecordInterface::getClosestInsideDay(TimePoint start_date, TimePoint day_date)
+std::unique_ptr<EventsRecord> EventsRecordInterface::GetClosestInsideDay(TimePoint start_date, TimePoint day_date)
 {
-    EventsRecord event = static_cast<EventsRecord>(eventsDb->events.getClosestInsideDay(start_date, day_date));
-    return event;
+    auto record = std::make_unique<EventsRecord>(
+        static_cast<EventsRecord>(eventsDb->events.GetClosestInsideDay(start_date, day_date)));
+    return record;
 }
 
 std::unique_ptr<db::QueryResult> EventsRecordInterface::runQuery(std::shared_ptr<db::Query> query)
@@ -204,6 +206,10 @@ std::unique_ptr<db::QueryResult> EventsRecordInterface::runQuery(std::shared_ptr
     }
     if (typeid(*query) == typeid(db::query::events::Edit)) {
         return runQueryImplEdit(query);
+    }
+    if (typeid(*query) == typeid(db::query::events::GetClosestInsideDay)) {
+        const auto local_query = dynamic_cast<const db::query::events::GetClosestInsideDay *>(query.get());
+        return runQueryImpl(local_query);
     }
     return nullptr;
 }
@@ -283,4 +289,11 @@ std::unique_ptr<db::query::events::EditResult> EventsRecordInterface::runQueryIm
     auto response = std::make_unique<db::query::events::EditResult>(ret);
     response->setRequestQuery(query);
     return response;
+}
+
+std::unique_ptr<db::query::events::GetClosestInsideDayResult> EventsRecordInterface::runQueryImpl(
+    const db::query::events::GetClosestInsideDay *query)
+{
+    auto records = GetClosestInsideDay(query->start_date, query->day_date);
+    return std::make_unique<db::query::events::GetClosestInsideDayResult>(std::move(records));
 }

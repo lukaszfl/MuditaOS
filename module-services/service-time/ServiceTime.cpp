@@ -17,6 +17,7 @@
 
 #include <module-db/queries/calendar/QueryEventsGetAll.hpp>
 #include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
+#include <module-db/queries/calendar/QueryEventsGetClosestInsideDay.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 
 TimeEvents::TimeEvents()
@@ -141,6 +142,10 @@ void ServiceTime::SendReloadQuery()
     TimePoint filterTill = TimePointFromString("2020-09-20 00:00:00");
     DBServiceAPI::GetQuery(
         this, db::Interface::Name::Events, std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill));
+
+    DBServiceAPI::GetQuery(this,
+                           db::Interface::Name::Events,
+                           std::make_unique<db::query::events::GetClosestInsideDay>(filterFrom, filterTill));
 }
 
 void ServiceTime::ReceiveReloadQuery()
@@ -182,7 +187,6 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
             auto result = msg->getResult();
 
             if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(result.get())) {
-
                 std::unique_ptr<std::vector<EventsRecord>> records = response->getResult();
                 // Do something you want
                 // Example:
@@ -194,8 +198,18 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
                         c++;
                     }
                 }
-
                 responseHandled = true;
+            }
+            else if (auto response1 = dynamic_cast<db::query::events::GetClosestInsideDayResult *>(result.get())) {
+                std::unique_ptr<EventsRecord> record = response1->getResult();
+                if (record) {
+                    int c   = 0;
+                    auto s1 = TimePointToString(record->date_from);
+                    auto s2 = TimePointToString(record->date_till);
+                    if (s1.length() < s2.length()) {
+                        c++;
+                    }
+                }
             }
         }
         if (responseHandled) {

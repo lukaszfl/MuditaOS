@@ -51,7 +51,7 @@ class EventsTable : public Table<EventsTableRow, EventsTableFields>
 
     std::vector<EventsTableRow> getLimitOffsetByDate(uint32_t offset, uint32_t limit);
 
-    EventsTableRow getClosestInsideDay(TimePoint start_date, TimePoint day_date);
+    EventsTableRow GetClosestInsideDay(TimePoint start_date, TimePoint day_date);
 
   private:
     const char *createTableQuery = "CREATE TABLE IF NOT EXISTS events("

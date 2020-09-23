@@ -556,7 +556,7 @@ EventsTypedTableRow EventsTable::getClosestInsideDay1(uint32_t start_date, uint3
 }
 #endif
 
-EventsTableRow EventsTable::getClosestInsideDay(TimePoint start_date, TimePoint day_date)
+EventsTableRow EventsTable::GetClosestInsideDay(TimePoint start_date, TimePoint day_date)
 {
     // select * from events where (date_from - reminder) >= 141020142 and event_fired = -1 ORDER BY (date_from -
     // reminder)  LIMIT 1 select datetime(date_from, '+' || reminder || ' minutes') AS calc_dt, * from events where
