@@ -245,7 +245,7 @@ static int a2dp_source_and_avrcp_services_init(void)
 
 #ifdef HAVE_BTSTACK_STDIN
     // Parse human readable Bluetooth address.
-    sscanf_bd_addr(device_addr_string, device_addr);
+    //  sscanf_bd_addr(device_addr_string, device_addr);
     // btstack_stdin_setup(stdin_process);
 #endif
     return 0;
@@ -976,7 +976,7 @@ static void stdin_process(char cmd)
 
 void A2DP::start()
 {
-    LOG_INFO("Starting playback");
+    LOG_INFO("Starting playback to %s", bd_addr_to_str(device_addr));
     data_source = STREAM_MOD;
     a2dp_source_establish_stream(device_addr, media_tracker.local_seid, &media_tracker.a2dp_cid);
 }
@@ -991,6 +991,12 @@ void A2DP::stop()
 Error A2DP::init()
 {
     a2dp_source_and_avrcp_services_init();
-
+    LOG_INFO("Init done!");
     return Error();
+}
+
+void A2DP::set_addr(bd_addr_t addr)
+{
+    bd_addr_copy(device_addr, addr);
+    LOG_INFO("Address set!");
 }

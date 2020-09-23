@@ -4,6 +4,7 @@
 #include "service-appmgr/ApplicationManager.hpp"
 
 #include "../ApplicationSettings.hpp"
+#include "../windows/BtScanWindow.hpp"
 
 #include "i18/i18.hpp"
 
@@ -80,6 +81,7 @@ namespace gui
         add_box_label(box, "  -> All devices", [=](Item &) {
             LOG_DEBUG("Callback all devices");
             message_bt(application, BluetoothMessage::Request::Scan);
+            application->setActiveWindow("BT_SCAN");
             return true;
         });
 

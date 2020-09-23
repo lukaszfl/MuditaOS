@@ -17,7 +17,9 @@ namespace Bt
         /// THIS have to be called prior to Bt system start!
         Error register_scan();
         Error scan();
+        void stopScan();
         Error set_visibility(bool visibility);
+        void setOwnerService(sys::Service *service);
     }; // namespace GAP
     namespace PAN
     {
@@ -30,6 +32,7 @@ namespace Bt
         Error init();
         void start();
         void stop();
+        void set_addr(bd_addr_t addr);
         static void source_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
         static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
     } // namespace A2DP

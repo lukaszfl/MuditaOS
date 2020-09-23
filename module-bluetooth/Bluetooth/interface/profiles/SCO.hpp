@@ -31,75 +31,53 @@
  * SUCH DAMAGE.
  *
  * Please inquire about commercial licensing options at
- * contact@bluekitchen-gmbh.com
+ * contact@profiles-gmbh.com
  *
  */
 
-#ifndef WAV_UIL_H
-#define WAV_UIL_H
+/*
+ * sco_demo_util.h - send/receive test data via SCO, used by hfp_*_demo and hsp_*_demo
+ */
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef SCO_DEMO_UTIL_H
+#define SCO_DEMO_UTIL_H
 
-#include <unistd.h>
+#include "hci.h"
 
 #if defined __cplusplus
 extern "C"
 {
 #endif
 
-    // return 0 if ok
+    /**
+     * @brief Init demo SCO data production/consumtion
+     */
+    void sco_demo_init(void);
 
     /**
-     * Open singleton wav writer
-     * @return 0 if ok
+     * @brief Set codec (cvsd:0x01, msbc:0x02) and initalize wav writter and portaudio .
+     * @param codec
      */
-    int wav_writer_open(const char *filepath, int num_channels, int sampling_frequency);
-    /**
-     * Write Int8 samples
-     * @return 0 if ok
-     */
-    int wav_writer_write_int8(int num_samples, int8_t *data);
-    /**
-     * Write Int16 samples (host endianess)
-     * @return 0 if ok
-     */
-    int wav_writer_write_int16(int num_samples, int16_t *data);
-    /**
-     * Write Little Endian Int16 samples
-     * @return 0 if ok
-     */
-    int wav_writer_write_le_int16(int num_samples, int16_t *data);
-    /**
-     * Close wav writer and update wav file header
-     * @return 0 if ok
-     */
-    int wav_writer_close(void);
+    void sco_demo_set_codec(uint8_t codec);
 
     /**
-     * Open singleton war reader
-     * @return 0 if ok
+     * @brief Send next data on con_handle
+     * @param con_handle
      */
-    int wav_reader_open(const char *filepath);
+    void sco_demo_send(hci_con_handle_t con_handle);
+
     /**
-     * Read Int8 samples
-     * @return 0 if ok
+     * @brief Process received data
      */
-    int wav_reader_read_int8(int num_samples, int8_t *data);
+    void sco_demo_receive(uint8_t *packet, uint16_t size);
+
     /**
-     * Read Int16 samples (host endianess)
-     * @return 0 if ok
+     * @brief Close WAV writer, stop portaudio stream
      */
-    int wav_reader_read_int16(int num_samples, int16_t *data);
-    /**
-     * Close war reader
-     * @return 0 if ok
-     */
-    int wav_reader_close(void);
+    void sco_demo_close(void);
 
 #if defined __cplusplus
 }
 #endif
 
-#endif // WAV_UTIL_H
+#endif
