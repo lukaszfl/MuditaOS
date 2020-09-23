@@ -44,6 +44,10 @@ target_include_directories(
     ${BOARD_DIR_INCLUDES}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${TARGET_LIBRARIES_INCLUDES}
+        ${BT_STACK_ROOT}/src
+        ${BT_STACK_ROOT}/src/classic
+
+
 )
 
 target_link_libraries(

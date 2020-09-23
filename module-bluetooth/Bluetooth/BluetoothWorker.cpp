@@ -24,7 +24,7 @@ const char *c_str(Bt::Error::Code code)
     return "";
 }
 
-BluetoothWorker::BluetoothWorker(sys::Service *service) : Worker(service)
+BluetoothWorker::BluetoothWorker(sys::Service *service) : Worker(service), A2DPInstance(Bt::A2DP())
 {
     init({
         {"qBtIO", sizeof(Bt::Message), 10},
@@ -189,8 +189,8 @@ void BluetoothWorker::initAudioBT()
 
 bool BluetoothWorker::play_audio()
 {
-    Bt::A2DP::init();
-    Bt::A2DP::start();
+    A2DPInstance.init();
+    A2DPInstance.start();
     //    Bt::HSP::init();
     //   Bt::HSP::start();
     return false;
@@ -198,10 +198,10 @@ bool BluetoothWorker::play_audio()
 bool BluetoothWorker::stop_audio()
 {
     //    Bt::HSP::stop();
-    Bt::A2DP::stop();
+    A2DPInstance.stop();
     return false;
 }
 void BluetoothWorker::set_addr(bd_addr_t addr)
 {
-    Bt::A2DP::set_addr(addr);
+    A2DPInstance.set_addr(addr);
 }
