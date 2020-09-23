@@ -2,6 +2,11 @@
 #include "log/log.hpp"
 #include "BtCommand.hpp"
 
+extern "C"
+{
+#include "module-bluetooth/lib/btstack/src/btstack_util.h"
+};
+
 using namespace bsp;
 
 const char *c_str(Bt::Error::Code code)
@@ -62,7 +67,7 @@ bool BluetoothWorker::run()
 bool BluetoothWorker::scan()
 {
     std::vector<Device> empty;
-
+    Bt::GAP::setOwnerService(service);
     auto ret = Bt::GAP::scan();
     if (ret.err != Bt::Error::Success) {
         LOG_ERROR("Cant start scan!: %s %" PRIu32 "", c_str(ret.err), ret.lib_code);
@@ -70,8 +75,14 @@ bool BluetoothWorker::scan()
     }
     else {
         LOG_INFO("Scan started!");
+        // open new scan window
         return true;
     }
+}
+
+void BluetoothWorker::stop_scan()
+{
+    Bt::GAP::stopScan();
 }
 
 bool BluetoothWorker::set_visible()
@@ -189,4 +200,8 @@ bool BluetoothWorker::stop_audio()
     //    Bt::HSP::stop();
     Bt::A2DP::stop();
     return false;
+}
+void BluetoothWorker::set_addr(bd_addr_t addr)
+{
+    Bt::A2DP::set_addr(addr);
 }
