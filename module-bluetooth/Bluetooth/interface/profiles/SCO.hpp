@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  *
  * Please inquire about commercial licensing options at
- * contact@bluekitchen-gmbh.com
+ * contact@profiles-gmbh.com
  *
  */
 

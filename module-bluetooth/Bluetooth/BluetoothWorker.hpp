@@ -95,9 +95,11 @@ class BluetoothWorker : private sys::Worker
     bool play_audio();
 
     bool stop_audio();
+    void set_addr(bd_addr_t addr);
 
     Error aud_init();
     /// bluetooth stack id in use
     unsigned long active_features;
     void initAudioBT();
+    void stop_scan();
 };

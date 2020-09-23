@@ -2,6 +2,8 @@
 #include <cstring>
 #include <module-bluetooth/lib/btstack/src/bluetooth.h>
 #include <string>
+#include <cstring>
+#include <module-bluetooth/lib/btstack/src/bluetooth.h>
 
 struct Device
 {

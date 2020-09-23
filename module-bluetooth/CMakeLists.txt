@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/BluetoothWorker.cpp
-        Bluetooth/interface/bluekitchen/A2DP.cpp)
+        Bluetooth/interface/profiles/A2DP.cpp)
 
 message("Build with BlueKitchen")
 include(lib/btstack.cmake)

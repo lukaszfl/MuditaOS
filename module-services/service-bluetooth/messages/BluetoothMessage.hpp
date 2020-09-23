@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Bluetooth/Device.hpp"
-#include "MessageType.hpp"
 #include "Service/Message.hpp"
+#include "MessageType.hpp"
+#include "Bluetooth/Device.hpp"
 
 extern "C"
 {

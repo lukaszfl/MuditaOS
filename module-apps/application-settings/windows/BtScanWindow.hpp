@@ -7,8 +7,8 @@
 #include "gui/widgets/Image.hpp"
 #include "gui/widgets/Label.hpp"
 #include "gui/widgets/Window.hpp"
-#include <BoxLayout.hpp>
 #include <memory>
+#include <BoxLayout.hpp>
 #include <service-bluetooth/messages/BluetoothMessage.hpp>
 
 namespace gui
