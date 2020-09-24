@@ -165,4 +165,15 @@ namespace sys
             timer->stop();
         }
     }
+
+    auto Service::Timers::get(Timer *timer) const
+    {
+        return std::find(list.begin(), list.end(), timer);
+    }
+
+    auto Service::Timers::noTimer() const
+
+    {
+        return std::end(list);
+    }
 } // namespace sys

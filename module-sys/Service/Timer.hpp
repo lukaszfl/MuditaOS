@@ -22,11 +22,6 @@ namespace sys
             SingleShot
         };
 
-        /// Create timer and register it in parent
-        /// @param parent service on which behalf timer events will be sent and received
-        /// @param interval time for next timer event in
-        // Timer(Service *parent, ms interval, Type type = Type::Periodic);
-
         /// Create named timer and register it in parent
         /// @param name this will be name of timer + postfix
         /// @param parent service on which behalf timer events will be sent and received

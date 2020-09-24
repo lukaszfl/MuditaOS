@@ -36,7 +36,7 @@ namespace app
     {
         busChannels.push_back(sys::BusChannels::AntennaNotifications);
         busChannels.push_back(sys::BusChannels::AntennaNotifications);
-        appTimer = std::make_unique<sys::Timer>("AntenaTimer",this, 2000);
+        appTimer = std::make_unique<sys::Timer>(this, 2000);
         appTimer->connect([=](sys::Timer &) { timerHandler(); });
         appTimer->start();
     }

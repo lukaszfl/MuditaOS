@@ -2,6 +2,7 @@
 #include "Service.hpp"               // for Service, Service::Timers
 #include "Service/TimerMessage.hpp"  // for TimerMessage
 #include "log/log.hpp"               // for LOG_ERROR
+#include "projdefs.h"
 #include <stdint.h>                  // for uint32_t
 #include <Service/Bus.hpp>           // for Bus
 #include <limits>                    // for numeric_limits
@@ -17,7 +18,6 @@ namespace sys
 {
 
     const ms Timer::timeout_infinite = std::numeric_limits<ms>().max();
-    // debug variable
     static uint32_t timer_id;
 
     auto toName(const std::string &val, uint32_t no) -> std::string
@@ -26,7 +26,7 @@ namespace sys
     }
 
     Timer::Timer(const std::string &name, Service *service, ms interval, Type type)
-        : cpp_freertos::Timer((toName(name,timer_id)).c_str(), interval, type == Type::Periodic),
+        : cpp_freertos::Timer((toName(name,timer_id)).c_str(), pdMS_TO_TICKS(interval), type == Type::Periodic),
           parent(service), type(type), interval(interval), name(toName(name, timer_id))
     {
         if (service != nullptr) {
@@ -70,7 +70,7 @@ namespace sys
     void Timer::reload(ms from_time)
     {
         log_timers("Timer %s reload!", name.c_str());
-        Start(from_time);
+        Start(pdMS_TO_TICKS(from_time));
     }
 
     void Timer::stop()
@@ -83,7 +83,7 @@ namespace sys
     {
         log_timers("Timer %s set interval to: %d ms!", name.c_str(), interval);
         interval = new_interval;
-        SetPeriod(new_interval, 0);
+        SetPeriod(pdMS_TO_TICKS(new_interval), 0);
     }
 
     void Timer::onTimeout()

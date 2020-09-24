@@ -20,13 +20,13 @@ namespace gui
         virtual void stop()               = 0;
         virtual void reset()              = 0;
         virtual void setInterval(ms time) = 0;
-        [[nodiscard]] constexpr auto interval() const -> ms;
+        [[nodiscard]] auto interval() const -> ms;
 
       protected:
         Type type = Single;
 
       public:
-        [[nodiscard]] constexpr auto getType() const -> Type
+        [[nodiscard]] auto getType() const -> Type
         {
             return type;
         }

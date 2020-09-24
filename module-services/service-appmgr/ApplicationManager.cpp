@@ -315,11 +315,11 @@ namespace sapm
         }
 
         // if desktop has focus switch to main window and set it locked.
-        if (focusApplicationName == "ApplicationDesktop") {
+        if (focusApplicationName == app::name_desktop) {
             // switch data must contain target window and information about blocking
 
             app::Application::messageSwitchApplication(
-                this, "ApplicationDesktop", gui::name::window::main_window, std::make_unique<gui::LockPhoneData>());
+                this, app::name_desktop, gui::name::window::main_window, std::make_unique<gui::LockPhoneData>());
         }
         else {
             // get the application description for application that is on top and set blocking flag for it
@@ -329,7 +329,7 @@ namespace sapm
             data->setPrevApplication(focusApplicationName);
 
             // run normal flow of applications change
-            messageSwitchApplication(this, "ApplicationDesktop", gui::name::window::main_window, std::move(data));
+            messageSwitchApplication(this, app::name_desktop, gui::name::window::main_window, std::move(data));
         }
 #endif
     }

@@ -77,8 +77,9 @@ namespace gui
 
         setVisibleState();
 
-        auto timer = std::make_unique<app::GuiTimer>("Example", application);
-        timer->setInterval(3000);
+        const auto timer_ms_interval = 3000;
+        auto timer = std::make_unique<app::GuiTimer>(application);
+        timer->setInterval(timer_ms_interval);
         application->connect(std::move(timer), this);
         this->timerCallback = [](Item &, Timer &) {
             LOG_DEBUG("This is GuiTimer");

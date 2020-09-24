@@ -66,7 +66,7 @@ namespace app
             setState(State::ACTIVE_BACKGROUND);
         }
 
-        longPressTimer = std::make_unique<sys::Timer>("LongPress",this, key_timer_ms);
+        longPressTimer = std::make_unique<sys::Timer>(this, key_timer_ms);
         longPressTimer->connect([&](sys::Timer &) { longPressTimerCallback(); });
     }
 
@@ -318,7 +318,7 @@ namespace app
 
     sys::Message_t Application::handleApplicationSwitch(sys::DataMessage *msgl)
     {
-        AppSwitchMessage *msg = reinterpret_cast<AppSwitchMessage *>(msgl);
+        auto *msg = static_cast<AppSwitchMessage *>(msgl);
         bool handled          = false;
         LOG_DEBUG("AppSwitch: %s", msg->getTargetApplicationName().c_str());
         // Application is starting or it is in the background. Upon switch command if name if correct it goes

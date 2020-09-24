@@ -42,11 +42,6 @@ namespace sys
         // override should in in either callback, function or whatever...
         virtual Message_t DataReceivedHandler(DataMessage *msg, ResponseMessage *resp) = 0;
 
-        // TODO register message -> function handler ;) add map/-> :( no can do: array/variant ) <-/ whatever for it
-        // (with check if already registered sth Invoked when timer ticked
-        // TODO this is crap - it should be done via message, in DataReceivedHandler :/
-        // virtual void TickHandler(uint32_t id){};
-
         // Invoked during initialization
         virtual ReturnCodes InitHandler() = 0;
 
@@ -88,7 +83,7 @@ namespace sys
 
         friend Proxy;
 
-        struct Timers
+        class Timers
         {
 
             friend Timer;
@@ -106,18 +101,11 @@ namespace sys
             }
           public:
             void stop();
-            auto get(Timer *timer)
-            {
-                return std::find(list.begin(), list.end(), timer);
-            }
-            auto noTimer()
-            {
-                return std::end(list);
-            }
+            [[nodiscard]] auto get(Timer *timer) const;
+            [[nodiscard]] auto noTimer() const;
         } timers;
 
       public:
-        // TODO hide behind proxy too?
         auto getTimers() -> auto &
         {
             return timers;

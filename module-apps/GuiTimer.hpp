@@ -34,13 +34,15 @@ namespace app
         /// @ }
 
         /// interface to trigger timing callback
-        struct Sysapi
+        class Sysapi
         {
             friend Application;
             GuiTimer &parent;
+            void connect(gui::Item *item);
+
+            public:
             Sysapi(GuiTimer &parent) : parent(parent)
             {}
-            void connect(gui::Item *item);
         } sysapi;
     };
 }; // namespace app
