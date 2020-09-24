@@ -123,11 +123,6 @@ namespace gui
         void setFont(const UTF8 &fontName);
         void setFont(RawFont *font);
 
-        RawFont *getFont()
-        {
-            return font;
-        }
-
         // virtual methods from Item
         bool onInput(const InputEvent &inputEvent) override;
         /// move ownership of mode ptr to Text

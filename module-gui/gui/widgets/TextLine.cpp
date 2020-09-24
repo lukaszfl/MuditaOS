@@ -46,7 +46,7 @@ namespace gui
             }
 
             // take text we want to show
-            auto text = cur.getText();
+            auto text = cur.getUTF8Text();
 
             if (text.length() == 0) {
                 LOG_DEBUG("No more text in block");

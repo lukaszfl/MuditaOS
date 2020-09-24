@@ -59,9 +59,7 @@ namespace gui
 
         void setToStart()
         {
-            while (pos_on_screen != 0) {
-                moveCursor(NavigationDirection::LEFT);
-            }
+            while (moveCursor(NavigationDirection::LEFT) != Move::Start) {}
         }
 
         auto getPosOnScreen() const
