@@ -115,7 +115,7 @@ namespace bsp
             gpio->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
             gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
                                               .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
-                                              .defLogic = 1,
+                                              .defLogic = 0,
                                               .pin      = static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ)});
             gpio->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
 
@@ -203,12 +203,14 @@ namespace bsp
 
         BaseType_t IRQHandler()
         {
+            gpio->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             if (qHandleIrq != NULL) {
                 uint8_t val = 0x01;
                 xQueueSendFromISR(qHandleIrq, &val, &xHigherPriorityTaskWoken);
             }
             gpio->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
+            gpio->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
             return xHigherPriorityTaskWoken;
         }
 
