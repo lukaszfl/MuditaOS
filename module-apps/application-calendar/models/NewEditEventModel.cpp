@@ -1,4 +1,5 @@
 #include "NewEditEventModel.hpp"
+#include "AppWindow.hpp"
 #include "application-calendar/widgets/NewEventCheckBoxWithLabel.hpp"
 #include "module-apps/application-calendar/data/CalendarData.hpp"
 #include <ListView.hpp>

@@ -2,6 +2,7 @@
 #include "ParserUtils.hpp"
 #include "DesktopMessages.hpp"
 #include "ServiceDesktop.hpp"
+#include <Service/Bus.hpp>
 
 static bool backupReady = false;
 

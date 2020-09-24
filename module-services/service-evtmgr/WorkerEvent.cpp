@@ -35,6 +35,7 @@ extern "C"
 #include "bsp/harness/bsp_harness.hpp"
 #include "harness/Parser.hpp"
 #include "Constants.hpp"
+#include <Service/Bus.hpp>
 
 bool WorkerEvent::handleMessage(uint32_t queueID)
 {

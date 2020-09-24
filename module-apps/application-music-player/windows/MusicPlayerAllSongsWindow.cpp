@@ -5,6 +5,7 @@
 #include <i18/i18.hpp>
 #include <log/log.hpp>
 #include <service-audio/api/AudioServiceAPI.hpp>
+#include <cassert>
 
 namespace gui
 {

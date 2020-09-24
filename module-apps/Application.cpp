@@ -1,31 +1,34 @@
-#include <sstream>
-#include <iomanip>
-// module-utils
-#include "Service/Timer.hpp"
-#include "GuiTimer.hpp"
-#include "log/log.hpp"
-// module-services
-#include "service-gui/messages/DrawMessage.hpp"
-#include "service-appmgr/messages/APMMessage.hpp"
-#include "service-evtmgr/messages/EVMessages.hpp"
-#include "service-appmgr/ApplicationManager.hpp"
-#include "service-db/api/DBServiceAPI.hpp"
-#include "service-cellular/ServiceCellular.hpp"
-#include "service-cellular/api/CellularServiceAPI.hpp"
-// module-gui
-#include "gui/core/DrawCommand.hpp"
-#include "gui/input/InputEvent.hpp"
-// module-sys
-#include "SystemManager/SystemManager.hpp"
-
 #include "Application.hpp"
-#include "MessageType.hpp"
-#include "messages/AppMessage.hpp"
-#include "windows/AppWindow.hpp"
-#include <Text.hpp>
-#include <cassert>
+#include "BusChannelsCustom.hpp"                          // for BusChannels...
+#include "Common.hpp"                                     // for RefreshModes
+#include "GuiTimer.hpp"                                   // for GuiTimer
+#include "Item.hpp"                                       // for Item
+#include "MessageType.hpp"                                // for MessageType
+#include "Service/Timer.hpp"                              // for Timer
+#include "SettingsRecord.hpp"                             // for SettingsRecord
+#include "Timer.hpp"                                      // for Timer
+#include "Translator.hpp"                                 // for KeyInputSim...
+#include "common_data/EventStore.hpp"                     // for Battery
+#include "common_data/RawKey.hpp"                         // for RawKey, key...
+#include "gui/input/InputEvent.hpp"                       // for InputEvent
+#include "log/debug.hpp"                                  // for DEBUG_APPLI...
+#include "log/log.hpp"                                    // for LOG_INFO
+#include "messages/AppMessage.hpp"                        // for AppSwitchMe...
+#include "service-appmgr/ApplicationManager.hpp"          // for Application...
+#include "service-cellular/messages/CellularMessage.hpp"  // for CellularNot...
+#include "service-db/api/DBServiceAPI.hpp"                // for DBServiceAPI
+#include "service-evtmgr/messages/BatteryMessages.hpp"    // for BatteryLeve...
+#include "service-evtmgr/messages/EVMessages.hpp"         // for RtcMinuteAl...
+#include "service-evtmgr/messages/KbdMessage.hpp"         // for KbdMessage
+#include "service-gui/messages/DrawMessage.hpp"           // for DrawMessage
+#include "task.h"                                         // for xTaskGetTic...
+#include "windows/AppWindow.hpp"                          // for AppWindow
+#include <Text.hpp>                                       // for Text
+#include <algorithm>                                      // for find
+#include <iterator>                                       // for distance, next
+#include <type_traits>                                    // for add_const<>...
 
-#include "common_data/EventStore.hpp"
+namespace gui { class DrawCommand; }
 
 namespace app
 {

@@ -1,6 +1,7 @@
 #include "CellularCMD.hpp"
 #include <service-cellular/ServiceCellular.hpp>
 #include <service-cellular/api/CellularServiceAPI.hpp>
+#include <Service/Bus.hpp>
 
 namespace harness
 {

@@ -1,17 +1,11 @@
-/*
- * Item.cpp
- *
- *  Created on: 4 mar 2019
- *      Author: robert
- */
-
-#include <list>
-#include <algorithm>
-#include <cstring>
-#include "Navigation.hpp"
 #include "Item.hpp"
-#include "BoundingBox.hpp"
-#include "log/log.hpp"
+#include "BoundingBox.hpp"  // for BoundingBox, BoundingBox::(anonymous)
+#include "InputEvent.hpp"   // for InputEvent, KeyCode, InputEvent::State
+#include "Navigation.hpp"   // for Navigation
+#include "Timer.hpp"        // for Timer
+#include <algorithm>        // for find
+#include <list>             // for list<>::iterator, list, operator!=, _List...
+namespace gui { class DrawCommand; }
 
 namespace gui
 {

@@ -1,12 +1,22 @@
-#include <algorithm>
 #include "Service.hpp"
-#include "Service/Message.hpp"
-#include "thread.hpp"
-#include "ticks.hpp"
-#include "timer.hpp"
-#include "Bus.hpp"
-#include "Timer.hpp"
-#include "TimerMessage.hpp"
+#include "Bus.hpp"              // for Bus
+#include "FreeRTOSConfig.h"     // for configASSERT
+#include "MessageType.hpp"      // for MessageType, MessageType::MessageType...
+#include "Service/Common.hpp"   // for BusChannels, ReturnCodes, ReturnCodes...
+#include "Service/Mailbox.hpp"  // for Mailbox
+#include "Service/Message.hpp"  // for Message, Message_t, DataMessage, Resp...
+#include "Timer.hpp"            // for Timer
+#include "TimerMessage.hpp"     // for TimerMessage
+#include "log/debug.hpp"        // for DEBUG_SERVICE_MESSAGES
+#include "log/log.hpp"          // for LOG_ERROR, LOG_DEBUG, LOG_FATAL
+#include "mutex.hpp"            // for cpp_freertos
+#include "portmacro.h"          // for UBaseType_t
+#include "thread.hpp"           // for Thread
+#include "ticks.hpp"            // for Ticks
+#include <algorithm>            // for remove_if
+#include <cstdint>              // for uint32_t, uint64_t, UINT32_MAX
+#include <iosfwd>               // for std
+#include <typeinfo>             // for type_info
 
 // this could use Scoped() class from utils to print execution time too
 void debug_msg(sys::Service *srvc, sys::DataMessage *&ptr)

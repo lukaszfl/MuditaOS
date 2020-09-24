@@ -1,40 +1,35 @@
-/*
- * @file Application.hpp
- * @author Robert Borzecki (robert.borzecki@mudita.com)
- * @date 1 cze 2019
- * @brief
- * @copyright Copyright (C) 2019 mudita.com
- * @details
- */
-#ifndef MODULE_APPS_APPLICATION_HPP_
-#define MODULE_APPS_APPLICATION_HPP_
+#pragma once
 
-#include <map>
-// module-gui
-#include "Timer.hpp"
-#include "gui/Common.hpp"
-//#include "gui/widgets/Window.hpp"
-#include "gui/input/Translator.hpp"
-// module-sys
-#include "Service/Service.hpp"
-#include "Service/Message.hpp"
-#include "Service/Common.hpp"
-#include "SystemManager/SystemManager.hpp"
-// module-db
-#include "Interface/SettingsRecord.hpp"
+#include "Audio/AudioCommon.hpp"                         // for Volume, Play...
+#include "Audio/Profiles/Profile.hpp"                    // for Profile, Pro...
+#include "AudioServiceAPI.hpp"                           // for GetOutputVolume
+#include "Interface/SettingsRecord.hpp"                  // for SettingsRecord
+#include "Service/Bus.hpp"                               // for Bus
+#include "Service/Common.hpp"                            // for ReturnCodes
+#include "Service/Message.hpp"                           // for Message_t
+#include "Service/Service.hpp"                           // for Service
+#include "SwitchData.hpp"                                // for SwitchData
+#include "SystemManager/SystemManager.hpp"               // for SystemManager
+#include "bsp/keyboard/key_codes.hpp"                    // for bsp
+#include "gui/Common.hpp"                                // for ShowMode
+#include "projdefs.h"                                    // for pdMS_TO_TICKS
+#include "service-evtmgr/messages/EVMessages.hpp"        // for TorchStateMe...
+#include <stdint.h>                                      // for uint32_t
+#include <list>                                          // for list
+#include <map>                                           // for allocator, map
+#include <memory>                                        // for make_shared
+#include <module-bsp/bsp/torch/torch.hpp>                // for State, State...
+#include <module-services/service-evtmgr/Constants.hpp>  // for evt_manager
+#include <string>                                        // for string
+#include <utility>                                       // for move, pair
+#include <vector>                                        // for vector
 
-#include <module-bsp/bsp/torch/torch.hpp>
-#include <module-services/service-evtmgr/Constants.hpp>
-#include "service-evtmgr/messages/EVMessages.hpp"
-
-#include "SwitchData.hpp"
-#include "service-cellular/api/CellularServiceAPI.hpp"
-#include "windows/AppWindow.hpp"
-
-namespace gui
-{
-    class AppWindow;
-};
+namespace app { class GuiTimer; }  // lines 43-43
+namespace gui { class AppWindow; }  // lines 36-36
+namespace gui { class InputEvent; }
+namespace gui { class Item; }
+namespace gui { class KeyInputSimpleTranslation; }
+namespace sys { class Timer; }
 
 namespace app
 {
@@ -108,10 +103,10 @@ namespace app
         sys::Message_t handleAppRefresh(sys::DataMessage *msgl);
         sys::Message_t handleSIMMessage(sys::DataMessage *msgl);
 
-        std::list<unique_ptr<app::GuiTimer>> gui_timers;
+        std::list<std::unique_ptr<app::GuiTimer>> gui_timers;
 
       public:
-        unique_ptr<sys::Timer> longPressTimer;
+        std::unique_ptr<sys::Timer> longPressTimer;
         Application(std::string name,
                     std::string parent            = "",
                     bool startBackground          = false,
@@ -413,5 +408,3 @@ namespace app
     }
 
 } /* namespace app */
-
-#endif /* MODULE_APPS_APPLICATION_HPP_ */

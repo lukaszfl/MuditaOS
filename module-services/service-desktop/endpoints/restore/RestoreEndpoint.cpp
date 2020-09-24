@@ -2,6 +2,7 @@
 #include "DesktopMessages.hpp"
 #include "ServiceDesktop.hpp"
 #include "RestoreEndpoint.hpp"
+#include <Service/Bus.hpp>
 
 auto RestoreEndpoint::handle(Context &context) -> void
 {

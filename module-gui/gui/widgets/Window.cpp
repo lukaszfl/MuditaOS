@@ -10,6 +10,7 @@
 #include "../Common.hpp"
 #include "Window.hpp"
 #include "../core/DrawCommand.hpp"
+#include <InputEvent.hpp>
 
 namespace gui
 {

@@ -20,7 +20,7 @@ namespace gui
         std::chrono::system_clock::time_point tp =
             std::chrono::system_clock::from_time_t(appCalendar->getCurrentTimeStamp());
         this->actualDate = date::year_month_day{date::floor<date::days>(tp)};
-        std::fill(begin(isDayEmpty), end(isDayEmpty), true);
+        std::fill(std::begin(isDayEmpty), std::end(isDayEmpty), true);
         buildInterface();
     }
 
@@ -199,12 +199,12 @@ namespace gui
 
     bool CalendarMainWindow::onDatabaseMessage(sys::Message *msgl)
     {
-        std::fill(begin(isDayEmpty), end(isDayEmpty), true);
+        std::fill(std::begin(isDayEmpty), std::end(isDayEmpty), true);
         auto msg = dynamic_cast<db::QueryResponse *>(msgl);
         if (msg != nullptr) {
             auto temp = msg->getResult();
             if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(temp.get())) {
-                unique_ptr<vector<EventsRecord>> records = response->getResult();
+                std::unique_ptr<std::vector<EventsRecord>> records = response->getResult();
                 for (auto &rec : *records) {
                     date::year_month_day recordDate = TimePointToYearMonthDay(rec.date_from);
                     uint32_t dayNumb                = static_cast<unsigned>(recordDate.day());
@@ -214,7 +214,7 @@ namespace gui
                 return true;
             }
             if (auto response = dynamic_cast<db::query::events::GetAllResult *>(temp.get())) {
-                unique_ptr<vector<EventsRecord>> records = response->getResult();
+                std::unique_ptr<std::vector<EventsRecord>> records = response->getResult();
                 if (records->size() != 0) {
                     application->switchWindow(style::window::calendar::name::all_events_window);
                 }

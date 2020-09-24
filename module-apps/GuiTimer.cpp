@@ -1,8 +1,8 @@
 #include "GuiTimer.hpp"
-#include "Item.hpp"
-#include "Service/Timer.hpp"
-#include "log/log.hpp"
-#include "module-apps/Application.hpp"
+#include "Item.hpp"                     // for Item
+#include "Service/Timer.hpp"            // for Timer, Timer::Type, Timer::Ty...
+#include "module-apps/Application.hpp"  // for Application
+#include <memory>                       // for allocator
 
 namespace app
 {

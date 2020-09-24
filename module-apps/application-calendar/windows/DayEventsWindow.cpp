@@ -120,7 +120,7 @@ namespace gui
         if (msg != nullptr) {
             auto temp = msg->getResult();
             if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(temp.get())) {
-                unique_ptr<vector<EventsRecord>> records = response->getResult();
+                std::unique_ptr<std::vector<EventsRecord>> records = response->getResult();
                 for (auto &rec : *records) {
                     LOG_DEBUG("record: %s", rec.title.c_str());
                 }

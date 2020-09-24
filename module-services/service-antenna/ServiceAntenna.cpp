@@ -10,6 +10,7 @@
 #include <module-utils/state/ServiceState.hpp>
 #include <at/response.hpp>
 
+#include "service-cellular/api/CellularServiceAPI.hpp"
 #include "time/time_conversion.hpp"
 #include <ticks.hpp>
 

@@ -1,3 +1,4 @@
+#include "InputEvent.hpp"
 #include "log/log.hpp"
 #include "gui/widgets/BottomBar.hpp"
 #include "gui/widgets/TopBar.hpp"

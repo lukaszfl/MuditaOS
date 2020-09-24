@@ -8,6 +8,7 @@
  */
 #include "CallWindow.hpp"
 
+#include "InputEvent.hpp"
 #include "application-call/widgets/Icons.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
 

@@ -5,6 +5,7 @@
 #include "application-phonebook/widgets/PhonebookListView.hpp"
 
 #include <gui/widgets/ListView.hpp>
+#include <AppWindow.hpp>
 
 namespace gui
 {

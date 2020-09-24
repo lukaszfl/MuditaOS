@@ -30,6 +30,7 @@
 #include <time/ScopedTime.hpp>
 #include "includes/DBServiceName.hpp"
 #include "messages/QueryMessage.hpp"
+#include <Service/Bus.hpp>
 
 static const auto service_db_stack = 1024 * 24;
 

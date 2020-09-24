@@ -6,6 +6,7 @@
 #include <Style.hpp>
 #include <functional>
 #include <memory>
+#include <cassert>
 
 namespace style::option
 {

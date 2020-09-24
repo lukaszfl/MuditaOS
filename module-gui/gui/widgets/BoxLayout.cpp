@@ -2,6 +2,7 @@
 #include <log/log.hpp>
 #include <Label.hpp>
 #include "BoxLayoutSizeStore.hpp"
+#include <InputEvent.hpp>
 
 namespace gui
 {

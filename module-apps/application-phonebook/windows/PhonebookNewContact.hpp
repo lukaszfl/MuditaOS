@@ -5,6 +5,7 @@
 
 #include <Text.hpp>
 #include <ListView.hpp>
+#include <AppWindow.hpp>
 
 namespace gui
 {

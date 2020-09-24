@@ -1,5 +1,6 @@
 #include <module-services/service-db/messages/DBThreadMessage.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
+#include "InputEvent.hpp"
 #include "ThreadsModel.hpp"
 #include "OptionWindow.hpp"
 #include "application-messages/windows/ThreadWindowOptions.hpp"

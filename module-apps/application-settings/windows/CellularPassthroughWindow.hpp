@@ -2,6 +2,7 @@
 
 #include <module-gui/gui/widgets/Text.hpp>
 #include <module-bsp/bsp/cellular/bsp_cellular.hpp>
+#include "AppWindow.hpp"
 #include "Application.hpp"
 
 namespace gui

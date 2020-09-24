@@ -9,6 +9,7 @@
 #define MODULE_APPS_APPLICATION_ANTENNA_APPLICATIONANTENNA_HPP_
 
 #include "Application.hpp"
+#include "service-cellular/api/CellularServiceAPI.hpp"
 #include "windows/AppWindow.hpp"
 
 namespace app

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "timer.hpp"
-#include <functional>
+#include "portmacro.h"  // for TickType_t
+#include "timer.hpp"    // for Timer
+#include <functional>   // for function
+#include <string>       // for string
+namespace sys { class Service; }  // lines 9-9
 
 namespace sys
 {
-    class Service;
-
     using ms = TickType_t;
 
     /// Base timer for all coarse timers in system

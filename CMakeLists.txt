@@ -95,6 +95,7 @@ add_compile_options( ${TARGET_COMPILE_OPTIONS}
                      -MP
                      -fno-builtin
                      # warning flags
+                     -fno-diagnostics-color
                      -Wall -Wextra -Werror -Wno-unused-parameter)
 
 target_compile_features(${PROJECT_NAME} PUBLIC

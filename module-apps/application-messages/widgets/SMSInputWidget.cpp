@@ -1,4 +1,5 @@
 #include <module-apps/application-messages/ApplicationMessages.hpp>
+#include "AppWindow.hpp"
 #include "SMSInputWidget.hpp"
 #include "application-messages/data/MessagesStyle.hpp"
 

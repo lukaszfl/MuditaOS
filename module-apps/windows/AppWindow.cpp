@@ -1,5 +1,6 @@
 #include "AppWindow.hpp"
 #include "Application.hpp"
+#include "InputEvent.hpp"
 #include <i18/i18.hpp>
 #include <service-appmgr/ApplicationManager.hpp>
 #include <Style.hpp>

@@ -6,6 +6,7 @@
  * @copyright Copyright (C) 2019 mudita.com
  * @details
  */
+#include "InputEvent.hpp"
 #include "service-db/api/DBServiceAPI.hpp"
 #include "widgets/CalllogItem.hpp"
 #include "data/CallLogSwitchData.hpp"

@@ -1,4 +1,4 @@
-
+#include <Service/Bus.hpp>
 #include "UpdateEndpoint.hpp"
 #include "DesktopMessages.hpp"
 #include "ServiceDesktop.hpp"

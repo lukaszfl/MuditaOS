@@ -10,6 +10,7 @@ namespace gui
     class Timer
     {
       public:
+        virtual ~Timer() = default;
         enum Type
         {
             Single,    /// single run timer

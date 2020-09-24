@@ -1,25 +1,23 @@
 #pragma once
 
-#include <vector>
-#include <list>
-#include <functional>
-#include  <Timer.hpp>
-
-#include "KeyEvent.hpp"
-#include "Common.hpp"
-#include "core/DrawCommand.hpp"
-#include "core/BoundingBox.hpp"
-#include "input/InputEvent.hpp"
-#include "Layout.hpp"
-#include "Navigation.hpp"
-#include "Margins.hpp"
-#include "Alignment.hpp"
+#include "Alignment.hpp"         // for Alignment
+#include "Axes.hpp"              // for Axis
+#include "Common.hpp"            // for NavigationDirection, Size
+#include "Layout.hpp"            // for LayoutHorizontalPolicy, LayoutVertic...
+#include "Margins.hpp"           // for Padding, Margins
+#include "core/BoundingBox.hpp"  // for BoundingBox, BoundingBox::(anonymous)
+#include <cstdint>              // for uint32_t, int32_t, uint16_t
+#include <functional>            // for function
+#include <list>                  // for list
+#include <memory>                // for unique_ptr
+#include <utility>               // for move
+namespace gui { class DrawCommand; }
+namespace gui { class InputEvent; }
+namespace gui { class Navigation; }  // lines 21-21
+namespace gui { class Timer; }
 
 namespace gui
 {
-
-    class Navigation;
-
     enum class ItemType
     {
         ITEM = 0,

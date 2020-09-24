@@ -1,8 +1,11 @@
 #include "Timer.hpp"
-#include "Message.hpp"
-#include "Service.hpp"
-#include "Service/TimerMessage.hpp"
-#include <limits>
+#include "Service.hpp"               // for Service, Service::Timers
+#include "Service/TimerMessage.hpp"  // for TimerMessage
+#include "log/log.hpp"               // for LOG_ERROR
+#include <stdint.h>                  // for uint32_t
+#include <Service/Bus.hpp>           // for Bus
+#include <limits>                    // for numeric_limits
+#include <memory>                    // for make_shared
 
 #ifdef DEBUG_TIMER
 #define log_timers(...) LOG_DEBUG(__VA_ARGS__)

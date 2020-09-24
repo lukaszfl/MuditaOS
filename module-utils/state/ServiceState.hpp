@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <Service/Bus.hpp>
 
 #include "Service/Service.hpp"
 #include "Service/Message.hpp"

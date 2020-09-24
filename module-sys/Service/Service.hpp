@@ -1,29 +1,26 @@
 #pragma once
 
-#include "Common.hpp"
-#include "Message.hpp"
-#include "Mailbox.hpp"
-#include "Bus.hpp"
-#include <memory>
-#include <queue>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include "thread.hpp"
-#include <typeindex>
-#include <functional>
+#include "Common.hpp"   // for ReturnCodes, ServicePriority, BusChannels
+#include "Mailbox.hpp"  // for Mailbox
+#include "Message.hpp"  // for Message_t
+#include "thread.hpp"   // for Thread
+#include <cstdint>     // for uint32_t, uint64_t
+#include <algorithm>    // for find, max
+#include <functional>   // for function
+#include <iterator>     // for end
+#include <map>          // for map
+#include <memory>       // for allocator, shared_ptr, enable_shared_from_this
+#include <string>       // for string
+#include <typeindex>    // for type_index
+#include <utility>      // for pair
+#include <vector>       // for vector<>::iterator, vector
+
+namespace sys { class Timer; }  // lines 26-26
+namespace sys { struct Proxy; }  // lines 24-24
 
 namespace sys
 {
     using MessageHandler = std::function<Message_t(DataMessage *, ResponseMessage *)>;
-
-    /// proxy has one objective - be friend for Service, so that Message which is not a friend could access
-    /// one and only one entrypoint to messages entrypoint (MessageEntry)
-    /// MessageEntry calls overridable DataReceivedHandler for Service instance and all Calls that are 100% neccessary
-    /// for service
-    struct Proxy;
-
-    class Timer;
 
     class Service : public cpp_freertos::Thread, public std::enable_shared_from_this<Service>
     {
@@ -129,6 +126,10 @@ namespace sys
         auto TimerHandle(SystemMessage& message) -> ReturnCodes;
     };
 
+    /// proxy has one objective - be friend for Service, so that Message which is not a friend could access
+    /// one and only one entrypoint to messages entrypoint (MessageEntry)
+    /// MessageEntry calls overridable DataReceivedHandler for Service instance and all Calls that are 100% neccessary
+    /// for service
     struct Proxy
     {
         static auto handle(Service *service, DataMessage *message, ResponseMessage *response) -> Message_t

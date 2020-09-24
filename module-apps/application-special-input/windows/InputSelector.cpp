@@ -5,6 +5,7 @@
 #include "messages/AppMessage.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
 #include <InputMode.hpp>
+#include <cassert>
 
 using namespace gui;
 

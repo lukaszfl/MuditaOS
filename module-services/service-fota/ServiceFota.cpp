@@ -9,6 +9,7 @@
 #include <module-cellular/at/URC_QIND.hpp>
 #include <module-cellular/Modem/TS0710/TS0710.h>
 #include <service-cellular/api/CellularServiceAPI.hpp>
+#include <Service/Bus.hpp>
 
 #include "MessageType.hpp"
 

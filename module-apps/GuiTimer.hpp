@@ -1,20 +1,10 @@
 #pragma once
 
-#include <string>
-#include <memory>
-#include <Timer.hpp>
-#include "Service/Timer.hpp"
-#include "Timer.hpp"
-
-namespace sys
-{
-    class Timer;
-};
-
-namespace gui
-{
-    class Item;
-}
+#include "Service/Timer.hpp"  // for Timer
+#include "Timer.hpp"          // for ms, Timer
+#include <string>             // for string
+namespace app { class Application; }  // lines 22-22
+namespace gui { class Item; }  // lines 16-16
 
 namespace app
 {

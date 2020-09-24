@@ -1,5 +1,6 @@
 #include "ListView.hpp"
 #include <log/log.hpp>
+#include "InputEvent.hpp"
 #include "cassert"
 #include <algorithm>
 

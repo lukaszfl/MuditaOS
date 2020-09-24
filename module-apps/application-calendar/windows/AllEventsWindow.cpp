@@ -1,4 +1,5 @@
 #include "AllEventsWindow.hpp"
+#include "InputEvent.hpp"
 #include "module-apps/application-calendar/ApplicationCalendar.hpp"
 #include "module-apps/application-calendar/data/CalendarData.hpp"
 #include <gui/widgets/Window.hpp>

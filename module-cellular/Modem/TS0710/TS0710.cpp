@@ -9,6 +9,7 @@
 #include <cassert>
 #include <sstream>
 #include <memory>
+#include <Service/Bus.hpp>
 
 std::map<TypeOfFrame_e, std::string> TypeOfFrame_text = {{TypeOfFrame_e::SABM, "SABM"},
                                                          {TypeOfFrame_e::UA, "UA"},
