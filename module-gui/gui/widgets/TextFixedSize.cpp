@@ -54,7 +54,7 @@ namespace gui
         do {
             auto text_line =
                 gui::TextLine(draw_cursor, w, lineHeight, underline, UnderlineDrawMode::WholeLine, underlinePadding);
-            cursor += text_line.length();
+            draw_cursor += text_line.length();
 
             if (text_line.height() > 0 && lineHeight != text_line.height()) {
                 lineHeight = text_line.height();

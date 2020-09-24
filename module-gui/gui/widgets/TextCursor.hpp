@@ -42,7 +42,7 @@ namespace gui
         /// - informs that we changed line when needed - TODO think about it better... ( and if it's needed...?)
         /// - with_update - updates position in parent ( if false not - means we handled it already with i.e. addChar or
         /// removeChar)
-        Move moveCursor(NavigationDirection direction);
+        virtual Move moveCursor(NavigationDirection direction);
         void reset();
 
         // TODO note to self - here should be too UTF8 char handling, not in document...
