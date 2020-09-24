@@ -1,6 +1,7 @@
 #include "BluetoothWorker.hpp"
 #include "log/log.hpp"
 #include "BtCommand.hpp"
+#include "interface/profiles/A2DP.hpp"
 
 extern "C"
 {
@@ -24,12 +25,13 @@ const char *c_str(Bt::Error::Code code)
     return "";
 }
 
-BluetoothWorker::BluetoothWorker(sys::Service *service) : Worker(service), A2DPInstance(Bt::A2DP())
+BluetoothWorker::BluetoothWorker(sys::Service *service) : Worker(service)
 {
     init({
         {"qBtIO", sizeof(Bt::Message), 10},
         {"qBtWork", sizeof(Bt::EvtWorker), 10},
     });
+    currentProfile = std::make_shared<Bt::A2DP>();
 };
 
 BluetoothWorker::~BluetoothWorker()
@@ -116,6 +118,7 @@ BluetoothWorker::Error BluetoothWorker::aud_init()
 }
 
 #include <sstream>
+#include <module-bluetooth/Bluetooth/interface/profiles/A2DP.hpp>
 
 bool BluetoothWorker::handleMessage(uint32_t queueID)
 {
@@ -189,8 +192,14 @@ void BluetoothWorker::initAudioBT()
 
 bool BluetoothWorker::play_audio()
 {
-    A2DPInstance.init();
-    A2DPInstance.start();
+    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
+    if (profile != nullptr) {
+        profile->init();
+        profile->start();
+    }
+
+    //    A2DPInstance.init();
+    //    A2DPInstance.start();
     //    Bt::HSP::init();
     //   Bt::HSP::start();
     return false;
@@ -198,10 +207,16 @@ bool BluetoothWorker::play_audio()
 bool BluetoothWorker::stop_audio()
 {
     //    Bt::HSP::stop();
-    A2DPInstance.stop();
+    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
+    if (profile != nullptr) {
+        profile->stop();
+    }
     return false;
 }
 void BluetoothWorker::set_addr(bd_addr_t addr)
 {
-    A2DPInstance.set_addr(addr);
+    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
+    if (profile != nullptr) {
+        profile->setDeviceAddress(addr);
+    }
 }

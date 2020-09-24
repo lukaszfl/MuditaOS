@@ -5,7 +5,7 @@
 #include <bsp/bluetooth/Bluetooth.hpp>
 #include <memory>
 #include <vector>
-#include "module-bluetooth/Bluetooth/interface/profiles/A2DP.hpp"
+#include "interface/profiles/Profile.hpp"
 #include "Device.hpp"
 #include "Service/Worker.hpp"
 
@@ -103,5 +103,5 @@ class BluetoothWorker : private sys::Worker
     void initAudioBT();
     void stop_scan();
 
-    Bt::A2DP A2DPInstance;
+    std::shared_ptr<Bt::Profile> currentProfile = nullptr;
 };

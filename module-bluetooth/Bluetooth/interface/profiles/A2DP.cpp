@@ -4,14 +4,75 @@
 
 #include <Bluetooth/Device.hpp>
 #include <log/log.hpp>
-#include <vector>
 #include <Bluetooth/Error.hpp>
-#include <BtCommand.hpp>
-#include <vfs.hpp>
 #include "A2DP.hpp"
 
-using namespace Bt;
+Bt::A2DP::mediaContext Bt::A2DP::mediaTracker;
+Bt::A2DP::AVDTP_sbcConfiguration Bt::A2DP::sbcConfiguration;
+uint8_t Bt::A2DP::mediaSbcCodecCapabilities[] = {
+    (AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO,
+    0xFF, //(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
+    2,
+    53};
 
+namespace Bt::A2DP_config
+{
+
+    /* AVRCP Target context START */
+    static const uint8_t subunit_info[] = {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+                                           4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7};
+
+    static uint32_t company_id   = 0x112233;
+    static uint8_t companies_num = 1;
+    static uint8_t companies[]   = {
+        0x00, 0x19, 0x58 // BT SIG registered CompanyID
+    };
+
+    static uint8_t events_num = 6;
+    static uint8_t events[]   = {AVRCP_NOTIFICATION_EVENT_PLAYBACK_STATUS_CHANGED,
+                               AVRCP_NOTIFICATION_EVENT_TRACK_CHANGED,
+                               AVRCP_NOTIFICATION_EVENT_PLAYER_APPLICATION_SETTING_CHANGED,
+                               AVRCP_NOTIFICATION_EVENT_NOW_PLAYING_CONTENT_CHANGED,
+                               AVRCP_NOTIFICATION_EVENT_AVAILABLE_PLAYERS_CHANGED,
+                               AVRCP_NOTIFICATION_EVENT_ADDRESSED_PLAYER_CHANGED};
+    // AVRCP
+    typedef struct
+    {
+        uint8_t track_id[8];
+        uint32_t song_length_ms;
+        avrcp_playback_status_t status;
+        uint32_t song_position_ms; // 0xFFFFFFFF if not supported
+    } avrcp_play_status_info_t;
+
+    avrcp_track_t tracks[] = {
+        {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
+         1,
+         (char *)"Sine",
+         (char *)"Generated",
+         (char *)"A2DP Source Demo",
+         (char *)"monotone",
+         12345},
+        {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02},
+         2,
+         (char *)"Nao-deceased",
+         (char *)"Decease",
+         (char *)"A2DP Source Demo",
+         (char *)"vivid",
+         12345},
+        {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03},
+         3,
+         (char *)"aaaa",
+         (char *)"Decease",
+         (char *)"A2DP Source Demo",
+         (char *)"vivid",
+         12345},
+    };
+    int current_track_index;
+    avrcp_play_status_info_t play_info;
+
+} // namespace Bt::A2DP_config
+
+using namespace Bt;
 
 static bd_addr_t device_addr;
 
@@ -19,13 +80,10 @@ static uint8_t sdp_a2dp_source_service_buffer[150];
 static uint8_t sdp_avrcp_target_service_buffer[200];
 static uint8_t sdp_avrcp_controller_service_buffer[200];
 
-static A2DP_config::avdtp_media_codec_configuration_sbc_t sbc_configuration;
 static btstack_sbc_encoder_state_t sbc_encoder_state;
 
 static uint8_t media_sbc_codec_configuration[4];
-static A2DP_config::a2dp_media_sending_context_t media_tracker;
 
-static A2DP_config::stream_data_source_t data_source;
 
 // static int sine_phase;
 static int sample_rate = 44100;
@@ -37,7 +95,7 @@ static tracker_buffer_state trkbuf;
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static const char *device_addr_string = "00:12:6F:E7:9D:05";
+// static const char *device_addr_string = "00:12:6F:E7:9D:05";
 
 /* LISTING_START(MainConfiguration): Setup Audio Source and AVRCP Target services */
 static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
@@ -65,16 +123,16 @@ static int a2dp_source_and_avrcp_services_init(void)
     avdtp_stream_endpoint_t *local_stream_endpoint =
         a2dp_source_create_stream_endpoint(AVDTP_AUDIO,
                                            AVDTP_CODEC_SBC,
-                                           A2DP_config::media_sbc_codec_capabilities,
-                                           sizeof(A2DP_config::media_sbc_codec_capabilities),
+                                           A2DP::mediaSbcCodecCapabilities,
+                                           sizeof(A2DP::mediaSbcCodecCapabilities),
                                            media_sbc_codec_configuration,
                                            sizeof(media_sbc_codec_configuration));
     if (!local_stream_endpoint) {
         LOG_INFO("A2DP Source: not enough memory to create local stream endpoint\n");
         return 1;
     }
-    media_tracker.local_seid = avdtp_local_seid(local_stream_endpoint);
-    avdtp_source_register_delay_reporting_category(media_tracker.local_seid);
+    A2DP::mediaTracker.local_seid = avdtp_local_seid(local_stream_endpoint);
+    avdtp_source_register_delay_reporting_category(A2DP::mediaTracker.local_seid);
 
     // Initialize AVRCP Service.
     avrcp_init();
@@ -143,8 +201,8 @@ static void a2dp_demo_reconfigure_sample_rate(int new_sample_rate)
         }
     }
     sample_rate                     = new_sample_rate;
-    media_tracker.sbc_storage_count = 0;
-    media_tracker.samples_ready     = 0;
+    A2DP::mediaTracker.sbc_storage_count = 0;
+    A2DP::mediaTracker.samples_ready     = 0;
     hxcmod_unload(&mod_context);
     hxcmod_setcfg(&mod_context, sample_rate, 16, 1, 1, 1);
     hxcmod_load(&mod_context, (void *)&mod_data, mod_len);
@@ -153,12 +211,16 @@ static void a2dp_demo_reconfigure_sample_rate(int new_sample_rate)
 static void a2dp_demo_send_media_packet(void)
 {
     int num_bytes_in_frame = btstack_sbc_encoder_sbc_buffer_length();
-    int bytes_in_storage   = media_tracker.sbc_storage_count;
+    int bytes_in_storage   = A2DP::mediaTracker.sbc_storage_count;
     uint8_t num_frames     = bytes_in_storage / num_bytes_in_frame;
-    a2dp_source_stream_send_media_payload(
-        media_tracker.a2dp_cid, media_tracker.local_seid, media_tracker.sbc_storage, bytes_in_storage, num_frames, 0);
-    media_tracker.sbc_storage_count = 0;
-    media_tracker.sbc_ready_to_send = 0;
+    a2dp_source_stream_send_media_payload(A2DP::mediaTracker.a2dp_cid,
+                                          A2DP::mediaTracker.local_seid,
+                                          A2DP::mediaTracker.sbc_storage,
+                                          bytes_in_storage,
+                                          num_frames,
+                                          0);
+    A2DP::mediaTracker.sbc_storage_count = 0;
+    A2DP::mediaTracker.sbc_ready_to_send = 0;
 }
 
 static void produce_mod_audio(int16_t *pcm_buffer, int num_samples_to_write)
@@ -183,7 +245,7 @@ static void produce_audio(int16_t *pcm_buffer, int num_samples)
 #endif
 }
 
-static int a2dp_demo_fill_sbc_audio_buffer(A2DP_config::a2dp_media_sending_context_t *context)
+static int a2dp_demo_fill_sbc_audio_buffer(A2DP::mediaContext *context)
 {
     // perform sbc encodin
     int total_num_bytes_read                      = 0;
@@ -191,7 +253,7 @@ static int a2dp_demo_fill_sbc_audio_buffer(A2DP_config::a2dp_media_sending_conte
     while (context->samples_ready >= num_audio_samples_per_sbc_buffer &&
            (context->max_media_payload_size - context->sbc_storage_count) >= btstack_sbc_encoder_sbc_buffer_length()) {
 
-        int16_t pcm_frame[256 * A2DP_config::NUM_CHANNELS];
+        int16_t pcm_frame[256 * A2DP::NUM_CHANNELS];
 
         produce_audio(pcm_frame, num_audio_samples_per_sbc_buffer);
         btstack_sbc_encoder_process_data(pcm_frame);
@@ -209,13 +271,12 @@ static int a2dp_demo_fill_sbc_audio_buffer(A2DP_config::a2dp_media_sending_conte
 
 static void a2dp_demo_audio_timeout_handler(btstack_timer_source_t *timer)
 {
-    A2DP_config::a2dp_media_sending_context_t *context =
-        (A2DP_config::a2dp_media_sending_context_t *)btstack_run_loop_get_timer_context(timer);
-    btstack_run_loop_set_timer(&context->audio_timer, A2DP_config::AUDIO_TIMEOUT_MS);
+    A2DP::mediaContext *context = (A2DP::mediaContext *)btstack_run_loop_get_timer_context(timer);
+    btstack_run_loop_set_timer(&context->audio_timer, A2DP::AUDIO_TIMEOUT_MS);
     btstack_run_loop_add_timer(&context->audio_timer);
     uint32_t now = btstack_run_loop_get_time_ms();
 
-    uint32_t update_period_ms = A2DP_config::AUDIO_TIMEOUT_MS;
+    uint32_t update_period_ms = A2DP::AUDIO_TIMEOUT_MS;
     if (context->time_audio_data_sent > 0) {
         update_period_ms = now - context->time_audio_data_sent;
     }
@@ -242,23 +303,23 @@ static void a2dp_demo_audio_timeout_handler(btstack_timer_source_t *timer)
     }
 }
 
-static void a2dp_demo_timer_start(A2DP_config::a2dp_media_sending_context_t *context)
+void A2DP::startTimer(A2DP::mediaContext *context)
 {
     LOG_DEBUG("Timer start");
 
     context->max_media_payload_size =
-        btstack_min(a2dp_max_media_payload_size(context->a2dp_cid, context->local_seid), A2DP_config::SBC_STORAGE_SIZE);
+        btstack_min(a2dp_max_media_payload_size(context->a2dp_cid, context->local_seid), A2DP::SBC_STORAGE_SIZE);
     context->sbc_storage_count = 0;
     context->sbc_ready_to_send = 0;
     context->streaming         = 1;
     btstack_run_loop_remove_timer(&context->audio_timer);
     btstack_run_loop_set_timer_handler(&context->audio_timer, a2dp_demo_audio_timeout_handler);
     btstack_run_loop_set_timer_context(&context->audio_timer, context);
-    btstack_run_loop_set_timer(&context->audio_timer, A2DP_config::AUDIO_TIMEOUT_MS);
+    btstack_run_loop_set_timer(&context->audio_timer, A2DP::AUDIO_TIMEOUT_MS);
     btstack_run_loop_add_timer(&context->audio_timer);
 }
 
-static void a2dp_demo_timer_stop(A2DP_config::a2dp_media_sending_context_t *context)
+static void a2dp_demo_timer_stop(A2DP::mediaContext *context)
 {
     LOG_DEBUG("Timer stop");
 
@@ -271,37 +332,24 @@ static void a2dp_demo_timer_stop(A2DP_config::a2dp_media_sending_context_t *cont
     btstack_run_loop_remove_timer(&context->audio_timer);
 }
 
-static void dump_sbc_configuration(A2DP_config::avdtp_media_codec_configuration_sbc_t *configuration)
+static void dump_sbc_configuration(A2DP::AVDTP_sbcConfiguration *configuration)
 {
-    LOG_INFO("Received media codec configuration:\n");
-    LOG_INFO("    - num_channels: %d\n", configuration->num_channels);
-    LOG_INFO("    - sampling_frequency: %d\n", configuration->sampling_frequency);
-    LOG_INFO("    - channel_mode: %d\n", configuration->channel_mode);
-    LOG_INFO("    - block_length: %d\n", configuration->block_length);
-    LOG_INFO("    - subbands: %d\n", configuration->subbands);
-    LOG_INFO("    - allocation_method: %d\n", configuration->allocation_method);
-    LOG_INFO("    - bitpool_value [%d, %d] \n", configuration->min_bitpool_value, configuration->max_bitpool_value);
+    LOG_INFO("Received media codec configuration:");
+    LOG_INFO("    - num_channels: %d", configuration->num_channels);
+    LOG_INFO("    - sampling_frequency: %d", configuration->sampling_frequency);
+    LOG_INFO("    - channel_mode: %d", configuration->channel_mode);
+    LOG_INFO("    - block_length: %d", configuration->block_length);
+    LOG_INFO("    - subbands: %d", configuration->subbands);
+    LOG_INFO("    - allocation_method: %d", configuration->allocation_method);
+    LOG_INFO("    - bitpool_value [%d, %d] ", configuration->min_bitpool_value, configuration->max_bitpool_value);
 }
 
-static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
+void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
 {
     UNUSED(channel);
     UNUSED(size);
     if (packet_type != HCI_EVENT_PACKET)
         return;
-
-#ifndef HAVE_BTSTACK_STDIN
-    if (hci_event_packet_get_type(packet) == BTSTACK_EVENT_STATE) {
-        if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
-            return;
-        LOG_INFO("Create A2DP Source connection to addr %s.\n", bd_addr_to_str(device_addr));
-        uint8_t status = a2dp_source_establish_stream(device_addr, media_tracker.local_seid, &media_tracker.a2dp_cid);
-        if (status != ERROR_CODE_SUCCESS) {
-            LOG_INFO("Could not perform command, status 0x%2x\n", status);
-        }
-        return;
-    }
-#endif
 
     if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
         bd_addr_t address;
@@ -335,75 +383,80 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
             LOG_INFO("A2DP Source: Connection failed, status 0x%02x, cid 0x%02x, a2dp_cid 0x%02x \n",
                      status,
                      cid,
-                     media_tracker.a2dp_cid);
-            media_tracker.a2dp_cid = 0;
+                     A2DP::mediaTracker.a2dp_cid);
+            A2DP::mediaTracker.a2dp_cid = 0;
             break;
         }
-        media_tracker.a2dp_cid = cid;
-        media_tracker.volume   = 64;
+        A2DP::mediaTracker.a2dp_cid = cid;
+        A2DP::mediaTracker.volume   = 64;
 
         LOG_INFO("A2DP Source: Connected to address %s, a2dp cid 0x%02x, local seid %d.\n",
                  bd_addr_to_str(address),
-                 media_tracker.a2dp_cid,
-                 media_tracker.local_seid);
+                 A2DP::mediaTracker.a2dp_cid,
+                 A2DP::mediaTracker.local_seid);
         break;
 
     case A2DP_SUBEVENT_SIGNALING_MEDIA_CODEC_SBC_CONFIGURATION: {
         cid = avdtp_subevent_signaling_media_codec_sbc_configuration_get_avdtp_cid(packet);
-        if (cid != media_tracker.a2dp_cid)
+        if (cid != A2DP::mediaTracker.a2dp_cid)
             return;
-        media_tracker.remote_seid = a2dp_subevent_signaling_media_codec_sbc_configuration_get_acp_seid(packet);
+        A2DP::mediaTracker.remote_seid = a2dp_subevent_signaling_media_codec_sbc_configuration_get_acp_seid(packet);
 
-        sbc_configuration.reconfigure  = a2dp_subevent_signaling_media_codec_sbc_configuration_get_reconfigure(packet);
-        sbc_configuration.num_channels = a2dp_subevent_signaling_media_codec_sbc_configuration_get_num_channels(packet);
-        sbc_configuration.sampling_frequency =
+        A2DP::sbcConfiguration.reconfigure =
+            a2dp_subevent_signaling_media_codec_sbc_configuration_get_reconfigure(packet);
+        A2DP::sbcConfiguration.num_channels =
+            a2dp_subevent_signaling_media_codec_sbc_configuration_get_num_channels(packet);
+        A2DP::sbcConfiguration.sampling_frequency =
             a2dp_subevent_signaling_media_codec_sbc_configuration_get_sampling_frequency(packet);
-        sbc_configuration.channel_mode = a2dp_subevent_signaling_media_codec_sbc_configuration_get_channel_mode(packet);
-        sbc_configuration.block_length = a2dp_subevent_signaling_media_codec_sbc_configuration_get_block_length(packet);
-        sbc_configuration.subbands     = a2dp_subevent_signaling_media_codec_sbc_configuration_get_subbands(packet);
-        sbc_configuration.allocation_method =
+        A2DP::sbcConfiguration.channel_mode =
+            a2dp_subevent_signaling_media_codec_sbc_configuration_get_channel_mode(packet);
+        A2DP::sbcConfiguration.block_length =
+            a2dp_subevent_signaling_media_codec_sbc_configuration_get_block_length(packet);
+        A2DP::sbcConfiguration.subbands = a2dp_subevent_signaling_media_codec_sbc_configuration_get_subbands(packet);
+        A2DP::sbcConfiguration.allocation_method =
             a2dp_subevent_signaling_media_codec_sbc_configuration_get_allocation_method(packet);
-        sbc_configuration.min_bitpool_value =
+        A2DP::sbcConfiguration.min_bitpool_value =
             a2dp_subevent_signaling_media_codec_sbc_configuration_get_min_bitpool_value(packet);
-        sbc_configuration.max_bitpool_value =
+        A2DP::sbcConfiguration.max_bitpool_value =
             a2dp_subevent_signaling_media_codec_sbc_configuration_get_max_bitpool_value(packet);
-        sbc_configuration.frames_per_buffer = sbc_configuration.subbands * sbc_configuration.block_length;
+        A2DP::sbcConfiguration.frames_per_buffer =
+            A2DP::sbcConfiguration.subbands * A2DP::sbcConfiguration.block_length;
         LOG_INFO("A2DP Source: Received SBC codec configuration, sampling frequency %u, a2dp_cid 0x%02x, local seid %d "
                  "(expected %d), remote seid %d .\n",
-                 sbc_configuration.sampling_frequency,
+                 A2DP::sbcConfiguration.sampling_frequency,
                  cid,
                  a2dp_subevent_signaling_media_codec_sbc_configuration_get_int_seid(packet),
-                 media_tracker.local_seid,
-                 media_tracker.remote_seid);
+                 A2DP::mediaTracker.local_seid,
+                 A2DP::mediaTracker.remote_seid);
 
         // Adapt Bluetooth spec definition to SBC Encoder expected input
-        sbc_configuration.allocation_method -= 1;
-        sbc_configuration.num_channels = 2;
-        switch (sbc_configuration.channel_mode) {
+        A2DP::sbcConfiguration.allocation_method -= 1;
+        A2DP::sbcConfiguration.num_channels = 2;
+        switch (A2DP::sbcConfiguration.channel_mode) {
         case AVDTP_SBC_JOINT_STEREO:
-            sbc_configuration.channel_mode = 3;
+            A2DP::sbcConfiguration.channel_mode = 3;
             break;
         case AVDTP_SBC_STEREO:
-            sbc_configuration.channel_mode = 2;
+            A2DP::sbcConfiguration.channel_mode = 2;
             break;
         case AVDTP_SBC_DUAL_CHANNEL:
-            sbc_configuration.channel_mode = 1;
+            A2DP::sbcConfiguration.channel_mode = 1;
             break;
         case AVDTP_SBC_MONO:
-            sbc_configuration.channel_mode = 0;
-            sbc_configuration.num_channels = 1;
+            A2DP::sbcConfiguration.channel_mode = 0;
+            A2DP::sbcConfiguration.num_channels = 1;
             break;
         }
-        dump_sbc_configuration(&sbc_configuration);
+        dump_sbc_configuration(&A2DP::sbcConfiguration);
 
         btstack_sbc_encoder_init(&sbc_encoder_state,
                                  SBC_MODE_STANDARD,
-                                 sbc_configuration.block_length,
-                                 sbc_configuration.subbands,
-                                 sbc_configuration.allocation_method,
-                                 sbc_configuration.sampling_frequency,
-                                 sbc_configuration.max_bitpool_value,
-                                 sbc_configuration.channel_mode);
+                                 A2DP::sbcConfiguration.block_length,
+                                 A2DP::sbcConfiguration.subbands,
+                                 A2DP::sbcConfiguration.allocation_method,
+                                 A2DP::sbcConfiguration.sampling_frequency,
+                                 A2DP::sbcConfiguration.max_bitpool_value,
+                                 A2DP::sbcConfiguration.channel_mode);
         break;
     }
 
@@ -435,27 +488,26 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
         cid        = a2dp_subevent_stream_established_get_a2dp_cid(packet);
         LOG_INFO("A2DP_SUBEVENT_STREAM_ESTABLISHED:  a2dp_cid [expected 0x%02x, received 0x%02x], local_seid %d "
                  "(expected %d), remote_seid %d (expected %d)\n",
-                 media_tracker.a2dp_cid,
+                 A2DP::mediaTracker.a2dp_cid,
                  cid,
                  local_seid,
-                 media_tracker.local_seid,
+                 A2DP::mediaTracker.local_seid,
                  a2dp_subevent_stream_established_get_remote_seid(packet),
-                 media_tracker.remote_seid);
+                 A2DP::mediaTracker.remote_seid);
 
-        if (local_seid != media_tracker.local_seid) {
+        if (local_seid != A2DP::mediaTracker.local_seid) {
             LOG_INFO("A2DP Source: Stream failed, wrong local seid %d, expected %d.\n",
                      local_seid,
-                     media_tracker.local_seid);
+                     A2DP::mediaTracker.local_seid);
             break;
         }
         LOG_INFO("A2DP Source: Stream established, address %s, a2dp cid 0x%02x, local seid %d, remote seid %d.\n",
                  bd_addr_to_str(address),
-                 media_tracker.a2dp_cid,
-                 media_tracker.local_seid,
+                 A2DP::mediaTracker.a2dp_cid,
+                 A2DP::mediaTracker.local_seid,
                  a2dp_subevent_stream_established_get_remote_seid(packet));
-        media_tracker.stream_opened = 1;
-        data_source                 = A2DP_config::STREAM_MOD;
-        status                      = a2dp_source_start_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
+        A2DP::mediaTracker.stream_opened = 1;
+        status = a2dp_source_start_stream(A2DP::mediaTracker.a2dp_cid, A2DP::mediaTracker.local_seid);
         break;
 
     case A2DP_SUBEVENT_STREAM_RECONFIGURED:
@@ -465,9 +517,9 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
 
         LOG_INFO("A2DP Source: Reconfigured: a2dp_cid [expected 0x%02x, received 0x%02x], local_seid [expected %d, "
                  "received %d]\n",
-                 media_tracker.a2dp_cid,
+                 A2DP::mediaTracker.a2dp_cid,
                  cid,
-                 media_tracker.local_seid,
+                 A2DP::mediaTracker.local_seid,
                  local_seid);
         LOG_INFO("Status 0x%02x\n", status);
         break;
@@ -476,18 +528,19 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
         local_seid = a2dp_subevent_stream_started_get_local_seid(packet);
         cid        = a2dp_subevent_stream_started_get_a2dp_cid(packet);
 
-        play_info.status = AVRCP_PLAYBACK_STATUS_PLAYING;
-        if (media_tracker.avrcp_cid) {
-            avrcp_target_set_now_playing_info(
-                media_tracker.avrcp_cid, &tracks[data_source], sizeof(tracks) / sizeof(avrcp_track_t));
-            avrcp_target_set_playback_status(media_tracker.avrcp_cid, AVRCP_PLAYBACK_STATUS_PLAYING);
+        A2DP_config::play_info.status = AVRCP_PLAYBACK_STATUS_PLAYING;
+        if (A2DP::mediaTracker.avrcp_cid) {
+            avrcp_target_set_now_playing_info(A2DP::mediaTracker.avrcp_cid,
+                                              &A2DP_config::tracks[1],
+                                              sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
+            avrcp_target_set_playback_status(A2DP::mediaTracker.avrcp_cid, AVRCP_PLAYBACK_STATUS_PLAYING);
         }
-        a2dp_demo_timer_start(&media_tracker);
+        A2DP::startTimer(&A2DP::mediaTracker);
         LOG_INFO("A2DP Source: Stream started: a2dp_cid [expected 0x%02x, received 0x%02x], local_seid [expected %d, "
                  "received %d]\n",
-                 media_tracker.a2dp_cid,
+                 A2DP::mediaTracker.a2dp_cid,
                  cid,
-                 media_tracker.local_seid,
+                 A2DP::mediaTracker.local_seid,
                  local_seid);
         break;
 
@@ -495,7 +548,7 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
         local_seid = a2dp_subevent_streaming_can_send_media_packet_now_get_local_seid(packet);
         cid        = a2dp_subevent_signaling_media_codec_sbc_configuration_get_a2dp_cid(packet);
         // LOG_INFO("A2DP Source: can send media packet: a2dp_cid [expected 0x%02x, received 0x%02x], local_seid
-        // [expected %d, received %d]\n", media_tracker.a2dp_cid, cid, media_tracker.local_seid, local_seid);
+        // [expected %d, received %d]\n", A2DP::mediaTracker.a2dp_cid, cid, A2DP::mediaTracker.local_seid, local_seid);
         a2dp_demo_send_media_packet();
         break;
 
@@ -504,17 +557,17 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
         cid        = a2dp_subevent_stream_suspended_get_a2dp_cid(packet);
 
         A2DP_config::play_info.status = AVRCP_PLAYBACK_STATUS_PAUSED;
-        if (media_tracker.avrcp_cid) {
-            avrcp_target_set_playback_status(media_tracker.avrcp_cid, AVRCP_PLAYBACK_STATUS_PAUSED);
+        if (A2DP::mediaTracker.avrcp_cid) {
+            avrcp_target_set_playback_status(A2DP::mediaTracker.avrcp_cid, AVRCP_PLAYBACK_STATUS_PAUSED);
         }
         LOG_INFO("A2DP Source: Stream paused: a2dp_cid [expected 0x%02x, received 0x%02x], local_seid [expected %d, "
                  "received %d]\n",
-                 media_tracker.a2dp_cid,
+                 A2DP::mediaTracker.a2dp_cid,
                  cid,
-                 media_tracker.local_seid,
+                 A2DP::mediaTracker.local_seid,
                  local_seid);
 
-        a2dp_demo_timer_stop(&media_tracker);
+        a2dp_demo_timer_stop(&A2DP::mediaTracker);
         break;
 
     case A2DP_SUBEVENT_STREAM_RELEASED:
@@ -524,28 +577,28 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
 
         LOG_INFO("A2DP Source: Stream released: a2dp_cid [expected 0x%02x, received 0x%02x], local_seid [expected %d, "
                  "received %d]\n",
-                 media_tracker.a2dp_cid,
+                 A2DP::mediaTracker.a2dp_cid,
                  cid,
-                 media_tracker.local_seid,
+                 A2DP::mediaTracker.local_seid,
                  local_seid);
 
-        if (cid == media_tracker.a2dp_cid) {
-            media_tracker.stream_opened = 0;
+        if (cid == A2DP::mediaTracker.a2dp_cid) {
+            A2DP::mediaTracker.stream_opened = 0;
             LOG_INFO("A2DP Source: Stream released.\n");
         }
-        if (media_tracker.avrcp_cid) {
+        if (A2DP::mediaTracker.avrcp_cid) {
             avrcp_target_set_now_playing_info(
-                media_tracker.avrcp_cid, NULL, sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
-            avrcp_target_set_playback_status(media_tracker.avrcp_cid, AVRCP_PLAYBACK_STATUS_STOPPED);
+                A2DP::mediaTracker.avrcp_cid, NULL, sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
+            avrcp_target_set_playback_status(A2DP::mediaTracker.avrcp_cid, AVRCP_PLAYBACK_STATUS_STOPPED);
         }
 
-        a2dp_demo_timer_stop(&media_tracker);
+        a2dp_demo_timer_stop(&A2DP::mediaTracker);
         break;
     case A2DP_SUBEVENT_SIGNALING_CONNECTION_RELEASED:
         cid = a2dp_subevent_signaling_connection_released_get_a2dp_cid(packet);
-        if (cid == media_tracker.a2dp_cid) {
-            media_tracker.avrcp_cid = 0;
-            media_tracker.a2dp_cid  = 0;
+        if (cid == A2DP::mediaTracker.a2dp_cid) {
+            A2DP::mediaTracker.avrcp_cid = 0;
+            A2DP::mediaTracker.a2dp_cid  = 0;
             LOG_INFO("A2DP Source: Signaling released.\n\n");
         }
         break;
@@ -575,26 +628,27 @@ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
             LOG_INFO("AVRCP: Connection failed, local cid 0x%02x, status 0x%02x\n", local_cid, status);
             return;
         }
-        media_tracker.avrcp_cid = local_cid;
+        A2DP::mediaTracker.avrcp_cid = local_cid;
         avrcp_subevent_connection_established_get_bd_addr(packet, event_addr);
 
         avrcp_target_set_now_playing_info(
-            media_tracker.avrcp_cid, NULL, sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
-        avrcp_target_set_unit_info(media_tracker.avrcp_cid, AVRCP_SUBUNIT_TYPE_AUDIO, A2DP_config::company_id);
-        avrcp_target_set_subunit_info(media_tracker.avrcp_cid,
+            A2DP::mediaTracker.avrcp_cid, NULL, sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
+        avrcp_target_set_unit_info(A2DP::mediaTracker.avrcp_cid, AVRCP_SUBUNIT_TYPE_AUDIO, A2DP_config::company_id);
+        avrcp_target_set_subunit_info(A2DP::mediaTracker.avrcp_cid,
                                       AVRCP_SUBUNIT_TYPE_AUDIO,
                                       (uint8_t *)A2DP_config::subunit_info,
                                       sizeof(A2DP_config::subunit_info));
 
-        avrcp_controller_get_supported_events(media_tracker.avrcp_cid);
+        avrcp_controller_get_supported_events(A2DP::mediaTracker.avrcp_cid);
 
-        LOG_INFO("AVRCP: Channel successfully opened:  media_tracker.avrcp_cid 0x%02x\n", media_tracker.avrcp_cid);
+        LOG_INFO("AVRCP: Channel successfully opened:  A2DP::mediaTracker.avrcp_cid 0x%02x\n",
+                 A2DP::mediaTracker.avrcp_cid);
         return;
 
     case AVRCP_SUBEVENT_CONNECTION_RELEASED:
         LOG_INFO("AVRCP Target: Disconnected, avrcp_cid 0x%02x\n",
                  avrcp_subevent_connection_released_get_avrcp_cid(packet));
-        media_tracker.avrcp_cid = 0;
+        A2DP::mediaTracker.avrcp_cid = 0;
         return;
     default:
         break;
@@ -618,21 +672,23 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
 
     switch (packet[2]) {
     case AVRCP_SUBEVENT_NOTIFICATION_VOLUME_CHANGED:
-        media_tracker.volume = avrcp_subevent_notification_volume_changed_get_absolute_volume(packet);
-        LOG_INFO("AVRCP Target: Volume set to %d%% (%d)\n", media_tracker.volume * 127 / 100, media_tracker.volume);
+        A2DP::mediaTracker.volume = avrcp_subevent_notification_volume_changed_get_absolute_volume(packet);
+        LOG_INFO("AVRCP Target: Volume set to %d%% (%d)\n",
+                 A2DP::mediaTracker.volume * 127 / 100,
+                 A2DP::mediaTracker.volume);
         break;
     case AVRCP_SUBEVENT_EVENT_IDS_QUERY:
         status = avrcp_target_supported_events(
-            media_tracker.avrcp_cid, A2DP_config::events_num, A2DP_config::events, sizeof(A2DP_config::events));
+            A2DP::mediaTracker.avrcp_cid, A2DP_config::events_num, A2DP_config::events, sizeof(A2DP_config::events));
         break;
     case AVRCP_SUBEVENT_COMPANY_IDS_QUERY:
-        status = avrcp_target_supported_companies(media_tracker.avrcp_cid,
+        status = avrcp_target_supported_companies(A2DP::mediaTracker.avrcp_cid,
                                                   A2DP_config::companies_num,
                                                   A2DP_config::companies,
                                                   sizeof(A2DP_config::companies));
         break;
     case AVRCP_SUBEVENT_PLAY_STATUS_QUERY:
-        status = avrcp_target_play_status(media_tracker.avrcp_cid,
+        status = avrcp_target_play_status(A2DP::mediaTracker.avrcp_cid,
                                           A2DP_config::play_info.song_length_ms,
                                           A2DP_config::play_info.song_position_ms,
                                           A2DP_config::play_info.status);
@@ -645,15 +701,15 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
         switch (operation_id) {
         case AVRCP_OPERATION_ID_PLAY:
             LOG_INFO("AVRCP Target: PLAY\n");
-            status = a2dp_source_start_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
+            status = a2dp_source_start_stream(A2DP::mediaTracker.a2dp_cid, A2DP::mediaTracker.local_seid);
             break;
         case AVRCP_OPERATION_ID_PAUSE:
             LOG_INFO("AVRCP Target: PAUSE\n");
-            status = a2dp_source_pause_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
+            status = a2dp_source_pause_stream(A2DP::mediaTracker.a2dp_cid, A2DP::mediaTracker.local_seid);
             break;
         case AVRCP_OPERATION_ID_STOP:
             LOG_INFO("AVRCP Target: STOP\n");
-            status = a2dp_source_disconnect(media_tracker.a2dp_cid);
+            status = a2dp_source_disconnect(A2DP::mediaTracker.a2dp_cid);
             break;
         default:
             LOG_INFO("AVRCP Target: operation 0x%2x is not handled\n", operation_id);
@@ -683,7 +739,7 @@ static void avrcp_controller_packet_handler(uint8_t packet_type, uint16_t channe
         return;
 
     status = packet[5];
-    if (!media_tracker.avrcp_cid)
+    if (!A2DP::mediaTracker.avrcp_cid)
         return;
 
     // ignore INTERIM status
@@ -700,185 +756,23 @@ static void avrcp_controller_packet_handler(uint8_t packet_type, uint16_t channe
         break;
     case AVRCP_SUBEVENT_GET_CAPABILITY_EVENT_ID_DONE:
         LOG_INFO("automatically enable notifications\n");
-        avrcp_controller_enable_notification(media_tracker.avrcp_cid, AVRCP_NOTIFICATION_EVENT_VOLUME_CHANGED);
+        avrcp_controller_enable_notification(A2DP::mediaTracker.avrcp_cid, AVRCP_NOTIFICATION_EVENT_VOLUME_CHANGED);
         break;
     default:
         break;
     }
 }
-
-#ifdef HAVE_BTSTACK_STDIN
-static void show_usage(void)
-{
-    bd_addr_t iut_address;
-    gap_local_bd_addr(iut_address);
-    LOG_INFO("\n--- Bluetooth  A2DP Source/AVRCP Demo %s ---\n", bd_addr_to_str(iut_address));
-    LOG_INFO("b      - A2DP Source create connection to addr %s\n", device_addr_string);
-    LOG_INFO("B      - A2DP Source disconnect\n");
-    LOG_INFO("c      - AVRCP create connection to addr %s\n", device_addr_string);
-    LOG_INFO("C      - AVRCP disconnect\n");
-
-    LOG_INFO("x      - start streaming sine\n");
-    if (hxcmod_initialized) {
-        LOG_INFO("z      - start streaming '%s'\n", mod_name);
-    }
-    LOG_INFO("p      - pause streaming\n");
-    LOG_INFO("w      - reconfigure stream for 44100 Hz\n");
-    LOG_INFO("e      - reconfigure stream for 48000 Hz\n");
-    LOG_INFO("t      - volume up\n");
-    LOG_INFO("T      - volume down\n");
-    LOG_INFO("v      - volume up (via set absolute volume)\n");
-    LOG_INFO("V      - volume down (via set absolute volume)\n");
-
-    LOG_INFO("---\n");
-}
-
-static void stdin_process(char cmd)
-{
-    uint8_t status = ERROR_CODE_SUCCESS;
-    switch (cmd) {
-    case 'b':
-        status = a2dp_source_establish_stream(device_addr, media_tracker.local_seid, &media_tracker.a2dp_cid);
-        LOG_INFO("%c - Create A2DP Source connection to addr %s, cid 0x%02x.\n",
-                 cmd,
-                 bd_addr_to_str(device_addr),
-                 media_tracker.a2dp_cid);
-        break;
-    case 'B':
-        LOG_INFO("%c - A2DP Source Disconnect from cid 0x%2x\n", cmd, media_tracker.a2dp_cid);
-        status = a2dp_source_disconnect(media_tracker.a2dp_cid);
-        break;
-    case 'c':
-        LOG_INFO("%c - Create AVRCP connection to addr %s.\n", cmd, bd_addr_to_str(device_addr));
-        status = avrcp_connect(device_addr, &media_tracker.avrcp_cid);
-        break;
-    case 'C':
-        LOG_INFO("%c - AVRCP disconnect\n", cmd);
-        status = avrcp_disconnect(media_tracker.avrcp_cid);
-        break;
-
-    case '\n':
-    case '\r':
-        break;
-
-    case 't':
-        LOG_INFO(" - volume up\n");
-        status = avrcp_controller_volume_up(media_tracker.avrcp_cid);
-        break;
-    case 'T':
-        LOG_INFO(" - volume down\n");
-        status = avrcp_controller_volume_down(media_tracker.avrcp_cid);
-        break;
-
-    case 'v':
-        if (media_tracker.volume > 117) {
-            media_tracker.volume = 127;
-        }
-        else {
-            media_tracker.volume += 10;
-        }
-        LOG_INFO(" - volume up (via set absolute volume) %d%% (%d)\n",
-                 media_tracker.volume * 127 / 100,
-                 media_tracker.volume);
-        status = avrcp_controller_set_absolute_volume(media_tracker.avrcp_cid, media_tracker.volume);
-        break;
-    case 'V':
-        if (media_tracker.volume < 10) {
-            media_tracker.volume = 0;
-        }
-        else {
-            media_tracker.volume -= 10;
-        }
-        LOG_INFO(" - volume down (via set absolute volume) %d%% (%d)\n",
-                 media_tracker.volume * 127 / 100,
-                 media_tracker.volume);
-        status = avrcp_controller_set_absolute_volume(media_tracker.avrcp_cid, media_tracker.volume);
-        break;
-
-    case 'x':
-        if (media_tracker.avrcp_cid) {
-            avrcp_target_set_now_playing_info(media_tracker.avrcp_cid,
-                                              &A2DP_config::tracks[data_source],
-                                              sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
-        }
-        LOG_INFO("%c - Play sine.\n", cmd);
-        data_source = A2DP_config::STREAM_SINE;
-        if (!media_tracker.stream_opened)
-            break;
-        status = a2dp_source_start_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
-        break;
-    case 'z':
-        if (media_tracker.avrcp_cid) {
-            avrcp_target_set_now_playing_info(media_tracker.avrcp_cid,
-                                              &A2DP_config::tracks[data_source],
-                                              sizeof(A2DP_config::tracks) / sizeof(avrcp_track_t));
-        }
-        LOG_INFO("%c - Play mod.\n", cmd);
-        data_source = A2DP_config::STREAM_MOD;
-        if (!media_tracker.stream_opened)
-            break;
-        status = a2dp_source_start_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
-        if (status == ERROR_CODE_SUCCESS) {
-            a2dp_demo_reconfigure_sample_rate(sample_rate);
-        }
-        break;
-
-    case 'p':
-        if (!media_tracker.stream_opened)
-            break;
-        LOG_INFO("%c - Pause stream.\n", cmd);
-        status = a2dp_source_pause_stream(media_tracker.a2dp_cid, media_tracker.local_seid);
-        break;
-
-    case 'w':
-        if (!media_tracker.stream_opened)
-            break;
-        if (A2DP_config::play_info.status == AVRCP_PLAYBACK_STATUS_PLAYING) {
-            LOG_INFO("Stream cannot be reconfigured while playing, please pause stream first\n");
-            break;
-        }
-        LOG_INFO("%c - Reconfigure for %d Hz.\n", cmd, sample_rate);
-        status = a2dp_source_reconfigure_stream_sampling_frequency(media_tracker.a2dp_cid, 44100);
-        if (status == ERROR_CODE_SUCCESS) {
-            a2dp_demo_reconfigure_sample_rate(44100);
-        }
-        break;
-
-    case 'e':
-        if (!media_tracker.stream_opened)
-            break;
-        if (A2DP_config::play_info.status == AVRCP_PLAYBACK_STATUS_PLAYING) {
-            LOG_INFO("Stream cannot be reconfigured while playing, please pause stream first\n");
-            break;
-        }
-        LOG_INFO("%c - Reconfigure for %d Hz.\n", cmd, sample_rate);
-        status = a2dp_source_reconfigure_stream_sampling_frequency(media_tracker.a2dp_cid, 48000);
-        if (status == ERROR_CODE_SUCCESS) {
-            a2dp_demo_reconfigure_sample_rate(48000);
-        }
-        break;
-
-    default:
-        show_usage();
-        return;
-    }
-    if (status != ERROR_CODE_SUCCESS) {
-        LOG_INFO("Could not perform command \'%c\', status 0x%02x\n", cmd, status);
-    }
-}
-#endif
 
 void A2DP::start()
 {
     LOG_INFO("Starting playback to %s", bd_addr_to_str(device_addr));
-    data_source = A2DP_config::STREAM_MOD;
-    a2dp_source_establish_stream(device_addr, media_tracker.local_seid, &media_tracker.a2dp_cid);
+    a2dp_source_establish_stream(device_addr, A2DP::mediaTracker.local_seid, &A2DP::mediaTracker.a2dp_cid);
 }
 
 void A2DP::stop()
 {
     LOG_INFO("Stopping playback");
-    a2dp_source_disconnect(media_tracker.a2dp_cid);
+    a2dp_source_disconnect(A2DP::mediaTracker.a2dp_cid);
     l2cap_unregister_service(1);
 };
 
@@ -889,7 +783,7 @@ Error A2DP::init()
     return Error();
 }
 
-void A2DP::set_addr(bd_addr_t addr)
+void A2DP::setDeviceAddress(bd_addr_t addr)
 {
     bd_addr_copy(device_addr, addr);
     LOG_INFO("Address set!");
