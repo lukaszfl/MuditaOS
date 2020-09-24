@@ -35,7 +35,7 @@ namespace app
         std::unique_ptr<sys::Timer> timerCall;
         utils::time::Timestamp callStartTime = 0;
         utils::time::Duration callDuration;
-        utils::time::Timestamp callDelayedStopTime = 0;
+        sys::ms callDelayedStopTime = 2000;
         void timerCallCallback();
 
       public:
@@ -62,5 +62,6 @@ namespace app
         void handleAddContactEvent(const std::string &number);
 
         bool showNotification(std::function<bool()> action);
+        auto getDelayedStopTime() const { return callDelayedStopTime; }
     };
 } /* namespace app */

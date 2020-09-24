@@ -8,6 +8,7 @@
  */
 #include "CallWindow.hpp"
 
+#include "GuiTimer.hpp"
 #include "InputEvent.hpp"
 #include "application-call/widgets/Icons.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
@@ -34,6 +35,7 @@
 #include <iomanip>
 
 #include <cassert>
+
 
 namespace gui
 {
@@ -192,6 +194,8 @@ namespace gui
             setFocusItem(nullptr);
             speakerIcon->set(SpeakerIconState::SPEAKER);
             microphoneIcon->set(MicrophoneIconState::MUTE);
+
+            connectTimerOnExit();
         } break;
         case State::CALL_IN_PROGRESS: {
             bottomBar->setActive(gui::BottomBar::Side::LEFT, false);
@@ -354,6 +358,19 @@ namespace gui
         else {
             return AppWindow::onInput(inputEvent);
         }
+    }
+
+    void CallWindow::connectTimerOnExit()
+    {
+        auto app   = dynamic_cast<app::ApplicationCall *>(application);
+        assert(app != nullptr);
+        auto timer = make_unique<app::GuiTimer>(app);
+        timer->setInterval(app->getDelayedStopTime());
+        timerCallback = [&](Item &, Timer &) {
+            sapm::ApplicationManager::messageSwitchPreviousApplication(app);
+            return true;
+        };
+        app->connect(std::move(timer), this);
     }
 
 } /* namespace gui */

@@ -60,6 +60,7 @@ namespace gui
         void rebuild() override;
         void buildInterface() override;
         void destroyInterface() override;
+        void connectTimerOnExit();
     };
 
 } /* namespace gui */

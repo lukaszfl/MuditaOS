@@ -101,8 +101,16 @@ namespace sys
             }
           public:
             void stop();
-            [[nodiscard]] auto get(Timer *timer) const;
-            [[nodiscard]] auto noTimer() const;
+
+            [[nodiscard]] auto get(Timer *timer) const
+            {
+                return std::find(list.begin(), list.end(), timer);
+            }
+
+            [[nodiscard]] auto noTimer() const
+            {
+                return std::end(list);
+            }
         } timers;
 
       public:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FreeRTOS.h"
 #include "portmacro.h"  // for TickType_t
 #include "timer.hpp"    // for Timer
 #include <functional>   // for function

@@ -48,11 +48,6 @@ namespace app
             }
         }
 
-        // delayed switch to previous application
-        if (callDelayedStopTime != 0 && utils::time::Timestamp() >= callDelayedStopTime) {
-            stopCallTimer();
-            sapm::ApplicationManager::messageSwitchPreviousApplication(this);
-        }
     }
 
     void ApplicationCall::CallAbortHandler()
@@ -62,7 +57,6 @@ namespace app
 
         LOG_INFO("---------------------------------CallAborted");
         AudioServiceAPI::Stop(this);
-        callDelayedStopTime = utils::time::Timestamp() + delayToSwitchToPreviousApp;
         callWindow->setState(gui::CallWindow::State::CALL_ENDED);
         if (getState() == State::ACTIVE_FORGROUND && getCurrentWindow() != callWindow) {
             switchWindow(window::name_call);
@@ -249,7 +243,6 @@ namespace app
     {
         callStartTime       = utils::time::Timestamp();
         callDuration        = 0;
-        callDelayedStopTime = 0;
         timerCall->reload();
     }
 
@@ -257,7 +250,6 @@ namespace app
     {
         callStartTime       = 0;
         callDuration        = 0;
-        callDelayedStopTime = 0;
         timerCall->stop();
     }
 
