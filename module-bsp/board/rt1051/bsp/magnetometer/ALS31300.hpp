@@ -73,7 +73,7 @@ typedef struct : als31300_reg
     bool int_eeprom_status : 1;
     bool int_mode : 1;
     bool int_signed_en : 1;
-
+//    uint8_t RESERVED : 7;
 } als31300_int_reg;
 
 // --------
@@ -86,6 +86,7 @@ typedef struct : als31300_reg
     uint8_t sleep : 2;
     uint8_t I2C_loop_mode : 2;
     uint8_t count_max_LP_mode : 3;
+//    uint32_t RESERVED : 25;
 } als31300_pwr_reg;
 
 constexpr auto ALS31300_PWR_REG_SLEEP_MODE_active = 0;
@@ -127,6 +128,7 @@ typedef struct : als31300_reg
     uint8_t Y_LSB : 4;
     uint8_t X_LSB : 4;
     bool int_eeprom_write_pending : 1;
+//    uint16_t RESERVED : 11;
 } als31300_measurements_LSB_reg;
 
 float als31300_temperature_convert(uint16_t raw_temperature)
