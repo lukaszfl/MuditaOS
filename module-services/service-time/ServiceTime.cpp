@@ -17,7 +17,7 @@
 
 #include <module-db/queries/calendar/QueryEventsGetAll.hpp>
 #include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
-#include <module-db/queries/calendar/QueryEventsGetClosestInsideDay.hpp>
+#include <module-db/queries/calendar/QueryEventsSelectFirstUpcoming.hpp>
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 
 TimeEvents::TimeEvents()
@@ -135,21 +135,90 @@ sys::ReturnCodes ServiceTime::SwitchPowerModeHandler(const sys::ServicePowerMode
 
 void ServiceTime::SendReloadQuery()
 {
-    // auto record = event.get();
-    // DBServiceAPI::GetQuery(this, db::Interface::Name::Events, std::make_unique<db::query::events::Add>(*record));
+    DestroyTimer();
 
-    TimePoint filterFrom = TimePointFromString("2020-09-16 00:00:00");
-    TimePoint filterTill = TimePointFromString("2020-09-20 00:00:00");
-    DBServiceAPI::GetQuery(
-        this, db::Interface::Name::Events, std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill));
+    TimePoint filterFrom = TimePointNow();
+    TimePoint filterTill = TimePointNow();
+    if (startTP != TIME_POINT_INVALID) {
+        filterFrom = std::min(startTP, filterFrom);
+        filterTill = filterFrom;
+    }
+
+    // mlucki
+    // Temporary values:
+    filterFrom = TimePointFromString("2020-09-16 00:00:00");
+    filterTill = TimePointFromString("2020-09-20 00:00:00");
+
+    // mlucki
+    // Przykład wołania GetFiltered
+    /*DBServiceAPI::GetQuery(
+        this, db::Interface::Name::Events, std::make_unique<db::query::events::GetFiltered>(filterFrom, filterTill));*/
 
     DBServiceAPI::GetQuery(this,
                            db::Interface::Name::Events,
-                           std::make_unique<db::query::events::GetClosestInsideDay>(filterFrom, filterTill));
+                           std::make_unique<db::query::events::SelectFirstUpcoming>(filterFrom, filterTill));
 }
 
-void ServiceTime::ReceiveReloadQuery()
-{}
+void ServiceTime::ReceiveReloadQuery(std::unique_ptr<std::vector<EventsRecord>> records)
+{
+    if (records->size() == 0) {
+        return;
+    }
+
+    auto firstRecord = records->at(0);
+
+    startTP = firstRecord.date_from - minutes{firstRecord.reminder};
+
+    // Store current record
+    eventRecord = firstRecord;
+
+    // Recreate timer
+    RecreateTimer();
+
+    /*if (records->size()) {
+        auto firstRec = records->at(0);
+
+        ReceiveReloadQuery(std::move(records));
+
+        int c   = 0;
+        auto s1 = TimePointToString(firstRec.date_from);
+        auto s2 = TimePointToString(firstRec.date_till);
+        if (s1.length() < s2.length()) {
+            c++;
+        }
+    }*/
+}
+
+void ServiceTime::DestroyTimer()
+{
+    if (timerId == 0) {
+        return;
+    }
+
+    stopTimer(timerId);
+    DeleteTimer(timerId);
+    timerId = 0;
+}
+
+void ServiceTime::RecreateTimer()
+{
+    DestroyTimer();
+
+    timerId = CreateTimer(5000, false, "ServiceTime_EventsTimer");
+    ReloadTimer(timerId);
+}
+
+void ServiceTime::InvokeEvent()
+{
+    // Send invoke notification
+}
+
+void ServiceTime::SendReminderFiredQuery()
+{
+    eventRecord.ID             = 1;
+    eventRecord.reminder_fired = TimePointNow();
+    DBServiceAPI::GetQuery(this, db::Interface::Name::Events, std::make_unique<db::query::events::Edit>(eventRecord));
+}
 
 sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
 {
@@ -163,9 +232,9 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
             break;
         }
         if (msg->interface == db::Interface::Name::Events &&
-            (msg->type == db::Query::Type::Create || msg->type == db::Query::Type::Update)) {
+            (msg->type == db::Query::Type::Create || msg->type == db::Query::Type::Update ||
+             msg->type == db::Query::Type::Delete)) {
 
-            // do something you want
             SendReloadQuery();
 
             return responseMsg;
@@ -186,8 +255,10 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
         if (auto msg = dynamic_cast<db::QueryResponse *>(resp)) {
             auto result = msg->getResult();
 
-            if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(result.get())) {
-                std::unique_ptr<std::vector<EventsRecord>> records = response->getResult();
+            // mlucki
+            // Przykład odbioru GetFiltered
+            /*if (auto getFilteredQuery = dynamic_cast<db::query::events::GetFilteredResult *>(result.get())) {
+                std::unique_ptr<std::vector<EventsRecord>> records = getFilteredQuery->getResult();
                 // Do something you want
                 // Example:
                 int c = 0;
@@ -199,18 +270,37 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
                     }
                 }
                 responseHandled = true;
-            }
-            else if (auto response1 = dynamic_cast<db::query::events::GetClosestInsideDayResult *>(result.get())) {
-                std::unique_ptr<EventsRecord> record = response1->getResult();
-                if (record) {
+            }*/
+            if (auto firstUpcomingQuery = dynamic_cast<db::query::events::SelectFirstUpcomingResult *>(result.get())) {
+                std::unique_ptr<std::vector<EventsRecord>> records = firstUpcomingQuery->getResult();
+
+                ReceiveReloadQuery(std::move(records));
+                /*if (records->size()) {
+                    auto firstRec = records->at(0);
+
+                    ReceiveReloadQuery(std::move(records));
+
                     int c   = 0;
-                    auto s1 = TimePointToString(record->date_from);
-                    auto s2 = TimePointToString(record->date_till);
+                    auto s1 = TimePointToString(firstRec.date_from);
+                    auto s2 = TimePointToString(firstRec.date_till);
                     if (s1.length() < s2.length()) {
                         c++;
                     }
-                }
+                }*/
+                responseHandled = true;
             }
+
+            // mlucki
+            // Można podarować tu sobie reakcję na powrót z update-u reminder_fired,
+            // bo przyjdzie przecież notyfikacja: msg->type == db::Query::Type::Update
+            // która wymusi SendReloadQuery
+            /*if (auto updateQuery = dynamic_cast<db::query::events::EditResult *>(result.get())) {
+                [[maybe_unused]]bool ret = updateQuery->getResult();
+
+                ReceiveReminderFiredQuery();
+
+                responseHandled = true;
+            }*/
         }
         if (responseHandled) {
             return std::make_shared<sys::ResponseMessage>();
@@ -226,6 +316,8 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
 
 void ServiceTime::TickHandler(uint32_t id)
 {
-
     calendarEvents.OnTickHandler(id);
+
+    InvokeEvent();
+    SendReminderFiredQuery();
 }

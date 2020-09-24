@@ -7,7 +7,7 @@
 #include <module-db/queries/calendar/QueryEventsEdit.hpp>
 #include <module-db/queries/calendar/QueryEventsGetFiltered.hpp>
 #include <module-db/queries/calendar/QueryEventsGetAllLimited.hpp>
-#include <module-db/queries/calendar/QueryEventsGetClosestInsideDay.hpp>
+#include <module-db/queries/calendar/QueryEventsSelectFirstUpcoming.hpp>
 #include <log/log.hpp>
 #include <Utils.hpp>
 #include <cassert>
@@ -15,7 +15,7 @@
 
 EventsRecord::EventsRecord(const EventsTableRow &tableRow)
     : Record{tableRow.ID}, title{tableRow.title}, date_from{tableRow.date_from}, date_till{tableRow.date_till},
-      reminder{tableRow.reminder}, repeat{tableRow.repeat}
+      reminder{tableRow.reminder}, repeat{tableRow.repeat}, reminder_fired{tableRow.reminder_fired}
 {}
 
 EventsRecordInterface::EventsRecordInterface(EventsDB *eventsDb) : eventsDb(eventsDb)
@@ -24,11 +24,12 @@ EventsRecordInterface::EventsRecordInterface(EventsDB *eventsDb) : eventsDb(even
 bool EventsRecordInterface::Add(const EventsRecord &rec)
 {
     auto entry = EventsTableRow{{.ID = rec.ID},
-                                .title     = rec.title,
-                                .date_from = rec.date_from,
-                                .date_till = rec.date_till,
-                                .reminder  = rec.reminder,
-                                .repeat    = rec.repeat};
+                                .title          = rec.title,
+                                .date_from      = rec.date_from,
+                                .date_till      = rec.date_till,
+                                .reminder       = rec.reminder,
+                                .repeat         = rec.repeat,
+                                .reminder_fired = rec.reminder_fired};
 
     switch (RepeatOption(rec.repeat)) {
     case RepeatOption::Never: {
@@ -121,11 +122,12 @@ bool EventsRecordInterface::Update(const EventsRecord &rec)
     }
 
     auto entry = EventsTableRow{{.ID = rec.ID},
-                                .title     = rec.title,
-                                .date_from = rec.date_from,
-                                .date_till = rec.date_till,
-                                .reminder  = rec.reminder,
-                                .repeat    = rec.repeat};
+                                .title          = rec.title,
+                                .date_from      = rec.date_from,
+                                .date_till      = rec.date_till,
+                                .reminder       = rec.reminder,
+                                .repeat         = rec.repeat,
+                                .reminder_fired = rec.reminder_fired};
 
     bool result = eventsDb->events.update(entry);
 
@@ -177,11 +179,17 @@ uint32_t EventsRecordInterface::GetCount()
     return eventsDb->events.count();
 }
 
-std::unique_ptr<EventsRecord> EventsRecordInterface::GetClosestInsideDay(TimePoint start_date, TimePoint day_date)
+std::unique_ptr<std::vector<EventsRecord>> EventsRecordInterface::SelectFirstUpcoming(TimePoint filter_from,
+                                                                                      TimePoint filter_till)
 {
-    auto record = std::make_unique<EventsRecord>(
-        static_cast<EventsRecord>(eventsDb->events.GetClosestInsideDay(start_date, day_date)));
-    return record;
+    auto rows = eventsDb->events.SelectFirstUpcoming(filter_from, filter_till);
+
+    auto records = std::make_unique<std::vector<EventsRecord>>();
+    for (auto &r : rows) {
+        records->push_back(r);
+    }
+
+    return records;
 }
 
 std::unique_ptr<db::QueryResult> EventsRecordInterface::runQuery(std::shared_ptr<db::Query> query)
@@ -207,8 +215,8 @@ std::unique_ptr<db::QueryResult> EventsRecordInterface::runQuery(std::shared_ptr
     if (typeid(*query) == typeid(db::query::events::Edit)) {
         return runQueryImplEdit(query);
     }
-    if (typeid(*query) == typeid(db::query::events::GetClosestInsideDay)) {
-        const auto local_query = dynamic_cast<const db::query::events::GetClosestInsideDay *>(query.get());
+    if (typeid(*query) == typeid(db::query::events::SelectFirstUpcoming)) {
+        const auto local_query = dynamic_cast<const db::query::events::SelectFirstUpcoming *>(query.get());
         return runQueryImpl(local_query);
     }
     return nullptr;
@@ -291,9 +299,9 @@ std::unique_ptr<db::query::events::EditResult> EventsRecordInterface::runQueryIm
     return response;
 }
 
-std::unique_ptr<db::query::events::GetClosestInsideDayResult> EventsRecordInterface::runQueryImpl(
-    const db::query::events::GetClosestInsideDay *query)
+std::unique_ptr<db::query::events::SelectFirstUpcomingResult> EventsRecordInterface::runQueryImpl(
+    const db::query::events::SelectFirstUpcoming *query)
 {
-    auto records = GetClosestInsideDay(query->start_date, query->day_date);
-    return std::make_unique<db::query::events::GetClosestInsideDayResult>(std::move(records));
+    auto records = SelectFirstUpcoming(query->filter_from, query->filter_till);
+    return std::make_unique<db::query::events::SelectFirstUpcomingResult>(std::move(records));
 }

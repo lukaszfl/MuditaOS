@@ -71,9 +71,19 @@ class ServiceTime : public sys::Service
   private:
     CalendarTimeEvents calendarEvents;
 
+    uint32_t todayEventsNum = 0;
+    EventsRecord eventRecord;
+    TimePoint startTP = TIME_POINT_INVALID;
+    uint32_t timerId  = 0;
+
   protected:
     void SendReloadQuery();
-    void ReceiveReloadQuery();
+    void ReceiveReloadQuery(std::unique_ptr<std::vector<EventsRecord>> records);
+
+    void DestroyTimer();
+    void RecreateTimer();
+    void InvokeEvent();
+    void SendReminderFiredQuery();
 
   public:
     ServiceTime();

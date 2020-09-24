@@ -25,8 +25,8 @@ namespace db::query::events
     class RemoveResult;
     class Edit;
     class EditResult;
-    class GetClosestInsideDay;
-    class GetClosestInsideDayResult;
+    class SelectFirstUpcoming;
+    class SelectFirstUpcomingResult;
 } // namespace db::query::events
 
 enum class RepeatOption
@@ -46,6 +46,7 @@ struct EventsRecord : public Record
     TimePoint date_till;
     uint32_t reminder = 0;
     uint32_t repeat    = 0;
+    TimePoint reminder_fired;
 
     EventsRecord()  = default;
     ~EventsRecord() = default;
@@ -78,8 +79,7 @@ class EventsRecordInterface : public RecordInterface<EventsRecord, EventsRecordF
                                                                      EventsRecordField field,
                                                                      const char *str) override final;
     std::unique_ptr<std::vector<EventsRecord>> GetLimitOffsetByDate(uint32_t offset, uint32_t limit);
-
-    std::unique_ptr<EventsRecord> GetClosestInsideDay(TimePoint start_date, TimePoint day_date);
+    std::unique_ptr<std::vector<EventsRecord>> SelectFirstUpcoming(TimePoint filter_from, TimePoint filter_till);
 
     std::unique_ptr<db::QueryResult> runQuery(std::shared_ptr<db::Query> query) override;
 
@@ -95,6 +95,6 @@ class EventsRecordInterface : public RecordInterface<EventsRecord, EventsRecordF
     std::unique_ptr<db::query::events::AddResult> runQueryImplAdd(std::shared_ptr<db::Query> query);
     std::unique_ptr<db::query::events::RemoveResult> runQueryImplRemove(std::shared_ptr<db::Query> query);
     std::unique_ptr<db::query::events::EditResult> runQueryImplEdit(std::shared_ptr<db::Query> query);
-    std::unique_ptr<db::query::events::GetClosestInsideDayResult> runQueryImpl(
-        const db::query::events::GetClosestInsideDay *query);
+    std::unique_ptr<db::query::events::SelectFirstUpcomingResult> runQueryImpl(
+        const db::query::events::SelectFirstUpcoming *query);
 };
