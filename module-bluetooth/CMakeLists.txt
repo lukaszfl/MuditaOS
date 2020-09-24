@@ -37,7 +37,6 @@ target_compile_options(${PROJECT_NAME}
 )
 target_link_options(${PROJECT_NAME} PUBLIC ${TARGET_LINK_OPTIONS})
 
-
 target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
