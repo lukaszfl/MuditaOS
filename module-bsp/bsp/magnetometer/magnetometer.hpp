@@ -33,6 +33,8 @@ namespace magnetometer{
     std::pair<bool, Measurements> getMeasurements();
 
     bsp::KeyCodes getDiscrete(const Measurements &measurements);
+
+    BaseType_t IRQHandler();
 }
 
 }

@@ -169,6 +169,16 @@ namespace bsp
             }
         }
 
+        BaseType_t IRQHandler()
+        {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            if (qHandleIrq != NULL) {
+                uint8_t val = 0x01;
+                xQueueSendFromISR(qHandleIrq, &val, &xHigherPriorityTaskWoken);
+            }
+            return xHigherPriorityTaskWoken;
+        }
+
         bsp::Board GetBoard(void)
         {
             if (isPresent()) {

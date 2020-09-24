@@ -18,6 +18,8 @@
 #include "bsp/battery-charger/battery_charger.hpp"
 #include "bsp/cellular/bsp_cellular.hpp"
 #include "bsp/keyboard/keyboard.hpp"
+#include "bsp/BoardDefinitions.hpp"
+#include "bsp/magnetometer/magnetometer.hpp"
 
 #if 0 // TODO:M.P implement the rest of BSP drivers
 
@@ -35,6 +37,7 @@ namespace bsp
     void irq_gpio_Init(void)
     {
         DisableIRQ(GPIO1_Combined_0_15_IRQn);
+        DisableIRQ(GPIO1_Combined_16_31_IRQn);
         DisableIRQ(GPIO2_Combined_0_15_IRQn);
         DisableIRQ(GPIO2_Combined_16_31_IRQn);
         DisableIRQ(GPIO3_Combined_16_31_IRQn);
@@ -50,6 +53,9 @@ namespace bsp
 
         EnableIRQ(GPIO1_Combined_0_15_IRQn);
         NVIC_SetPriority(GPIO1_Combined_0_15_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
+
+        EnableIRQ(GPIO1_Combined_16_31_IRQn);
+        NVIC_SetPriority(GPIO1_Combined_16_31_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
 
         EnableIRQ(GPIO2_Combined_0_15_IRQn);
         NVIC_SetPriority(GPIO2_Combined_0_15_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
@@ -71,6 +77,22 @@ namespace bsp
 
             if (irq_mask & (1 << BSP_CELLULAR_STATUS_PIN)) {
                 xHigherPriorityTaskWoken |= cellular::status::statusIRQhandler();
+            }
+
+            // Clear all IRQs
+            GPIO_PortClearInterruptFlags(GPIO1, irq_mask);
+
+            // Switch context if necessary
+            portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+        }
+
+        void GPIO1_Combined_16_31_IRQHandler(void)
+        {
+            BaseType_t xHigherPriorityTaskWoken = 0;
+            uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO1);
+
+            if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ))) {
+                xHigherPriorityTaskWoken |= bsp::magnetometer::IRQHandler();
             }
 
             // Clear all IRQs
