@@ -35,28 +35,39 @@ namespace bsp
 
             // GET WRITE ACCESS
             addr.subAddress = ALS31300_CUSTOMER_ACCESS_REG;
-            USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(ALS31300_CUSTOMER_ACCESS_REG_code, buf);
-            i2c->Write(addr, buf, 4);
+            USB_LONG_TO_BIG_ENDIAN_ADDRESS(ALS31300_CUSTOMER_ACCESS_REG_code, buf);
+            assert(i2c->Write(addr, buf, 4) == 4);
 
             // CONFIGURATION register
             addr.subAddress = ALS31300_CONF_REG;
             i2c->Read(addr, buf, 4);
             als31300_conf_reg reg_conf(USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf));
             reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED; // we want to detect stable positions
-            reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_ENABLED;
-            reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_ENABLED;
+            reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
+            reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
             reg_conf.channel_Z_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
-            reg_conf.bandwidth        = 0; // longest unit measurement
-            USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(reg_conf, buf);
+            reg_conf.bandwidth        = 2; // longest unit measurement
+            USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_conf, buf);
             i2c->Write(addr, buf, 4);
+
+            //             check conf reg
+            i2c->Read(addr, buf, 4);
+            auto reg_c = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            LOG_DEBUG("conf post: %" PRIu32, static_cast<uint32_t>(reg_c));
+
+            //             check pwr reg
+            addr.subAddress = ALS31300_PWR_REG;
+            i2c->Read(addr, buf, 4);
+            auto reg = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            LOG_DEBUG("power pre: %" PRIu32, static_cast<uint32_t>(reg));
 
             // POWER register
             addr.subAddress = ALS31300_PWR_REG;
             als31300_pwr_reg reg_pwr;
             reg_pwr.I2C_loop_mode     = ALS31300_PWR_REG_LOOP_MODE_single; // we don't want constant data flow
-            reg_pwr.sleep             = ALS31300_PWR_REG_SLEEP_MODE_LPDCM;
-            reg_pwr.count_max_LP_mode = 6U; // update every 500 ms
-            USB_LONG_TO_LITTLE_ENDIAN_ADDRESS(reg_pwr, buf);
+            reg_pwr.sleep             = ALS31300_PWR_REG_SLEEP_MODE_sleep;
+            reg_pwr.count_max_LP_mode = 6U; // get an update every 500 ms
+            USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_pwr, buf);
             i2c->Write(addr, buf, 4);
 
             // INTERRUPTS
@@ -65,9 +76,11 @@ namespace bsp
             //            reg_int.
 
             //             check
-            //            i2c->Read(addr, buf, 4);
-            //            reg = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
-            //            LOG_DEBUG("conf reg: %" PRIu32, static_cast<uint32_t>(reg));
+            i2c->Read(addr, buf, 4);
+            als31300_pwr_reg reg_2 = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            LOG_DEBUG("wrote: %" PRIu32 ", read: %" PRIu32,
+                      static_cast<uint32_t>(reg_pwr) & 0x7F,
+                      static_cast<uint32_t>(reg_2) & 0x7F);
 
             while (true) {
                 auto [newMeasurement, measurement] = getMeasurements();
