@@ -2,6 +2,10 @@ set(BT_GLU "${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/glucode/")
 set(BT_INT "${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/")
 set(BT_STACK_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/lib/btstack")
 
+message("-----------------------")
+message(${BT_INT})
+
+
 
 set(BT_CORE
     ${BT_STACK_ROOT}/src/btstack_memory.c
@@ -93,6 +97,10 @@ set(BNEP_LWIP
     # 	a2dp_source.c          \
     # 	a2dp_sink.c            \
     # 	btstack_ring_buffer.c \
+
+include_directories(${BT_STACK_ROOT}
+        ${BT_STACK_ROOT}/src
+        ${BT_STACK_ROOT}/src/classic)
 
 set(TARGET_LIBRARIES_INCLUDES
     "${BT_INT}"
