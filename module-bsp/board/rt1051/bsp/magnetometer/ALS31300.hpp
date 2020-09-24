@@ -1,4 +1,5 @@
 #pragma once
+#pragma pack(1) // instead manual padding with RESERVED bits
 
 // ALS31300 magnetometer driver
 
@@ -22,7 +23,7 @@ typedef struct als31300_reg
 
     als31300_reg(uint32_t whole_reg)
     {
-        memcpy(this, (uint8_t *)&whole_reg, 4);
+        memcpy(this, (uint8_t *)&whole_reg, sizeof(uint32_t));
     };
     als31300_reg() = default;
 
@@ -56,6 +57,9 @@ constexpr auto ALS31300_CONF_REG_LATCH_DISABLED = 0b0;
 constexpr auto ALS31300_CONF_REG_CHANNEL_ENABLED  = 0b1;
 constexpr auto ALS31300_CONF_REG_CHANNEL_DISABLED = 0b0;
 
+constexpr auto ALS31300_CONF_REG_I2C_THRES_3V0 = 0b0;
+constexpr auto ALS31300_CONF_REG_I2C_THRES_1V8 = 0b1;
+
 // --------
 constexpr auto ALS31300_INT_REG = 0x03;
 
@@ -72,9 +76,18 @@ typedef struct : als31300_reg
     bool int_eeprom_en : 1;
     bool int_eeprom_status : 1;
     bool int_mode : 1;
-    bool int_signed_en : 1;
-//    uint8_t RESERVED : 7;
+    bool int_threshold_signed : 1;
+    uint8_t RESERVED : 7;
 } als31300_int_reg;
+
+constexpr auto ALS31300_INT_REG_INT_CHANNEL_DISABLED = 0b0;
+constexpr auto ALS31300_INT_REG_INT_CHANNEL_ENABLED  = 0b1;
+
+constexpr auto ALS31300_INT_REG_INT_MODE_threshold = 0b0;
+constexpr auto ALS31300_INT_REG_INT_MODE_delta     = 0b1;
+
+constexpr auto ALS31300_INT_REG_THRESHOLD_unSIGNED = 0b0;
+constexpr auto ALS31300_INT_REG_THRESHOLD_SIGNED  = 0b1;
 
 // --------
 constexpr auto ALS31300_PWR_REG = 0x27;
@@ -86,7 +99,7 @@ typedef struct : als31300_reg
     uint8_t sleep : 2;
     uint8_t I2C_loop_mode : 2;
     uint8_t count_max_LP_mode : 3;
-//    uint32_t RESERVED : 25;
+    uint32_t RESERVED : 25;
 } als31300_pwr_reg;
 
 constexpr auto ALS31300_PWR_REG_SLEEP_MODE_active = 0;
@@ -128,7 +141,7 @@ typedef struct : als31300_reg
     uint8_t Y_LSB : 4;
     uint8_t X_LSB : 4;
     bool int_eeprom_write_pending : 1;
-//    uint16_t RESERVED : 11;
+    uint16_t RESERVED : 11;
 } als31300_measurements_LSB_reg;
 
 float als31300_temperature_convert(uint16_t raw_temperature)
