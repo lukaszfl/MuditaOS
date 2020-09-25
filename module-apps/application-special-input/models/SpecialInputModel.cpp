@@ -46,6 +46,7 @@ void SpecialInputModel::buildGrids(std::vector<char32_t> elements)
             if ( val == specialInputStyle::symbol_for_newline ) 
             {
                 carriers.push_back(gui::generateNewLineSign());
+                continue;
             }
             carriers.push_back(gui::generateCharSign(val));
         }
