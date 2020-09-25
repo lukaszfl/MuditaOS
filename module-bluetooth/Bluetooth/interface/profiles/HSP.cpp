@@ -1,17 +1,17 @@
 #include <Bluetooth/Device.hpp>
-#include <log/log.hpp>
-#include <vector>
 #include <Bluetooth/Error.hpp>
 #include <BtCommand.hpp>
+#include <log/log.hpp>
+#include <vector>
 #include <vfs.hpp>
 
 extern "C"
 {
-#include "btstack.h"
 #include "SCO.hpp"
+#include "btstack.h"
+#include "btstack_run_loop_freertos.h"
 #include "btstack_stdin.h"
 #include <btstack_defines.h>
-#include "btstack_run_loop_freertos.h"
 };
 
 using namespace Bt;

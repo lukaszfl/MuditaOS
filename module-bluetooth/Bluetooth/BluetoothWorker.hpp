@@ -1,13 +1,13 @@
 #pragma once
 
-#include <FreeRTOS.h>
-#include <task.h>
-#include <bsp/bluetooth/Bluetooth.hpp>
-#include <memory>
-#include <vector>
-#include "interface/profiles/Profile.hpp"
 #include "Device.hpp"
 #include "Service/Worker.hpp"
+#include "interface/profiles/Profile.hpp"
+#include <FreeRTOS.h>
+#include <bsp/bluetooth/Bluetooth.hpp>
+#include <memory>
+#include <task.h>
+#include <vector>
 
 struct HCI;
 

@@ -1,7 +1,7 @@
 #include "BluetoothWorker.hpp"
-#include "log/log.hpp"
 #include "BtCommand.hpp"
 #include "interface/profiles/A2DP.hpp"
+#include "log/log.hpp"
 
 extern "C"
 {
@@ -117,8 +117,8 @@ BluetoothWorker::Error BluetoothWorker::aud_init()
     return err;
 }
 
-#include <sstream>
 #include <module-bluetooth/Bluetooth/interface/profiles/A2DP.hpp>
+#include <sstream>
 
 bool BluetoothWorker::handleMessage(uint32_t queueID)
 {

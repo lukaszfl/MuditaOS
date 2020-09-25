@@ -1,7 +1,7 @@
 #pragma once
-#include <string>
 #include <cstring>
 #include <module-bluetooth/lib/btstack/src/bluetooth.h>
+#include <string>
 
 struct Device
 {
