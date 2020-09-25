@@ -45,8 +45,8 @@
 #include "wavWriter.hpp"
 extern "C"
 {
-#include "btstack_util.h"
 #include "btstack_debug.h"
+#include "btstack_util.h"
 };
 
 #include <vfs.hpp>
