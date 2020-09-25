@@ -11,13 +11,21 @@
 
 namespace gui
 {
+
+    struct Carier
+    {
+        gui::Item* item = nullptr;
+        std::string val;
+    };
+
+    auto generateNewLineSign() -> Carier;
+    auto generateCharSign(uint32_t val) -> Carier;
+
     class SpecialInputTableWidget : public ListItem
     {
 
       public:
-        SpecialInputTableWidget(app::Application *app, int from, int to, const std::vector<char32_t> data);
-        Item *generateNewLineSign();
-        ~SpecialInputTableWidget() override = default;
+        SpecialInputTableWidget(app::Application *app, std::list<Carier> &&carier);
         auto onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) -> bool override;
         void decorateActionActivated(Item *it, const std::string &str);
         GridLayout *box               = nullptr;

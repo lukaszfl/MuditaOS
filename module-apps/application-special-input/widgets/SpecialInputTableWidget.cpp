@@ -13,36 +13,24 @@ namespace gui
 
     using namespace specialInputStyle;
 
-    SpecialInputTableWidget::SpecialInputTableWidget(app::Application *app,
-                                                     int from,
-                                                     int to,
-                                                     const std::vector<char32_t> data)
+    SpecialInputTableWidget::SpecialInputTableWidget(app::Application *app, std::list<Carier> &&carier)
         : application(app)
     {
         setMinimumSize(specialCharacterTableWidget::window_grid_w, specialCharacterTableWidget::window_grid_h);
         setEdges(RectangleEdgeFlags::GUI_RECT_EDGE_NO_EDGES);
-
-        std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
 
         box = new GridLayout(0,
                              0,
                              specialCharacterTableWidget::window_grid_w,
                              specialCharacterTableWidget::window_grid_h,
                              {specialCharacterTableWidget::char_grid_w, specialCharacterTableWidget::char_grid_h});
-        for (int i = from; i < to; i++) {
-            if (data[i] == U'.' && i == 0) {
-                box->addWidget(generateNewLineSign());
-            }
-            std::string schar_string;
-            auto el = new gui::Label(
-                box, 0, 0, specialCharacterTableWidget::char_label_w, specialCharacterTableWidget::char_label_h);
-            style::window::decorate(el);
-            el->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
-            schar_string = convert.to_bytes(std::u32string(1, data[i]));
-            el->setFont(style::window::font::medium);
-            el->setText(schar_string);
-            decorateActionActivated(el, el->getText());
+
+        for (auto &carier : carier) {
+            LOG_INFO("create carrier: %s", carier.val.c_str());
+            box->addWidget(carier.item);
+            decorateActionActivated(carier.item, carier.val);
         }
+
         addWidget(box);
         inputCallback = [&](gui::Item &item, const gui::InputEvent &event) {
             if (event.state != gui::InputEvent::State::keyReleasedShort) {
@@ -73,22 +61,6 @@ namespace gui
         };
     }
 
-    Item *SpecialInputTableWidget::generateNewLineSign()
-    {
-        auto rect = new Rect(
-            nullptr, 0, 0, specialCharacterTableWidget::char_label_w, specialCharacterTableWidget::char_label_h);
-        rect->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_TOP | gui::RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
-        rect->setPenWidth(0);
-        decorateActionActivated(rect, std::string(&text::newline, 1));
-        new gui::Image(rect,
-                       specialCharacterTableWidget::char_newline_x,
-                       specialCharacterTableWidget::char_newline_y,
-                       specialCharacterTableWidget::char_label_w,
-                       specialCharacterTableWidget::char_label_h,
-                       "enter_icon_alpha_W_M");
-        return rect;
-    }
-
     auto SpecialInputTableWidget::onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) -> bool
     {
         box->setPosition(0, 0);
@@ -113,4 +85,30 @@ namespace gui
         };
     }
 
+    auto generateNewLineSign() -> Carier
+    {
+        auto rect = new Rect(
+            nullptr, 0, 0, specialCharacterTableWidget::char_label_w, specialCharacterTableWidget::char_label_h);
+        rect->setEdges(gui::RectangleEdgeFlags::GUI_RECT_EDGE_TOP | gui::RectangleEdgeFlags::GUI_RECT_EDGE_BOTTOM);
+        rect->setPenWidth(0);
+        new gui::Image(rect,
+                       specialCharacterTableWidget::char_newline_x,
+                       specialCharacterTableWidget::char_newline_y,
+                       specialCharacterTableWidget::char_label_w,
+                       specialCharacterTableWidget::char_label_h,
+                       "enter_icon_alpha_W_M");
+        return { rect, std::string(&text::newline, 1) };
+    }
+
+    auto generateCharSign(uint32_t val) -> Carier {
+            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
+            std::string schar_string = convert.to_bytes(std::u32string(1, val));
+            auto el                  = new gui::Label(
+                nullptr, 0, 0, specialCharacterTableWidget::char_label_w, specialCharacterTableWidget::char_label_h);
+            style::window::decorate(el);
+            el->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
+            el->setFont(style::window::font::medium);
+            el->setText(schar_string);
+            return {el, schar_string};
+    }
 } /* namespace gui */

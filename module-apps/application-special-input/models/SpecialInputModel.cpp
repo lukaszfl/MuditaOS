@@ -25,57 +25,58 @@ auto SpecialInputModel::getItem(gui::Order order) -> gui::ListItem *
 {
     return getRecord(order);
 }
-void SpecialInputModel::buildGrids(const std::vector<char32_t> elements)
+
+auto SpecialInputModel::getMaxGridElements() const -> ssize_t
 {
-    int offset        = 0;
-    int elements_left = elements.size();
-    int max_elements  = (specialInputStyle::specialCharacterTableWidget::window_grid_w /
+    return 
+    (specialInputStyle::specialCharacterTableWidget::window_grid_w /
                         specialInputStyle::specialCharacterTableWidget::char_grid_w) *
                        (specialInputStyle::specialCharacterTableWidget::window_grid_h /
-                        specialInputStyle::specialCharacterTableWidget::char_grid_h);
-    int last, last2, chars_number, start, i, end;
-    while (offset < (int)elements.size()) {
-        chars_number = std::min(elements_left, max_elements);
-        start        = offset;
-        i            = 0;
-        if (elements_left < max_elements) {
-            last = 0;
-        }
-        else {
-            last = 1;
-            if (offset < max_elements && elements[0] == U'.') {
-                i = 1;
+                        specialInputStyle::specialCharacterTableWidget::char_grid_h) - 1;
+}
+
+void SpecialInputModel::buildGrids(std::vector<char32_t> elements)
+{
+    auto recursive_algorithm_max = 10;
+    auto add_start = elements.begin();
+    while (add_start != std::end(elements)) {
+        auto carrier_size = std::min(std::distance(add_start, elements.end()), getMaxGridElements());
+        std::list<gui::Carier> carriers;
+        for (auto val : std::list(add_start, add_start + carrier_size)) {
+            if ( val == specialInputStyle::symbol_for_newline ) 
+            {
+                carriers.push_back(gui::generateNewLineSign());
             }
+            carriers.push_back(gui::generateCharSign(val));
         }
-        if (((int)elements_left / (int)max_elements - 1) < 0) {
-            last2 = 0;
+        add_start = std::next(add_start,carriers.size());
+        internalData.push_back(new gui::SpecialInputTableWidget(application, std::move(carriers)));
+
+        if ( recursive_algorithm_max-- == 0 ) 
+        {
+            LOG_ERROR("Recursive algorithm failure!");
+            break;
         }
-        else {
-            last2 = (elements_left / max_elements - 1);
-        }
-        end    = elements.size() - (last * (elements.size() % max_elements) + last2 * max_elements + i);
-        auto g = new gui::SpecialInputTableWidget(application, start, end, elements);
-        internalData.push_back(g);
-        offset        = end;
-        elements_left = elements_left - chars_number;
     }
 }
 
 void SpecialInputModel::createData(specialInputStyle::CharactersType type)
 {
-    if (type == specialInputStyle::CharactersType::SpecialCharacters) {
-        buildGrids(specialInputStyle::special_chars);
-        for (auto item1 : internalData) {
-            item1->deleteByList = false;
+    auto create = [&](auto &vector) {
+        buildGrids(vector);
+        for (auto &dataitem : internalData) {
+            dataitem->deleteByList = false;
         }
         list->rebuildList();
-    }
-    else if (type == specialInputStyle::CharactersType::Emoji) {
-        buildGrids(specialInputStyle::emojis);
-        for (auto item1 : internalData) {
-            item1->deleteByList = false;
-        }
-        list->rebuildList();
+    };
+
+    switch (type) {
+    case specialInputStyle::CharactersType::SpecialCharacters:
+        create(specialInputStyle::special_chars );
+        break;
+    case specialInputStyle::CharactersType::Emoji:
+        create(specialInputStyle::emojis);
+        break;
     }
 }
 

@@ -13,8 +13,9 @@ namespace specialInputStyle
         SpecialCharacters
     };
 
+    const inline char32_t symbol_for_newline = U'␤';
     const inline std::vector<char32_t> special_chars = {
-        U'.', U',', U'\'', U'?', U'!', U'"', U'-', U'(', U')', U'@', U'/',  U':', U'_', U';', U'+', U'&', U'%', U'*',
+        U'.', U',', U'\'', U'?', symbol_for_newline,  U'!', U'"', U'-', U'(', U')', U'@', U'/',  U':', U'_', U';', U'+', U'&', U'%', U'*',
         U'<', U'>', U'=',  U'£', U'€', U'$', U'[', U']', U'{', U'}', U'\'', U'^', U'~', U'`', U'į', U'§', U'…', U'#',
         U'|', U'÷', U'·',  U'°', U'¿', U'¡', U'ą', U'à', U'á', U'ä', U'â',  U'ć', U'ç', U'ę', U'é', U'è', U'ê', U'ë',
         U'î', U'ï', U'í',  U'ł', U'ń', U'ñ', U'ó', U'ô', U'ö', U'ś', U'û',  U'ú', U'ù', U'ü', U'ÿ', U'ż', U'ź', U'ß'};

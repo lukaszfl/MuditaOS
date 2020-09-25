@@ -9,12 +9,12 @@
 class SpecialInputModel : public app::InternalModel<gui::ListItem *>, public gui::ListItemProvider
 {
     app::Application *application = nullptr;
-
+    [[nodiscard]] auto getMaxGridElements() const -> ssize_t;
+    void buildGrids(const std::vector<char32_t> elements);
   public:
     SpecialInputModel(app::Application *app);
 
     void clearData();
-    void buildGrids(const std::vector<char32_t> elements);
     void createData(specialInputStyle::CharactersType type = specialInputStyle::CharactersType::SpecialCharacters);
 
     [[nodiscard]] auto requestRecordsCount() -> unsigned int override;
