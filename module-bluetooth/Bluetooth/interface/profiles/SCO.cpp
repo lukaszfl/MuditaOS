@@ -44,8 +44,8 @@
 #include <stdio.h>
 
 #include "SCO.hpp"
-#include <vfs.hpp>
 #include "wavWriter.hpp"
+#include <vfs.hpp>
 
 extern "C"
 {
@@ -279,7 +279,7 @@ static int audio_initialize(int sample_rate)
         return 0;
 
 #ifdef ENABLE_SCO_STEREO_PLAYBACK
-    audio_sink->init(2, sample_rate, &playback_callback);
+    audio_sink->init(2, sampleRate, &playback_callback);
 #else
     audio_sink->init(1, sample_rate, &playback_callback);
 #endif
