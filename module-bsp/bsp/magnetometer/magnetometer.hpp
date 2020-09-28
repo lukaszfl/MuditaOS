@@ -18,6 +18,8 @@ namespace magnetometer{
 
     int32_t init(xQueueHandle qHandle);
 
+    bool getWriteAccess();
+
     struct Measurements {
         int16_t X;
         int16_t Y;
