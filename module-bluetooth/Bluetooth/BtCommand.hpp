@@ -27,10 +27,4 @@ namespace Bt
         Error bnep_setup();
     } // namespace PAN
 
-    namespace HSP
-    {
-        void init();
-        void start();
-        void stop();
-    } // namespace HSP
 };    // namespace Bt

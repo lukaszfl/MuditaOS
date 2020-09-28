@@ -2,6 +2,7 @@
 #include "BtCommand.hpp"
 #include "interface/profiles/A2DP.hpp"
 #include "log/log.hpp"
+#include <module-bluetooth/Bluetooth/interface/profiles/HSP.hpp>
 
 extern "C"
 {
@@ -10,7 +11,7 @@ extern "C"
 
 using namespace bsp;
 
-const char *c_str(Bt::Error::Code code)
+auto c_str(Bt::Error::Code code) -> const char *
 {
     switch (code) {
     case Bt::Error::Code::Success:
@@ -31,7 +32,7 @@ BluetoothWorker::BluetoothWorker(sys::Service *service) : Worker(service)
         {"qBtIO", sizeof(Bt::Message), 10},
         {"qBtWork", sizeof(Bt::EvtWorker), 10},
     });
-    currentProfile = std::make_shared<Bt::A2DP>();
+    currentProfile = std::make_shared<Bt::HSP>();
 };
 
 BluetoothWorker::~BluetoothWorker()
@@ -55,7 +56,7 @@ bool BluetoothWorker::run()
         Bt::GAP::register_scan();
         std::string name = "PurePhone";
         Bt::set_name(name);
-        // set local namne
+        // set local name
         Bt::GAP::set_visibility(true);
         // Bt::GAP::
         Bt::run_stack(&this->bt_worker_task);
@@ -120,7 +121,7 @@ BluetoothWorker::Error BluetoothWorker::aud_init()
 #include <module-bluetooth/Bluetooth/interface/profiles/A2DP.hpp>
 #include <sstream>
 
-bool BluetoothWorker::handleMessage(uint32_t queueID)
+auto BluetoothWorker::handleMessage(uint32_t queueID) -> bool
 {
 
     QueueHandle_t queue = queues[queueID];
@@ -190,9 +191,9 @@ bool BluetoothWorker::handleMessage(uint32_t queueID)
 void BluetoothWorker::initAudioBT()
 {}
 
-bool BluetoothWorker::play_audio()
+auto BluetoothWorker::play_audio() -> bool
 {
-    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
+    auto profile = dynamic_cast<Bt::HSP *>(currentProfile.get());
     if (profile != nullptr) {
         profile->init();
         profile->start();
@@ -204,10 +205,10 @@ bool BluetoothWorker::play_audio()
     //   Bt::HSP::start();
     return false;
 }
-bool BluetoothWorker::stop_audio()
+auto BluetoothWorker::stop_audio() -> bool
 {
     //    Bt::HSP::stop();
-    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
+    auto profile = dynamic_cast<Bt::HSP *>(currentProfile.get());
     if (profile != nullptr) {
         profile->stop();
     }
@@ -215,8 +216,7 @@ bool BluetoothWorker::stop_audio()
 }
 void BluetoothWorker::set_addr(bd_addr_t addr)
 {
-    auto profile = dynamic_cast<Bt::A2DP *>(currentProfile.get());
-    if (profile != nullptr) {
-        profile->setDeviceAddress(addr);
+    if (currentProfile != nullptr) {
+        currentProfile->setDeviceAddress(addr);
     }
 }
