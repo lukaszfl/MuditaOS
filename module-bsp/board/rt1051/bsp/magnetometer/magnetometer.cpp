@@ -51,8 +51,8 @@ namespace bsp
             reg_conf.I2C_threshold    = ALS31300_CONF_REG_I2C_THRES_1V8;
 //            reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED; // we want to detect stable positions
             reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED;
-            reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
-            reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_ENABLED;
+            reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_ENABLED;
+            reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
             reg_conf.channel_Z_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
             reg_conf.bandwidth        = 0; // longest unit measurement
             USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_conf, buf);
@@ -92,15 +92,16 @@ namespace bsp
             als31300_int_reg reg_int     = 0;
             reg_int.int_mode             = ALS31300_INT_REG_INT_MODE_threshold;
             reg_int.int_threshold_signed = ALS31300_INT_REG_THRESHOLD_unSIGNED;
-            reg_int.int_X_en             = ALS31300_INT_REG_INT_CHANNEL_DISABLED;
-            reg_int.int_Y_en             = ALS31300_INT_REG_INT_CHANNEL_ENABLED;
+            reg_int.int_X_en             = ALS31300_INT_REG_INT_CHANNEL_ENABLED;
+            reg_int.int_Y_en             = ALS31300_INT_REG_INT_CHANNEL_DISABLED;
             reg_int.int_Z_en             = ALS31300_INT_REG_INT_CHANNEL_DISABLED;
             reg_int.int_X_threshold      = 0;
-            reg_int.int_Y_threshold      = 4;
+            reg_int.int_Y_threshold      = 0b111111;
             reg_int.int_Z_threshold      = 0;
             USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_int, buf);
+            vTaskDelay(10);
             assert(i2c->Write(addr, buf, 4) == 4);
-
+            vTaskDelay(10);
             i2c->Read(addr, buf, 4);
             als31300_int_reg reg_3 = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
             LOG_DEBUG("INT REG wrote: %" PRIu32 ", post: %" PRIu32,
@@ -111,32 +112,26 @@ namespace bsp
             gpio =
                 DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::MAGNETOMETER_GPIO), DriverGPIOParams{});
 
-            // INPUT
+            // INTERRUPT PIN
             gpio->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
             gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
-                                              .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
+                                              .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
                                               .defLogic = 0,
                                               .pin      = static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ)});
+
+            // CLEAR IRQ SOURCE
+            addr.subAddress = ALS31300_MEASUREMENTS_MSB_REG;
+            als31300_measurements_MSB_reg reg_msb;
+            do {
+                i2c->Read(addr, buf, 4);
+                // is there anything new ?
+                reg_msb = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf); // it arrives as big-endian, but we are little-endian
+            } while (reg_msb.int_flag == true);
+
+            // EN IRQ
             gpio->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
 
             return kStatus_Success;
-        }
-
-        float getTemperature()
-        {
-            addr.subAddress = ALS31300_MEASUREMENTS_MSB_REG;
-
-            uint8_t buf[4];
-            i2c->Read(addr, buf, 4);
-            auto tempMSB =
-                USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) & 0b111111; // it comes as big-endian, but we are little-endian
-
-            addr.subAddress = ALS31300_MEASUREMENTS_LSB_REG;
-            i2c->Read(addr, buf, 4);
-
-            auto tempLSB = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf) & 0b111111;
-            float temp   = als31300_temperature_convert((tempMSB << 6) | (tempLSB));
-            return temp;
         }
 
         std::pair<bool, Measurements> getMeasurements()

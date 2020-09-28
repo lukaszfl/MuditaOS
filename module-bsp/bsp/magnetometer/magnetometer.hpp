@@ -27,7 +27,6 @@ namespace magnetometer{
 
 	bool isPresent(void);
     bsp::Board GetBoard(void);
-    float getTemperature();
 
     /// returns a pair of <new_data_read?, values>
     std::pair<bool, Measurements> getMeasurements();
