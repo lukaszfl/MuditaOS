@@ -1,11 +1,11 @@
 #include "HSP.hpp"
+#include "SCO.hpp"
 #include <Bluetooth/Device.hpp>
 #include <Bluetooth/Error.hpp>
 #include <log/log.hpp>
 #include <vector>
 extern "C"
 {
-#include "SCO.hpp"
 #include "btstack.h"
 #include "btstack_run_loop_freertos.h"
 #include "btstack_stdin.h"
@@ -18,19 +18,18 @@ namespace Bt
     class HSP::HSPImpl
     {
       public:
-        static void packetHandler(uint8_t packet_type, uint16_t channel, uint8_t *event, uint16_t event_size);
-        Error init();
+        static void packetHandler(uint8_t packetType, uint16_t channel, uint8_t *event, uint16_t eventSize);
+        auto init() -> Error;
         void start();
         void stop();
         void setDeviceAddress(bd_addr_t addr);
-
       private:
-        static uint8_t hsp_service_buffer[150];
-        static constexpr uint8_t rfcomm_channel_nr  = 1;
-        static constexpr char hsp_ag_service_name[] = "Audio Gateway Test";
-        static uint16_t sco_handle;
-
-        static char hs_cmd_buffer[100];
+        static uint8_t serviceBuffer[150];
+        static constexpr uint8_t rfcommChannelNr = 1;
+        static constexpr char agServiceName[]    = "Audio Gateway Test";
+        static uint16_t scoHandle;
+        static std::unique_ptr<SCO> sco;
+        static char hsCmdBuffer[100];
         static bd_addr_t deviceAddr;
     };
 
@@ -65,20 +64,21 @@ namespace Bt
 
 using namespace Bt;
 
-uint16_t HSP::HSPImpl::sco_handle = HCI_CON_HANDLE_INVALID;
+uint16_t HSP::HSPImpl::scoHandle = HCI_CON_HANDLE_INVALID;
 bd_addr_t HSP::HSPImpl::deviceAddr;
-char HSP::HSPImpl::hs_cmd_buffer[100];
-uint8_t HSP::HSPImpl::hsp_service_buffer[150];
+char HSP::HSPImpl::hsCmdBuffer[100];
+uint8_t HSP::HSPImpl::serviceBuffer[150];
+std::unique_ptr<SCO> HSP::HSPImpl::sco;
 
-void HSP::HSPImpl::packetHandler(uint8_t packet_type, uint16_t channel, uint8_t *event, uint16_t event_size)
+void HSP::HSPImpl::packetHandler(uint8_t packetType, uint16_t channel, uint8_t *event, uint16_t eventSize)
 {
     UNUSED(channel);
 
-    switch (packet_type) {
+    switch (packetType) {
     case HCI_SCO_DATA_PACKET:
-        if (READ_SCO_CONNECTION_HANDLE(event) != sco_handle)
+        if (READ_SCO_CONNECTION_HANDLE(event) != scoHandle)
             break;
-        sco_demo_receive(event, event_size);
+        sco->receive(event, eventSize);
         break;
 
     case HCI_EVENT_PACKET:
@@ -92,7 +92,7 @@ void HSP::HSPImpl::packetHandler(uint8_t packet_type, uint16_t channel, uint8_t 
             break;
 #endif
         case HCI_EVENT_SCO_CAN_SEND_NOW:
-            sco_demo_send(sco_handle);
+            sco->send(scoHandle);
             break;
         case HCI_EVENT_HSP_META:
             switch (event[2]) {
@@ -123,15 +123,15 @@ void HSP::HSPImpl::packetHandler(uint8_t packet_type, uint16_t channel, uint8_t 
                            hsp_subevent_audio_connection_complete_get_status(event));
                 }
                 else {
-                    sco_handle = hsp_subevent_audio_connection_complete_get_handle(event);
-                    printf("Audio connection established with SCO handle 0x%04x.\n", sco_handle);
+                    scoHandle = hsp_subevent_audio_connection_complete_get_handle(event);
+                    printf("Audio connection established with SCO handle 0x%04x.\n", scoHandle);
                     hci_request_sco_can_send_now_event();
                     btstack_run_loop_freertos_trigger();
                 }
                 break;
             case HSP_SUBEVENT_AUDIO_DISCONNECTION_COMPLETE:
                 printf("Audio connection released.\n\n");
-                sco_handle = HCI_CON_HANDLE_INVALID;
+                scoHandle = HCI_CON_HANDLE_INVALID;
                 break;
             case HSP_SUBEVENT_MICROPHONE_GAIN_CHANGED:
                 printf("Received microphone gain change %d\n", hsp_subevent_microphone_gain_changed_get_gain(event));
@@ -140,11 +140,11 @@ void HSP::HSPImpl::packetHandler(uint8_t packet_type, uint16_t channel, uint8_t 
                 printf("Received speaker gain change %d\n", hsp_subevent_speaker_gain_changed_get_gain(event));
                 break;
             case HSP_SUBEVENT_HS_COMMAND: {
-                memset(hs_cmd_buffer, 0, sizeof(hs_cmd_buffer));
+                memset(hsCmdBuffer, 0, sizeof(hsCmdBuffer));
                 unsigned int cmd_length = hsp_subevent_hs_command_get_value_length(event);
-                unsigned int size       = cmd_length <= sizeof(hs_cmd_buffer) ? cmd_length : sizeof(hs_cmd_buffer);
-                memcpy(hs_cmd_buffer, hsp_subevent_hs_command_get_value(event), size - 1);
-                printf("Received custom command: \"%s\". \nExit code or call hsp_ag_send_result.\n", hs_cmd_buffer);
+                unsigned int size       = cmd_length <= sizeof(hsCmdBuffer) ? cmd_length : sizeof(hsCmdBuffer);
+                memcpy(hsCmdBuffer, hsp_subevent_hs_command_get_value(event), size - 1);
+                printf("Received custom command: \"%s\". \nExit code or call hsp_ag_send_result.\n", hsCmdBuffer);
                 break;
             }
             default:
@@ -163,19 +163,20 @@ void HSP::HSPImpl::packetHandler(uint8_t packet_type, uint16_t channel, uint8_t 
 
 Error HSP::HSPImpl::init()
 {
-    sco_demo_init();
-    sco_demo_set_codec(HFP_CODEC_CVSD);
+    sco = std::make_unique<SCO>();
+    sco->init();
+    sco->setCodec(HFP_CODEC_CVSD);
     l2cap_init();
     sdp_init();
 
-    memset((uint8_t *)hsp_service_buffer, 0, sizeof(hsp_service_buffer));
-    hsp_ag_create_sdp_record(hsp_service_buffer, 0x10001, rfcomm_channel_nr, hsp_ag_service_name);
-    printf("SDP service record size: %u\n", de_get_len(hsp_service_buffer));
-    sdp_register_service(hsp_service_buffer);
+    memset((uint8_t *)serviceBuffer, 0, sizeof(serviceBuffer));
+    hsp_ag_create_sdp_record(serviceBuffer, 0x10001, rfcommChannelNr, agServiceName);
+    printf("SDP service record size: %u\n", de_get_len(serviceBuffer));
+    sdp_register_service(serviceBuffer);
 
     rfcomm_init();
 
-    hsp_ag_init(rfcomm_channel_nr);
+    hsp_ag_init(rfcommChannelNr);
     hsp_ag_register_packet_handler(&packetHandler);
 
     // register for SCO packets
@@ -196,7 +197,7 @@ void HSP::HSPImpl::start()
 
 void HSP::HSPImpl::stop()
 {
-    sco_demo_close();
+    sco->close();
     hsp_ag_release_audio_connection();
     hsp_ag_disconnect();
 }

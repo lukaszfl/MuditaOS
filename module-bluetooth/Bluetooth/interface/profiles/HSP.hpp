@@ -4,6 +4,7 @@
 #include <memory>
 namespace Bt
 {
+
     class HSP : public Profile
     {
       public:
@@ -20,8 +21,6 @@ namespace Bt
 
       private:
         class HSPImpl;
-        class SCO;
-        class WavWriter;
         std::unique_ptr<HSPImpl> pimpl;
     };
 } // namespace Bt
