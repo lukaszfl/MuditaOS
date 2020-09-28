@@ -1,6 +1,9 @@
 #pragma once
 #pragma pack(1) // instead manual padding with RESERVED bits
 
+#include <cstdint>
+#include <cstring>
+
 // ALS31300 magnetometer driver
 
 /*
@@ -21,9 +24,9 @@ typedef struct als31300_reg
         return *this;
     };
 
-    als31300_reg(uint32_t whole_reg)
+    als31300_reg(const uint32_t whole_reg)
     {
-        memcpy(this, (uint8_t *)&whole_reg, sizeof(uint32_t));
+        std::memcpy(this, &whole_reg, sizeof whole_reg);
     };
     als31300_reg() = default;
 

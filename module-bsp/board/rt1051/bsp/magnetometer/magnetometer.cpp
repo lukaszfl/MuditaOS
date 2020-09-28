@@ -1,6 +1,6 @@
-#include "bsp/magnetometer/magnetometer.hpp"
 #include "ALS31300.hpp"
 #include "bsp/BoardDefinitions.hpp"
+#include "bsp/magnetometer/magnetometer.hpp"
 
 #include "drivers/i2c/DriverI2C.hpp"
 
@@ -36,20 +36,18 @@ namespace bsp
             uint8_t buf[4];
 
             // GET WRITE ACCESS
-            addr.subAddress = ALS31300_CUSTOMER_ACCESS_REG;
-            USB_LONG_TO_BIG_ENDIAN_ADDRESS(ALS31300_CUSTOMER_ACCESS_REG_code, buf);
-            assert(i2c->Write(addr, buf, 4) == 4);
+            assert(getWriteAccess());
 
             // CONFIGURATION register read
             addr.subAddress = ALS31300_CONF_REG;
+
             i2c->Read(addr, buf, 4);
             als31300_conf_reg reg_conf(USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf));
-            LOG_DEBUG("conf pre: %" PRIu32, static_cast<uint32_t>(reg_conf));
+            LOG_DEBUG("CONF read 1:\t%" PRIu32, static_cast<uint32_t>(reg_conf));
 
-            // CONFIGURATION register write
-            addr.subAddress           = ALS31300_CONF_REG;
-            reg_conf.I2C_threshold    = ALS31300_CONF_REG_I2C_THRES_1V8;
-//            reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED; // we want to detect stable positions
+            reg_conf.I2C_threshold = ALS31300_CONF_REG_I2C_THRES_1V8;
+            //            reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED; // we want to detect stable
+            //            positions
             reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED;
             reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_ENABLED;
             reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
@@ -57,39 +55,42 @@ namespace bsp
             reg_conf.bandwidth        = 0; // longest unit measurement
             USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_conf, buf);
             assert(i2c->Write(addr, buf, 4) == 4);
+            LOG_DEBUG("CONF wrote:\t%" PRIu32, static_cast<uint32_t>(reg_conf));
 
-            //             check conf reg
-            addr.subAddress = ALS31300_CONF_REG;
             i2c->Read(addr, buf, 4);
-            auto reg_c = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
-
-            LOG_DEBUG("conf wrote: %" PRIu32 ", conf post: %" PRIu32,
-                      static_cast<uint32_t>(reg_conf),
-                      static_cast<uint32_t>(reg_c));
-
-            //             check pwr reg
-            addr.subAddress = ALS31300_PWR_REG;
-            i2c->Read(addr, buf, 4);
-            auto reg = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
-            LOG_DEBUG("power pre: %" PRIu32, static_cast<uint32_t>(reg));
+            auto reg_conf_2 = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            LOG_DEBUG("CONF read 2:\t%" PRIu32, static_cast<uint32_t>(reg_conf_2));
 
             // POWER register
             addr.subAddress = ALS31300_PWR_REG;
-            als31300_pwr_reg reg_pwr;
+
+            i2c->Read(addr, buf, 4);
+            als31300_pwr_reg reg_pwr = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            LOG_DEBUG("POWER read 1:\t%" PRIu32, static_cast<uint32_t>(reg_pwr));
+
             reg_pwr.I2C_loop_mode     = ALS31300_PWR_REG_LOOP_MODE_single; // we don't want constant data flow
-            reg_pwr.sleep             = ALS31300_PWR_REG_SLEEP_MODE_LPDCM;
+            reg_pwr.sleep             = ALS31300_PWR_REG_SLEEP_MODE_active;
             reg_pwr.count_max_LP_mode = 6U; // get an update every 500 ms
             USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_pwr, buf);
+
+            // GET WRITE ACCESS
+            assert(getWriteAccess());
+            //
+
             assert(i2c->Write(addr, buf, 4) == 4);
-            //             check
+            LOG_DEBUG("POWER wrote:\t%" PRIu32, static_cast<uint32_t>(reg_pwr));
+
             i2c->Read(addr, buf, 4);
-            als31300_pwr_reg reg_2 = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
-            LOG_DEBUG(
-                "wrote: %" PRIu32 ", post: %" PRIu32, static_cast<uint32_t>(reg_pwr), static_cast<uint32_t>(reg_2));
+            als31300_pwr_reg reg_pwr_2 = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            LOG_DEBUG("POWER read 1:\t%" PRIu32, static_cast<uint32_t>(reg_pwr_2));
 
             // INTERRUPTS register
-            addr.subAddress              = ALS31300_INT_REG;
-            als31300_int_reg reg_int     = 0;
+            addr.subAddress = ALS31300_INT_REG;
+
+            i2c->Read(addr, buf, 4);
+            als31300_int_reg reg_int = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            LOG_DEBUG("INT read 1:\t%" PRIu32, static_cast<uint32_t>(reg_int));
+
             reg_int.int_mode             = ALS31300_INT_REG_INT_MODE_threshold;
             reg_int.int_threshold_signed = ALS31300_INT_REG_THRESHOLD_unSIGNED;
             reg_int.int_X_en             = ALS31300_INT_REG_INT_CHANNEL_ENABLED;
@@ -99,14 +100,12 @@ namespace bsp
             reg_int.int_Y_threshold      = 0b111111;
             reg_int.int_Z_threshold      = 0;
             USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_int, buf);
-            vTaskDelay(10);
             assert(i2c->Write(addr, buf, 4) == 4);
-            vTaskDelay(10);
+            LOG_DEBUG("INT wrote:\t%" PRIu32, static_cast<uint32_t>(reg_int));
+
             i2c->Read(addr, buf, 4);
-            als31300_int_reg reg_3 = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
-            LOG_DEBUG("INT REG wrote: %" PRIu32 ", post: %" PRIu32,
-                      static_cast<uint32_t>(reg_int),
-                      static_cast<uint32_t>(reg_3));
+            als31300_int_reg reg_int_2 = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf);
+            LOG_DEBUG("INT read 2:\t%" PRIu32, static_cast<uint32_t>(reg_int_2));
 
             // INTERRUPT PIN
             gpio =
@@ -215,6 +214,14 @@ namespace bsp
                 return bsp::Board::T4;
             }
             return bsp::Board::T3;
+        }
+        bool getWriteAccess()
+        {
+            auto addrCopy       = addr;
+            uint8_t buf[4]      = {0};
+            addrCopy.subAddress = ALS31300_CUSTOMER_ACCESS_REG;
+            USB_LONG_TO_BIG_ENDIAN_ADDRESS(ALS31300_CUSTOMER_ACCESS_REG_code, buf);
+            return i2c->Write(addrCopy, buf, 4) == 4;
         }
     } // namespace magnetometer
 } // namespace bsp
