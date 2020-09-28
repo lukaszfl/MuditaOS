@@ -92,7 +92,7 @@ namespace bsp
             uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO1);
 
             if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ))) {
-                xHigherPriorityTaskWoken |= bsp::magnetometer::IRQHandler();
+//                xHigherPriorityTaskWoken |= bsp::magnetometer::IRQHandler();
             }
 
             // Clear all IRQs
