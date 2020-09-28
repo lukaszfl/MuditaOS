@@ -12,7 +12,6 @@
 using namespace drivers;
 
 static std::shared_ptr<drivers::DriverI2C> i2c;
-static drivers::I2CAddress addr = {.deviceAddress = 0x64, .subAddressSize = 1};
 
 static xQueueHandle qHandleIrq = NULL;
 
@@ -21,6 +20,7 @@ namespace bsp
 
     namespace magnetometer
     {
+        I2CAddress addr = {.deviceAddress = ALS31300_I2C_ADDRESS, .subAddressSize = 1};
 
         std::shared_ptr<DriverGPIO> gpio;
 
@@ -36,7 +36,7 @@ namespace bsp
             uint8_t buf[4];
 
             // GET WRITE ACCESS
-            assert(getWriteAccess());
+            getWriteAccess();
 
             // CONFIGURATION register read
             addr.subAddress = ALS31300_CONF_REG;
@@ -45,9 +45,8 @@ namespace bsp
             als31300_conf_reg reg_conf(USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf));
             LOG_DEBUG("CONF read 1:\t%" PRIu32, static_cast<uint32_t>(reg_conf));
 
-            reg_conf.I2C_threshold = ALS31300_CONF_REG_I2C_THRES_1V8;
-            //            reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED; // we want to detect stable
-            //            positions
+            reg_conf.I2C_threshold    = ALS31300_CONF_REG_I2C_THRES_1V8;
+            reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED; // we want to detect stable positions
             reg_conf.int_latch_enable = ALS31300_CONF_REG_LATCH_DISABLED;
             reg_conf.channel_X_en     = ALS31300_CONF_REG_CHANNEL_ENABLED;
             reg_conf.channel_Y_en     = ALS31300_CONF_REG_CHANNEL_DISABLED;
@@ -125,7 +124,7 @@ namespace bsp
                 i2c->Read(addr, buf, 4);
                 // is there anything new ?
                 reg_msb = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf); // it arrives as big-endian, but we are little-endian
-            } while (reg_msb.int_flag == true);
+            } while (reg_msb.new_data_flag == true);
 
             // EN IRQ
             gpio->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
@@ -164,6 +163,15 @@ namespace bsp
 
                 return std::make_pair(true, meas);
             }
+        }
+
+        bool getWriteAccess()
+        {
+            I2CAddress addrCopy = addr;
+            uint8_t buf[4]      = {0};
+            addrCopy.subAddress = ALS31300_CUSTOMER_ACCESS_REG;
+            USB_LONG_TO_BIG_ENDIAN_ADDRESS(ALS31300_CUSTOMER_ACCESS_REG_code, buf);
+            return (i2c->Write(addrCopy, buf, 4) == 4);
         }
 
         bool isPresent(void)
@@ -214,14 +222,6 @@ namespace bsp
                 return bsp::Board::T4;
             }
             return bsp::Board::T3;
-        }
-        bool getWriteAccess()
-        {
-            auto addrCopy       = addr;
-            uint8_t buf[4]      = {0};
-            addrCopy.subAddress = ALS31300_CUSTOMER_ACCESS_REG;
-            USB_LONG_TO_BIG_ENDIAN_ADDRESS(ALS31300_CUSTOMER_ACCESS_REG_code, buf);
-            return i2c->Write(addrCopy, buf, 4) == 4;
         }
     } // namespace magnetometer
 } // namespace bsp

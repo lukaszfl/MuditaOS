@@ -16,9 +16,13 @@ namespace bsp {
 
 namespace magnetometer{
 
+    bool getWriteAccess();
+
     int32_t init(xQueueHandle qHandle);
 
-    bool getWriteAccess();
+    bool isPresent(void);
+
+    bsp::Board GetBoard(void);
 
     struct Measurements {
         int16_t X;
@@ -26,9 +30,6 @@ namespace magnetometer{
         int16_t Z; // Z is useless
         float tempC;
     } typedef Measurements;
-
-	bool isPresent(void);
-    bsp::Board GetBoard(void);
 
     /// returns a pair of <new_data_read?, values>
     std::pair<bool, Measurements> getMeasurements();

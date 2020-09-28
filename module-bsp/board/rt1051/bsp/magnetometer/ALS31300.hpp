@@ -10,6 +10,8 @@
  * Note: this device returns 32-bit register values in MSB order
  */
 
+constexpr auto ALS31300_I2C_ADDRESS = 0x64;
+
 // base ALS31300 register struct. it is 32-bits long
 typedef struct als31300_reg
 {
