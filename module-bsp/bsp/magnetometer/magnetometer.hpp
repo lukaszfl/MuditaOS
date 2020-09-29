@@ -16,8 +16,6 @@ namespace bsp {
 
 namespace magnetometer{
 
-    bool getWriteAccess();
-
     int32_t init(xQueueHandle qHandle);
 
     bool isPresent(void);

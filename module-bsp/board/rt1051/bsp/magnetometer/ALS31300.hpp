@@ -91,8 +91,8 @@ constexpr auto ALS31300_INT_REG_INT_CHANNEL_ENABLED  = 0b1;
 constexpr auto ALS31300_INT_REG_INT_MODE_threshold = 0b0;
 constexpr auto ALS31300_INT_REG_INT_MODE_delta     = 0b1;
 
-constexpr auto ALS31300_INT_REG_THRESHOLD_unSIGNED = 0b0;
-constexpr auto ALS31300_INT_REG_THRESHOLD_SIGNED  = 0b1;
+constexpr auto ALS31300_INT_REG_THRESHOLD_ABSOLUTE = 0b0;
+constexpr auto ALS31300_INT_REG_THRESHOLD_SIGNED   = 0b1;
 
 // --------
 constexpr auto ALS31300_PWR_REG = 0x27;
@@ -172,5 +172,10 @@ inline int16_t als31300_measurement_sign_convert(uint16_t raw_measurement,
 // --------
 constexpr auto ALS31300_CUSTOMER_ACCESS_REG          = 0x35;
 constexpr uint32_t ALS31300_CUSTOMER_ACCESS_REG_code = 0x2C413534;
+
+// --------
+
+//const std::set<uint8_t> ALS31300_EEPROM_REGS = {ALS31300_CONF_REG, ALS31300_INT_REG};
+constexpr auto ALS31300_EEPROM_REG_WRITE_DELAY   = 50; // [ms]
 
 /////////////////////

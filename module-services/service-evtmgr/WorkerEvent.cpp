@@ -39,7 +39,7 @@ extern "C"
 bool WorkerEvent::handleMessage(uint32_t queueID)
 {
 
-    QueueHandle_t queue = queues[queueID];
+    xQueueHandle queue = queues[queueID];
 
     // service queue
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueService)) {
@@ -170,8 +170,9 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
         if (xQueueReceive(queue, &notification, 0) != pdTRUE) {
             return false;
         }
-        auto [isNewData, measurements] = bsp::magnetometer::getMeasurements();
-        auto [X, Y, Z, tempC]          = measurements;
+        std::pair<bool, bsp::magnetometer::Measurements> newMeasurement = bsp::magnetometer::getMeasurements();
+        auto const &[isNewData, measurements] = newMeasurement;
+        auto const [X, Y, Z, tempC]          = measurements;
         LOG_DEBUG("magneto said: (%s) %d, %d, %d, %f", (isNewData ? "new" : "old"), X, Y, Z, tempC);
     }
 
@@ -186,7 +187,7 @@ bool WorkerEvent::init(std::list<sys::WorkerQueueInfo> queues)
     std::vector<xQueueHandle> qhandles = this->queues;
     bsp::vibrator::init();
     bsp::keyboard_Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueKeyboardIRQ)]);
-    bsp::headset::Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueHeadsetIRQ)]);
+//    bsp::headset::Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueHeadsetIRQ)]);
     bsp::battery_Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueBattery)]);
     bsp::rtc_Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueRTC)]);
     bsp::harness::Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueHarness)]);

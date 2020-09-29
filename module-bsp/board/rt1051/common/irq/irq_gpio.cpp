@@ -93,11 +93,11 @@ namespace bsp
 
             if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ))) {
                 xHigherPriorityTaskWoken |= bsp::magnetometer::IRQHandler();
-                LOG_DEBUG("magneto IRQ!\n");
+                LOG_DEBUG("magneto IRQ!");
             }
 
             if (irq_mask & (1 << BSP_BLUETOOTH_UART_CTS_PIN)) {
-                LOG_DEBUG("CTS IRQ!\n");
+                LOG_DEBUG("CTS IRQ!");
             }
 
             // Clear all IRQs
@@ -118,6 +118,7 @@ namespace bsp
 
             if (irq_mask & (1 << BOARD_BATTERY_CHARGER_INOKB_PIN)) {
                 xHigherPriorityTaskWoken |= BSP_BatteryChargerINOKB_IRQHandler();
+                bsp::magnetometer::IRQHandler();
             }
 
             if (irq_mask & (1 << BOARD_BATTERY_CHARGER_WCINOKB_PIN)) {}
