@@ -225,6 +225,7 @@ enum class MessageType
     TimeStart,
     TimeProgress,
     TimeFinished,
+    CalendarReminderFired,
 
     StateChange,
     // antenna messages

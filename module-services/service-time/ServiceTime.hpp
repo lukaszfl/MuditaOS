@@ -18,6 +18,11 @@
 #include <module-db/queries/calendar/QueryEventsGet.hpp>
 #include <module-db/queries/calendar/QueryEventsEdit.hpp>
 
+namespace service::name
+{
+    const inline std::string service_time = "ServiceTime";
+};
+
 class ServiceTime;
 
 class TimeEvents
@@ -84,6 +89,10 @@ class ServiceTime : public sys::Service
     void RecreateTimer();
     void InvokeEvent();
     void SendReminderFiredQuery();
+
+    // mlucki
+    void SendFilterQuery();
+    void ReceiveFilterQuery();
 
   public:
     ServiceTime();

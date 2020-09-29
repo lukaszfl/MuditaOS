@@ -611,14 +611,19 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
     // and calc_dt <= datetime("2020-08-17", "+1 day", "-1 second") and event_fired = -1 and reminder <> -1 ORDER BY
     // (calc_dt) LIMIT 1
 
+    [[maybe_unused]] std::string fff = TimePointToString(TIME_POINT_INVALID).c_str();
+
     auto retQuery = db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes') AS calc_dt, * "
+                              //"SELECT date_from AS calc_dt, * "
                               "FROM events "
                               "WHERE calc_dt >= '%q' "
+                              // mlucki
                               "AND calc_dt <= DATETIME('%q', '+1 day', '-1 second') "
                               "AND reminder_fired = '%q' "
+                              //  "AND reminder_fired = '1970-01-01 00:00:00' "
                               "AND reminder <> -1 "
-                              "ORDER BY calc_dt "
-                              "LIMIT 1",
+                              "ORDER BY calc_dt ",
+                              //"LIMIT 1",
                               TimePointToString(filter_from).c_str(),
                               TimePointToString(filter_till).c_str(),
                               TimePointToString(TIME_POINT_INVALID).c_str());

@@ -20,9 +20,16 @@ class TimeMessage : public sys::DataMessage
   public:
     TimeMessage(MessageType messageType) : sys::DataMessage(messageType), type(messageType){};
 
-    virtual ~TimeMessage(){};
+    virtual ~TimeMessage() = default;
 
-    MessageType type;
+    MessageType type = MessageType::MessageTypeUninitialized;
+};
+
+class CalendarReminderFiredNotificationMessage : public TimeMessage
+{
+  public:
+    CalendarReminderFiredNotificationMessage() : TimeMessage(MessageType::CalendarReminderFired)
+    {}
 };
 
 class TimeNotificationMessage : public TimeMessage
