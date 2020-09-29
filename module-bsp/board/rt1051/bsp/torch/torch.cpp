@@ -10,14 +10,14 @@ using namespace drivers;
 
 static std::shared_ptr<drivers::DriverI2C> i2c;
 
-static xQueueHandle qHandleIrq = NULL;
-
 namespace bsp
 {
 
     namespace torch
     {
-        I2CAddress addr = {.deviceAddress = 0x63, .subAddressSize = 1};
+        static xQueueHandle qHandleIrq = NULL;
+
+        static I2CAddress addr = {.deviceAddress = 0x63, .subAddressSize = 1};
 
         std::shared_ptr<DriverGPIO> gpio;
         const unsigned short max_current_mA = 150;

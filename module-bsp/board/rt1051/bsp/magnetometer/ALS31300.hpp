@@ -20,9 +20,9 @@ typedef struct als31300_reg
         return *((uint32_t *)this);
     };
 
-    als31300_reg &operator=(uint32_t whole_reg)
+    als31300_reg &operator=(const uint32_t whole_reg)
     {
-        *this = static_cast<als31300_reg>(whole_reg); // == als31300_reg(whole_reg)
+        std::memcpy(this, &whole_reg, sizeof whole_reg);
         return *this;
     };
 
@@ -85,14 +85,14 @@ typedef struct : als31300_reg
     uint8_t RESERVED : 7;
 } als31300_int_reg;
 
-constexpr auto ALS31300_INT_REG_INT_CHANNEL_DISABLED = 0b0;
-constexpr auto ALS31300_INT_REG_INT_CHANNEL_ENABLED  = 0b1;
+constexpr auto ALS31300_INT_REG_INT_CHANNEL_disabled = 0b0;
+constexpr auto ALS31300_INT_REG_INT_CHANNEL_enabled  = 0b1;
 
 constexpr auto ALS31300_INT_REG_INT_MODE_threshold = 0b0;
 constexpr auto ALS31300_INT_REG_INT_MODE_delta     = 0b1;
 
-constexpr auto ALS31300_INT_REG_THRESHOLD_ABSOLUTE = 0b0;
-constexpr auto ALS31300_INT_REG_THRESHOLD_SIGNED   = 0b1;
+constexpr auto ALS31300_INT_REG_THRESHOLD_absolute = 0b0;
+constexpr auto ALS31300_INT_REG_THRESHOLD_signed   = 0b1;
 
 // --------
 constexpr auto ALS31300_PWR_REG = 0x27;

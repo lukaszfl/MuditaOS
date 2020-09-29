@@ -35,6 +35,7 @@ namespace magnetometer{
     bsp::KeyCodes getDiscrete(const Measurements &measurements);
 
     BaseType_t IRQHandler();
+    void enableIRQ();
 }
 
 }
