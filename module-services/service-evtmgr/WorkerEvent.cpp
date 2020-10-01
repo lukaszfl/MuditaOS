@@ -172,8 +172,14 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
         }
         std::pair<bool, bsp::magnetometer::Measurements> newMeasurement = bsp::magnetometer::getMeasurements();
         auto const &[isNewData, measurements]                           = newMeasurement;
-        auto const [X, Y, Z, tempC]                                     = measurements;
-        LOG_DEBUG("magneto said: (%s) %d, %d, %d", (isNewData ? "new" : "old"), X, Y, Z);
+        if (isNewData == true) {
+            //            auto const [X, Y, Z, tempC] = measurements;
+            LOG_DEBUG("Worker magneto on IRQ: new data");
+            //                        LOG_DEBUG("IRQ magneto: %d, %d, %d", X, Y, Z);
+        }
+        else {
+            LOG_DEBUG("Worker magneto on IRQ: no new data");
+        }
         bsp::magnetometer::enableIRQ();
     }
 

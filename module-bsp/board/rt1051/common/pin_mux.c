@@ -1490,9 +1490,12 @@ void PINMUX_InitTorch(void)
 
 void PINMUX_InitMagnetometer(void)
 {
-    IOMUXC_SetPinMux(PINMUX_MAGNETOMETER_IRQ_PIN, 1U);
+    IOMUXC_SetPinMux(PINMUX_MAGNETOMETER_IRQ_PIN, 0U);
     IOMUXC_SetPinConfig(PINMUX_MAGNETOMETER_IRQ_PIN,
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_22kOhm);
+
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_47kOhm |
+                            PAD_CONFIG_HYSTERESIS_ENABLED);
 }
 
 /***********************************************************************************************************************

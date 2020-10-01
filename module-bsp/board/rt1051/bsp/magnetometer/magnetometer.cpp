@@ -49,9 +49,9 @@ namespace bsp
             LOG_DEBUG("CONF read 1:\t%" PRIu32, static_cast<uint32_t>(current_reg_conf));
             als31300_conf_reg reg_conf = current_reg_conf;
             reg_conf.I2C_threshold     = ALS31300_CONF_REG_I2C_THRES_1V8;
-            reg_conf.int_latch_enable  = ALS31300_CONF_REG_LATCH_DISABLED; // we want to detect stable positions
+            reg_conf.int_latch_enable  = ALS31300_CONF_REG_LATCH_ENABLED; // we want to detect stable positions
             reg_conf.channel_X_en      = ALS31300_CONF_REG_CHANNEL_ENABLED;
-            reg_conf.channel_Y_en      = ALS31300_CONF_REG_CHANNEL_ENABLED;
+            reg_conf.channel_Y_en      = ALS31300_CONF_REG_CHANNEL_DISABLED;
             reg_conf.channel_Z_en      = ALS31300_CONF_REG_CHANNEL_DISABLED;
             reg_conf.bandwidth         = 0; // longest unit measurement
             USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_conf, buf);
@@ -74,9 +74,9 @@ namespace bsp
             reg_int.int_mode             = ALS31300_INT_REG_INT_MODE_threshold;
             reg_int.int_threshold_signed = ALS31300_INT_REG_THRESHOLD_absolute;
             reg_int.int_X_en             = ALS31300_INT_REG_INT_CHANNEL_enabled;
-            reg_int.int_Y_en             = ALS31300_INT_REG_INT_CHANNEL_enabled;
+            reg_int.int_Y_en             = ALS31300_INT_REG_INT_CHANNEL_disabled;
             reg_int.int_Z_en             = ALS31300_INT_REG_INT_CHANNEL_disabled;
-            reg_int.int_X_threshold      = 0;
+            reg_int.int_X_threshold      = 0b10;
             reg_int.int_Y_threshold      = 0;
             reg_int.int_Z_threshold      = 0;
             USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_int, buf);
@@ -95,10 +95,9 @@ namespace bsp
 
             // INTERRUPT PIN
             gpio->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
-            gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
-                                              .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
-                                              .defLogic = 0,
-                                              .pin      = static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ)});
+            gpio->ConfPin(DriverGPIOPinParams{.dir     = DriverGPIOPinParams::Direction::Input,
+                                              .irqMode = DriverGPIOPinParams::InterruptMode::IntRisingEdge,
+                                              .pin     = static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ)});
 
             // EN IRQ
             gpio->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
@@ -111,8 +110,8 @@ namespace bsp
             LOG_DEBUG("POWER read 1:\t%" PRIu32, static_cast<uint32_t>(current_reg_pwr));
             als31300_pwr_reg reg_pwr  = current_reg_pwr;
             reg_pwr.I2C_loop_mode     = ALS31300_PWR_REG_LOOP_MODE_single; // we don't want constant data flow
-            reg_pwr.sleep             = ALS31300_PWR_REG_SLEEP_MODE_LPDCM;
-            reg_pwr.count_max_LP_mode = 6U; // get an update every 500 ms
+            reg_pwr.sleep             = ALS31300_PWR_REG_SLEEP_MODE_active;
+            reg_pwr.count_max_LP_mode = 3U; // get an update every 500 ms
             USB_LONG_TO_BIG_ENDIAN_ADDRESS(reg_pwr, buf);
             //            if (current_reg_pwr != reg_pwr) {
             i2c->Write(addr, buf, 4);
@@ -123,23 +122,20 @@ namespace bsp
             //            }
 
             // Loop
-//            addr.subAddress = ALS31300_MEASUREMENTS_MSB_REG;
-//            als31300_measurements_MSB_reg reg_msb;
-            do {
-                vTaskDelay(100);
+            //            addr.subAddress = ALS31300_MEASUREMENTS_MSB_REG;
+            //            als31300_measurements_MSB_reg reg_msb;
+            vTaskDelay(100);
 
-                //                i2c->Read(addr, buf, 4);
-                //                 is there anything new ?
-                //                reg_msb = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf); // it arrives as big-endian, but we
-                //                are little-endian
-                auto meas = getMeasurements();
-                if (meas.first) {
-                    LOG_DEBUG(
-                        "magneto said: %d, %d, %d", meas.second.X, meas.second.Y, meas.second.Z);
-                }
+            //                i2c->Read(addr, buf, 4);
+            //                 is there anything new ?
+            //                reg_msb = USB_LONG_FROM_BIG_ENDIAN_ADDRESS(buf); // it arrives as big-endian, but we
+            //                are little-endian
+            auto meas = getMeasurements();
+            if (meas.first) {
+                LOG_DEBUG("magneto said: %d, %d, %d", meas.second.X, meas.second.Y, meas.second.Z);
+            }
 
-                //            } while (reg_msb.int_flag == true || reg_msb.new_data_flag == true);
-            } while (false);
+            //            } while (reg_msb.int_flag == true || reg_msb.new_data_flag == true);
 
             return kStatus_Success;
         }
