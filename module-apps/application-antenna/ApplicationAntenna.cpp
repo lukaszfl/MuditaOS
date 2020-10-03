@@ -13,7 +13,6 @@
 #include "windows/AntennaMainWindow.hpp"
 #include "windows/ScanModesWindow.hpp"
 #include "windows/AlgoParamsWindow.hpp"
-#include <WindowsStore.hpp>
 
 #include <ticks.hpp>
 namespace app
@@ -165,13 +164,13 @@ namespace app
     void ApplicationAntenna::createUserInterface()
     {
         using namespace gui::name::window;
-        windows.attach(main_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::AntennaMainWindow>(app);
         });
-        windows.attach(scan_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(scan_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::ScanModesWindow>(app);
         });
-        windows.attach(algo_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(algo_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::AlgoParamsWindow>(app);
         });
     }

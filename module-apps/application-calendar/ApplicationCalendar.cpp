@@ -59,7 +59,7 @@ namespace app
             LOG_DEBUG("Received notification");
             // window-specific actions
             if (msg->interface == db::Interface::Name::Events) {
-                for (auto &[name, window] : windows) {
+                for (auto &[name, window] : windowsFactory) {
                     window->onDatabaseMessage(msg);
                 }
             }
@@ -115,31 +115,31 @@ namespace app
     {
         using namespace style::window::calendar::name;
 
-        windows.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::CalendarMainWindow>(app, name);
         });
-        windows.attach(day_events_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(day_events_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DayEventsWindow>(app);
         });
-        windows.attach(no_events_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(no_events_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::NoEvents>(app, name, gui::NoEvents::Meta());
         });
-        windows.attach(style::window::calendar::name::events_options, [](Application *app, const std::string &name) {
+        windowsFactory.attach(style::window::calendar::name::events_options, [](Application *app, const std::string &name) {
             return std::make_unique<gui::CalendarEventsOptions>(app);
         });
-        windows.attach(dialog_yes_no, [](Application *app, const std::string &name) {
+        windowsFactory.attach(dialog_yes_no, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DialogYesNo>(app, dialog_yes_no);
         });
-        windows.attach(all_events_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(all_events_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::AllEventsWindow>(app, all_events_window);
         });
-        windows.attach(details_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(details_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::EventDetailWindow>(app, details_window);
         });
-        windows.attach(new_edit_event, [](Application *app, const std::string &name) {
+        windowsFactory.attach(new_edit_event, [](Application *app, const std::string &name) {
             return std::make_unique<gui::NewEditEventWindow>(app, new_edit_event);
         });
-        windows.attach(custom_repeat_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(custom_repeat_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::CustomRepeatWindow>(app, custom_repeat_window);
         });
     }

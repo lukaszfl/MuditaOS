@@ -17,17 +17,17 @@ namespace gui
 
 namespace app
 {
-    class WindowsStore
+    class WindowsFactory
     {
       public:
         using handle  = std::unique_ptr<gui::AppWindow>;
         using builder = std::function<handle(Application *, std::string)>;
 
-        WindowsStore() = delete;
-        WindowsStore(Application *owner);
-        WindowsStore(const WindowsStore &) = delete;
-        WindowsStore(WindowsStore &&)      = delete;
-        void operator=(WindowsStore) = delete;
+        WindowsFactory() = delete;
+        WindowsFactory(Application *owner);
+        WindowsFactory(const WindowsFactory &) = delete;
+        WindowsFactory(WindowsFactory &&)      = delete;
+        void operator=(WindowsFactory) = delete;
 
       private:
         std::string default_window;

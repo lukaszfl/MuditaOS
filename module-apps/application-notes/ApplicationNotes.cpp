@@ -78,10 +78,10 @@ namespace app
 
     void ApplicationNotes::createUserInterface()
     {
-        windows.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::NotesMainWindow>(app);
         });
-        windows.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::NotesEditWindow>(app);
         });
     }

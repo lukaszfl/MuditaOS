@@ -27,7 +27,7 @@
 #include <algorithm>                                     // for find
 #include <iterator>                                      // for distance, next
 #include <type_traits>                                   // for add_const<>...
-#include <WindowsStore.hpp>
+#include <WindowsFactory.hpp>
 
 namespace gui
 {
@@ -69,7 +69,7 @@ namespace app
     Application::Application(
         std::string name, std::string parent, bool startBackground, uint32_t stackDepth, sys::ServicePriority priority)
         : Service(name, parent, stackDepth, priority),
-           windows(this),startBackground{startBackground}
+           windowsFactory(this),startBackground{startBackground}
     {
         keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
         busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
@@ -390,7 +390,7 @@ namespace app
         auto msg = static_cast<AppSwitchWindowMessage *>(msgl);
         // check if specified window is in the application
 
-        if (windows.isRegistered(msg->getWindowName())) {
+        if (windowsFactory.isRegistered(msg->getWindowName())) {
             auto switchData = std::move(msg->getData());
             if (switchData && switchData->ignoreCurrentWindowOnStack) {
                 popToWindow(getPrevWindow());
@@ -430,13 +430,13 @@ namespace app
     sys::Message_t Application::handleAppRebuild(sys::DataMessage *msgl)
     {
         LOG_INFO("Application %s rebuilding gui", GetName().c_str());
-        for (auto &[name, window] : windows) {
+        for (auto &[name, window] : windowsFactory) {
             LOG_DEBUG("Rebuild: %s", name.c_str());
             if (window == nullptr) {
                 LOG_ERROR("No window: %s", name.c_str());
             }
             else {
-                windows.build(this, name);
+                windowsFactory.build(this, name);
             }
         }
         LOG_INFO("Refresh app with focus!");
@@ -480,7 +480,7 @@ namespace app
     sys::ReturnCodes Application::DeinitHandler()
     {
         LOG_INFO("Closing an application: %s", GetName().c_str());
-        for (const auto &[windowName, window] : windows) {
+        for (const auto &[windowName, window] : windowsFactory) {
             LOG_INFO("Closing a window: %s", windowName.c_str());
             window->onClose();
         }
@@ -612,9 +612,9 @@ namespace app
     {
         std::string name = "";
         if (windowStack.size() == 0) {
-            return windows.getDefault().get();
+            return windowsFactory.getDefault().get();
         }
-        return windows.get(windowStack.back())->second.get();
+        return windowsFactory.get(windowStack.back())->second.get();
     }
 
     void Application::connect(std::unique_ptr<app::GuiTimer> &&timer, gui::Item *item)

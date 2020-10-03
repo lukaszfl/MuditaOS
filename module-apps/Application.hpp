@@ -23,7 +23,7 @@
 #include <string>                                       // for string
 #include <utility>                                      // for move, pair
 #include <vector>                                       // for vector
-#include "WindowsStore.hpp"
+#include "WindowsFactory.hpp"
 
 namespace app
 {
@@ -305,7 +305,7 @@ namespace app
         std::vector<std::string> windowStack;
       protected:
 
-        WindowsStore windows;
+        WindowsFactory windowsFactory;
 
       public:
         /// @ingrup AppWindowStack

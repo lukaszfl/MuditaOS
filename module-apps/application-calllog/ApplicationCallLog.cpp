@@ -84,16 +84,16 @@ namespace app
 
     void ApplicationCallLog::createUserInterface()
     {
-        windows.attach(calllog::settings::MainWindowStr, [](Application *app, const std::string &name) {
+        windowsFactory.attach(calllog::settings::MainWindowStr, [](Application *app, const std::string &name) {
             return std::make_unique<gui::CallLogMainWindow>(app);
         });
-        windows.attach(calllog::settings::DetailsWindowStr, [](Application *app, const std::string &name) {
+        windowsFactory.attach(calllog::settings::DetailsWindowStr, [](Application *app, const std::string &name) {
             return std::make_unique<gui::CallLogDetailsWindow>(app);
         });
-        windows.attach(
+        windowsFactory.attach(
             utils::localize.get("app_phonebook_options_title"),
             [](Application *app, const std::string &name) { return std::make_unique<gui::OptionWindow>(app, name); });
-        windows.attach(calllog::settings::DialogYesNoStr, [](Application *app, const std::string &name) {
+        windowsFactory.attach(calllog::settings::DialogYesNoStr, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DialogYesNo>(app, name);
         });
     }
@@ -104,7 +104,7 @@ namespace app
     bool ApplicationCallLog::removeCalllogEntry(const CalllogRecord &record)
     {
         LOG_DEBUG("Removing CalllogRecord: %" PRIu32, record.ID);
-        auto dialog = dynamic_cast<gui::DialogYesNo *>(windows.get(calllog::settings::DialogYesNoStr)->second.get());
+        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsFactory.get(calllog::settings::DialogYesNoStr)->second.get());
         assert(dialog != nullptr);
         auto meta   = dialog->meta;
         meta.action = [=]() -> bool {

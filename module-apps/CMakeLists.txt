@@ -15,7 +15,7 @@ set( SOURCES
     "Application.cpp"
     "GuiTimer.cpp"
     "UiCommonActions.cpp" 
-    "WindowsStore.cpp" 
+    "WindowsFactory.cpp" 
     "windows/AppWindow.cpp" 
     "windows/OptionWindow.cpp"
     "windows/Options.cpp" 

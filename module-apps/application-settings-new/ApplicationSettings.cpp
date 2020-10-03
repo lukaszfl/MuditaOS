@@ -56,31 +56,31 @@ namespace app
 
     void ApplicationSettingsNew::createUserInterface()
     {
-        windows.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::OptionWindow>(app, name, mainWindowOptionsNew(app));
         });
-        std::prev(windows.end())->second->setTitle(utils::localize.get("app_settings_title_main"));
+        std::prev(windowsFactory.end())->second->setTitle(utils::localize.get("app_settings_title_main"));
 
-        windows.attach(gui::window::name::bluetooth, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::bluetooth, [](Application *app, const std::string &name) {
             return std::make_unique<gui::BluetoothWindow>(app);
         });
 
-        windows.attach(gui::window::name::display_and_keypad, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::display_and_keypad, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DisplayAndKeypadWindow>(app);
         });
-        windows.attach(gui::window::name::input_language, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::input_language, [](Application *app, const std::string &name) {
             return std::make_unique<gui::InputLanguageWindow>(app);
         });
-        windows.attach(gui::window::name::locked_screen, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::locked_screen, [](Application *app, const std::string &name) {
             return std::make_unique<gui::LockedScreenWindow>(app);
         });
-        windows.attach(gui::window::name::keypad_light, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::keypad_light, [](Application *app, const std::string &name) {
             return std::make_unique<gui::KeypadLightWindow>(app);
         });
-        windows.attach(gui::window::name::font_size, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::font_size, [](Application *app, const std::string &name) {
             return std::make_unique<gui::FontSizeWindow>(app);
         });
-        windows.attach(gui::window::name::display_light, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::display_light, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DisplayLightWindow>(app);
         });
     }

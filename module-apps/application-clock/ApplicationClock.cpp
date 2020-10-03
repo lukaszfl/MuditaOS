@@ -40,7 +40,7 @@ namespace app
 
     void ApplicationClock::timerClockCallback()
     {
-        auto it                   = windows.get("MainWindow");
+        auto it                   = windowsFactory.get("MainWindow");
         gui::ClockMainWindow *win = reinterpret_cast<gui::ClockMainWindow *>(it->second.get());
         win->incrementSecond();
         win->updateLabels();
@@ -90,7 +90,7 @@ namespace app
 
     void ApplicationClock::createUserInterface()
     {
-        windows.attach(gui::name::window::main_window, [](Application* app, const std::string &name) { return std::make_unique<gui::ClockMainWindow>(app, name); } );
+        windowsFactory.attach(gui::name::window::main_window, [](Application* app, const std::string &name) { return std::make_unique<gui::ClockMainWindow>(app, name); } );
     }
 
     void ApplicationClock::destroyUserInterface()

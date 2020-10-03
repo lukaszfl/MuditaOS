@@ -38,7 +38,7 @@ namespace app
             if (msg != nullptr) {
                 // window-specific actions
                 if (msg->interface == db::Interface::Name::Contact) {
-                    for (auto &[name, window] : windows) {
+                    for (auto &[name, window] : windowsFactory) {
                         window->onDatabaseMessage(msg);
                     }
                 }
@@ -102,41 +102,41 @@ namespace app
 
     void ApplicationPhonebook::createUserInterface()
     {
-        windows.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::PhonebookMainWindow>(app);
         });
-        windows.attach(gui::window::name::contact, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::contact, [](Application *app, const std::string &name) {
             return std::make_unique<gui::PhonebookContactDetails>(app);
         });
-        windows.attach(gui::window::name::search, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::search, [](Application *app, const std::string &name) {
             return std::make_unique<gui::PhonebookSearch>(app);
         });
-        windows.attach(gui::window::name::search_results, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::search_results, [](Application *app, const std::string &name) {
             return std::make_unique<gui::PhonebookSearchResults>(app);
         });
-        windows.attach(gui::window::name::dialog, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::dialog, [](Application *app, const std::string &name) {
             return std::make_unique<gui::Dialog>(app, name, gui::Dialog::Meta());
         });
-        windows.attach(gui::window::name::dialog_yes_no, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::dialog_yes_no, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DialogYesNo>(app, gui::window::name::dialog_yes_no);
         });
-        windows.attach(gui::window::name::dialog_yes_no_icon_txt, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::dialog_yes_no_icon_txt, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DialogYesNoIconTxt>(app, name);
         });
-        windows.attach(gui::window::name::dialog_confirm, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::dialog_confirm, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DialogConfirm>(app, gui::window::name::dialog_confirm);
         });
-        windows.attach(gui::window::name::contact_options, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::contact_options, [](Application *app, const std::string &name) {
             return std::make_unique<gui::PhonebookContactOptions>(app);
         });
-        windows.attach(gui::window::name::namecard_options, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::namecard_options, [](Application *app, const std::string &name) {
             return std::make_unique<gui::PhonebookNamecardOptions>(app);
         });
-        windows.attach(gui::window::name::ice_contacts, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::ice_contacts, [](Application *app, const std::string &name) {
             return std::make_unique<gui::PhonebookIceContacts>(app);
         });
 
-        windows.attach(gui::window::name::new_contact, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::new_contact, [](Application *app, const std::string &name) {
             return std::make_unique<gui::PhonebookNewContact>(app);
         });
     }
@@ -150,7 +150,7 @@ namespace app
 
         LOG_DEBUG("Search results count: %d", searchModel->requestRecordsCount());
         if (searchModel->requestRecordsCount() > 0) {
-            auto main_window = dynamic_cast<gui::PhonebookMainWindow *>(windows.get(gui::name::window::main_window)->second.get());
+            auto main_window = dynamic_cast<gui::PhonebookMainWindow *>(windowsFactory.get(gui::name::window::main_window)->second.get());
             if (main_window == nullptr) {
                 LOG_ERROR("Failed to get main window.");
                 return;
@@ -176,7 +176,7 @@ namespace app
 
     bool ApplicationPhonebook::searchEmpty(const std::string &query)
     {
-        auto dialog = dynamic_cast<gui::Dialog *>(windows.get(gui::window::name::dialog)->second.get());
+        auto dialog = dynamic_cast<gui::Dialog *>(windowsFactory.get(gui::window::name::dialog)->second.get());
         assert(dialog);
         auto meta  = dialog->meta;
         meta.icon  = "search_big";

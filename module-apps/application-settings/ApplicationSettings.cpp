@@ -61,7 +61,7 @@ namespace app
             auto devices = btmsg->devices;
             LOG_INFO("received BT Scan message!");
 
-            windows.build(this, gui::name::window::name_btscan);
+            windowsFactory.build(this, gui::name::window::name_btscan);
             setActiveWindow(gui::name::window::name_btscan);
 
             render(gui::RefreshModes::GUI_REFRESH_FAST);
@@ -122,45 +122,45 @@ namespace app
 
     void ApplicationSettings::createUserInterface()
     {
-        windows.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::OptionWindow>(app, name, mainWindowOptions(app));
         });
-        std::prev(windows.end())->second->setTitle(utils::localize.get("app_settings_title_main"));
+        std::prev(windowsFactory.end())->second->setTitle(utils::localize.get("app_settings_title_main"));
 
-        windows.attach(app::sim_select, [](Application *app, const std::string &name) {
+        windowsFactory.attach(app::sim_select, [](Application *app, const std::string &name) {
             return std::make_unique<gui::OptionWindow>(app, name, simSelectWindow(app));
         });
-        windows.attach(app::change_setting, [](Application *app, const std::string &name) {
+        windowsFactory.attach(app::change_setting, [](Application *app, const std::string &name) {
             return std::make_unique<gui::OptionWindow>(app, name, settingsChangeWindow(app));
         });
-        windows.attach("Languages", [](Application *app, const std::string &name) {
+        windowsFactory.attach("Languages", [](Application *app, const std::string &name) {
             return std::make_unique<gui::LanguageWindow>(app);
         });
-        windows.attach("Bluetooth",
+        windowsFactory.attach("Bluetooth",
                        [](Application *app, const std::string &name) { return std::make_unique<gui::BtWindow>(app); });
-        windows.attach(gui::name::window::name_btscan, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::name::window::name_btscan, [](Application *app, const std::string &name) {
             return std::make_unique<gui::BtScanWindow>(app);
         });
-        windows.attach("TEST_UI", [](Application *app, const std::string &name) {
+        windowsFactory.attach("TEST_UI", [](Application *app, const std::string &name) {
             return std::make_unique<gui::UiTestWindow>(app);
         });
-        windows.attach(gui::window::hw_info,
+        windowsFactory.attach(gui::window::hw_info,
                        [](Application *app, const std::string &name) { return std::make_unique<gui::Info>(app); });
-        windows.attach("DateTime", [](Application *app, const std::string &name) {
+        windowsFactory.attach("DateTime", [](Application *app, const std::string &name) {
             return std::make_unique<gui::DateTimeWindow>(app);
         });
-        windows.attach(gui::window::name::fota_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::fota_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::FotaWindow>(app);
         });
 
         if (board == bsp::Board::T4) {
-            windows.attach(gui::window::cellular_passthrough::window_name,
+            windowsFactory.attach(gui::window::cellular_passthrough::window_name,
                            [](Application *app, const std::string &name) {
                                return std::make_unique<gui::CellularPassthroughWindow>(app);
                            });
         }
 
-        windows.attach(gui::window::name::ussd_window, [](Application *app, const std::string &name) {
+        windowsFactory.attach(gui::window::name::ussd_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::USSDWindow>(app);
         });
     }
