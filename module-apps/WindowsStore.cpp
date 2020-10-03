@@ -14,17 +14,17 @@ namespace app
         builders[name] = builder;
     }
 
-    auto WindowsStore::begin() const
+    std::map<std::string, WindowsStore::handle>::const_iterator WindowsStore::begin() const
     {
         return std::begin(windows);
     }
 
-    auto WindowsStore::end() const
+    std::map<std::string, WindowsStore::handle>::const_iterator WindowsStore::end() const
     {
         return std::end(windows);
     }
 
-    auto WindowsStore::get(const std::string &name) const
+    std::map<std::string, WindowsStore::handle>::const_iterator WindowsStore::get(const std::string &name) const
     {
         return windows.find(name);
     }

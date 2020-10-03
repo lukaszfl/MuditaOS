@@ -22,6 +22,7 @@ namespace app
       public:
         using handle  = std::unique_ptr<gui::AppWindow>;
         using builder = std::function<handle(Application *, std::string)>;
+
         WindowsStore() = delete;
         WindowsStore(Application *owner);
         WindowsStore(const WindowsStore &) = delete;

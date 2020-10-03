@@ -29,6 +29,7 @@
 
 #include <bsp/bsp.hpp>
 #include <Application.hpp>
+#include <ApplicationLauncher.hpp>
 #include <log/log.hpp>
 #include <phonenumbers/phonenumberutil.h>
 #include <source/version.hpp>
