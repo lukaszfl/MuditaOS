@@ -8,6 +8,7 @@
  */
 
 // module-gui
+#include "AppWindow.hpp"
 #include "Service/Timer.hpp"
 #include "gui/widgets/Window.hpp"
 
@@ -39,8 +40,8 @@ namespace app
 
     void ApplicationClock::timerClockCallback()
     {
-        auto it                   = windows.find("MainWindow");
-        gui::ClockMainWindow *win = reinterpret_cast<gui::ClockMainWindow *>(it->second);
+        auto it                   = windowsFactory.get("MainWindow");
+        gui::ClockMainWindow *win = reinterpret_cast<gui::ClockMainWindow *>(it->second.get());
         win->incrementSecond();
         win->updateLabels();
         render(gui::RefreshModes::GUI_REFRESH_FAST);
@@ -52,7 +53,7 @@ namespace app
 
         auto retMsg = Application::DataReceivedHandler(msgl);
         // if message was handled by application's template there is no need to process further.
-        if ((reinterpret_cast<sys::ResponseMessage *>(retMsg.get())->retCode == sys::ReturnCodes::Success)) {
+        if (reinterpret_cast<sys::ResponseMessage *>(retMsg.get())->retCode == sys::ReturnCodes::Success) {
             return retMsg;
         }
 
@@ -89,9 +90,7 @@ namespace app
 
     void ApplicationClock::createUserInterface()
     {
-
-        gui::ClockMainWindow *mainWindow = new gui::ClockMainWindow(this);
-        windows.insert(std::pair<std::string, gui::AppWindow *>(mainWindow->getName(), mainWindow));
+        windowsFactory.attach(gui::name::window::main_window, [](Application* app, const std::string &name) { return std::make_unique<gui::ClockMainWindow>(app, name); } );
     }
 
     void ApplicationClock::destroyUserInterface()

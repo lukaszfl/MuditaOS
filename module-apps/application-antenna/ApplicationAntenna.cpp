@@ -163,15 +163,16 @@ namespace app
 
     void ApplicationAntenna::createUserInterface()
     {
-
-        gui::AppWindow *win = new gui::AntennaMainWindow(this);
-        windows.insert(std::pair<std::string, gui::AppWindow *>(gui::name::window::main_window, win));
-
-        win = new gui::ScanModesWindow(this);
-        windows.insert(std::pair<std::string, gui::AppWindow *>(gui::name::window::scan_window, win));
-
-        win = new gui::AlgoParamsWindow(this);
-        windows.insert(std::pair<std::string, gui::AppWindow *>(gui::name::window::algo_window, win));
+        using namespace gui::name::window;
+        windowsFactory.attach(main_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::AntennaMainWindow>(app);
+        });
+        windowsFactory.attach(scan_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::ScanModesWindow>(app);
+        });
+        windowsFactory.attach(algo_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::AlgoParamsWindow>(app);
+        });
     }
 
     void ApplicationAntenna::destroyUserInterface()

@@ -53,7 +53,7 @@ namespace app
             if (msg != nullptr) {
                 // window-specific actions
                 if (msg->interface == db::Interface::Name::SMSThread || msg->interface == db::Interface::Name::SMS) {
-                    for (auto &[name, window] : windows) {
+                    for (auto &[name, window] : windowsFactory) {
                         window->onDatabaseMessage(msg);
                     }
                 }
@@ -115,19 +115,35 @@ namespace app
     {
         windowOptions = gui::newOptionWindow(this);
 
-        windows.insert({gui::name::window::main_window, new gui::MessagesMainWindow(this)});
-        windows.insert({gui::name::window::thread_view, new gui::SMSThreadViewWindow(this)});
-        windows.insert({gui::name::window::new_sms, new gui::NewMessageWindow(this)});
-        windows.insert({windowOptions->getName(), windowOptions});
-        windows.insert(
-            {gui::name::window::dialog, new gui::Dialog(this, gui::name::window::dialog, gui::Dialog::Meta())});
-        windows.insert(
-            {gui::name::window::dialog_confirm, new gui::DialogConfirm(this, gui::name::window::dialog_confirm)});
-        windows.insert(
-            {gui::name::window::dialog_yes_no, new gui::DialogYesNo(this, gui::name::window::dialog_yes_no)});
-        windows.insert({gui::name::window::thread_sms_search, new gui::SMSSearch(this)});
-        windows.insert({gui::name::window::sms_templates, new gui::SMSTemplatesWindow(this)});
-        windows.insert({gui::name::window::search_results, new gui::SearchResults(this)});
+        windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::MessagesMainWindow>(app);
+        });
+        windowsFactory.attach(gui::name::window::thread_view, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::SMSThreadViewWindow>(app);
+        });
+        windowsFactory.attach(gui::name::window::new_sms, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::NewMessageWindow>(app);
+        });
+        windowsFactory.attach(windowOptions->getName(), [](Application *app, const std::string &name) {
+            return std::make_unique<gui::OptionWindow>(app, name);
+        });
+        windowsFactory.attach(gui::name::window::dialog, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::Dialog>(app, name, gui::Dialog::Meta());
+        });
+        windowsFactory.attach(gui::name::window::dialog_confirm, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::DialogConfirm>(app, name);
+        });
+        windowsFactory.attach(gui::name::window::dialog_yes_no, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::DialogYesNo>(app, name);
+        });
+        windowsFactory.attach(gui::name::window::thread_sms_search,
+                       [](Application *app, const std::string &name) { return std::make_unique<gui::SMSSearch>(app); });
+        windowsFactory.attach(gui::name::window::sms_templates, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::SMSTemplatesWindow>(app);
+        });
+        windowsFactory.attach(gui::name::window::search_results, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::SearchResults>(app);
+        });
     }
 
     void ApplicationMessages::destroyUserInterface()
@@ -162,7 +178,7 @@ namespace app
         }
         LOG_DEBUG("Removing thread: %" PRIu32, record->ID);
 
-        auto dialog = dynamic_cast<gui::DialogYesNo *>(windows[gui::name::window::dialog_yes_no]);
+        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsFactory.get(gui::name::window::dialog_yes_no)->second.get());
         assert(dialog != nullptr);
 
         auto query = std::make_unique<ContactGetByID>(record->contactID);
@@ -210,7 +226,7 @@ namespace app
     bool ApplicationMessages::removeSms(const SMSRecord &record)
     {
         LOG_DEBUG("Removing sms: %" PRIu32, record.ID);
-        auto dialog = dynamic_cast<gui::DialogYesNo *>(windows[gui::name::window::dialog_yes_no]);
+        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsFactory.get(gui::name::window::dialog_yes_no)->second.get());
         assert(dialog != nullptr);
 
         auto meta   = dialog->meta;
@@ -261,7 +277,7 @@ namespace app
 
     bool ApplicationMessages::searchEmpty(const std::string &query)
     {
-        auto dialog = dynamic_cast<gui::Dialog *>(windows[gui::name::window::dialog]);
+        auto dialog = dynamic_cast<gui::Dialog *>(windowsFactory.get(gui::name::window::dialog)->second.get());
         assert(dialog);
         auto meta  = dialog->meta;
         meta.icon  = "search_big";
@@ -277,14 +293,14 @@ namespace app
     bool ApplicationMessages::showSearchResults(const UTF8 &title, const UTF8 &search_text)
     {
         auto name = gui::name::window::search_results;
-        windows[name]->setTitle(title);
+        windowsFactory.get(name)->second->setTitle(title);
         switchWindow(name, std::make_unique<SMSTextToSearch>(search_text));
         return true;
     }
 
     bool ApplicationMessages::showNotification(std::function<bool()> action, bool ignoreCurrentWindowOnStack)
     {
-        auto dialog = dynamic_cast<gui::DialogConfirm *>(windows[gui::name::window::dialog_confirm]);
+        auto dialog = dynamic_cast<gui::DialogConfirm *>(windowsFactory.get(gui::name::window::dialog_confirm)->second.get());
         assert(dialog);
         auto meta   = dialog->meta;
         meta.icon   = "info_big_circle_W_G";

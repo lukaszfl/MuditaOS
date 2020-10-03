@@ -22,6 +22,12 @@ namespace gui
         buildInterface();
     }
 
+    OptionWindow::OptionWindow(app::Application *app, const std::string &name,std::list<Option> options) : AppWindow(app, name) 
+    {
+        buildInterface();
+        addOptions(std::move(options));
+    }
+
     void OptionWindow::rebuild()
     {}
 

@@ -84,20 +84,18 @@ namespace app
 
     void ApplicationCallLog::createUserInterface()
     {
-
-        gui::AppWindow *window = nullptr;
-
-        window = new gui::CallLogMainWindow(this);
-        windows.insert(std::pair<std::string, gui::AppWindow *>(window->getName(), window));
-
-        window = new gui::CallLogDetailsWindow(this);
-        windows.insert(std::pair<std::string, gui::AppWindow *>(window->getName(), window));
-
-        windowOptions = gui::newOptionWindow(this);
-        windows.insert(std::pair<std::string, gui::AppWindow *>(windowOptions->getName(), windowOptions));
-
-        window = new gui::DialogYesNo(this, calllog::settings::DialogYesNoStr);
-        windows.insert(std::pair<std::string, gui::AppWindow *>(window->getName(), window));
+        windowsFactory.attach(calllog::settings::MainWindowStr, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::CallLogMainWindow>(app);
+        });
+        windowsFactory.attach(calllog::settings::DetailsWindowStr, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::CallLogDetailsWindow>(app);
+        });
+        windowsFactory.attach(
+            utils::localize.get("app_phonebook_options_title"),
+            [](Application *app, const std::string &name) { return std::make_unique<gui::OptionWindow>(app, name); });
+        windowsFactory.attach(calllog::settings::DialogYesNoStr, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::DialogYesNo>(app, name);
+        });
     }
 
     void ApplicationCallLog::destroyUserInterface()
@@ -106,7 +104,7 @@ namespace app
     bool ApplicationCallLog::removeCalllogEntry(const CalllogRecord &record)
     {
         LOG_DEBUG("Removing CalllogRecord: %" PRIu32, record.ID);
-        auto dialog = dynamic_cast<gui::DialogYesNo *>(windows[calllog::settings::DialogYesNoStr]);
+        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsFactory.get(calllog::settings::DialogYesNoStr)->second.get());
         assert(dialog != nullptr);
         auto meta   = dialog->meta;
         meta.action = [=]() -> bool {

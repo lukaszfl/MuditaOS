@@ -45,8 +45,8 @@ namespace gui
         app::Application *application = nullptr;
 
       public:
+        AppWindow() = delete;
         AppWindow(app::Application *app, std::string name);
-        AppWindow(AppWindow *win);
         virtual ~AppWindow();
 
         app::Application *getApplication()
