@@ -81,6 +81,7 @@ namespace gui
 
       public:
         OptionWindow(app::Application *app, const std::string &name);
+        OptionWindow(app::Application *app, const std::string &name,std::list<Option> options);
         virtual ~OptionWindow();
 
         void addOptionLabel(const UTF8 &text, std::function<bool(Item &)> activatedCallback, Arrow arrow);

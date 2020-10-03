@@ -91,8 +91,8 @@ namespace app
             }
         }
 
-        windows[app::window::name::desktop_menu]->rebuild();
-        windows[app::window::name::desktop_main_window]->rebuild();
+        windows.build(this, app::window::name::desktop_menu);
+        windows.build(this, app::window::name::desktop_main_window);
         return true;
     }
 
@@ -111,7 +111,7 @@ namespace app
              msg->interface == db::Interface::Name::SMS) &&
             msg->type != db::Query::Type::Read) {
             requestNotReadNotifications();
-            windows[app::window::name::desktop_menu]->rebuild();
+            windows.build(this, app::window::name::desktop_menu);
         }
 
         return false;
@@ -208,12 +208,21 @@ namespace app
     void ApplicationDesktop::createUserInterface()
     {
         using namespace app::window::name;
-        windows.insert(std::pair<std::string, gui::AppWindow *>(desktop_main_window, new gui::DesktopMainWindow(this)));
-        windows.insert(std::pair<std::string, gui::AppWindow *>(
-            desktop_pin_lock, new gui::PinLockWindow(this, desktop_pin_lock, lockHandler.lock)));
-        windows.insert(std::pair<std::string, gui::AppWindow *>(desktop_menu, new gui::MenuWindow(this)));
-        windows.insert(std::pair<std::string, gui::AppWindow *>(desktop_poweroff, new gui::PowerOffWindow(this)));
-        windows.insert(std::pair<std::string, gui::AppWindow *>(desktop_reboot, new gui::RebootWindow(this)));
+        windows.attach(desktop_main_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::DesktopMainWindow>(app);
+        });
+        windows.attach(desktop_pin_lock, [&](Application *app, const std::string newname) {
+            return std::make_unique<gui::PinLockWindow>(app, desktop_pin_lock, lockHandler.lock);
+        });
+        windows.attach(desktop_menu, [](Application *app, const std::string newname) {
+            return std::make_unique<gui::MenuWindow>(app);
+        });
+        windows.attach(desktop_poweroff, [](Application *app, const std::string newname) {
+            return std::make_unique<gui::PowerOffWindow>(app);
+        });
+        windows.attach(desktop_reboot, [](Application *app, const std::string newname) {
+            return std::make_unique<gui::RebootWindow>(app);
+        });
     }
 
     void ApplicationDesktop::destroyUserInterface()

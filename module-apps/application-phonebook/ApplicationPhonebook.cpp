@@ -102,22 +102,43 @@ namespace app
 
     void ApplicationPhonebook::createUserInterface()
     {
-        windows.insert({gui::name::window::main_window, new gui::PhonebookMainWindow(this)});
-        windows.insert({gui::window::name::new_contact, new gui::PhonebookNewContact(this)});
-        windows.insert({gui::window::name::contact, new gui::PhonebookContactDetails(this)});
-        windows.insert({gui::window::name::search, new gui::PhonebookSearch(this)});
-        windows.insert({gui::window::name::search_results, new gui::PhonebookSearchResults(this)});
-        windows.insert(
-            {gui::window::name::dialog, new gui::Dialog(this, gui::window::name::dialog, gui::Dialog::Meta())});
-        windows.insert(
-            {gui::window::name::dialog_yes_no, new gui::DialogYesNo(this, gui::window::name::dialog_yes_no)});
-        windows.insert({gui::window::name::dialog_yes_no_icon_txt,
-                        new gui::DialogYesNoIconTxt(this, gui::window::name::dialog_yes_no_icon_txt)});
-        windows.insert(
-            {gui::window::name::dialog_confirm, new gui::DialogConfirm(this, gui::window::name::dialog_confirm)});
-        windows.insert({gui::window::name::contact_options, new gui::PhonebookContactOptions(this)});
-        windows.insert({gui::window::name::namecard_options, new gui::PhonebookNamecardOptions(this)});
-        windows.insert({gui::window::name::ice_contacts, new gui::PhonebookIceContacts(this)});
+        windows.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::PhonebookMainWindow>(app);
+        });
+        windows.attach(gui::window::name::contact, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::PhonebookContactDetails>(app);
+        });
+        windows.attach(gui::window::name::search, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::PhonebookSearch>(app);
+        });
+        windows.attach(gui::window::name::search_results, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::PhonebookSearchResults>(app);
+        });
+        windows.attach(gui::window::name::dialog, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::Dialog>(app, name, gui::Dialog::Meta());
+        });
+        windows.attach(gui::window::name::dialog_yes_no, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::DialogYesNo>(app, gui::window::name::dialog_yes_no);
+        });
+        windows.attach(gui::window::name::dialog_yes_no_icon_txt, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::DialogYesNoIconTxt>(app, name);
+        });
+        windows.attach(gui::window::name::dialog_confirm, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::DialogConfirm>(app, gui::window::name::dialog_confirm);
+        });
+        windows.attach(gui::window::name::contact_options, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::PhonebookContactOptions>(app);
+        });
+        windows.attach(gui::window::name::namecard_options, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::PhonebookNamecardOptions>(app);
+        });
+        windows.attach(gui::window::name::ice_contacts, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::PhonebookIceContacts>(app);
+        });
+
+        windows.attach(gui::window::name::new_contact, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::PhonebookNewContact>(app);
+        });
     }
 
     void ApplicationPhonebook::destroyUserInterface()
@@ -129,7 +150,7 @@ namespace app
 
         LOG_DEBUG("Search results count: %d", searchModel->requestRecordsCount());
         if (searchModel->requestRecordsCount() > 0) {
-            auto main_window = dynamic_cast<gui::PhonebookMainWindow *>(windows[gui::name::window::main_window]);
+            auto main_window = dynamic_cast<gui::PhonebookMainWindow *>(windows.get(gui::name::window::main_window)->second.get());
             if (main_window == nullptr) {
                 LOG_ERROR("Failed to get main window.");
                 return;
@@ -155,7 +176,7 @@ namespace app
 
     bool ApplicationPhonebook::searchEmpty(const std::string &query)
     {
-        auto dialog = dynamic_cast<gui::Dialog *>(windows[gui::window::name::dialog]);
+        auto dialog = dynamic_cast<gui::Dialog *>(windows.get(gui::window::name::dialog)->second.get());
         assert(dialog);
         auto meta  = dialog->meta;
         meta.icon  = "search_big";

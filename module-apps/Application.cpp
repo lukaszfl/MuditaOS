@@ -27,6 +27,7 @@
 #include <algorithm>                                     // for find
 #include <iterator>                                      // for distance, next
 #include <type_traits>                                   // for add_const<>...
+#include <WindowsStore.hpp>
 
 namespace gui
 {
@@ -68,7 +69,7 @@ namespace app
     Application::Application(
         std::string name, std::string parent, bool startBackground, uint32_t stackDepth, sys::ServicePriority priority)
         : Service(name, parent, stackDepth, priority),
-          startBackground{startBackground}
+           windows(this),startBackground{startBackground}
     {
         keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
         busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
@@ -80,13 +81,8 @@ namespace app
         longPressTimer->connect([&](sys::Timer &) { longPressTimerCallback(); });
     }
 
-    Application::~Application()
-    {
-        for (auto it = windows.begin(); it != windows.end(); it++) {
-            delete it->second;
-        }
-        windows.clear();
-    }
+    Application::~Application() 
+    {}
 
     Application::State Application::getState()
     {
@@ -393,8 +389,8 @@ namespace app
     {
         auto msg = static_cast<AppSwitchWindowMessage *>(msgl);
         // check if specified window is in the application
-        auto it = windows.find(msg->getWindowName());
-        if (it != windows.end()) {
+
+        if (windows.isRegistered(msg->getWindowName())) {
             auto switchData = std::move(msg->getData());
             if (switchData && switchData->ignoreCurrentWindowOnStack) {
                 popToWindow(getPrevWindow());
@@ -434,13 +430,13 @@ namespace app
     sys::Message_t Application::handleAppRebuild(sys::DataMessage *msgl)
     {
         LOG_INFO("Application %s rebuilding gui", GetName().c_str());
-        for (auto it = windows.begin(); it != windows.end(); it++) {
-            LOG_DEBUG("Rebuild: %s", it->first.c_str());
-            if (!it->second) {
-                LOG_ERROR("NO SUCH WINDOW");
+        for (auto &[name, window] : windows) {
+            LOG_DEBUG("Rebuild: %s", name.c_str());
+            if (window == nullptr) {
+                LOG_ERROR("No window: %s", name.c_str());
             }
             else {
-                it->second->rebuild();
+                windows.build(this, name);
             }
         }
         LOG_INFO("Refresh app with focus!");
@@ -453,7 +449,7 @@ namespace app
 
     sys::Message_t Application::handleAppRefresh(sys::DataMessage *msgl)
     {
-        AppRefreshMessage *msg = reinterpret_cast<AppRefreshMessage *>(msgl);
+        auto *msg = dynamic_cast<AppRefreshMessage *>(msgl);
         render(msg->getMode());
         return msgHandled();
     }
@@ -612,31 +608,13 @@ namespace app
         this->windowStack.clear();
     }
 
-    gui::AppWindow *Application::getWindow(const std::string &window)
-    {
-        auto it = windows.find(window);
-        if (it != windows.end()) {
-            return it->second;
-        }
-        return nullptr;
-    }
-
     gui::AppWindow *Application::getCurrentWindow()
     {
-        std::string window = "";
+        std::string name = "";
         if (windowStack.size() == 0) {
-            window = gui::name::window::main_window;
+            return windows.getDefault().get();
         }
-        else {
-            window = windowStack.back();
-        }
-
-        return getWindow(window);
-    }
-
-    void Application::attachWindow(gui::AppWindow *window)
-    {
-        windows.insert({window->getName(), window});
+        return windows.get(windowStack.back())->second.get();
     }
 
     void Application::connect(std::unique_ptr<app::GuiTimer> &&timer, gui::Item *item)

@@ -23,6 +23,7 @@
 #include <string>                                       // for string
 #include <utility>                                      // for move, pair
 #include <vector>                                       // for vector
+#include "WindowsStore.hpp"
 
 namespace app
 {
@@ -130,6 +131,7 @@ namespace app
                     bool startBackground          = false,
                     uint32_t stackDepth           = 4096,
                     sys::ServicePriority priority = sys::ServicePriority::Idle);
+
         virtual ~Application();
 
         Application::State getState();
@@ -296,17 +298,14 @@ namespace app
         virtual void createUserInterface() = 0;
         /// Method closing application's windows.
         virtual void destroyUserInterface() = 0;
-        /// Helper method to attach new window to application
-        void attachWindow(gui::AppWindow *window);
-        /// Map containing application's windows
-        /// Right now all application windows are being created on application start in createUserInterface
-        /// then all windows are removed at the end of application
-        /// @note right now there is no mechanism to postphone window creation
-        std::map<std::string, gui::AppWindow *> windows;
 
+      private:
         /// stack of visited windows in application
         /// @ingrup AppWindowStack
         std::vector<std::string> windowStack;
+      protected:
+
+        WindowsStore windows;
 
       public:
         /// @ingrup AppWindowStack
