@@ -141,6 +141,16 @@ inline TimePoint getFirstWeekDay(const TimePoint &tp)
     return finalDateTime;
 }
 
+inline std::string TimePointToDateString(const TimePoint &tp)
+{
+    return date::format("%F", time_point_cast<seconds>(tp));
+}
+
+inline std::string TimePointToTimeString(const TimePoint &tp)
+{
+    return date::format("%T", time_point_cast<seconds>(tp));
+}
+
 inline std::string TimePointToString(const TimePoint &tp, date::months months)
 {
     date::year_month_day yearMonthDay     = date::year_month_day{date::floor<date::days>(tp)};

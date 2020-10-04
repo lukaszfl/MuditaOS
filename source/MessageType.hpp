@@ -221,11 +221,9 @@ enum class MessageType
     FotaFinished,
 
     // Time messages
-    TimeNotification,
-    TimeStart,
-    TimeProgress,
-    TimeFinished,
-    CalendarReminderFired,
+    TimersProcessingStart,
+    TimersProcessingStop,
+    ReloadTimers,
 
     StateChange,
     // antenna messages

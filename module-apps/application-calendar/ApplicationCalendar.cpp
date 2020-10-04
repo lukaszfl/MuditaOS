@@ -6,6 +6,7 @@
 #include "windows/EventDetailWindow.hpp"
 #include "windows/NewEditEventWindow.hpp"
 #include "windows/CustomRepeatWindow.hpp"
+#include "windows/EventReminderWindow.hpp"
 #include "NoEvents.hpp"
 #include "Dialog.hpp"
 #include <time/time_conversion.hpp>
@@ -102,6 +103,10 @@ namespace app
         applicationStartTime = timestamp.getTime();
         auto ret             = Application::InitHandler();
         createUserInterface();
+
+        // mlucki
+        ////setActiveWindow(gui::name::window::main_window);
+
         return ret;
     }
 
@@ -138,6 +143,9 @@ namespace app
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::custom_repeat_window,
             new gui::CustomRepeatWindow(this, style::window::calendar::name::custom_repeat_window)));
+        windows.insert(std::pair<std::string, gui::AppWindow *>(
+            style::window::calendar::name::event_reminder_window,
+            new gui::EventReminderWindow(this, style::window::calendar::name::event_reminder_window)));
     }
 
     void ApplicationCalendar::destroyUserInterface()

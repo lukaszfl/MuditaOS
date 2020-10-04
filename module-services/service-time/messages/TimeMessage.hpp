@@ -25,30 +25,25 @@ class TimeMessage : public sys::DataMessage
     MessageType type = MessageType::MessageTypeUninitialized;
 };
 
-class CalendarReminderFiredNotificationMessage : public TimeMessage
+class TimersProcessingStartMessage : public TimeMessage
 {
   public:
-    CalendarReminderFiredNotificationMessage() : TimeMessage(MessageType::CalendarReminderFired)
+    TimersProcessingStartMessage() : TimeMessage(MessageType::TimersProcessingStart)
     {}
 };
 
-class TimeNotificationMessage : public TimeMessage
+class TimersProcessingStopMessage : public TimeMessage
 {
   public:
-    // Time service will send async notifications specified below
-    enum class Type
-    {
-        EventReminder,
-        Event
-    };
-
-    TimeNotificationMessage(Type type) : TimeMessage(MessageType::TimeNotification), type(type)
+    TimersProcessingStopMessage() : TimeMessage(MessageType::TimersProcessingStop)
     {}
+};
 
-    ~TimeNotificationMessage()
+class ReloadTimersMessage : public TimeMessage
+{
+  public:
+    ReloadTimersMessage() : TimeMessage(MessageType::ReloadTimers)
     {}
-
-    Type type;
 };
 
 class TimeResponseMessage : public sys::ResponseMessage
@@ -64,27 +59,6 @@ class TimeResponseMessage : public sys::ResponseMessage
 
     bool retCode;
     std::string data;
-};
-
-class TimeStart : public TimeMessage
-{
-  public:
-    TimeStart() : TimeMessage(MessageType::TimeStart)
-    {}
-};
-
-class TimeProgress : public TimeMessage
-{
-  public:
-    TimeProgress() : TimeMessage(MessageType::TimeProgress)
-    {}
-};
-
-class TimeFinished : public TimeMessage
-{
-  public:
-    TimeFinished() : TimeMessage(MessageType::TimeFinished)
-    {}
 };
 
 #endif // PUREPHONE_SERVICETIME_HPP

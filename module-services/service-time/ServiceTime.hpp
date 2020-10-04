@@ -81,13 +81,15 @@ class ServiceTime : public sys::Service
     TimePoint startTP = TIME_POINT_INVALID;
     uint32_t timerId  = 0;
 
+    bool timersProcessingStarted = false;
+
   protected:
     void SendReloadQuery();
     void ReceiveReloadQuery(std::unique_ptr<std::vector<EventsRecord>> records);
 
     void DestroyTimer();
     void RecreateTimer();
-    void InvokeEvent();
+    void InvokeReminder();
     void SendReminderFiredQuery();
 
     // mlucki
@@ -110,6 +112,10 @@ class ServiceTime : public sys::Service
     sys::ReturnCodes DeinitHandler() override;
 
     sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override final;
+
+    static bool messageReloadTimers(sys::Service *sender);
+    static bool messageTimersProcessingStart(sys::Service *sender);
+    static bool messageTimersProcessingStop(sys::Service *sender);
 
     static const char *serviceName;
 };

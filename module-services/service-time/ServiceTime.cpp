@@ -25,6 +25,7 @@
 // mlucki
 #include <module-services/service-cellular/messages/CellularMessage.hpp>
 #include <module-gui/gui/SwitchData.hpp>
+#include "module-apps/application-calendar/data/CalendarData.hpp"
 
 TimeEvents::TimeEvents()
 {}
@@ -110,9 +111,9 @@ bool CalendarTimeEvents::Reload()
 //************************************************************************************************
 //************************************************************************************************
 
-const char *ServiceTime::serviceName = "ServiceTime";
+// const char *ServiceTime::serviceName = "ServiceTime";
 
-ServiceTime::ServiceTime() : sys::Service(serviceName, "", 4096 * 2, sys::ServicePriority::Idle)
+ServiceTime::ServiceTime() : sys::Service(service::name::service_time, "", 4096 * 2, sys::ServicePriority::Idle)
 {
     LOG_INFO("[ServiceTime] Initializing");
     busChannels.push_back(sys::BusChannels::ServiceDBNotifications);
@@ -141,6 +142,11 @@ sys::ReturnCodes ServiceTime::SwitchPowerModeHandler(const sys::ServicePowerMode
 
 void ServiceTime::SendReloadQuery()
 {
+    if (!timersProcessingStarted) {
+        LOG_ERROR("Reload query called when timers' processing not started!");
+        return;
+    }
+
     TimePoint filterFrom = TimePointNow();
     TimePoint filterTill = TimePointNow();
     if (startTP != TIME_POINT_INVALID) {
@@ -217,26 +223,18 @@ void ServiceTime::RecreateTimer()
 {
     DestroyTimer();
 
-    // chrono::duration<minutes> c = chrono::minutes{2};
-    //[[maybe_unused]] uint32_t interval = (TimePointNow() - eventRecord.date_from -
-    //chrono::minutes{eventRecord.reminder}).count(); auto interval1 = TimePointNow() - eventRecord.date_from -
-    // chrono::minutes{eventRecord.reminder}; uint32_t interval2 = std::chrono::minutes(3).count(); uint32_t interval2 =
-    // chrono::minutes(3).count();
-
     auto duration = eventRecord.date_from - chrono::minutes{eventRecord.reminder} - TimePointNow();
     if (duration.count() <= 0) {
         duration = chrono::milliseconds(100);
     }
-
     [[maybe_unused]] uint32_t interval = chrono::duration_cast<chrono::milliseconds>(duration).count();
-    //[[maybe_unused]] uint32_t hours = chrono::duration_cast<chrono::hours>(duration).count();
 
-    // timerId = CreateTimer(15000, false, "ServiceTime_EventsTimer");
-    timerId = CreateTimer(interval, false, "ServiceTime_EventsTimer");
+    timerId = CreateTimer(10000, false, "ServiceTime_EventsTimer");
+    // timerId = CreateTimer(interval, false, "ServiceTime_EventsTimer");
     ReloadTimer(timerId);
 }
 
-void ServiceTime::InvokeEvent()
+void ServiceTime::InvokeReminder()
 {
     // Invoke notification
     // return sys::Bus::SendUnicast(msg, service::name::db, serv);
@@ -269,15 +267,37 @@ void ServiceTime::InvokeEvent()
             std::move(data));
     */
 
-    /*  LOG_DEBUG("show all calendar events!");
-      sapm::ApplicationManager::messageSwitchApplication(
-          this,
-          "ApplicationCalendar",
-          "CustomRepeat",
-          nullptr);*/
+    // LOG_DEBUG("show all calendar events!");
+    /*auto data = std::make_unique<gui::SwitchData>("ServiceTime_switch");
+    data->ignoreCurrentWindowOnStack = true;
+    //data->disableAppClose = true;
+    sapm::ApplicationManager::messageSwitchApplication(this, "ApplicationDesktop", "MenuWindow", std::move(data));*/
+    // sapm::ApplicationManager::messageSwitchApplication(this, "ApplicationDesktop", "MenuWindow", nullptr);
 
-    LOG_DEBUG("show all calendar events!");
-    sapm::ApplicationManager::messageSwitchApplication(this, "ApplicationDesktop", "PinLockWindow", nullptr);
+    // sapm::ApplicationManager::messageSwitchApplication(this, "ApplicationCall", "CallWindow", nullptr);
+
+#if 1
+    ////sapm::ApplicationManager::messageSwitchApplication(this, "ApplicationDesktop", "MenuWindow", nullptr);
+
+    // auto ad = sapm::ApplicationManager::ApplicationDescription *appGet(const std::string &name);
+
+    std::unique_ptr<EventRecordData> eventData = std::make_unique<EventRecordData>();
+    eventData->setDescription(style::window::calendar::name::event_reminder_window);
+    auto event = std::make_shared<EventsRecord>(eventRecord);
+    /*event = eventRecord;
+    event->date_from = dateFilter;
+    event->date_till = dateFilter;*/
+    eventData->setData(event);
+    eventData->setWindowName("");
+
+    sapm::ApplicationManager::messageSwitchApplication(
+        this, "ApplicationCalendar", "EventReminderWindow", std::move(eventData));
+#endif
+
+    // mlucki
+    // to działa
+    // LOG_DEBUG("show all calendar events!");
+    // sapm::ApplicationManager::messageSwitchApplication(this, "ApplicationDesktop", "PinLockWindow", nullptr);
 
     // application->switchWindow("MenuWindow");
     // PowerOffWindow
@@ -347,7 +367,20 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
 
             return responseMsg;
         }*/
-    }
+    } break;
+    case MessageType::ReloadTimers: {
+        DestroyTimer();
+        SendReloadQuery();
+    } break;
+    case MessageType::TimersProcessingStart: {
+        timersProcessingStarted = true;
+        DestroyTimer();
+        SendReloadQuery();
+    } break;
+    case MessageType::TimersProcessingStop: {
+        timersProcessingStarted = false;
+        DestroyTimer();
+    } break;
     default:
         break;
     }
@@ -422,10 +455,28 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
     }
 }
 
+bool ServiceTime::messageReloadTimers(sys::Service *sender)
+{
+    auto msg = std::make_shared<ReloadTimersMessage>();
+    return sys::Bus::SendUnicast(msg, service::name::service_time, sender);
+}
+
+bool ServiceTime::messageTimersProcessingStart(sys::Service *sender)
+{
+    auto msg = std::make_shared<TimersProcessingStartMessage>();
+    return sys::Bus::SendUnicast(msg, service::name::service_time, sender);
+}
+
+bool ServiceTime::messageTimersProcessingStop(sys::Service *sender)
+{
+    auto msg = std::make_shared<TimersProcessingStopMessage>();
+    return sys::Bus::SendUnicast(msg, service::name::service_time, sender);
+}
+
 void ServiceTime::TickHandler(uint32_t id)
 {
     calendarEvents.OnTickHandler(id);
 
-    InvokeEvent();
+    InvokeReminder();
     SendReminderFiredQuery();
 }
