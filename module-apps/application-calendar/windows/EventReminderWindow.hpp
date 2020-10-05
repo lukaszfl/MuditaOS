@@ -8,6 +8,8 @@
 
 #include <Text.hpp>
 #include <Label.hpp>
+#include <module-sys/Service/Timer.hpp>
+//#include <module-apps/GuiTimer.hpp>
 //#include <Label.hpp>
 //#include <functional>
 
@@ -17,7 +19,8 @@ namespace gui
     {
       private:
         // uint32_t timerId = 0;
-        app::AppTimer reminderTimer;
+        // app::GuiTimer reminderTimer;
+        std::unique_ptr<sys::Timer> reminderTimer;
 
       protected:
         std::string prevWindowName                = "";

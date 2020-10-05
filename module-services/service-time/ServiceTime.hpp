@@ -17,6 +17,7 @@
 
 #include <module-db/queries/calendar/QueryEventsGet.hpp>
 #include <module-db/queries/calendar/QueryEventsEdit.hpp>
+#include <module-sys/Service/Timer.hpp>
 
 namespace service::name
 {
@@ -81,6 +82,8 @@ class ServiceTime : public sys::Service
     TimePoint startTP = TIME_POINT_INVALID;
     uint32_t timerId  = 0;
 
+    std::unique_ptr<sys::Timer> calendarReminderTimer = nullptr;
+
     bool timersProcessingStarted = false;
 
   protected:
@@ -104,7 +107,8 @@ class ServiceTime : public sys::Service
     sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr) override;
 
     // Invoked when timer ticked
-    void TickHandler(uint32_t id) override final;
+    // void TickHandler(uint32_t id) override final;
+    void reminderTimerCallback();
 
     // Invoked during initialization
     sys::ReturnCodes InitHandler() override;

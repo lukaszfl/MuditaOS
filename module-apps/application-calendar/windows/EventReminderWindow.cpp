@@ -10,10 +10,29 @@ namespace gui
 {
 
     EventReminderWindow::EventReminderWindow(app::Application *app, std::string name)
-        : AppWindow(app, style::window::calendar::name::event_reminder_window),
-          reminderTimer(app->CreateAppTimer(20000, true, [=]() { reminderTimerCallback(); }))
+        : AppWindow(app, style::window::calendar::name::event_reminder_window)
     {
         buildInterface();
+
+        reminderTimer = std::make_unique<sys::Timer>("CalendarReminderTimer", app, 20000, sys::Timer::Type::SingleShot);
+        reminderTimer->connect([=](sys::Timer &) { reminderTimerCallback(); });
+
+        // reminderTimer
+
+        // reminderTimer->start();
+
+        /*auto app = dynamic_cast<app::ApplicationCall *>(application);
+        assert(app != nullptr);
+        auto timer = std::make_unique<app::GuiTimer>(app);
+        timer->setInterval(app->getDelayedStopTime());
+        timerCallback = [app, this](Item &, Timer &timer) {
+          app->stopCallTimer();
+          setState(State::IDLE);
+          detachTimer(timer);
+          sapm::ApplicationManager::messageSwitchPreviousApplication(app);
+          return true;
+        };
+        app->connect(std::move(timer), this);*/
     }
 
     EventReminderWindow::~EventReminderWindow()
@@ -77,7 +96,7 @@ namespace gui
 
     void EventReminderWindow::startTimer()
     {
-        reminderTimer.restart();
+        reminderTimer->reload();
 
         /*if (timerId > 0)
         {
@@ -89,8 +108,7 @@ namespace gui
 
     void EventReminderWindow::destroyTimer()
     {
-        reminderTimer.stop();
-        application->DeleteTimer(reminderTimer);
+        reminderTimer->stop();
 
         /*if (timerId == 0)
         {

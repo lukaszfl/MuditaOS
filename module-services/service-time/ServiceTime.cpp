@@ -27,6 +27,8 @@
 #include <module-gui/gui/SwitchData.hpp>
 #include "module-apps/application-calendar/data/CalendarData.hpp"
 
+#include "module-apps/application-calendar/data/dateCommon.hpp"
+
 TimeEvents::TimeEvents()
 {}
 
@@ -117,6 +119,10 @@ ServiceTime::ServiceTime() : sys::Service(service::name::service_time, "", 4096 
 {
     LOG_INFO("[ServiceTime] Initializing");
     busChannels.push_back(sys::BusChannels::ServiceDBNotifications);
+
+    calendarReminderTimer =
+        std::make_unique<sys::Timer>("CalendarReminderTimer_service", this, 1000, sys::Timer::Type::SingleShot);
+    // calendarReminderTimer->connect([=](sys::Timer &) { reminderTimerCallback(); });
 }
 
 ServiceTime::~ServiceTime()
@@ -210,18 +216,20 @@ void ServiceTime::ReceiveReloadQuery(std::unique_ptr<std::vector<EventsRecord>> 
 
 void ServiceTime::DestroyTimer()
 {
-    if (timerId == 0) {
+    /*if (timerId == 0) {
         return;
     }
 
     stopTimer(timerId);
     DeleteTimer(timerId);
     timerId = 0;
+     */
+    calendarReminderTimer->stop();
 }
 
 void ServiceTime::RecreateTimer()
 {
-    DestroyTimer();
+    /*DestroyTimer();
 
     auto duration = eventRecord.date_from - chrono::minutes{eventRecord.reminder} - TimePointNow();
     if (duration.count() <= 0) {
@@ -231,7 +239,21 @@ void ServiceTime::RecreateTimer()
 
     timerId = CreateTimer(10000, false, "ServiceTime_EventsTimer");
     // timerId = CreateTimer(interval, false, "ServiceTime_EventsTimer");
-    ReloadTimer(timerId);
+    ReloadTimer(timerId);*/
+
+    DestroyTimer();
+    auto duration = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder} - TimePointNow();
+    if (duration.count() <= 0) {
+        duration = std::chrono::milliseconds(100);
+    }
+    [[maybe_unused]] uint32_t interval = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+    // timerId = CreateTimer(interval, false, "ServiceTime_EventsTimer");
+    ////calendarReminderTimer->setInterval(10000);
+    ////calendarReminderTimer->start();
+
+    calendarReminderTimer->connect([=](sys::Timer &) { reminderTimerCallback(); });
+    calendarReminderTimer->reload(10000);
 }
 
 void ServiceTime::InvokeReminder()
@@ -356,6 +378,9 @@ sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::Res
             (msg->type == db::Query::Type::Create || msg->type == db::Query::Type::Update ||
              msg->type == db::Query::Type::Delete)) {
 
+            // mlucki
+            timersProcessingStarted = true;
+
             DestroyTimer();
             SendReloadQuery();
 
@@ -473,9 +498,17 @@ bool ServiceTime::messageTimersProcessingStop(sys::Service *sender)
     return sys::Bus::SendUnicast(msg, service::name::service_time, sender);
 }
 
-void ServiceTime::TickHandler(uint32_t id)
+/*void ServiceTime::TickHandler(uint32_t id)
 {
     calendarEvents.OnTickHandler(id);
+
+    InvokeReminder();
+    SendReminderFiredQuery();
+}*/
+
+void ServiceTime::reminderTimerCallback()
+{
+    // calendarEvents.OnTickHandler(id);
 
     InvokeReminder();
     SendReminderFiredQuery();
