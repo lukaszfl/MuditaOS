@@ -24,6 +24,7 @@
 #include <utility>                                      // for move, pair
 #include <vector>                                       // for vector
 #include "WindowsFactory.hpp"
+#include "WindowsStack.hpp"
 
 namespace app
 {
@@ -299,34 +300,12 @@ namespace app
         /// Method closing application's windows.
         virtual void destroyUserInterface() = 0;
 
-      private:
-        /// stack of visited windows in application
-        /// @ingrup AppWindowStack
-        std::vector<std::string> windowStack;
       protected:
 
         WindowsFactory windowsFactory;
+        WindowsStack windowsStack;
 
       public:
-        /// @ingrup AppWindowStack
-        /// get to the first time we entered this &window
-        bool popToWindow(const std::string &window);
-        /// push window to the top of windows stack
-        /// @ingrup AppWindowStack
-        void pushWindow(const std::string &newWindow);
-        /// getter for previous window name
-        /// @ingrup AppWindowStack
-        const std::string getPrevWindow() const;
-        /// clears windows stack
-        /// @ingrup AppWindowStack
-        void cleanPrevWindw();
-        /// getter to get window by name
-        /// @note could be possibly used to implement building window on request
-        /// @ingrup AppWindowStack
-        gui::AppWindow *getWindow(const std::string &window);
-        /// getter for current wisible window in application
-        /// @ingrup AppWindowStack
-        gui::AppWindow *getCurrentWindow();
         /// to avoid conflicts with connect below
         using Service::connect;
         /// connects item with GuiTimer and stores it in app

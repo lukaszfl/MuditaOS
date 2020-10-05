@@ -39,6 +39,8 @@ namespace app
         default_window = name;
     }
 
+    /// TODO MIXED LOGIC HERE?
+    /// oly reason for owner here!
     auto WindowsFactory::getDefault() -> handle &
     {
         auto ret = windows.find(default_window);
@@ -48,6 +50,8 @@ namespace app
         return windows[default_window];
     }
 
+    /// TODO MIXED LOGIC HERE?
+    /// TODO rename to rebuild ? (build or rebuild? / lazy rebuild?)
     auto WindowsFactory::build(Application *app, const std::string &name) -> bool
     {
         windows[name] = builders[name](app, name);
