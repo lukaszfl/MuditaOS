@@ -41,6 +41,7 @@ namespace gui
         EventReminderWindow(app::Application *app, std::string name);
         virtual ~EventReminderWindow() override;
 
+        void onBeforeShow(ShowMode mode, SwitchData *data) override;
         virtual void onClose() override;
 
         bool onInput(const gui::InputEvent &inputEvent) override;

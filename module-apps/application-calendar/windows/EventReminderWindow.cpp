@@ -88,6 +88,19 @@ namespace gui
         setFocusItem(nullptr);
     }
 
+    void EventReminderWindow::onBeforeShow(ShowMode mode, SwitchData *data)
+    {
+        /*        // update time
+                time->setText(topBar->getTimeString());
+                // check if there was a signal to lock the pone due to inactivity.
+                if ((data != nullptr) && (data->getDescription() == "LockPhoneData")) {
+                    auto app = dynamic_cast<app::ApplicationDesktop *>(application);
+                    if (!app || app->lockHandler.lock.isLocked()) {
+                        return;
+                    }
+                }*/
+    }
+
     void EventReminderWindow::destroyInterface()
     {
         destroyTimer();

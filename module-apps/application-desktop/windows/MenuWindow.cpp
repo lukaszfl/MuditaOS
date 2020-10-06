@@ -260,14 +260,14 @@ namespace gui
         if ((inputEvent.state == InputEvent::State::keyReleasedShort) && (inputEvent.keyCode == KeyCode::KEY_3)) {
 
             // mlucki
-            ServiceTime::messageTimersProcessingStart(application);
+            stm::ServiceTime::messageTimersProcessingStart(application);
             return true;
         }
 
         if ((inputEvent.state == InputEvent::State::keyReleasedShort) && (inputEvent.keyCode == KeyCode::KEY_4)) {
 
             // mlucki
-            ServiceTime::messageTimersProcessingStop(application);
+            stm::ServiceTime::messageTimersProcessingStop(application);
             return true;
         }
 
