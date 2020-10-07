@@ -4,15 +4,13 @@
 #include "Item.hpp"
 #include "Navigation.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
+#include "module-apps/application-calendar/data/CalendarData.hpp"
+#include "service-time/api/TimeServiceAPI.hpp"
 
 #include <tools/Common.hpp>
 #include <Style.hpp>
 #include <cassert>
 #include <i18/i18.hpp>
-
-// mlucki
-#include "module-apps/application-calendar/data/CalendarData.hpp"
-#include "service-time/ServiceTime.hpp"
 
 namespace style::design
 {
@@ -260,14 +258,14 @@ namespace gui
         if ((inputEvent.state == InputEvent::State::keyReleasedShort) && (inputEvent.keyCode == KeyCode::KEY_3)) {
 
             // mlucki
-            stm::ServiceTime::messageTimersProcessingStart(application);
+            TimeServiceAPI::messageTimersProcessingStart(application);
             return true;
         }
 
         if ((inputEvent.state == InputEvent::State::keyReleasedShort) && (inputEvent.keyCode == KeyCode::KEY_4)) {
 
             // mlucki
-            stm::ServiceTime::messageTimersProcessingStop(application);
+            TimeServiceAPI::messageTimersProcessingStop(application);
             return true;
         }
 

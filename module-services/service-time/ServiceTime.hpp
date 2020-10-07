@@ -5,6 +5,7 @@
 #include "ServiceTime.hpp"
 #include <functional>
 #include "MessageType.hpp"
+#include "timeEvents/CalendarTimeEvents.hpp"
 
 #include <module-db/queries/calendar/QueryEventsGet.hpp>
 #include <module-db/queries/calendar/QueryEventsEdit.hpp>
@@ -17,6 +18,7 @@ namespace service::name
 
 namespace stm
 {
+#if 0
     class TimeEvents
     {
       private:
@@ -78,12 +80,9 @@ namespace stm
       public:
         CalendarTimeEvents() = delete;
         CalendarTimeEvents(sys::Service *service);
-        ~CalendarTimeEvents();
+        ~CalendarTimeEvents() = default;
     };
-
-    //************************************************************************************************
-    //************************************************************************************************
-    //************************************************************************************************
+#endif
 
     class ServiceTime : public sys::Service
     {
@@ -99,53 +98,9 @@ namespace stm
         sys::ReturnCodes DeinitHandler() override;
         sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override final;
 
-        static bool messageReloadTimers(sys::Service *sender);
-        static bool messageTimersProcessingStart(sys::Service *sender);
-        static bool messageTimersProcessingStop(sys::Service *sender);
-
         sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr) override;
     };
 
-    /*    class ServiceTime : public sys::Service
-        {
-          private:
-            CalendarTimeEvents calendarEvents;
-
-            EventsRecord eventRecord;
-            TimePoint startTP = TIME_POINT_INVALID;
-            uint32_t timerId  = 0;
-
-            std::unique_ptr<sys::Timer> calendarReminderTimer = nullptr;
-
-            bool timersProcessingStarted = false;
-
-          protected:
-            bool SendReloadQuery();
-            void ReceiveReloadQuery(std::unique_ptr<std::vector<EventsRecord>> records);
-
-            void StopTimer();
-            uint32_t CalcInterval();
-            void RecreateTimer(uint32_t interval);
-            void InvokeReminder();
-            bool SendReminderFiredQuery();
-
-          public:
-            ServiceTime();
-            ~ServiceTime();
-
-            // Invoked during initialization
-            sys::ReturnCodes InitHandler() override;
-            sys::ReturnCodes DeinitHandler() override;
-            sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override final;
-
-            static bool messageReloadTimers(sys::Service *sender);
-            static bool messageTimersProcessingStart(sys::Service *sender);
-            static bool messageTimersProcessingStop(sys::Service *sender);
-
-            sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr) override;
-            void reminderTimerCallback();
-        };
-    */
 } /* namespace stm */
 
 #endif // PUREPHONE_SERVICETIME_HPP

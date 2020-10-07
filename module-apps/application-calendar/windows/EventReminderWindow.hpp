@@ -3,23 +3,16 @@
 #include "windows/AppWindow.hpp"
 #include "Application.hpp"
 #include <Style.hpp>
-#include <ListView.hpp>
 #include <module-db/Interface/EventsRecord.hpp>
-
 #include <Text.hpp>
 #include <Label.hpp>
 #include <module-sys/Service/Timer.hpp>
-//#include <module-apps/GuiTimer.hpp>
-//#include <Label.hpp>
-//#include <functional>
 
 namespace gui
 {
     class EventReminderWindow : public gui::AppWindow
     {
       private:
-        // uint32_t timerId = 0;
-        // app::GuiTimer reminderTimer;
         std::unique_ptr<sys::Timer> reminderTimer;
 
       protected:

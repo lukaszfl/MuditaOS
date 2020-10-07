@@ -18,8 +18,7 @@
 #include "application-messages/ApplicationMessages.hpp"
 #include "gui/widgets/Image.hpp"
 #include "service-appmgr/ApplicationManager.hpp"
-#include "service-time/ServiceTime.hpp"
-
+#include "service-time/api/TimeServiceAPI.hpp"
 #include <UiCommonActions.hpp>
 
 #include "i18/i18.hpp"
@@ -104,13 +103,13 @@ namespace gui
 
             // mlucki
             // Temporary solution: blocking of ServiceTime timers when phone becomes locked
-            stm::ServiceTime::messageTimersProcessingStop(application);
+            TimeServiceAPI::messageTimersProcessingStop(application);
         }
         else if (app->lockHandler.lock.isLocked()) {
             application->switchWindow(app::window::name::desktop_pin_lock);
             // mlucki
             // Temporary solution: blocking of ServiceTime timers when phone becomes locked
-            stm::ServiceTime::messageTimersProcessingStop(application);
+            TimeServiceAPI::messageTimersProcessingStop(application);
         }
         else {
             bottomBar->setText(BottomBar::Side::CENTER, utils::localize.get("app_desktop_menu"));
@@ -124,7 +123,7 @@ namespace gui
             }
             // mlucki
             // Temporary solution: starting of ServiceTime timers when phone becomes unlocked
-            stm::ServiceTime::messageTimersProcessingStart(application);
+            TimeServiceAPI::messageTimersProcessingStart(application);
         }
     }
 
