@@ -2,6 +2,8 @@
 
 namespace stm
 {
+    constexpr static const int eventTimerInitInterval = 1000;
+
     TimeEvents::TimeEvents(sys::Service *service) : service(service)
     {}
 
@@ -13,7 +15,8 @@ namespace stm
     std::unique_ptr<sys::Timer> &TimeEvents::Timer()
     {
         if (fireEventTimer == nullptr) {
-            fireEventTimer = std::make_unique<sys::Timer>(TimerName(), service, 1000, sys::Timer::Type::SingleShot);
+            fireEventTimer = std::make_unique<sys::Timer>(
+                TimerName(), service, eventTimerInitInterval, sys::Timer::Type::SingleShot);
         }
         return fireEventTimer;
     }

@@ -101,13 +101,14 @@ namespace gui
             setFocusItem(nullptr);
             erase(notifications);
 
-            // mlucki
+            // TODO
             // Temporary solution: blocking of ServiceTime timers when phone becomes locked
             TimeServiceAPI::messageTimersProcessingStop(application);
         }
         else if (app->lockHandler.lock.isLocked()) {
             application->switchWindow(app::window::name::desktop_pin_lock);
-            // mlucki
+
+            // TODO
             // Temporary solution: blocking of ServiceTime timers when phone becomes locked
             TimeServiceAPI::messageTimersProcessingStop(application);
         }
@@ -121,7 +122,8 @@ namespace gui
                 sapm::ApplicationManager::messageSwitchApplication(
                     this->application, app::name_settings, app::sim_select, nullptr);
             }
-            // mlucki
+
+            // TODO
             // Temporary solution: starting of ServiceTime timers when phone becomes unlocked
             TimeServiceAPI::messageTimersProcessingStart(application);
         }

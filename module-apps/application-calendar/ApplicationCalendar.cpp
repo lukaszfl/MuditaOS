@@ -104,9 +104,7 @@ namespace app
         auto ret             = Application::InitHandler();
         createUserInterface();
 
-        // mlucki
-        ////setActiveWindow(gui::name::window::main_window);
-
+        setActiveWindow(gui::name::window::main_window);
         return ret;
     }
 

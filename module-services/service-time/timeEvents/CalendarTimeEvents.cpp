@@ -12,6 +12,8 @@
 
 namespace stm
 {
+    constexpr static const int eventTimerMinSkipInterval = 100;
+
     CalendarTimeEvents::CalendarTimeEvents(sys::Service *service) : TimeEvents(service)
     {}
 
@@ -52,7 +54,7 @@ namespace stm
 
         auto duration = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder} - TimePointNow();
         if (duration.count() <= 0) {
-            duration = std::chrono::milliseconds(100);
+            duration = std::chrono::milliseconds(eventTimerMinSkipInterval);
         }
         // mlucki
         // return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
