@@ -10,17 +10,14 @@
 #ifndef PUREPHONE_ROUTEROPERATION_HPP
 #define PUREPHONE_ROUTEROPERATION_HPP
 
+#include "Operation.hpp"
+
+#include <Audio/encoder/Encoder.hpp>
+#include <bsp/audio/bsp_audio.hpp>
+
 #include <memory>
 #include <optional>
 #include <functional>
-
-#include "Operation.hpp"
-#include <Audio/encoder/Encoder.hpp>
-#include "bsp/audio/bsp_audio.hpp"
-
-#include "mutex.hpp"
-#include "FreeRTOS.h"
-#include "task.h"
 
 namespace audio
 {
@@ -36,7 +33,7 @@ namespace audio
         RouterOperation(const char *file,
                         std::function<uint32_t(const std::string &path, const uint32_t &defaultValue)> dbCallback);
 
-        ~RouterOperation();
+        ~RouterOperation() = default;
 
         audio::RetCode Start([[maybe_unused]] audio::AsyncCallback callback, audio::Token token) override final;
 
@@ -59,8 +56,6 @@ namespace audio
             return 0.0;
         }
 
-        cpp_freertos::MutexStandard mutex;
-
       private:
         enum class RecorderEvent
         {
@@ -80,8 +75,6 @@ namespace audio
 
         std::vector<int16_t> audioDeviceBuffer;
         std::vector<int16_t> audioDeviceCellularBuffer;
-
-        TaskHandle_t recorderWorkerHandle = nullptr;
         std::vector<int16_t> channel1Buffer;
         std::vector<int16_t> channel2Buffer;
         std::vector<int16_t> mixBuffer;
