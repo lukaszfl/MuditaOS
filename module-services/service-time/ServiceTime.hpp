@@ -1,12 +1,3 @@
-/*
- *  @file ServiceTime.hpp
- *  @author
- *  @date 08.05.20
- *  @brief
- *  @copyright Copyright (C) 2019 mudita.com
- *  @details
- */
-
 #ifndef PUREPHONE_SERVICETIME_HPP
 #define PUREPHONE_SERVICETIME_HPP
 
@@ -26,27 +17,35 @@ namespace service::name
 
 namespace stm
 {
-
-    class ServiceTime;
-
     class TimeEvents
     {
-      protected:
-        uint32_t timerId = 0;
-        uint32_t lastDT  = 0;
-        bool timerActive = false;
+      private:
+        std::unique_ptr<sys::Timer> fireEventTimer = nullptr;
+        sys::Service *service                      = nullptr;
+        std::unique_ptr<sys::Timer> &Timer();
 
-        void StartTimer();
-        // auto id    = CreateTimer(interval, isPeriodic, name);
+      protected:
+        sys::Service *Service()
+        {
+            return service;
+        };
+        virtual const std::string TimerName() = 0;
+
+        void StopTimer();
+        void RecreateTimer(uint32_t interval);
+        virtual void fireEventTimerCallback();
+
+        virtual uint32_t CalcToNextEventInterval(std::unique_ptr<db::QueryResult> nextEventQueryResult) = 0;
 
       public:
-        TimeEvents();
+        TimeEvents() = delete;
+        TimeEvents(sys::Service *service);
         ~TimeEvents();
 
-        virtual sys::Message_t OnDataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr);
-        virtual void OnTickHandler(uint32_t id);
-
-        virtual bool Reload();
+        virtual bool SendNextEventQuery() = 0;
+        virtual bool ReceiveNextEventQuery(std::unique_ptr<db::QueryResult> nextEventQueryResult);
+        virtual bool SendEventFiredQuery() = 0;
+        virtual void InvokeEvent();
     };
 
     //************************************************************************************************
@@ -54,21 +53,24 @@ namespace stm
     class CalendarTimeEvents : public TimeEvents
     {
       private:
-        uint32_t todayEventsNum = 0;
         EventsRecord eventRecord;
+        TimePoint startTP = TIME_POINT_INVALID;
 
       protected:
-        void DeleteTimer();
-        void FireReminder();
+        const std::string TimerName() override
+        {
+            return "CalendarTimeEvents_timer";
+        };
+        uint32_t CalcToNextEventInterval(std::unique_ptr<db::QueryResult> nextEventQueryResult) override;
 
       public:
-        CalendarTimeEvents();
+        CalendarTimeEvents() = delete;
+        CalendarTimeEvents(sys::Service *service);
         ~CalendarTimeEvents();
 
-        sys::Message_t OnDataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr);
-        void OnTickHandler(uint32_t id);
-
-        bool Reload() override;
+        bool SendNextEventQuery() override;
+        bool SendEventFiredQuery() override;
+        void InvokeEvent() override;
     };
 
     //************************************************************************************************
@@ -79,8 +81,6 @@ namespace stm
     {
       private:
         CalendarTimeEvents calendarEvents;
-
-        uint32_t todayEventsNum = 0;
         EventsRecord eventRecord;
         TimePoint startTP = TIME_POINT_INVALID;
         uint32_t timerId  = 0;
@@ -90,41 +90,30 @@ namespace stm
         bool timersProcessingStarted = false;
 
       protected:
-        void SendReloadQuery();
+        bool SendReloadQuery();
         void ReceiveReloadQuery(std::unique_ptr<std::vector<EventsRecord>> records);
 
-        void DestroyTimer();
-        void RecreateTimer();
+        void StopTimer();
+        uint32_t CalcInterval();
+        void RecreateTimer(uint32_t interval);
         void InvokeReminder();
-        void SendReminderFiredQuery();
-
-        // mlucki
-        void SendFilterQuery();
-        void ReceiveFilterQuery();
+        bool SendReminderFiredQuery();
 
       public:
         ServiceTime();
-
         ~ServiceTime();
-
-        sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr) override;
-
-        // Invoked when timer ticked
-        // void TickHandler(uint32_t id) override final;
-        void reminderTimerCallback();
 
         // Invoked during initialization
         sys::ReturnCodes InitHandler() override;
-
         sys::ReturnCodes DeinitHandler() override;
-
         sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override final;
 
         static bool messageReloadTimers(sys::Service *sender);
         static bool messageTimersProcessingStart(sys::Service *sender);
         static bool messageTimersProcessingStop(sys::Service *sender);
 
-        static const char *serviceName;
+        sys::Message_t DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp = nullptr) override;
+        void reminderTimerCallback();
     };
 
 } /* namespace stm */
