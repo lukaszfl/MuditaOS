@@ -12,7 +12,6 @@
 #include "service-appmgr/ApplicationManager.hpp"
 
 // mlucki
-#include <module-services/service-cellular/messages/CellularMessage.hpp>
 #include <module-gui/gui/SwitchData.hpp>
 #include "module-apps/application-calendar/data/CalendarData.hpp"
 #include "module-apps/application-calendar/ApplicationCalendar.hpp"
@@ -24,7 +23,9 @@ namespace stm
     {}
 
     TimeEvents::~TimeEvents()
-    {}
+    {
+        StopTimer();
+    }
 
     std::unique_ptr<sys::Timer> &TimeEvents::Timer()
     {
@@ -32,6 +33,28 @@ namespace stm
             fireEventTimer = std::make_unique<sys::Timer>(TimerName(), service, 1000, sys::Timer::Type::SingleShot);
         }
         return fireEventTimer;
+    }
+
+    void TimeEvents::StartProcessing()
+    {
+        timersProcessingStarted = true;
+        ProcessNextEvent();
+    }
+
+    void TimeEvents::StopProcessing()
+    {
+        StopTimer();
+        timersProcessingStarted = false;
+    }
+
+    void TimeEvents::ProcessNextEvent()
+    {
+        StopTimer();
+        if (!IsStarted()) {
+            return;
+        }
+
+        SendNextEventQuery();
     }
 
     void TimeEvents::StopTimer()
@@ -42,21 +65,33 @@ namespace stm
     void TimeEvents::RecreateTimer(uint32_t interval)
     {
         StopTimer();
+        if (!IsStarted()) {
+            return;
+        }
+
         Timer()->connect([=](sys::Timer &) { fireEventTimerCallback(); });
         Timer()->reload(interval);
     }
 
     void TimeEvents::fireEventTimerCallback()
     {
+        if (!IsStarted()) {
+            return;
+        }
+
         InvokeEvent();
         SendEventFiredQuery();
     }
 
     bool TimeEvents::ReceiveNextEventQuery(std::unique_ptr<db::QueryResult> nextEventQueryResult)
     {
+        if (!IsStarted()) {
+            return true;
+        }
         if (nextEventQueryResult == nullptr) {
             return false;
         }
+
         uint32_t interval = CalcToNextEventInterval(std::move(nextEventQueryResult));
         if (interval > 0) {
             RecreateTimer(interval);
@@ -64,14 +99,6 @@ namespace stm
         return true;
     }
 
-    uint32_t TimeEvents::CalcToNextEventInterval(std::unique_ptr<db::QueryResult> nextEventQueryResult)
-    {
-        return 0;
-    }
-
-    void TimeEvents::InvokeEvent()
-    {
-    }
 
     //************************************************************************************************
 
@@ -148,6 +175,115 @@ namespace stm
     //************************************************************************************************
     //************************************************************************************************
 
+    ServiceTime::ServiceTime()
+        : sys::Service(service::name::service_time, "", 4096 * 2, sys::ServicePriority::Idle), calendarEvents(this)
+    {
+        LOG_INFO("[ServiceTime] Initializing");
+        busChannels.push_back(sys::BusChannels::ServiceDBNotifications);
+    }
+
+    ServiceTime::~ServiceTime()
+    {
+        LOG_INFO("[ServiceTime] Cleaning resources");
+    }
+
+    sys::ReturnCodes ServiceTime::InitHandler()
+    {
+        return sys::ReturnCodes::Success;
+    }
+
+    sys::ReturnCodes ServiceTime::DeinitHandler()
+    {
+        return sys::ReturnCodes::Success;
+    }
+
+    sys::ReturnCodes ServiceTime::SwitchPowerModeHandler(const sys::ServicePowerMode mode)
+    {
+        LOG_FATAL("[ServiceTime] PowerModeHandler: %s", c_str(mode));
+        return sys::ReturnCodes::Success;
+    }
+
+    sys::Message_t ServiceTime::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
+    {
+        std::shared_ptr<sys::ResponseMessage> responseMsg = nullptr;
+
+        switch (static_cast<MessageType>(msgl->messageType)) {
+        case MessageType::DBServiceNotification: {
+            auto msg = dynamic_cast<db::NotificationMessage *>(msgl);
+            if (msg == nullptr) {
+                responseMsg = std::make_shared<TimeResponseMessage>(false);
+                break;
+            }
+            if (msg->interface == db::Interface::Name::Events &&
+                (msg->type == db::Query::Type::Create || msg->type == db::Query::Type::Update ||
+                 msg->type == db::Query::Type::Delete)) {
+
+                calendarEvents.ProcessNextEvent();
+
+                return responseMsg;
+            }
+        } break;
+        case MessageType::ReloadTimers: {
+            calendarEvents.ProcessNextEvent();
+        } break;
+        case MessageType::TimersProcessingStart: {
+            calendarEvents.StartProcessing();
+        } break;
+        case MessageType::TimersProcessingStop: {
+            calendarEvents.StopProcessing();
+        } break;
+        default:
+            break;
+        }
+
+        if (responseMsg != nullptr) {
+            responseMsg->responseTo = msgl->messageType;
+            return responseMsg;
+        }
+
+        // handle database response
+        bool responseHandled = false;
+        if (resp != nullptr) {
+            if (auto msg = dynamic_cast<db::QueryResponse *>(resp)) {
+                auto result = msg->getResult();
+
+                if (dynamic_cast<db::query::events::SelectFirstUpcomingResult *>(result.get())) {
+
+                    calendarEvents.ReceiveNextEventQuery(std::move(result));
+                    responseHandled = true;
+                }
+            }
+            if (responseHandled) {
+                return std::make_shared<sys::ResponseMessage>();
+            }
+            else {
+                return std::make_shared<sys::ResponseMessage>(sys::ReturnCodes::Unresolved);
+            }
+        }
+        else {
+            return std::make_shared<sys::ResponseMessage>();
+        }
+    }
+
+    bool ServiceTime::messageReloadTimers(sys::Service *sender)
+    {
+        auto msg = std::make_shared<ReloadTimersMessage>();
+        return sys::Bus::SendUnicast(msg, service::name::service_time, sender);
+    }
+
+    bool ServiceTime::messageTimersProcessingStart(sys::Service *sender)
+    {
+        auto msg = std::make_shared<TimersProcessingStartMessage>();
+        return sys::Bus::SendUnicast(msg, service::name::service_time, sender);
+    }
+
+    bool ServiceTime::messageTimersProcessingStop(sys::Service *sender)
+    {
+        auto msg = std::make_shared<TimersProcessingStopMessage>();
+        return sys::Bus::SendUnicast(msg, service::name::service_time, sender);
+    }
+
+#if 0
     ServiceTime::ServiceTime()
         : sys::Service(service::name::service_time, "", 4096 * 2, sys::ServicePriority::Idle), calendarEvents(this)
     {
@@ -319,7 +455,6 @@ namespace stm
 
         // sapm::ApplicationManager::messageSwitchApplication(this, "ApplicationCall", "CallWindow", nullptr);
 
-#if 1
         ////sapm::ApplicationManager::messageSwitchApplication(this, "ApplicationDesktop", "MenuWindow", nullptr);
 
         // auto ad = sapm::ApplicationManager::ApplicationDescription *appGet(const std::string &name);
@@ -348,8 +483,6 @@ namespace stm
             erase(notifications);
         }
         else if (app->lockHandler.lock.isLocked()) {*/
-
-#endif
 
         // mlucki
         // to działa
@@ -543,4 +676,5 @@ namespace stm
         InvokeReminder();
         SendReminderFiredQuery();
     }
+#endif
 } /* namespace stm */
