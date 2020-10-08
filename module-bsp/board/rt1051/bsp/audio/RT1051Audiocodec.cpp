@@ -5,6 +5,8 @@
 
 #include "bsp/BoardDefinitions.hpp"
 
+#include <mutex.hpp>
+
 namespace bsp
 {
 
@@ -29,6 +31,12 @@ namespace bsp
 
     AudioDevice::RetCode RT1051Audiocodec::Start(const bsp::AudioDevice::Format &format)
     {
+        cpp_freertos::LockGuard lock(mutex);
+
+        if (state == State::Running) {
+            LOG_ERROR("Audio device already running");
+            return AudioDevice::RetCode::Failure;
+        }
 
         Init();
 
@@ -65,8 +73,8 @@ namespace bsp
             LOG_ERROR("Unsupported sample rate");
         }
 
-        codecParams.inputPath  = static_cast<CodecParamsMAX98090::InputPath>(format.inputPath);   // TODO:M.P fix me
-        codecParams.outputPath = static_cast<CodecParamsMAX98090::OutputPath>(format.outputPath); // TODO:M.P fix me
+        codecParams.inputPath  = static_cast<CodecParamsMAX98090::InputPath>(format.inputPath);
+        codecParams.outputPath = static_cast<CodecParamsMAX98090::OutputPath>(format.outputPath);
         codecParams.outVolume  = format.outputVolume;
         codecParams.inGain     = format.inputGain;
         codec.Start(codecParams);
@@ -74,27 +82,37 @@ namespace bsp
         // Store format passed
         currentFormat = format;
 
+        state = State::Running;
+
         return AudioDevice::RetCode::Success;
     }
 
     AudioDevice::RetCode RT1051Audiocodec::Stop()
     {
         cpp_freertos::LockGuard lock(mutex);
+
+        if (state == State::Stopped) {
+            return AudioDevice::RetCode::Failure;
+        }
+
         codec.Stop();
 
         InStop();
         OutStop();
 
         if (outWorkerThread) {
-            vTaskDelete(outWorkerThread);
+            xTaskNotify(outWorkerThread, static_cast<std::uint32_t>(TransferState::Close), eSetBits);
             outWorkerThread = nullptr;
         }
+
         if (inWorkerThread) {
-            vTaskDelete(inWorkerThread);
+            xTaskNotify(inWorkerThread, static_cast<std::uint32_t>(TransferState::Close), eSetBits);
             inWorkerThread = nullptr;
         }
 
         currentFormat = {};
+        state         = State::Stopped;
+
         return AudioDevice::RetCode::Success;
     }
 
@@ -122,7 +140,7 @@ namespace bsp
     {
         currentFormat.inputPath = inputPath;
         CodecParamsMAX98090 params;
-        params.inputPath = static_cast<CodecParamsMAX98090::InputPath>(inputPath); // TODO: M.P fix me
+        params.inputPath = static_cast<CodecParamsMAX98090::InputPath>(inputPath);
         params.opCmd     = CodecParamsMAX98090::Cmd::SetInput;
         codec.Ioctrl(params);
         return AudioDevice::RetCode::Success;
@@ -132,7 +150,7 @@ namespace bsp
     {
         currentFormat.outputPath = outputPath;
         CodecParamsMAX98090 params;
-        params.outputPath = static_cast<CodecParamsMAX98090::OutputPath>(outputPath); // TODO: M.P fix me
+        params.outputPath = static_cast<CodecParamsMAX98090::OutputPath>(outputPath);
         params.opCmd      = CodecParamsMAX98090::Cmd::SetOutput;
         codec.Ioctrl(params);
         return AudioDevice::RetCode::Success;
@@ -163,11 +181,11 @@ namespace bsp
         txDMAHandle = dma->CreateHandle(static_cast<uint32_t>(BoardDefinitions ::AUDIOCODEC_TX_DMA_CHANNEL));
         rxDMAHandle = dma->CreateHandle(static_cast<uint32_t>(BoardDefinitions ::AUDIOCODEC_RX_DMA_CHANNEL));
         dmamux->Enable(static_cast<uint32_t>(BoardDefinitions ::AUDIOCODEC_TX_DMA_CHANNEL),
-                       BSP_AUDIOCODEC_SAIx_DMA_TX_SOURCE); // TODO: M.P fix BSP_AUDIOCODEC_SAIx_DMA_TX_SOURCE
+                       BSP_AUDIOCODEC_SAIx_DMA_TX_SOURCE);
         dmamux->Enable(static_cast<uint32_t>(BoardDefinitions ::AUDIOCODEC_RX_DMA_CHANNEL),
-                       BSP_AUDIOCODEC_SAIx_DMA_RX_SOURCE); // TODO: M.P fix BSP_AUDIOCODEC_SAIx_DMA_RX_SOURCE
+                       BSP_AUDIOCODEC_SAIx_DMA_RX_SOURCE);
 
-        mclkSourceClockHz = GetPerphSourceClock(PerphClock_SAI2); // TODO:M.P fix PerphClock_SAI2
+        mclkSourceClockHz = GetPerphSourceClock(PerphClock_SAI2);
 
         // Initialize SAI Tx module
         SAI_TxGetDefaultConfig(&config);
@@ -299,40 +317,38 @@ namespace bsp
 
     void inAudioCodecWorkerTask(void *pvp)
     {
-        uint32_t ulNotificationValue = 0;
+        std::uint32_t ulNotificationValue = 0;
+        RT1051Audiocodec *inst            = reinterpret_cast<RT1051Audiocodec *>(pvp);
 
-        RT1051Audiocodec *inst = reinterpret_cast<RT1051Audiocodec *>(pvp);
-
-        while (1) {
+        while (true) {
             xTaskNotifyWait(0x00,                 /* Don't clear any bits on entry. */
                             UINT32_MAX,           /* Clear all bits on exit. */
                             &ulNotificationValue, /* Receives the notification value. */
                             portMAX_DELAY);       /* Block indefinitely. */
             {
-                cpp_freertos::LockGuard lock(inst->mutex);
-                if (ulNotificationValue & static_cast<uint32_t>(RT1051Audiocodec::irq_state_t::IRQStateHalfTransfer)) {
+                if (ulNotificationValue & static_cast<std::uint32_t>(RT1051Audiocodec::TransferState::Close)) {
+                    LOG_DEBUG("Rx worker: received close event");
+                    break;
+                }
+
+                if (ulNotificationValue & static_cast<std::uint32_t>(RT1051Audiocodec::TransferState::HalfTransfer)) {
                     auto framesFetched = inst->GetAudioCallback()(
                         inst->inBuffer, nullptr, RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE);
-                    if (framesFetched == 0) {
-                        break;
-                    }
-                    else if (framesFetched < RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE) {
+
+                    if (framesFetched < RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE) {
                         memset(&inst->inBuffer[framesFetched],
                                0,
                                RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE - framesFetched);
                     }
                 }
 
-                if (ulNotificationValue & static_cast<uint32_t>(RT1051Audiocodec::irq_state_t::IRQStateFullTransfer)) {
+                if (ulNotificationValue & static_cast<std::uint32_t>(RT1051Audiocodec::TransferState::FullTransfer)) {
                     auto framesFetched =
                         inst->GetAudioCallback()(&inst->inBuffer[RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE],
                                                  nullptr,
                                                  RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE);
 
-                    if (framesFetched == 0) {
-                        break;
-                    }
-                    else if (framesFetched < RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE) {
+                    if (framesFetched < RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE) {
                         memset(&inst->inBuffer[RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE + framesFetched],
                                0,
                                RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE - framesFetched);
@@ -340,52 +356,45 @@ namespace bsp
                 }
             }
         }
-        {
-            cpp_freertos::LockGuard lock(inst->mutex);
-            inst->codec.Stop();
-            inst->InStop();
-            inst->inWorkerThread = nullptr;
-        }
-        vTaskDelete(NULL);
+
+        LOG_INFO("Killing Rx audio codec worker thread");
+        vTaskDelete(nullptr);
     }
 
     void outAudioCodecWorkerTask(void *pvp)
     {
-        uint32_t ulNotificationValue = 0;
+        std::uint32_t ulNotificationValue = 0;
+        RT1051Audiocodec *inst            = reinterpret_cast<RT1051Audiocodec *>(pvp);
 
-        RT1051Audiocodec *inst = reinterpret_cast<RT1051Audiocodec *>(pvp);
-
-        while (1) {
+        while (true) {
             xTaskNotifyWait(0x00,                 /* Don't clear any bits on entry. */
                             UINT32_MAX,           /* Clear all bits on exit. */
                             &ulNotificationValue, /* Receives the notification value. */
                             portMAX_DELAY);       /* Block indefinitely. */
             {
-                cpp_freertos::LockGuard lock(inst->mutex);
+                if (ulNotificationValue & static_cast<std::uint32_t>(RT1051Audiocodec::TransferState::Close)) {
+                    LOG_DEBUG("Tx worker: received close event");
+                    break;
+                }
 
-                if (ulNotificationValue & static_cast<uint32_t>(RT1051Audiocodec::irq_state_t::IRQStateHalfTransfer)) {
+                if (ulNotificationValue & static_cast<std::uint32_t>(RT1051Audiocodec::TransferState::HalfTransfer)) {
                     auto framesFetched = inst->GetAudioCallback()(
                         nullptr, inst->outBuffer, RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE);
-                    if (framesFetched == 0) {
-                        break;
-                    }
-                    else if (framesFetched < RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE) {
+
+                    if (framesFetched < RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE) {
                         memset(&inst->outBuffer[framesFetched],
                                0,
                                RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE - framesFetched);
                     }
                 }
 
-                if (ulNotificationValue & static_cast<uint32_t>(RT1051Audiocodec::irq_state_t::IRQStateFullTransfer)) {
+                if (ulNotificationValue & static_cast<std::uint32_t>(RT1051Audiocodec::TransferState::FullTransfer)) {
                     auto framesFetched =
                         inst->GetAudioCallback()(nullptr,
                                                  &inst->outBuffer[RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE],
                                                  RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE);
 
-                    if (framesFetched == 0) {
-                        break;
-                    }
-                    else if (framesFetched < RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE) {
+                    if (framesFetched < RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE) {
                         memset(&inst->outBuffer[RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE + framesFetched],
                                0,
                                RT1051Audiocodec::CODEC_CHANNEL_PCM_BUFFER_SIZE - framesFetched);
@@ -394,23 +403,22 @@ namespace bsp
             }
         }
 
-        {
-            cpp_freertos::LockGuard lock(inst->mutex);
-            inst->codec.Stop();
-            inst->OutStop();
-            inst->outWorkerThread = nullptr;
-        }
-        vTaskDelete(NULL);
+        LOG_INFO("Killing Tx audio codec worker thread");
+        vTaskDelete(nullptr);
     }
 
     void rxAudioCodecCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
     {
-        static RT1051Audiocodec::irq_state_t state = RT1051Audiocodec::irq_state_t::IRQStateHalfTransfer;
-        RT1051Audiocodec *inst                     = (RT1051Audiocodec *)userData;
-        sai_transfer_t xfer                        = {0};
-        BaseType_t xHigherPriorityTaskWoken        = pdFALSE;
+        static RT1051Audiocodec::TransferState state = RT1051Audiocodec::TransferState::HalfTransfer;
+        RT1051Audiocodec *inst                       = (RT1051Audiocodec *)userData;
+        sai_transfer_t xfer                          = {0};
+        BaseType_t xHigherPriorityTaskWoken          = pdFALSE;
 
-        if (state == RT1051Audiocodec::irq_state_t::IRQStateHalfTransfer) {
+        if (inst->state == RT1051Audiocodec::State::Stopped) {
+            return;
+        }
+
+        if (state == RT1051Audiocodec::TransferState::HalfTransfer) {
 
             xfer.dataSize = inst->saiInFormat.dataSize;
             xfer.data     = inst->saiInFormat.data + (inst->saiInFormat.dataSize);
@@ -421,7 +429,7 @@ namespace bsp
                 xTaskNotifyFromISR(
                     inst->inWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
             }
-            state = RT1051Audiocodec::irq_state_t::IRQStateFullTransfer;
+            state = RT1051Audiocodec::TransferState::FullTransfer;
         }
         else {
 
@@ -430,11 +438,9 @@ namespace bsp
             SAI_TransferReceiveEDMA(BOARD_AUDIOCODEC_SAIx, &inst->rxHandle, &xfer);
 
             /* Notify the task that the transmission is complete. */
-            if (inst->inWorkerThread) {
-                xTaskNotifyFromISR(
-                    inst->inWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
-            }
-            state = RT1051Audiocodec::irq_state_t::IRQStateHalfTransfer;
+            xTaskNotifyFromISR(inst->inWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
+
+            state = RT1051Audiocodec::TransferState::HalfTransfer;
         }
 
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -442,23 +448,26 @@ namespace bsp
 
     void txAudioCodecCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
     {
-        static RT1051Audiocodec::irq_state_t state = RT1051Audiocodec::irq_state_t::IRQStateHalfTransfer;
-        RT1051Audiocodec *inst                     = (RT1051Audiocodec *)userData;
-        sai_transfer_t xfer                        = {0};
-        BaseType_t xHigherPriorityTaskWoken        = pdFALSE;
+        static RT1051Audiocodec::TransferState state = RT1051Audiocodec::TransferState::HalfTransfer;
+        RT1051Audiocodec *inst                       = (RT1051Audiocodec *)userData;
+        sai_transfer_t xfer                          = {0};
+        BaseType_t xHigherPriorityTaskWoken          = pdFALSE;
 
-        if (state == RT1051Audiocodec::irq_state_t::IRQStateHalfTransfer) {
+        if (inst->state == RT1051Audiocodec::State::Stopped) {
+            return;
+        }
+
+        if (state == RT1051Audiocodec::TransferState::HalfTransfer) {
 
             xfer.dataSize = inst->saiOutFormat.dataSize;
             xfer.data     = inst->saiOutFormat.data + (inst->saiOutFormat.dataSize);
             SAI_TransferSendEDMA(BOARD_AUDIOCODEC_SAIx, &inst->txHandle, &xfer);
 
             /* Notify the task that the transmission is complete. */
-            if (inst->outWorkerThread) {
-                xTaskNotifyFromISR(
-                    inst->outWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
-            }
-            state = RT1051Audiocodec::irq_state_t::IRQStateFullTransfer;
+            xTaskNotifyFromISR(
+                inst->outWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
+
+            state = RT1051Audiocodec::TransferState::FullTransfer;
         }
         else {
             xfer.dataSize = inst->saiOutFormat.dataSize;
@@ -466,11 +475,9 @@ namespace bsp
             SAI_TransferSendEDMA(BOARD_AUDIOCODEC_SAIx, &inst->txHandle, &xfer);
 
             /* Notify the task that the transmission is complete. */
-            if (inst->outWorkerThread) {
-                xTaskNotifyFromISR(
-                    inst->outWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
-            }
-            state = RT1051Audiocodec::irq_state_t::IRQStateHalfTransfer;
+            xTaskNotifyFromISR(
+                inst->outWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
+            state = RT1051Audiocodec::TransferState::HalfTransfer;
         }
 
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
