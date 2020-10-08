@@ -53,7 +53,7 @@ namespace app
             if (msg != nullptr) {
                 // window-specific actions
                 if (msg->interface == db::Interface::Name::SMSThread || msg->interface == db::Interface::Name::SMS) {
-                    for (auto &[name, window] : windowsFactory) {
+                    for (auto &[name, window] : windowsStack.windows) {
                         window->onDatabaseMessage(msg);
                     }
                 }
@@ -178,7 +178,7 @@ namespace app
         }
         LOG_DEBUG("Removing thread: %" PRIu32, record->ID);
 
-        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsFactory.get(gui::name::window::dialog_yes_no)->second.get());
+        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsStack.get(gui::name::window::dialog_yes_no));
         assert(dialog != nullptr);
 
         auto query = std::make_unique<ContactGetByID>(record->contactID);
@@ -226,7 +226,7 @@ namespace app
     bool ApplicationMessages::removeSms(const SMSRecord &record)
     {
         LOG_DEBUG("Removing sms: %" PRIu32, record.ID);
-        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsFactory.get(gui::name::window::dialog_yes_no)->second.get());
+        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsStack.get(gui::name::window::dialog_yes_no));
         assert(dialog != nullptr);
 
         auto meta   = dialog->meta;
@@ -277,7 +277,7 @@ namespace app
 
     bool ApplicationMessages::searchEmpty(const std::string &query)
     {
-        auto dialog = dynamic_cast<gui::Dialog *>(windowsFactory.get(gui::name::window::dialog)->second.get());
+        auto dialog = dynamic_cast<gui::Dialog *>(windowsStack.get(gui::name::window::dialog));
         assert(dialog);
         auto meta  = dialog->meta;
         meta.icon  = "search_big";
@@ -293,14 +293,14 @@ namespace app
     bool ApplicationMessages::showSearchResults(const UTF8 &title, const UTF8 &search_text)
     {
         auto name = gui::name::window::search_results;
-        windowsFactory.get(name)->second->setTitle(title);
+        windowsStack.get(name)->setTitle(title);
         switchWindow(name, std::make_unique<SMSTextToSearch>(search_text));
         return true;
     }
 
     bool ApplicationMessages::showNotification(std::function<bool()> action, bool ignoreCurrentWindowOnStack)
     {
-        auto dialog = dynamic_cast<gui::DialogConfirm *>(windowsFactory.get(gui::name::window::dialog_confirm)->second.get());
+        auto dialog = dynamic_cast<gui::DialogConfirm *>(windowsStack.get(gui::name::window::dialog_confirm));
         assert(dialog);
         auto meta   = dialog->meta;
         meta.icon   = "info_big_circle_W_G";

@@ -40,8 +40,7 @@ namespace app
 
     void ApplicationClock::timerClockCallback()
     {
-        auto it                   = windowsFactory.get("MainWindow");
-        gui::ClockMainWindow *win = reinterpret_cast<gui::ClockMainWindow *>(it->second.get());
+        auto win = reinterpret_cast<gui::ClockMainWindow *>(windowsStack.get(gui::name::window::main_window));
         win->incrementSecond();
         win->updateLabels();
         render(gui::RefreshModes::GUI_REFRESH_FAST);

@@ -68,8 +68,8 @@ namespace app
 
     Application::Application(
         std::string name, std::string parent, bool startBackground, uint32_t stackDepth, sys::ServicePriority priority)
-        : Service(name, parent, stackDepth, priority),
-           windowsFactory(this),startBackground{startBackground}
+        : Service(name, parent, stackDepth, priority), default_window(gui::name::window::main_window), windowsStack(this),
+           windowsFactory(),startBackground{startBackground}
     {
         keyTranslator = std::make_unique<gui::KeyInputSimpleTranslation>();
         busChannels.push_back(sys::BusChannels::ServiceCellularNotifications);
@@ -81,8 +81,7 @@ namespace app
         longPressTimer->connect([&](sys::Timer &) { longPressTimerCallback(); });
     }
 
-    Application::~Application() 
-    {}
+    Application::~Application()  = default;
 
     Application::State Application::getState()
     {
@@ -166,7 +165,7 @@ namespace app
 #if DEBUG_APPLICATION_MANAGEMENT == 1
         LOG_INFO("switching [%s] to window: %s data description: %s",
                  GetName().c_str(),
-                 windowName.length() ? windowName.c_str() : gui::name::window::main_window.c_str(),
+                 windowName.length() ? windowName.c_str() : default_window.c_str(),
                  data ? data->getDescription().c_str() : "");
 #endif
 
@@ -178,7 +177,7 @@ namespace app
             sys::Bus::SendUnicast(msg, this->GetName(), this);
         }
         else {
-            window   = windowName.empty() ? gui::name::window::main_window : windowName;
+            window   = windowName.empty() ? default_window: windowName;
             auto msg = std::make_shared<AppSwitchWindowMessage>(
                 window, getCurrentWindow() ? getCurrentWindow()->getName() : "", std::move(data), cmd);
             sys::Bus::SendUnicast(msg, this->GetName(), this);
@@ -430,14 +429,9 @@ namespace app
     sys::Message_t Application::handleAppRebuild(sys::DataMessage *msgl)
     {
         LOG_INFO("Application %s rebuilding gui", GetName().c_str());
-        for (auto &[name, window] : windowsFactory) {
+        for (auto &[name, window] : windowsStack) {
             LOG_DEBUG("Rebuild: %s", name.c_str());
-            if (window == nullptr) {
-                LOG_ERROR("No window: %s", name.c_str());
-            }
-            else {
-                windowsFactory.build(this, name);
-            }
+            windowsStack.windows[name] = windowsFactory.build(this, name);
         }
         LOG_INFO("Refresh app with focus!");
         if (state == State::ACTIVE_FORGROUND) {
@@ -464,6 +458,7 @@ namespace app
     sys::ReturnCodes Application::InitHandler()
     {
         bool initState = true;
+
         setState(State::INITIALIZING);
         //	uint32_t start = xTaskGetTickCount();
         settings = DBServiceAPI::SettingsGet(this);
@@ -480,10 +475,7 @@ namespace app
     sys::ReturnCodes Application::DeinitHandler()
     {
         LOG_INFO("Closing an application: %s", GetName().c_str());
-        for (const auto &[windowName, window] : windowsFactory) {
-            LOG_INFO("Closing a window: %s", windowName.c_str());
-            window->onClose();
-        }
+        windowsStack.windows.clear();
         return sys::ReturnCodes::Success;
     }
 
@@ -560,18 +552,18 @@ namespace app
     {
         if (window == gui::name::window::no_window) {
             bool ret = false;
-            if (windowStack.size() <= 1) {
-                windowStack.clear();
+            if (windowsStack.stack.size() <= 1) {
+                windowsStack.stack.clear();
                 ret = true;
             }
             return ret;
         }
 
-        auto ret = std::find(windowStack.begin(), windowStack.end(), window);
-        if (ret != windowStack.end()) {
+        auto ret = std::find(windowsStack.stack.begin(), windowsStack.stack.end(), window);
+        if (ret != windowsStack.stack.end()) {
             LOG_INFO(
-                "Pop last window(s) [%d] :  %s", static_cast<int>(std::distance(ret, windowStack.end())), ret->c_str());
-            windowStack.erase(std::next(ret), windowStack.end());
+                "Pop last window(s) [%d] :  %s", static_cast<int>(std::distance(ret, windowsStack.stack.end())), ret->c_str());
+            windowsStack.stack.erase(std::next(ret), windowsStack.stack.end());
             return true;
         }
         return false;
@@ -584,11 +576,11 @@ namespace app
             return;
         }
         else {
-            windowStack.push_back(newWindow);
+            windowsStack.push(newWindow, windowsFactory.build(this, newWindow));
         }
 #if DEBUG_APPLICATION_MANAGEMENT == 1
-        LOG_DEBUG("[%d] newWindow: %s", windowStack.size(), newWindow.c_str());
-        for (auto &el : windowStack) {
+        LOG_DEBUG("[%d] newWindow: %s", windowsStack.stack.size(), newWindow.c_str());
+        for (auto &el : windowsStack.stack) {
             LOG_DEBUG("-> %s", el.c_str());
         }
         LOG_INFO("\n\n");
@@ -597,24 +589,30 @@ namespace app
 
     const std::string Application::getPrevWindow(uint32_t count) const
     {
-        if (this->windowStack.size() <= 1 || count > this->windowStack.size()) {
+        if (this->windowsStack.stack.size() <= 1 || count > this->windowsStack.stack.size()) {
             return gui::name::window::no_window;
         }
-        return *std::prev(windowStack.end(), count + 1);
+        return *std::prev(windowsStack.stack.end(), count + 1);
     }
 
     void Application::Application::cleanPrevWindw()
     {
-        this->windowStack.clear();
+        this->windowsStack.stack.clear();
     }
 
     gui::AppWindow *Application::getCurrentWindow()
     {
-        std::string name = "";
-        if (windowStack.size() == 0) {
-            return windowsFactory.getDefault().get();
+        if (windowsStack.stack.size() == 0) {
+            windowsStack.push(default_window, windowsFactory.build(this, default_window));
         }
-        return windowsFactory.get(windowStack.back())->second.get();
+        /// TODO handle nullptr? if not found on stack -> return default
+        return windowsStack.get(windowsStack.stack.back());
+    }
+
+
+    gui::AppWindow *Application::getWindow(const std::string &name)
+    {
+        return windowsStack.get(name);
     }
 
     void Application::connect(std::unique_ptr<app::GuiTimer> &&timer, gui::Item *item)

@@ -38,7 +38,7 @@ namespace app
             if (msg != nullptr) {
                 // window-specific actions
                 if (msg->interface == db::Interface::Name::Contact) {
-                    for (auto &[name, window] : windowsFactory) {
+                    for (auto &[name, window] : windowsStack) {
                         window->onDatabaseMessage(msg);
                     }
                 }
@@ -150,7 +150,7 @@ namespace app
 
         LOG_DEBUG("Search results count: %d", searchModel->requestRecordsCount());
         if (searchModel->requestRecordsCount() > 0) {
-            auto main_window = dynamic_cast<gui::PhonebookMainWindow *>(windowsFactory.get(gui::name::window::main_window)->second.get());
+            auto main_window = dynamic_cast<gui::PhonebookMainWindow *>(windowsStack.get(gui::name::window::main_window));
             if (main_window == nullptr) {
                 LOG_ERROR("Failed to get main window.");
                 return;
@@ -176,7 +176,7 @@ namespace app
 
     bool ApplicationPhonebook::searchEmpty(const std::string &query)
     {
-        auto dialog = dynamic_cast<gui::Dialog *>(windowsFactory.get(gui::window::name::dialog)->second.get());
+        auto dialog = dynamic_cast<gui::Dialog *>(windowsStack.get(gui::window::name::dialog));
         assert(dialog);
         auto meta  = dialog->meta;
         meta.icon  = "search_big";

@@ -38,7 +38,7 @@ namespace app
     {
         callDuration = utils::time::Timestamp() - callStartTime;
 
-        if (getCurrentWindow() == windowsFactory.get(window::name_call)->second.get()) {
+        if (getCurrentWindow() == windowsStack.get(window::name_call)) {
             auto callWindow = dynamic_cast<gui::CallWindow *>(getCurrentWindow());
 
             if (callWindow != nullptr && callWindow->getState() == gui::CallWindow::State::CALL_IN_PROGRESS) {
@@ -51,7 +51,7 @@ namespace app
 
     void ApplicationCall::CallAbortHandler()
     {
-        gui::CallWindow *callWindow = dynamic_cast<gui::CallWindow *>(windowsFactory.get(window::name_call)->second.get());
+        auto callWindow = dynamic_cast<gui::CallWindow *>(windowsStack.get(window::name_call));
         assert(callWindow != nullptr);
 
         LOG_INFO("---------------------------------CallAborted");
@@ -73,7 +73,7 @@ namespace app
 
     void ApplicationCall::CallActiveHandler()
     {
-        gui::CallWindow *callWindow = dynamic_cast<gui::CallWindow *>(windowsFactory.get(window::name_call)->second.get());
+        auto callWindow = dynamic_cast<gui::CallWindow *>(windowsStack.get(window::name_call));
         assert(callWindow != nullptr);
 
         routingAudioHandle = AudioServiceAPI::RoutingStart(this);
@@ -86,7 +86,7 @@ namespace app
 
     void ApplicationCall::IncomingCallHandler(const CellularCallMessage *const msg)
     {
-        gui::CallWindow *callWindow = dynamic_cast<gui::CallWindow *>(windowsFactory.get(window::name_call)->second.get());
+        auto callWindow = dynamic_cast<gui::CallWindow *>(windowsStack.get(window::name_call));
         assert(callWindow != nullptr);
 
         LOG_INFO("---------------------------------IncomingCall");
@@ -114,7 +114,7 @@ namespace app
 
     void ApplicationCall::RingingHandler(const CellularCallMessage *const msg)
     {
-        gui::CallWindow *callWindow = dynamic_cast<gui::CallWindow *>(windowsFactory.get(window::name_call)->second.get());
+        auto callWindow = dynamic_cast<gui::CallWindow *>(windowsStack.get(window::name_call));
         assert(callWindow != nullptr);
 
         LOG_INFO("---------------------------------Ringing");
@@ -230,7 +230,7 @@ namespace app
 
     bool ApplicationCall::showNotification(std::function<bool()> action)
     {
-        auto dialog = dynamic_cast<gui::DialogConfirm *>(windowsFactory.get(app::window::name_dialogConfirm)->second.get());
+        auto dialog = dynamic_cast<gui::DialogConfirm *>(windowsStack.get(app::window::name_dialogConfirm));
         assert(dialog);
         auto meta   = dialog->meta;
         meta.icon   = "info_big_circle_W_G";

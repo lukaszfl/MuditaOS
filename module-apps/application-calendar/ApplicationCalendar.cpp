@@ -59,7 +59,7 @@ namespace app
             LOG_DEBUG("Received notification");
             // window-specific actions
             if (msg->interface == db::Interface::Name::Events) {
-                for (auto &[name, window] : windowsFactory) {
+                for (auto &[name, window] : windowsStack.windows) {
                     window->onDatabaseMessage(msg);
                 }
             }
@@ -149,7 +149,7 @@ namespace app
     void ApplicationCalendar::switchToNoEventsWindow(const std::string &title, const TimePoint &dateFilter)
     {
 
-        auto dialog = dynamic_cast<gui::NoEvents *>(getWindow(style::window::calendar::name::no_events_window));
+        auto dialog = dynamic_cast<gui::NoEvents *>(windowsStack.get(style::window::calendar::name::no_events_window));
         assert(dialog != nullptr);
         auto meta  = dialog->meta;
         meta.text  = "app_calendar_no_events_information";

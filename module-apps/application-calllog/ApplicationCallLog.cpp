@@ -104,7 +104,7 @@ namespace app
     bool ApplicationCallLog::removeCalllogEntry(const CalllogRecord &record)
     {
         LOG_DEBUG("Removing CalllogRecord: %" PRIu32, record.ID);
-        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsFactory.get(calllog::settings::DialogYesNoStr)->second.get());
+        auto dialog = dynamic_cast<gui::DialogYesNo *>(windowsStack.get(calllog::settings::DialogYesNoStr));
         assert(dialog != nullptr);
         auto meta   = dialog->meta;
         meta.action = [=]() -> bool {

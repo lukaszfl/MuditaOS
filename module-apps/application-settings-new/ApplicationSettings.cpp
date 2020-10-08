@@ -57,9 +57,9 @@ namespace app
     void ApplicationSettingsNew::createUserInterface()
     {
         windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
-            return std::make_unique<gui::OptionWindow>(app, name, mainWindowOptionsNew(app));
+            return std::make_unique<gui::OptionWindow>(
+                app, utils::localize.get("app_settings_title_main"), mainWindowOptionsNew(app));
         });
-        std::prev(windowsFactory.end())->second->setTitle(utils::localize.get("app_settings_title_main"));
 
         windowsFactory.attach(gui::window::name::bluetooth, [](Application *app, const std::string &name) {
             return std::make_unique<gui::BluetoothWindow>(app);

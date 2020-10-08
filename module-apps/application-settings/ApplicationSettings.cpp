@@ -123,9 +123,8 @@ namespace app
     void ApplicationSettings::createUserInterface()
     {
         windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
-            return std::make_unique<gui::OptionWindow>(app, name, mainWindowOptions(app));
+            return std::make_unique<gui::OptionWindow>(app, utils::localize.get("app_settings_title_main"), mainWindowOptions(app));
         });
-        std::prev(windowsFactory.end())->second->setTitle(utils::localize.get("app_settings_title_main"));
 
         windowsFactory.attach(app::sim_select, [](Application *app, const std::string &name) {
             return std::make_unique<gui::OptionWindow>(app, name, simSelectWindow(app));

@@ -247,6 +247,7 @@ sys::ReturnCodes EventManager::InitHandler()
     EventWorker->init(list);
     EventWorker->run();
 
+
     return sys::ReturnCodes::Success;
 }
 

@@ -24,10 +24,12 @@
 #include <utility>                                      // for move, pair
 #include <vector>                                       // for vector
 #include "WindowsFactory.hpp"
+#include "WindowsStack.hpp"
 
 namespace app
 {
     class GuiTimer;
+    class WindowsStack;
 } // namespace app
 namespace gui
 {
@@ -107,6 +109,7 @@ namespace app
         static const char *stateStr(State st);
 
       private:
+        std::string default_window;
         State state = State::DEACTIVATED;
 
         sys::Message_t handleSignalStrengthUpdate(sys::DataMessage *msgl);
@@ -301,12 +304,8 @@ namespace app
         /// Method closing application's windows.
         virtual void destroyUserInterface() = 0;
 
-      private:
-        /// stack of visited windows in application
         /// @ingrup AppWindowStack
-        std::vector<std::string> windowStack;
-      protected:
-
+        WindowsStack windowsStack;
         WindowsFactory windowsFactory;
 
       public:
@@ -322,13 +321,11 @@ namespace app
         /// clears windows stack
         /// @ingrup AppWindowStack
         void cleanPrevWindw();
-        /// getter to get window by name
-        /// @note could be possibly used to implement building window on request
-        /// @ingrup AppWindowStack
-        gui::AppWindow *getWindow(const std::string &window);
         /// getter for current wisible window in application
         /// @ingrup AppWindowStack
         gui::AppWindow *getCurrentWindow();
+
+        gui::AppWindow *getWindow(const std::string &name);
         /// to avoid conflicts with connect below
         using Service::connect;
         /// connects item with GuiTimer and stores it in app
