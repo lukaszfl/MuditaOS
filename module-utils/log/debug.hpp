@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG_APPLICATION_MANAGEMENT 0 /// show verbose logs in ApplicationManager
+#define DEBUG_APPLICATION_MANAGEMENT 1 /// show verbose logs in ApplicationManager
 #define DEBUG_SCOPED_TIMINGS         0 /// show timings in measured functions
 #define _RT1051_UART_DEBUG           0 /// show full modem uart communication
 #define DEBUG_MODEM_OUTPUT_RESPONSE  0 /// show full modem output

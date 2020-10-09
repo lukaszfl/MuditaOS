@@ -379,12 +379,14 @@ namespace gui
         smsBubble->inputCallback = [=, &smsRecord](Item &, const InputEvent &event) {
             if (event.state == InputEvent::State::keyReleasedShort && event.keyCode == KeyCode::KEY_LF) {
                 LOG_INFO("Message activated!");
+                /// TODO Options: switchWindow -> std::list<Options> :) 
                 auto app = dynamic_cast<app::ApplicationMessages *>(application);
                 assert(app != nullptr);
-                if (app->windowOptions != nullptr) {
-                    app->windowOptions->clearOptions();
-                    app->windowOptions->addOptions(smsWindowOptions(app, smsRecord));
-                    app->switchWindow(app->windowOptions->getName(), nullptr);
+                auto win = dynamic_cast<gui::OptionWindow*>(app->getWindow(utils::localize.get("app_phonebook_options_title")));
+                if (win != nullptr) {
+                    win->clearOptions();
+                    win->addOptions(smsWindowOptions(app, smsRecord));
+                    app->switchWindow(win->getName(), nullptr);
                 }
                 return true;
             }

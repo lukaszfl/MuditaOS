@@ -113,8 +113,6 @@ namespace app
 
     void ApplicationMessages::createUserInterface()
     {
-        windowOptions = gui::newOptionWindow(this);
-
         windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::MessagesMainWindow>(app);
         });
@@ -124,7 +122,7 @@ namespace app
         windowsFactory.attach(gui::name::window::new_sms, [](Application *app, const std::string &name) {
             return std::make_unique<gui::NewMessageWindow>(app);
         });
-        windowsFactory.attach(windowOptions->getName(), [](Application *app, const std::string &name) {
+        windowsFactory.attach(utils::localize.get("app_phonebook_options_title"), [](Application *app, const std::string &name) {
             return std::make_unique<gui::OptionWindow>(app, name);
         });
         windowsFactory.attach(gui::name::window::dialog, [](Application *app, const std::string &name) {
@@ -394,10 +392,11 @@ namespace app
     bool ApplicationMessages::newMessageOptions(const std::string &requestingWindow, gui::Text *text)
     {
         LOG_INFO("New message options");
-        if (windowOptions != nullptr) {
-            windowOptions->clearOptions();
-            windowOptions->addOptions(newMessageWindowOptions(this, requestingWindow, text));
-            switchWindow(windowOptions->getName(), nullptr);
+        auto win = dynamic_cast<gui::OptionWindow*>(getWindow(utils::localize.get("app_phonebook_options_title")));
+        if (win!=nullptr) {
+            win->clearOptions();
+            win->addOptions(newMessageWindowOptions(this, requestingWindow, text));
+            switchWindow(win->getName(), nullptr);
         }
         return true;
     }

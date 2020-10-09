@@ -396,7 +396,7 @@ namespace app
             }
             getCurrentWindow()->onClose();
             setActiveWindow(msg->getWindowName());
-
+            LOG_DEBUG("Current window: %s vs %s", getCurrentWindow()->getName().c_str(), msg->getWindowName().c_str());
             getCurrentWindow()->handleSwitchData(switchData.get());
 
             // check if this is case where application is returning to the last visible window.
@@ -564,6 +564,7 @@ namespace app
             LOG_INFO(
                 "Pop last window(s) [%d] :  %s", static_cast<int>(std::distance(ret, windowsStack.stack.end())), ret->c_str());
             windowsStack.stack.erase(std::next(ret), windowsStack.stack.end());
+            LOG_INFO("Curent window... %s vs %s", ret->c_str(), windowsStack.stack.back().c_str());
             return true;
         }
         return false;
@@ -572,6 +573,7 @@ namespace app
     void Application::pushWindow(const std::string &newWindow)
     {
         // handle if window was already on
+        LOG_DEBUG("App: %s window %s request", GetName().c_str(), newWindow.c_str());
         if (popToWindow(newWindow)) {
             return;
         }
@@ -579,11 +581,11 @@ namespace app
             windowsStack.push(newWindow, windowsFactory.build(this, newWindow));
         }
 #if DEBUG_APPLICATION_MANAGEMENT == 1
-        LOG_DEBUG("[%d] newWindow: %s", windowsStack.stack.size(), newWindow.c_str());
+        LOG_DEBUG("[%d] newWindow: %s", (int)windowsStack.stack.size(), newWindow.c_str());
         for (auto &el : windowsStack.stack) {
             LOG_DEBUG("-> %s", el.c_str());
         }
-        LOG_INFO("\n\n");
+        LOG_INFO("\n");
 #endif
     };
 

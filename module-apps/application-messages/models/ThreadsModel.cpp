@@ -4,6 +4,7 @@
 #include "application-messages/data/SMSdata.hpp"
 #include "application-messages/widgets/ThreadItem.hpp"
 #include "application-messages/windows/ThreadWindowOptions.hpp"
+#include "log/log.hpp"
 #include <module-services/service-db/api/DBServiceAPI.hpp>
 #include <module-services/service-db/messages/DBThreadMessage.hpp>
 
@@ -43,9 +44,12 @@ auto ThreadsModel::getItem(gui::Order order) -> gui::ListItem *
             return false;
         }
         if (event.keyCode == gui::KeyCode::KEY_LF) {
-            app->windowOptions->clearOptions();
-            app->windowOptions->addOptions(threadWindowOptions(app, item->getThreadItem().get()));
-            app->switchWindow(app->windowOptions->getName(), nullptr);
+            auto win = dynamic_cast<gui::OptionWindow*>(app->getWindow(utils::localize.get("app_phonebook_options_title")));
+            assert(nullptr);
+            LOG_DEBUG("SHOW OPTIONS");
+            win->clearOptions();
+            win->addOptions(threadWindowOptions(app, item->getThreadItem().get()));
+            app->switchWindow(win->getName(), nullptr);
         }
         return false;
     };
