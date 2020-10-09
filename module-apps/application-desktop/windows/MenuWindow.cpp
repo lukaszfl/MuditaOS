@@ -248,7 +248,6 @@ namespace gui
             eventData->setDescription(style::window::calendar::name::event_reminder_window);
             auto event = std::make_shared<EventsRecord>(eventRecord);
             eventData->setData(event);
-            eventData->setWindowName("");
 
             sapm::ApplicationManager::messageSwitchApplication(
                 application, "ApplicationCalendar", "EventReminderWindow", std::move(eventData));

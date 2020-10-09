@@ -20,6 +20,14 @@ namespace stm
     bool CalendarTimeEvents::SendNextEventQuery()
     {
         TimePoint filterFrom = TimePointNow();
+
+        // mlucki
+        std::string nowStr1 = TimePointToString(filterFrom);
+
+        time_t time = 0;
+        bsp::rtc_GetCurrentTimestamp(&time);
+        std::string nowStr2 = TimePointToString(TimePointFromTimeT(time));
+
         TimePoint filterTill = filterFrom;
         if (startTP != TIME_POINT_INVALID) {
             filterFrom = std::min(startTP, filterFrom);
@@ -74,7 +82,6 @@ namespace stm
         eventData->setDescription(style::window::calendar::name::event_reminder_window);
         auto event = std::make_shared<EventsRecord>(eventRecord);
         eventData->setData(event);
-        eventData->setWindowName("");
 
         sapm::ApplicationManager::messageSwitchApplication(
             Service(), app::name_calendar, style::window::calendar::name::event_reminder_window, std::move(eventData));

@@ -485,6 +485,9 @@ namespace sapm
         if ((focusApplicationName == msg->getName())) {
             LOG_WARN("Trying to return currently active application");
 
+            // mlucki
+            // return false;
+
             // TODO
             // Before rework of ApplicationManager: there we have temporary simple switch to
             // currently focused application

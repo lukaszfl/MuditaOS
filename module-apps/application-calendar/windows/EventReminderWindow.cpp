@@ -83,6 +83,7 @@ namespace gui
 
     void EventReminderWindow::startTimer()
     {
+        reminderTimer->connect([=](sys::Timer &) { reminderTimerCallback(); });
         reminderTimer->reload();
     }
 
@@ -103,7 +104,6 @@ namespace gui
         }
 
         eventRecord    = item->getData();
-        prevWindowName = item->getWindowName();
         dateLabel->setText(TimePointToDateString(eventRecord->date_from));
         timeLabel->setText(TimePointToMinuteTimeString(eventRecord->date_from));
         descriptionLabel->setText(eventRecord->title);

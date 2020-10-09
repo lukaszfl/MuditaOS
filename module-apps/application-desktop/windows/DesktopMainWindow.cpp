@@ -103,14 +103,14 @@ namespace gui
 
             // TODO
             // Temporary solution: blocking of ServiceTime timers when phone becomes locked
-            TimeServiceAPI::messageTimersProcessingStop(application);
+            // TimeServiceAPI::messageTimersProcessingStop(application);
         }
         else if (app->lockHandler.lock.isLocked()) {
             application->switchWindow(app::window::name::desktop_pin_lock);
 
             // TODO
             // Temporary solution: blocking of ServiceTime timers when phone becomes locked
-            TimeServiceAPI::messageTimersProcessingStop(application);
+            // TimeServiceAPI::messageTimersProcessingStop(application);
         }
         else {
             bottomBar->setText(BottomBar::Side::CENTER, utils::localize.get("app_desktop_menu"));
@@ -125,7 +125,7 @@ namespace gui
 
             // TODO
             // Temporary solution: starting of ServiceTime timers when phone becomes unlocked
-            TimeServiceAPI::messageTimersProcessingStart(application);
+            // TimeServiceAPI::messageTimersProcessingStart(application);
         }
     }
 

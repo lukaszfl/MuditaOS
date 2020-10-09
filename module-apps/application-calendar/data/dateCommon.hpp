@@ -70,6 +70,27 @@ inline time_t GetDiffLocalWithUTCTime()
     tm.tm_isdst = -1;
     diff -= std::mktime(&tm);
 
+    /*std::tm tm1 = CreateTmStruct(2000, 1, 1, 0, 0, 0);
+    std::time_t basetime1 = timegm(&tm1);
+    std::time_t diff1 = basetime1 - diff;
+    diff = diff1;*/
+
+    /*tm          = *std::gmtime(&basetime);
+    tm.tm_isdst = -1;
+    diff -= std::mktime(&tm);*/
+
+    /*time_t t;
+    struct tm tm1;
+    struct tm * tmp1;
+    t = timegm(&tm1);
+    tmp1 = std::gmtime(&t);
+
+    struct tm * tmp2;
+    t = mktime(&tm1);
+    tmp2 = std::localtime(&t);
+
+    diff = std::mktime(tmp2) - std::mktime(tmp1);*/
+
     return diff;
 }
 
@@ -94,7 +115,7 @@ inline time_t TimePointToTimeT(const TimePoint &tp)
 inline TimePoint TimePointNow()
 {
     utils::time::Timestamp timestamp;
-    return TimePointFromTimeT(timestamp.getTime());
+    return TimePointFromTimeT(timestamp.getTime() + GetDiffLocalWithUTCTime());
 }
 
 inline std::string TimePointToString(const TimePoint &tp)
