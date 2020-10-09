@@ -123,7 +123,7 @@ int main()
         applications.push_back(app::CreateLauncher<app::ApplicationAntenna>(app::name_antenna));
 #endif
 #ifdef ENABLE_APP_CALENDAR
-//        applications.push_back(app::CreateLauncher<app::ApplicationCalendar>(app::name_calendar));
+        applications.push_back(app::CreateLauncher<app::ApplicationCalendar>(app::name_calendar));
 #endif
 #ifdef ENABLE_APP_MUSIC_PLAYER
         applications.push_back(app::CreateLauncher<app::ApplicationMusicPlayer>(app::name_music_player));
