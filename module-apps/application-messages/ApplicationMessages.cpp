@@ -1,5 +1,6 @@
 #include "ApplicationMessages.hpp"
 
+#include "OptionsWindow.hpp"
 #include "application-messages/data/SMSTextToSearch.hpp"
 #include "messages/DBNotificationMessage.hpp"
 #include "windows/MessagesMainWindow.hpp"
@@ -25,6 +26,7 @@
 
 #include <cassert>
 #include <time/time_conversion.hpp>
+#include <messages/OptionsWindow.hpp>
 
 namespace app
 {
@@ -392,12 +394,8 @@ namespace app
     bool ApplicationMessages::newMessageOptions(const std::string &requestingWindow, gui::Text *text)
     {
         LOG_INFO("New message options");
-        auto win = dynamic_cast<gui::OptionWindow*>(getWindow(utils::localize.get("app_phonebook_options_title")));
-        if (win!=nullptr) {
-            win->clearOptions();
-            win->addOptions(newMessageWindowOptions(this, requestingWindow, text));
-            switchWindow(win->getName(), nullptr);
-        }
+        auto opts = std::make_unique<gui::OptionsWindowOptions>(newMessageWindowOptions(this, requestingWindow, text));
+        switchWindow(utils::localize.get("app_phonebook_options_title"), std::move(opts));
         return true;
     }
 

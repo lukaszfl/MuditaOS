@@ -1,6 +1,7 @@
 #include "ThreadsModel.hpp"
 #include "InputEvent.hpp"
 #include "OptionWindow.hpp"
+#include "OptionsWindow.hpp"
 #include "application-messages/data/SMSdata.hpp"
 #include "application-messages/widgets/ThreadItem.hpp"
 #include "application-messages/windows/ThreadWindowOptions.hpp"
@@ -44,12 +45,9 @@ auto ThreadsModel::getItem(gui::Order order) -> gui::ListItem *
             return false;
         }
         if (event.keyCode == gui::KeyCode::KEY_LF) {
-            auto win = dynamic_cast<gui::OptionWindow*>(app->getWindow(utils::localize.get("app_phonebook_options_title")));
-            assert(nullptr);
-            LOG_DEBUG("SHOW OPTIONS");
-            win->clearOptions();
-            win->addOptions(threadWindowOptions(app, item->getThreadItem().get()));
-            app->switchWindow(win->getName(), nullptr);
+            application->switchWindow(
+                utils::localize.get("app_phonebook_options_title"),
+                std::make_unique<gui::OptionsWindowOptions>(threadWindowOptions(app, item->getThreadItem().get())));
         }
         return false;
     };

@@ -1,5 +1,6 @@
 #include "SMSThreadViewWindow.hpp"
 
+#include "OptionsWindow.hpp"
 #include "application-messages/ApplicationMessages.hpp"
 #include "application-messages/data/SMSdata.hpp"
 #include "OptionsMessages.hpp"
@@ -379,15 +380,10 @@ namespace gui
         smsBubble->inputCallback = [=, &smsRecord](Item &, const InputEvent &event) {
             if (event.state == InputEvent::State::keyReleasedShort && event.keyCode == KeyCode::KEY_LF) {
                 LOG_INFO("Message activated!");
-                /// TODO Options: switchWindow -> std::list<Options> :) 
                 auto app = dynamic_cast<app::ApplicationMessages *>(application);
                 assert(app != nullptr);
-                auto win = dynamic_cast<gui::OptionWindow*>(app->getWindow(utils::localize.get("app_phonebook_options_title")));
-                if (win != nullptr) {
-                    win->clearOptions();
-                    win->addOptions(smsWindowOptions(app, smsRecord));
-                    app->switchWindow(win->getName(), nullptr);
-                }
+                app->switchWindow(utils::localize.get("app_phonebook_options_title"),
+                                  std::make_unique<gui::OptionsWindowOptions>(smsWindowOptions(app, smsRecord)));
                 return true;
             }
             return false;
