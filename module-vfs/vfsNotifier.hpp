@@ -22,6 +22,9 @@ namespace vfsn::utility
         using FILE = FF_FILE;
 #endif
       public:
+        vfsNotifier()                    = default;
+        vfsNotifier(const vfsNotifier &) = delete;
+        vfsNotifier &operator=(const vfsNotifier &) = delete;
         //! Event type notified for indexer
         enum class FsEvent
         {
@@ -39,9 +42,9 @@ namespace vfsn::utility
         // When file is removed
         auto onFileRemove(std::string_view filename) noexcept -> void;
         // When file is renamed
-        auto onFileRename(std::string_view new_file, std::string_view old_file) -> void;
+        auto onFileRename(std::string_view new_file, std::string_view old_file) noexcept -> void;
         // When filesystem is initialized
-        auto onFileSystemInitialized() -> void
+        auto onFileSystemInitialized() noexcept -> void
         {
             notify("/", FsEvent::initialized);
         }

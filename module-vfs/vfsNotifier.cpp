@@ -34,7 +34,7 @@ namespace vfsn::utility
         notify(vfs.getAbsolutePath(filename), FsEvent::deleted);
     }
 
-    auto vfsNotifier::onFileRename(std::string_view new_file, std::string_view old_file) -> void
+    auto vfsNotifier::onFileRename(std::string_view new_file, std::string_view old_file) noexcept -> void
     {
         notify(vfs.getAbsolutePath(new_file), FsEvent::renamed, vfs.getAbsolutePath(old_file));
     }
