@@ -35,6 +35,7 @@ void vfs::Init()
     // whatever current path on Linux we treat that as the root for our app
     bootConfig.os_root_path = "./";
     LOG_DEBUG("vfs::Iinit running on Linux osRootPath: %s", bootConfig.os_root_path.c_str());
+    chnNotifier.onFileSystemInitialized();
 }
 
 std::string vfs::relativeToRoot(std::string_view path)
@@ -44,17 +45,23 @@ std::string vfs::relativeToRoot(std::string_view path)
 
 vfs::FILE *vfs::fopen(const char *filename, const char *mode)
 {
-    return std::fopen(relativeToRoot(filename).c_str(), mode);
+    const auto handle = std::fopen(relativeToRoot(filename).c_str(), mode);
+    chnNotifier.onFileOpen(filename, mode, handle);
+    return handle;
 }
 
 int vfs::fclose(FILE *stream)
 {
+    chnNotifier.onFileClose(stream);
     return std::fclose(stream);
 }
 
 int vfs::remove(const char *name)
 {
-    return std::remove(relativeToRoot(name).c_str());
+    const auto ret = std::remove(relativeToRoot(name).c_str());
+    if (!ret)
+        chnNotifier.onFileRemove(name);
+    return ret;
 }
 
 size_t vfs::fread(void *ptr, size_t size, size_t count, FILE *stream)
@@ -220,9 +227,16 @@ bool vfs::fileExists(const char *path)
 
 int vfs::deltree(const char *path)
 {
+    namespace fs = std::filesystem;
     if (path != nullptr) {
         std::error_code ec;
-        std::filesystem::remove_all(relativeToRoot(path), ec);
+        const auto full_path = relativeToRoot(path);
+        for (const auto &cpath : fs::recursive_directory_iterator(full_path)) {
+            if (fs::is_regular_file(cpath.path())) {
+                chnNotifier.onFileRemove(cpath.path().string());
+            }
+        }
+        fs::remove_all(full_path, ec);
         return ec.value();
     }
     else
@@ -240,8 +254,12 @@ int vfs::mkdir(const char *dir)
 
 int vfs::rename(const char *oldname, const char *newname)
 {
-    if (oldname != nullptr && newname != nullptr)
-        return std::rename(relativeToRoot(oldname).c_str(), relativeToRoot(newname).c_str());
+    if (oldname != nullptr && newname != nullptr) {
+        const auto ret = std::rename(relativeToRoot(oldname).c_str(), relativeToRoot(newname).c_str());
+        if (!ret)
+            chnNotifier.onFileRename(newname, oldname);
+        return ret;
+    }
     else
         return -1;
 }
@@ -259,4 +277,9 @@ size_t vfs::fprintf(FILE *stream, const char *format, ...)
     ret = std::vfprintf(stream, format, argList);
     va_end(argList);
     return ret;
+}
+
+auto vfs::getAbsolutePath(std::string_view path) const -> std::string
+{
+    return std::filesystem::absolute(path);
 }
