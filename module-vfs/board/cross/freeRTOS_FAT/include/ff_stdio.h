@@ -303,7 +303,7 @@ int ff_rmdir( const char *pcDirectory );
 		Stack : 48 (12 stack words)
 		Heap  : 112 + ffconfigMAX_FILENAME
 	These numbers may change depending on CPU and compiler. */
-	int ff_deltree( const char *pcPath );
+	int ff_deltree( const char *pcPath, void (*onFileRemoved)(void*, const char*), void* context );
 #endif
 
 /*-----------------------------------------------------------
@@ -361,14 +361,7 @@ int ff_isdirempty(const char *pcPath );
 #endif
 int ff_finddir( const char *pcPath );
 
-typedef enum _EFileAction {
-	eFileCreate,
-	eFileRemove,
-	eFileChange,
-	eFileIsDir = 0x80,
-} eFileAction_t;
 
-void callFileEvents( const char *apPath, eFileAction_t aAction );
 
 #ifdef __cplusplus
 } /* extern "C" */

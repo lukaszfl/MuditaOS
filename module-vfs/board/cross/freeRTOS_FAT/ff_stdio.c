@@ -140,7 +140,7 @@ in a call to ff_truncate(). */
 	 * This function uses recursion - which breaches the coding standard.  USE
 	 * WITH CARE.
 	 */
-	static int ff_deltree_recurse( char *pcPath );
+	static int ff_deltree_recurse( char *pcPath,  void (*onFileRemoved)(void*, const char*), void *context );
 #endif
 
 /*
@@ -1621,7 +1621,7 @@ FF_Error_t xReturned;
  * Delete a directory and, recursively, all of its contents
  *-----------------------------------------------------------*/
 #if( ffconfigUSE_DELTREE != 0 )
-	int ff_deltree( const char *pcDirectory )
+	int ff_deltree( const char *pcDirectory,void (*onFileRemoved)(void*, const char*), void* context )
 	{
 	int iResult;
 	char *pcPath;
@@ -1633,7 +1633,7 @@ FF_Error_t xReturned;
 			pcDirectory = prvABSPath( pcDirectory );
 			snprintf (pcPath, ffconfigMAX_FILENAME, "%s", pcDirectory);
 			/* This recursive function will do all the work */
-			iResult = ff_deltree_recurse (pcPath);
+			iResult = ff_deltree_recurse (pcPath,onFileRemoved, context);
 			if( iResult >= 0 )
 			{
 				iResult = ff_rmdir( pcPath );
@@ -1655,7 +1655,7 @@ FF_Error_t xReturned;
 /*-----------------------------------------------------------*/
 
 #if( ffconfigUSE_DELTREE != 0 )
-	static int ff_deltree_recurse( char *pcPath )
+	static int ff_deltree_recurse( char *pcPath, void (*onFileRemoved)(void*, const char*), void *context)
 	{
 	FF_FindData_t *pxFindData;
 	BaseType_t xIsDir, xIsDotDir;
@@ -1705,7 +1705,7 @@ FF_Error_t xReturned;
 							iNext = ff_findnext( pxFindData );
 
 							/* Remove the contents of this directory. */
-							iResult = ff_deltree_recurse( pcPath );
+							iResult = ff_deltree_recurse( pcPath, onFileRemoved, context);
 							if( iResult < 0 )
 							{
 								iCount = -1;
@@ -1746,6 +1746,7 @@ FF_Error_t xReturned;
 						else
 						{
 							iCount++;
+                            if(onFileRemoved) onFileRemoved(context, pcPath);
 						}
 					}
 					else
