@@ -262,7 +262,7 @@ vfs::FilesystemStats vfs::getFilesystemStats()
     return filesystemStats;
 }
 
-std::string vfs::relativeToRoot(const std::string path)
+std::string vfs::relativeToRoot(std::string_view path)
 {
     fs::path fsPath(path);
 

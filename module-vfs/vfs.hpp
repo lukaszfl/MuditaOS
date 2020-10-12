@@ -153,7 +153,7 @@ class vfs
     std::string getline(FILE *stream, uint32_t length = 1024);
     size_t fprintf(FILE *stream, const char *format, ...);
     FilesystemStats getFilesystemStats();
-    std::string relativeToRoot(const std::string path);
+    std::string relativeToRoot(std::string_view path);
     std::string lastErrnoToStr();
     bool isDir(const char *path);
     bool fileExists(const char *path);

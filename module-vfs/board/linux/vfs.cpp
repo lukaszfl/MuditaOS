@@ -37,7 +37,7 @@ void vfs::Init()
     LOG_DEBUG("vfs::Iinit running on Linux osRootPath: %s", bootConfig.os_root_path.c_str());
 }
 
-std::string vfs::relativeToRoot(const std::string path)
+std::string vfs::relativeToRoot(std::string_view path)
 {
     return (bootConfig.os_root_path / fs::path(path).relative_path()).relative_path();
 }

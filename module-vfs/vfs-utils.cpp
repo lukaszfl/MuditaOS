@@ -122,11 +122,11 @@ bool vfs::replaceWithString(const fs::path &fileToModify, const std::string &str
 const fs::path vfs::getCurrentBootJSON()
 {
     if (verifyCRC(purefs::file::boot_json)) {
-        return relativeToRoot(purefs::file::boot_json);
+        return relativeToRoot(purefs::file::boot_json.string());
     }
 
     LOG_INFO("vfs::getCurrentBootJSON crc check failed on %s", purefs::file::boot_json.c_str());
-    return relativeToRoot(purefs::file::boot_json);
+    return relativeToRoot(purefs::file::boot_json.string());
 }
 
 bool vfs::loadBootConfig(const fs::path &bootJsonPath)
