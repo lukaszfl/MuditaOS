@@ -104,8 +104,8 @@ namespace gui
         }
 
         eventRecord    = item->getData();
-        dateLabel->setText(TimePointToDateString(eventRecord->date_from));
-        timeLabel->setText(TimePointToMinuteTimeString(eventRecord->date_from));
+        dateLabel->setText(TimePointToLocalizedDateString(eventRecord->date_from));
+        timeLabel->setText(TimePointToLocalizedTimeString(eventRecord->date_from));
         descriptionLabel->setText(eventRecord->title);
 
         startTimer();

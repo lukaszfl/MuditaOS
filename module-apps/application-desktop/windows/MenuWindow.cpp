@@ -242,7 +242,7 @@ namespace gui
             EventsRecord eventRecord;
             eventRecord.title     = "Ciapek do weterynarza";
             eventRecord.reminder  = 40;
-            eventRecord.date_from = TimePointFromString("2020-09-12 11:55:00");
+            eventRecord.date_from = TimePointFromString("2020-10-13 11:55:00");
 
             std::unique_ptr<EventRecordData> eventData = std::make_unique<EventRecordData>();
             eventData->setDescription(style::window::calendar::name::event_reminder_window);
