@@ -116,31 +116,41 @@ namespace app
     void ApplicationCalendar::createUserInterface()
     {
 
+        // 101.49
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             gui::name::window::main_window, new gui::CalendarMainWindow(this, gui::name::window::main_window)));
+        // 101.63
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::day_events_window,
             new gui::DayEventsWindow(this, style::window::calendar::name::day_events_window)));
+        // 101.99
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::no_events_window,
             new gui::NoEvents(this, style::window::calendar::name::no_events_window, gui::NoEvents::Meta())));
+        // 101.87
         windows.insert(std::pair<std::string, gui::AppWindow *>(style::window::calendar::name::events_options,
                                                                 new gui::CalendarEventsOptions(this)));
+        // 102.03
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::dialog_yes_no,
             new gui::DialogYesNo(this, style::window::calendar::name::dialog_yes_no)));
+        // 101.50
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::all_events_window,
             new gui::AllEventsWindow(this, style::window::calendar::name::all_events_window)));
+        // 101.57
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::details_window,
             new gui::EventDetailWindow(this, style::window::calendar::name::details_window)));
+        // 101.00
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::new_edit_event,
             new gui::NewEditEventWindow(this, style::window::calendar::name::new_edit_event)));
+        // 101.83
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::custom_repeat_window,
             new gui::CustomRepeatWindow(this, style::window::calendar::name::custom_repeat_window)));
+        // 101.90
         windows.insert(std::pair<std::string, gui::AppWindow *>(
             style::window::calendar::name::event_reminder_window,
             new gui::EventReminderWindow(this, style::window::calendar::name::event_reminder_window)));

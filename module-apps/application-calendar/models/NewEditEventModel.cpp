@@ -60,15 +60,18 @@ void NewEditEventModel::createData(bool allDayEvent)
     auto app = application;
     assert(app != nullptr);
 
+    // 101.88
     eventNameInput = new gui::TextWithLabelItem(
         utils::localize.get("app_calendar_new_edit_event_name"),
         [app](const UTF8 &text) { app->getCurrentWindow()->bottomBarTemporaryMode(text); },
         [app]() { app->getCurrentWindow()->bottomBarRestoreFromTemporaryMode(); },
         [app]() { app->getCurrentWindow()->selectSpecialCharacter(); });
 
+    // 101.90
     allDayEventCheckBox = new gui::NewEventCheckBoxWithLabel(
         application, utils::localize.get("app_calendar_new_edit_event_allday"), true, this);
 
+    // 101.85
     startTime = new gui::EventTimeItem(
         utils::localize.get("app_calendar_new_edit_event_start"),
         mode24H,
@@ -81,6 +84,7 @@ void NewEditEventModel::createData(bool allDayEvent)
         [app](const UTF8 &text) { app->getCurrentWindow()->bottomBarTemporaryMode(text, false); },
         [app]() { app->getCurrentWindow()->bottomBarRestoreFromTemporaryMode(); });
 
+    // 101.84
     reminder = new gui::SeveralOptionsItem(
         application,
         utils::localize.get("app_calendar_event_detail_reminder"),
@@ -116,11 +120,22 @@ void NewEditEventModel::loadData(std::shared_ptr<EventsRecord> record)
     eraseInternalData();
     auto start_time    = TimePointToHourMinSec(record->date_from);
     auto end_time      = TimePointToHourMinSec(record->date_till);
+
+    /*            if (start_time.hours() == end_time.hours())
+                {
+                    for (auto &item : internalData) {
+                        if (item->onLoadCallback) {
+                            item->onLoadCallback(record);
+                        }
+                    }
+                }*/
+
     auto isAllDayEvent = [&]() -> bool {
         return start_time.hours().count() == 0 && start_time.minutes().count() == 0 &&
                end_time.hours().count() == style::window::calendar::time::max_hour_24H_mode &&
                end_time.minutes().count() == style::window::calendar::time::max_minutes;
     };
+    // isAllDayEvent();
 
     createData(isAllDayEvent());
 
@@ -151,7 +166,7 @@ void NewEditEventModel::reloadDataWithTimeItem()
 {
     internalData.clear();
 
-    internalData.push_back(eventNameInput);
+    ////internalData.push_back(eventNameInput);
     internalData.push_back(allDayEventCheckBox);
     internalData.push_back(startTime);
     internalData.push_back(endTime);
