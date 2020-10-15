@@ -193,6 +193,30 @@ namespace utils
             }
             return UINT32_MAX;
         }
+        uint32_t Timestamp::get_UTC_date_time_sub_value(GetParameters param)
+        {
+            std::tm tm = *std::gmtime(&time);
+
+            switch (param) {
+            case GetParameters::Hour:
+                return tm.tm_hour;
+                break;
+            case GetParameters::Minute:
+                return tm.tm_min;
+                break;
+            case GetParameters::Day:
+                return tm.tm_mday;
+                break;
+            case GetParameters::Month:
+                return tm.tm_mon + 1;
+                break;
+            case GetParameters::Year:
+                return tm.tm_year + 1900;
+                break;
+            }
+            return UINT32_MAX;
+        }
+
         UTF8 Date::str(std::string format)
         {
             if (!format.empty()) {
