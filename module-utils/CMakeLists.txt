@@ -45,6 +45,9 @@ include(third-party/protobuf-lite.cmake)
 include(third-party/libphonenumber.cmake)
 include(third-party/tinyexpr.cmake)
 
+# a tu bym się nie szczypał i walnął set dla całego project module-utils :)
+set(CMAKE_C_FLAGS_DEBUG   "-Os -DNDEBUG -ggdb3")
+set(CMAKE_CXX_FLAGS_DEBUG "-Os -DNDEBUG -ggdb3")
 add_subdirectory(pugixml)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC module-os module-vfs pugixml)

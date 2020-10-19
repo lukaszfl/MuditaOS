@@ -13,9 +13,10 @@ set (SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/dhcp-server/dhserver.c"
 )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-set (LWIP_DEFINITIONS LWIP_DEBUG=1)
-endif()
+# LWIP debug option disabled
+# set (LWIP_DEFINITIONS LWIP_DEBUG=1)
+set(CMAKE_C_FLAGS_DEBUG   "-Os -DNDEBUG -ggdb3")
+set(CMAKE_CXX_FLAGS_DEBUG "-Os -DNDEBUG -ggdb3")
 
 include(${LWIP_DIR}/src/Filelists.cmake)
 include(${LWIP_DIR}/contrib/Filelists.cmake)

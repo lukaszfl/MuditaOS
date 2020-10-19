@@ -13,6 +13,9 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/A2DP/AVDTP.cpp
     )
 
+set(CMAKE_C_FLAGS_DEBUG   "-Os -DNDEBUG -ggdb3")
+set(CMAKE_CXX_FLAGS_DEBUG "-Os -DNDEBUG -ggdb3")
+
 message("Build with BlueKitchen")
 include(lib/btstack.cmake)
 
