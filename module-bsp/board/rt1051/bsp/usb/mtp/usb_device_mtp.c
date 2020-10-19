@@ -284,26 +284,26 @@ static usb_status_t handler_DeviceClassEventClassRequest(usb_device_mtp_struct_t
 {
     usb_status_t error = kStatus_USB_Error;
 
+    printf("[MTP]: EventClassRequest\n");
+
     if (param)
     {
         usb_device_control_request_struct_t *controlRequest = (usb_device_control_request_struct_t *)param;
 
         if ((controlRequest->setup->wIndex & 0xFFU) != mtp->interfaceNumber)
         {
+            printf("[MTP] Control request target interface mismatch: %u != %u\n", mtp->interfaceNumber, controlRequest->setup->wIndex);
             return kStatus_USB_Error;
         }
 
-        usb_device_control_request_struct_t *request = (usb_device_control_request_struct_t*)param;
-        if (request->setup) {
-            usb_echo("[MTP] Control request: [bmRequestType = 0x%x, bRequest = 0x%x, wValue = 0x%x, wIndex = 0x%x, wLength = 0x%x]\n",
-                    request->setup->bmRequestType,
-                    request->setup->bRequest,
-                    request->setup->wValue,
-                    request->setup->wIndex,
-                    request->setup->wLength);
-
+        if (controlRequest->setup) {
+            printf("[MTP] Control request: [bmRequestType = 0x%x, bRequest = 0x%x, wValue = 0x%x, wIndex = 0x%x, wLength = 0x%x]\n",
+                    controlRequest->setup->bmRequestType,
+                    controlRequest->setup->bRequest,
+                    controlRequest->setup->wValue,
+                    controlRequest->setup->wIndex,
+                    controlRequest->setup->wLength);
         }
-
 
         switch(controlRequest->setup->bRequest) {
             case MTP_CLASS_REQUEST_CANCEL:
