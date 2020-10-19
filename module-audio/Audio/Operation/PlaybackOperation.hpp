@@ -41,6 +41,8 @@ namespace audio
 
         Position GetPosition() override final;
 
+        std::string GetFilename() const noexcept final;
+
       private:
         std::unique_ptr<decoder> dec;
         std::unique_ptr<bsp::AudioDevice> audioDevice;

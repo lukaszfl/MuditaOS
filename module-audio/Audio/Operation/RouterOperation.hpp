@@ -34,6 +34,7 @@ namespace audio
         audio::RetCode SetInputGain(float gain) override final;
 
         Position GetPosition() override final;
+        std::string GetFilename() const noexcept final;
 
       private:
         bool Mute(bool enable);

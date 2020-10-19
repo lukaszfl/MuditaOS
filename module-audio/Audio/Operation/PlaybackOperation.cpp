@@ -146,6 +146,11 @@ namespace audio
         return dec->getCurrentPosition();
     }
 
+    std::string PlaybackOperation::GetFilename() const noexcept
+    {
+        return dec->getFileName();
+    };
+
     audio::RetCode PlaybackOperation::SendEvent(std::shared_ptr<Event> evt)
     {
 

@@ -265,4 +265,9 @@ namespace audio
         return 0.0;
     }
 
+    std::string RouterOperation::GetFilename() const noexcept
+    {
+        return std::string();
+    }
+
 } // namespace audio

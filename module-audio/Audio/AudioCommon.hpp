@@ -8,6 +8,7 @@
 namespace audio
 {
     class AudioMux;
+    class AudioManager;
 }
 
 namespace audio
@@ -107,6 +108,8 @@ namespace audio
         ProfileNotSet,
         DeviceFailure,
         TokenNotFound,
+        Merged,
+        Ignored,
         Failed
     };
 
@@ -174,6 +177,7 @@ namespace audio
 
         TokenType t;
         friend class ::audio::AudioMux;
+        friend class ::audio::AudioManager;
     };
 
     class Handle

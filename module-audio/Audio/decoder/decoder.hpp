@@ -98,6 +98,11 @@ namespace audio
             return position;
         }
 
+        std::string getFileName() const
+        {
+            return filePath;
+        }
+
         // Factory method
         static std::unique_ptr<decoder> Create(const char *file);
 

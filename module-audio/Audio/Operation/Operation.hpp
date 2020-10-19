@@ -73,6 +73,8 @@ namespace audio
 
         virtual Position GetPosition() = 0;
 
+        virtual std::string GetFilename() const noexcept = 0;
+
         Volume GetOutputVolume() const
         {
             return (currentProfile != nullptr) ? currentProfile->GetOutputVolume() : Volume{};

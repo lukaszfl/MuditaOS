@@ -22,7 +22,8 @@ set(SOURCES
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/encoder/EncoderWAV.cpp"
 
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/Audio.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/Audio/AudioMux.cpp"
+        #"${CMAKE_CURRENT_SOURCE_DIR}/Audio/AudioMux.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Audio/AudioManager.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/AudioCommon.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/Operation/Operation.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/Operation/PlaybackOperation.cpp"

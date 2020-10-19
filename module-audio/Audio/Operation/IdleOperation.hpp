@@ -64,6 +64,11 @@ namespace audio
         {
             return 0.0;
         }
+
+        std::string GetFilename() const noexcept final
+        {
+            return std::string();
+        };
     };
 
 } // namespace audio

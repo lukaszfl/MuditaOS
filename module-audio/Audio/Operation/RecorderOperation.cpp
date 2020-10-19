@@ -212,4 +212,9 @@ namespace audio
     {
         return enc->getCurrentPosition();
     }
+
+    std::string RecorderOperation::GetFilename() const noexcept
+    {
+        return enc->GetFilePath();
+    }
 } // namespace audio

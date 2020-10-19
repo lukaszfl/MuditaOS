@@ -41,6 +41,8 @@ namespace audio
 
         Position GetPosition() override final;
 
+        std::string GetFilename() const noexcept final;
+
         uint32_t GetSize()
         {
             return enc->GetFileSize();

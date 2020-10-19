@@ -43,6 +43,11 @@ namespace audio
             return fileSize;
         }
 
+        std::string GetFilePath() const noexcept
+        {
+            return filePath;
+        }
+
         const Format format;
 
       protected:
