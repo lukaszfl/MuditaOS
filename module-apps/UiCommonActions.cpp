@@ -34,7 +34,8 @@ namespace app
     auto call(Application *app, const utils::PhoneNumber::View &phoneNumber) -> bool
     {
         assert(app != nullptr);
-        auto data = std::make_unique<ExecuteCallData>(phoneNumber);
+        auto data             = std::make_unique<ExecuteCallData>(phoneNumber);
+        data->disableAppClose = true;
 
         return sapm::ApplicationManager::messageSwitchApplication(
             app, name_call, window::name_enterNumber, std::move(data));
@@ -57,6 +58,7 @@ namespace app
         switch (smsOperation) {
         case SmsOperation::New: {
             auto data                        = std::make_unique<SMSSendRequest>(number, textData);
+            data->disableAppClose            = true;
             data->ignoreCurrentWindowOnStack = true;
             return sapm::ApplicationManager::messageSwitchApplication(
                 app, name_messages, gui::name::window::new_sms, std::move(data));
