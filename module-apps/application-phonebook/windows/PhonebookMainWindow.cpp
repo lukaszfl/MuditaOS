@@ -6,7 +6,7 @@
 #include <messages/QueryMessage.hpp>
 #include <queries/phonebook/QueryContactGet.hpp>
 
-#include <service-appmgr/ApplicationManager.hpp>
+#include <service-appmgr/Controller.hpp>
 #include <module-services/service-db/messages/DBNotificationMessage.hpp>
 
 namespace gui
@@ -103,8 +103,9 @@ namespace gui
                 std::unique_ptr<PhonebookSearchReuqest> data = std::make_unique<PhonebookSearchReuqest>();
                 data->result                                 = item->contact;
                 data->setDescription("PhonebookSearchRequest");
-                return sapm::ApplicationManager::messageSwitchPreviousApplication(
-                    application, std::make_unique<sapm::APMSwitchPrevApp>(application->GetName(), std::move(data)));
+                return app::manager::Controller::switchBack(
+                    application,
+                    std::make_unique<app::manager::APMSwitchPrevApp>(application->GetName(), std::move(data)));
             };
 
             leftArrowImage->setVisible(false);

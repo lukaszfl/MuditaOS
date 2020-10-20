@@ -1,5 +1,5 @@
 #include "NoEvents.hpp"
-#include <service-appmgr/ApplicationManager.hpp>
+#include <service-appmgr/Controller.hpp>
 #include <i18/i18.hpp>
 #include <module-services/service-db/messages/QueryMessage.hpp>
 #include <module-db/Interface/EventsRecord.hpp>
@@ -78,7 +78,7 @@ bool NoEvents::onInput(const gui::InputEvent &inputEvent)
         }
         else if (app->getEquivalentToEmptyWindow() == EquivalentWindow::AllEventsWindow) {
             LOG_DEBUG("Switch to desktop");
-            sapm::ApplicationManager::messageSwitchPreviousApplication(application);
+            app::manager::Controller::switchBack(application);
         }
     }
 

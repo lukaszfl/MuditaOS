@@ -140,7 +140,9 @@ int main()
 
         // start application manager
         ret &= sysmgr->CreateService(
-            std::make_shared<sapm::ApplicationManager>("ApplicationManager", sysmgr.get(), applications), sysmgr.get());
+            std::make_shared<app::manager::ApplicationManager>(
+                app::manager::ApplicationManager::ServiceName, std::move(applications), app::name_desktop),
+            sysmgr.get());
 
         return ret;
     });

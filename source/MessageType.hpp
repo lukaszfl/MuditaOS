@@ -138,7 +138,7 @@ enum class MessageType
     APMConfirmClose,  // Sent by application to confirm completion of the close procedure
     APMRegister,      // when application finishes initHandler it is sending this messag to inform whether init was
                       // successful or not.
-    APMDeleydClose,   // this message is sent internally from and to application manager to close specified application.
+    APMDelayedClose,  // this message is sent internally from and to application manager to close specified application.
     APMChangeLanguage, // this message is sent from any application to inform application manager that it should send
                        // gui rebuild command to all applications in background and currently active application.
     APMClose, // this message will trigger application manager to close itself, all running applications gui and eink
