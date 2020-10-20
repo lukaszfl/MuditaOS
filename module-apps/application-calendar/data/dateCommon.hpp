@@ -94,6 +94,24 @@ inline time_t GetDiffLocalWithUTCTime()
     return diff;
 }
 
+inline time_t GetDiffLocalWithUTCTime(time_t time)
+{
+    std::tm tm = *gmtime(&time);
+
+    std::time_t basetime = std::mktime(&tm);
+    std::time_t diff;
+
+    tm          = *std::localtime(&basetime);
+    tm.tm_isdst = -1;
+    diff        = std::mktime(&tm);
+
+    tm          = *std::gmtime(&basetime);
+    tm.tm_isdst = -1;
+    diff -= std::mktime(&tm);
+
+    return diff;
+}
+
 inline time_t GetAsUTCTime(int year, int month, int day, int hour = 0, int minutes = 0, int seconds = 0)
 {
     std::tm tm           = CreateTmStruct(year, month, day, hour, minutes, seconds);
@@ -112,10 +130,20 @@ inline time_t TimePointToTimeT(const TimePoint &tp)
     return system_clock::to_time_t(tp);
 }
 
+inline std::string TimePointToString(const TimePoint &tp);
+
 inline TimePoint TimePointNow()
 {
     utils::time::Timestamp timestamp;
-    return TimePointFromTimeT(timestamp.getTime() + GetDiffLocalWithUTCTime());
+    // return TimePointFromTimeT(timestamp.getTime()/* + GetDiffLocalWithUTCTime()*/);
+    return TimePointFromTimeT(timestamp.getTime() + GetDiffLocalWithUTCTime(timestamp.getTime()));
+
+    /*[[maybe_unused]] auto x1 = TimePointToString(TimePointFromTimeT(timestamp.getTime()));
+    [[maybe_unused]] auto x2 = TimePointToString(TimePointFromTimeT(timestamp.getLocalTime()));
+    [[maybe_unused]] auto x3 = TimePointToString(TimePointFromTimeT(timestamp.getTime() + GetDiffLocalWithUTCTime()));
+    [[maybe_unused]] auto x4 = TimePointToString(TimePointFromTimeT(timestamp.getTime() + 7200));
+    [[maybe_unused]] auto x5 = TimePointToString(TimePointFromTimeT(timestamp.getTime() +
+    GetDiffLocalWithUTCTime(timestamp.getTime()))); return TimePointFromTimeT(timestamp.getTime() + 7200);*/
 }
 
 inline std::string TimePointToString(const TimePoint &tp)
@@ -133,7 +161,7 @@ inline uint32_t TimePointToHour24H(const TimePoint &tp)
 {
     auto time = TimePointToTimeT(tp);
     utils::time::Timestamp timestamp(time);
-    auto hour = timestamp.get_date_time_sub_value(utils::time::GetParameters::Hour);
+    auto hour = timestamp.get_UTC_date_time_sub_value(utils::time::GetParameters::Hour);
     return hour;
 }
 
@@ -141,7 +169,7 @@ inline uint32_t TimePointToMinutes(const TimePoint &tp)
 {
     auto time = TimePointToTimeT(tp);
     utils::time::Timestamp timestamp(time);
-    auto minute = timestamp.get_date_time_sub_value(utils::time::GetParameters::Minute);
+    auto minute = timestamp.get_UTC_date_time_sub_value(utils::time::GetParameters::Minute);
     return minute;
 }
 
@@ -248,7 +276,7 @@ inline uint32_t TimePointToHour12H(const TimePoint &tp)
 {
     auto time = TimePointToTimeT(tp);
     utils::time::Timestamp timestamp(time);
-    auto hour = timestamp.get_date_time_sub_value(utils::time::GetParameters::Hour);
+    auto hour = timestamp.get_UTC_date_time_sub_value(utils::time::GetParameters::Hour);
     if (hour > 12) {
         hour -= 12;
     }

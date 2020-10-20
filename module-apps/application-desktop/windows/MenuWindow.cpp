@@ -244,6 +244,8 @@ namespace gui
             eventRecord.reminder  = 40;
             eventRecord.date_from = TimePointFromString("2020-10-13 11:55:00");
 
+            [[maybe_unused]] auto x1 = TimePointToString(TimePointNow());
+
             std::unique_ptr<EventRecordData> eventData = std::make_unique<EventRecordData>();
             eventData->setDescription(style::window::calendar::name::event_reminder_window);
             auto event = std::make_shared<EventsRecord>(eventRecord);

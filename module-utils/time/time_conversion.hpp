@@ -143,6 +143,16 @@ namespace utils
                 return time;
             };
 
+            // get timestamp local value
+            time_t getLocalTime()
+            {
+                // mlucki
+                // return std::mktime(&timeinfo);
+                // return timelocal(&timeinfo);
+                // return std::mktime(&timeinfo);
+                return mktime(&timeinfo);
+            };
+
             UTF8 get_date_time_substr(GetParameters param);
             uint32_t get_date_time_sub_value(GetParameters param);
             uint32_t get_UTC_date_time_sub_value(GetParameters param);

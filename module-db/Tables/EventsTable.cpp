@@ -25,7 +25,7 @@ bool EventsTable::add(EventsTableRow entry)
     // Prevent duplicates using ANDs:
     return db->execute("INSERT or IGNORE INTO events "
                        "(title, date_from, date_till, reminder, repeat, reminder_fired) "
-                       "SELECT '%q', '%q','%q', %lu, %lu, '%q' "
+                       "SELECT '%q', %q', '%q', %lu, %lu, '%q' "
                        "WHERE NOT EXISTS "
                        "(SELECT 1 FROM events e "
                        "WHERE e.title='%q' "
@@ -538,14 +538,23 @@ uint32_t EventsTable::countByFieldId(const char *field, uint32_t id)
 std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_from, TimePoint filter_till)
 {
     auto retQuery =
-        db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes') AS calc_dt, * "
+        // db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes', 'utc') AS calc_dt, * "
+        // db->query("SELECT DATETIME(DATETIME(date_from, '-' || reminder || ' minutes', 'utc'), 'utc') AS calc_dt, * "
+
+        // select * from myTable where myColumn > strftime('%m/%d/%Y %H:%M', datetime(date_from,'localtime'), '-' ||
+        // reminder || ' minutes'); db->query("SELECT strftime('%d/%m/%Y %H:%M', datetime(date_from,'localtime'), '-5
+        // minutes') AS calc_dt, * "
+
+        db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes', 'utc') AS calc_dt, * "
+
+                  // db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes') AS calc_dt, * "
                   "FROM events "
                   "WHERE calc_dt >= '%q' "
 
                   // TODO
                   // Temporary calc_dt is not filtered as to be less-or-equal than date_from's end-of-day
                   // (until we have implemented a notification of 'new day' for ServiceTime/CalendarTimeEvents)
-                  "AND calc_dt <= DATETIME('%q', '+1 day', '-1 second') "
+                  //"AND calc_dt <= DATETIME('%q', '+1 day', '-1 second') "
 
                   "AND reminder_fired = '%q' "
                   "AND reminder <> -1 "
@@ -553,7 +562,7 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
                   "LIMIT 1 ",
                   TimePointToString(filter_from).c_str(),
                   // As in 'to do' above
-                  TimePointToString(filter_till).c_str(),
+                  // TimePointToString(filter_till).c_str(),
                   TimePointToString(TIME_POINT_INVALID).c_str());
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
@@ -563,6 +572,8 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
     std::vector<EventsTableRow> ret;
 
     do {
+        [[maybe_unused]] std::string x1 = (*retQuery)[0].getString().c_str();
+
         ret.push_back(EventsTableRow{
             (*retQuery)[1].getUInt32(),                              // ID
             (*retQuery)[2].getString(),                              // title

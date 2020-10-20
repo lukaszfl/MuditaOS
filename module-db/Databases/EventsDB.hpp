@@ -13,9 +13,10 @@ class EventsDB : public Database
 
     static const char *GetDBName()
     {
-        return dbName;
+        return dbName.c_str();
     }
 
   private:
-    static const char *dbName;
+    static std::string dbName;
+    // static const char *dbName;
 };

@@ -24,8 +24,9 @@ namespace stm
         // mlucki
         std::string nowStr1 = TimePointToString(filterFrom);
 
-        time_t time = 0;
-        bsp::rtc_GetCurrentTimestamp(&time);
+        time_t time = TimePointToTimeT(TimePointNow());
+        // mlucki
+        // bsp::rtc_GetCurrentTimestamp(&time);
         std::string nowStr2 = TimePointToString(TimePointFromTimeT(time));
 
         TimePoint filterTill = filterFrom;
@@ -36,8 +37,8 @@ namespace stm
 
         // mlucki
         // Temporary values:
-        filterFrom = TimePointFromString("2020-09-16 00:00:00");
-        filterTill = TimePointFromString("2020-09-20 00:00:00");
+        // filterFrom = TimePointFromString("2020-09-16 00:00:00");
+        // filterTill = TimePointFromString("2020-09-20 00:00:00");
 
         return DBServiceAPI::GetQuery(Service(),
                                       db::Interface::Name::Events,
@@ -60,13 +61,21 @@ namespace stm
         eventRecord = records->at(0);
         startTP     = eventRecord.date_from - minutes{eventRecord.reminder};
 
+        [[maybe_unused]] std::string x1 = TimePointToString(eventRecord.date_from);
+        [[maybe_unused]] std::string x2 =
+            TimePointToString(eventRecord.date_from - std::chrono::minutes{eventRecord.reminder});
+        [[maybe_unused]] std::string x3 = TimePointToString(TimePointNow());
+
         auto duration = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder} - TimePointNow();
         if (duration.count() <= 0) {
             duration = std::chrono::milliseconds(eventTimerMinSkipInterval);
         }
+
+        [[maybe_unused]] uint32_t x4 = std::chrono::duration_cast<std::chrono::minutes>(duration).count();
+
         // mlucki
-        // return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        return 5000;
+        return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+        // return 5000;
     }
 
     bool CalendarTimeEvents::SendEventFiredQuery()
