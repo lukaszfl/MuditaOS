@@ -28,15 +28,17 @@ namespace gui
     {
         setFilled(true);
         setVisible(false);
+
+        pos_on_screen = document->getText().length();
     }
 
     TextCursor::Move TextCursor::moveCursor(NavigationDirection direction)
     {
-        debug_text_cursor("cursor: screen pos: %d block: %d pos: %d %s",
-                          pos_on_screen,
-                          getBlockNr(),
-                          BlockCursor::getPosition(),
-                          atBegin() ? "at begin" : "middle");
+        LOG_INFO("cursor: screen pos: %d block: %d pos: %d %s",
+                 pos_on_screen,
+                 getBlockNr(),
+                 BlockCursor::getPosition(),
+                 atBegin() ? "at begin" : "middle");
         /// left & up - corner case
         if ((checkNpos() || atBegin()) &&
             (direction == NavigationDirection::LEFT || direction == NavigationDirection::UP)) {
@@ -149,9 +151,9 @@ namespace gui
             }
             auto el = line->getElement(column);
             assert(el != nullptr);
-            x += line->getX() + line->getWidthTo(column);
-            y += el->getY();
-            h += el->getHeight();
+            x = line->getX() + line->getWidthTo(column);
+            y = el->getY();
+            h = el->getHeight();
         }
         setArea({x, y, w, h});
     }
@@ -191,36 +193,6 @@ namespace gui
         moveCursor(NavigationDirection::LEFT);
         BlockCursor::removeChar();
     }
-
-    InputBound TextCursor::processBound(InputBound bound, const InputEvent &event)
-    {
-        if (bound == InputBound::CAN_MOVE) {
-            if (event.isShortPress()) {
-                moveCursor(inputToNavigation(event));
-            }
-        }
-
-        if (bound == InputBound::CAN_REMOVE) {
-            if (event.isShortPress()) {
-                text->handleBackspace(event);
-            }
-        }
-
-        if (bound == InputBound::CAN_ADD) {
-            if (event.isLongPress()) {
-                auto val = toNumeric(event.keyCode);
-                if (val != InvalidNumericKeyCode) {
-                    addChar(intToAscii(val));
-                }
-            }
-            else {
-                text->handleAddChar(event);
-            }
-        }
-
-        return bound;
-    }
-
 } // namespace gui
 
 const char *c_str(enum gui::TextCursor::Move what)

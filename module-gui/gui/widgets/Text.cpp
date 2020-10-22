@@ -221,18 +221,28 @@ namespace gui
             debug_text("handleActivation");
             return true;
         }
-
-        auto bound = lines->checkBounds(*cursor, evt);
-        bound      = cursor->processBound(bound, evt);
-
-        if (bound == InputBound::HIT_BOUND) {
-            auto [scroll, factor] = scrollView(*cursor);
-            lines->updateScrollPosition(scroll, factor);
-        }
-
-        if (!(bound & InputBound::CANT_PROCESS)) {
+        if (handleNavigation(evt)) {
+            debug_text("handleNavigation");
             return true;
         }
+        if (handleBackspace(evt)) {
+            debug_text("handleBackspace");
+            return true;
+        }
+        if (handleAddChar(evt)) {
+            debug_text("handleAddChar");
+            return true;
+        }
+        if (handleDigitLongPress(evt)) {
+            debug_text("handleDigitLongPress");
+            return true;
+        }
+
+        debug_text("not handled: %s", evt.str().c_str());
+
+        //        if (!(bound & InputBound::CANT_PROCESS)) {
+        //            return true;
+        //        }
 
         return false;
     }
@@ -285,18 +295,23 @@ namespace gui
         if (!inputEvent.isShortPress()) {
             return false;
         }
-        if (isMode(EditMode::SCROLL) && (inputEvent.is(KeyCode::KEY_LEFT) || inputEvent.is(KeyCode::KEY_RIGHT))) {
-            debug_text("Text in scroll mode ignores left/right navigation");
-        }
-        auto ret = cursor->moveCursor(inputToNavigation(inputEvent));
-        debug_text("moveCursor: %s", c_str(ret));
-        if (ret == TextCursor::Move::Start || ret == TextCursor::Move::End) {
-            debug_text("scrolling needs implementing");
-            return false;
-        }
-        if (ret != TextCursor::Move::Error) {
-            return true;
-        }
+
+        if (lines->checkNavigationBounds(*cursor, inputEvent) == InputBound::CAN_MOVE) {
+
+            if (isMode(EditMode::SCROLL) && (inputEvent.is(KeyCode::KEY_LEFT) || inputEvent.is(KeyCode::KEY_RIGHT))) {
+                debug_text("Text in scroll mode ignores left/right navigation");
+            }
+            auto ret = cursor->moveCursor(inputToNavigation(inputEvent));
+            debug_text("moveCursor: %s", c_str(ret));
+            if (ret == TextCursor::Move::Start || ret == TextCursor::Move::End) {
+                debug_text("scrolling needs implementing");
+                return false;
+            }
+            if (ret != TextCursor::Move::Error) {
+                return true;
+            }
+        };
+
         return false;
     }
 
@@ -348,29 +363,29 @@ namespace gui
         Length w = sizeMinusPadding(Axis::X, Area::Max);
         Length h = sizeMinusPadding(Axis::Y, Area::Max);
 
-        auto line_y_position = padding.top;
+        auto lineYPosition = padding.top;
 
-        BlockCursor draw_cursor(cursor->getDocument(), 0, 0, cursor->getFont());
+        BlockCursor drawCursor(cursor->getDocument(), 0, 0, cursor->getFont());
 
         debug_text("--> START drawLines: {%" PRIu32 ", %" PRIu32 "}", w, h);
 
-        auto end             = TextBlock::End::None;
-        auto line_x_position = padding.left;
+        auto end           = TextBlock::End::None;
+        auto lineXPosition = padding.left;
         do {
-            auto text_line = gui::TextLine(draw_cursor, w);
-            draw_cursor += text_line.length();
+            auto text_line = gui::TextLine(drawCursor, w);
+            drawCursor += text_line.length();
 
             if (text_line.length() == 0 && end == TextBlock::End::None) {
                 debug_text("cant show more text from this document");
                 break;
             }
 
-            if (line_y_position + text_line.height() > h) { // no more space for next line
+            if (lineYPosition + text_line.height() > h) { // no more space for next line
                 debug_text("no more space for next text_line: %d + %" PRIu32 " > %" PRIu32,
-                           line_y_position,
+                           lineYPosition,
                            text_line.height(),
                            h);
-                line_y_position += text_line.height();
+                lineYPosition += text_line.height();
                 break;
             }
 
@@ -380,11 +395,11 @@ namespace gui
             lines->emplace(std::move(text_line));
             auto &line = lines->last();
 
-            line.setPosition(line_x_position, line_y_position);
+            line.setPosition(lineXPosition, lineYPosition);
             line.setParent(this);
 
             end = lines->last().getEnd();
-            line_y_position += line.height();
+            lineYPosition += line.height();
 
             debug_text_lines("debug text drawing: \n start cursor: %d line length: %d end cursor %d : document length "
                              "%d \n x: %d, y: %d \n%s",
@@ -392,8 +407,8 @@ namespace gui
                              lines.last().length(),
                              cursor,
                              document->getText().length(),
-                             line_x_position,
-                             line_y_position,
+                             lineXPosition,
+                             lineYPosition,
                              [&]() -> std::string {
                                  std::string text = document->getText();
                                  return std::string(text.begin() + cursor - lines.last().length(),
@@ -406,23 +421,23 @@ namespace gui
         // need to at least erase last line if it wont fit
         // should be done on each loop
         {
-            uint16_t h_used = line_y_position + padding.bottom;
-            uint16_t w_used = lines->maxWidth() + padding.getSumInAxis(Axis::X);
+            uint16_t hUsed = lineYPosition + padding.bottom;
+            uint16_t wUsed = lines->maxWidth() + padding.getSumInAxis(Axis::X);
 
             if (lines->size() == 0) {
                 debug_text("No lines to show, try to at least fit in cursor");
-                if (format.getFont() != nullptr && line_y_position < format.getFont()->info.line_height) {
-                    h_used = format.getFont()->info.line_height;
-                    w_used = TextCursor::default_width;
-                    debug_text("empty line height: %d", h_used);
+                if (format.getFont() != nullptr && lineYPosition < format.getFont()->info.line_height) {
+                    hUsed = format.getFont()->info.line_height;
+                    wUsed = TextCursor::default_width;
+                    debug_text("empty line height: %d", hUsed);
                 }
             }
 
-            if (h_used != area(Area::Normal).size(Axis::Y) || w_used != area(Area::Normal).size(Axis::X)) {
-                debug_text("size request: %d %d", w_used, h_used);
-                auto [w, h] = requestSize(w_used, h_used);
+            if (hUsed != area(Area::Normal).size(Axis::Y) || wUsed != area(Area::Normal).size(Axis::X)) {
+                debug_text("size request: %d %d", wUsed, hUsed);
+                auto [w, h] = requestSize(wUsed, hUsed);
 
-                if (h < h_used) {
+                if (h < hUsed) {
                     debug_text("No free height for text!");
                 }
             }
@@ -470,6 +485,8 @@ namespace gui
 
     void Text::buildCursor()
     {
+        LOG_INFO("Rozumiem ze builduje w koło kursor?");
+
         erase(cursor);
         cursor = new TextLineCursor(this);
         cursor->setAlignment(this->getAlignment());
@@ -519,12 +536,14 @@ namespace gui
         if (!isMode(EditMode::EDIT)) {
             return false;
         }
-        if (inputEvent.isShortPress() && inputEvent.is(key_signs_remove)) {
-            if (!document->isEmpty() && removeChar()) {
-                onTextChanged();
-                drawLines();
+        if (lines->checkRemovalBounds(*cursor, inputEvent) == InputBound::CAN_REMOVE) {
+            if (inputEvent.isShortPress() && inputEvent.is(key_signs_remove)) {
+                if (!document->isEmpty() && removeChar()) {
+                    onTextChanged();
+                    drawLines();
+                }
+                return true;
             }
-            return true;
         }
         return false;
     }
@@ -535,22 +554,25 @@ namespace gui
             return false;
         }
 
-        auto code = translator.handle(inputEvent.key, mode ? mode->get() : "");
-        debug_text("handleAddChar %d -> Begin", code);
-        debug_text("%s times: %" PRIu32, inputEvent.str().c_str(), translator.getTimes());
+        if (lines->checkAdditionBounds(*cursor, inputEvent) == InputBound::CAN_ADD) {
 
-        if (code != KeyProfile::none_key) {
-            /// if we have multi press in non digit mode - we need to replace char and put next char from translator
-            if (!(mode->is(InputMode::digit) || (mode->is(InputMode::phone))) && translator.getTimes() > 0) {
-                removeChar();
+            auto code = translator.handle(inputEvent.key, mode ? mode->get() : "");
+            debug_text("handleAddChar %d -> Begin", code);
+            debug_text("%s times: %" PRIu32, inputEvent.str().c_str(), translator.getTimes());
+
+            if (code != KeyProfile::none_key) {
+                /// if we have multi press in non digit mode - we need to replace char and put next char from translator
+                if (!(mode->is(InputMode::digit) || (mode->is(InputMode::phone))) && translator.getTimes() > 0) {
+                    removeChar();
+                }
+                addChar(code);
+                onTextChanged();
+                drawLines();
+
+                debug_text("handleAddChar -> End(true)");
+
+                return true;
             }
-            addChar(code);
-            onTextChanged();
-            drawLines();
-
-            debug_text("handleAddChar -> End(true)");
-
-            return true;
         }
 
         debug_text("handleAdChar -> End(false)");

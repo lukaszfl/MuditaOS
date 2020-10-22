@@ -62,6 +62,8 @@ namespace gui
 
             auto can_show = text_format->getFont()->getCharCountInSpace(text, max_width - width_used);
 
+            LOG_INFO("Jakis can show nie może się show %d", can_show);
+
             // we can show nothing - this is the end of this line
             if (can_show == 0) {
                 auto item = buildUITextPart("", text_format);
@@ -176,10 +178,10 @@ namespace gui
         return width;
     }
 
-    uint32_t TextLine::getWidthTo(unsigned int pos) const
+    Length TextLine::getWidthTo(unsigned int pos) const
     {
-        uint32_t width  = 0;
-        auto curent_pos = 0;
+        Length width    = 0;
+        auto currentPos = 0;
         if (pos == text::npos) {
             return 0;
         }
@@ -187,15 +189,27 @@ namespace gui
             if (el->getFont() == nullptr) {
                 continue;
             }
-            if (curent_pos + el->getTextLength() > pos) {
-                width += el->getFont()->getPixelWidth(el->getText(), 0, pos - curent_pos);
+            if (currentPos + el->getTextLength() > pos) {
+                width += el->getFont()->getPixelWidth(el->getText(), 0, pos - currentPos);
+
+                LOG_INFO("Ktos to zmergował ? %lu", elements_to_show_in_line.size());
+                LOG_INFO("Wyliczasz tutaj 0 ? ojejej dlaczego %s? %d, %d, %d, %d",
+                         el->getText().c_str(),
+                         el->getTextLength(),
+                         pos,
+                         currentPos,
+                         width);
+
                 return width;
             }
             else {
                 width += el->getWidth();
             }
-            curent_pos += el->getTextLength();
+            currentPos += el->getTextLength();
         }
+
+        LOG_INFO("Czyli tutaj nie wchodzisz i nie liczysz? %d", width);
+
         return width;
     }
 
