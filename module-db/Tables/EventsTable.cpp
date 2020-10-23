@@ -25,7 +25,7 @@ bool EventsTable::add(EventsTableRow entry)
     // Prevent duplicates using ANDs:
     return db->execute("INSERT or IGNORE INTO events "
                        "(title, date_from, date_till, reminder, repeat, reminder_fired) "
-                       "SELECT '%q', %q', '%q', %lu, %lu, '%q' "
+                       "SELECT '%q', '%q', '%q', %lu, %lu, '%q' "
                        "WHERE NOT EXISTS "
                        "(SELECT 1 FROM events e "
                        "WHERE e.title='%q' "
