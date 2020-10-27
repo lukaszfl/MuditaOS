@@ -16,6 +16,7 @@ namespace parserFSM
         invalid = 0,
         deviceInfo,
         update,
+        filesystemUpload,
         backup,
         restore,
         factory,
@@ -76,8 +77,10 @@ namespace parserFSM
         enum class Code
         {
             OK                  = 200,
+            Accepted            = 202,
             BadRequest          = 400,
-            InternalServerError = 500
+            NotAcceptable       = 406,
+            InternalServerError = 500,
         };
 
         /*! Enum class for the HTTP methods.
@@ -114,6 +117,25 @@ namespace parserFSM
         const inline std::string backupUpload   = "backupUpload";
         const inline std::string restoreRequest = "restoreRequest";
         const inline std::string factoryRequest = "factoryRequest";
+        const inline std::string fileName       = "fileName";
+        const inline std::string fileSize       = "fileSize";
+
+        const inline std::string update         = "update";
+        const inline std::string updateInfo     = "updateInfo";
+        const inline std::string updateError    = "updateError";
+        const inline std::string errorCode      = "errorCode";
+        const inline std::string statusCode     = "statusCode";
+
+        namespace filesystem
+        {
+            const inline std::string command  = "command";
+            namespace commands
+            {
+                const inline std::string upload   = "upload";
+                const inline std::string rm       = "rm";
+                const inline std::string download = "download";
+            }
+        }
 
         namespace messages
         {

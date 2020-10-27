@@ -121,3 +121,13 @@ sys::Message_t ServiceDesktop::DataReceivedHandler(sys::DataMessage *msg, sys::R
 
     return std::make_shared<sys::ResponseMessage>();
 }
+
+sys::ReturnCodes ServiceDesktop::startDownload(const fs::path &destinationPath, const uint32_t fileSize)
+{
+    return desktopWorker->startDownload(destinationPath, fileSize);
+}
+
+sys::ReturnCodes ServiceDesktop::startUpload(const fs::path &sourcePath, const uint32_t fileSize)
+{
+    return desktopWorker->startUpload(sourcePath, fileSize);
+}

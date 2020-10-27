@@ -2,7 +2,7 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "DeveloperModeEndpoint.hpp"
-
+#include "parser/ParserFSM.hpp"
 using namespace parserFSM;
 
 auto DeveloperModeEndpoint::handle(Context &context) -> void
@@ -21,4 +21,6 @@ auto DeveloperModeEndpoint::handle(Context &context) -> void
 
         break;
     }
+
+    parserFSM::MessageHandler::putToSendQueue(context.createSimpleResponse());
 }

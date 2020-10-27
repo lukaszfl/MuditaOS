@@ -96,6 +96,10 @@ namespace parserFSM
         {
             responseContext.status = status;
         }
+        auto setEndpoint(EndpointType endpointTypeToSet)
+        {
+            endpoint = endpointTypeToSet;
+        }
         auto setResponseBody(json11::Json respBody)
         {
             responseContext.body = respBody;

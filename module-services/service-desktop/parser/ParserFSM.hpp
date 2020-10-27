@@ -26,6 +26,11 @@ namespace parserFSM
             return state;
         };
 
+        void setState(const parserFSM::State newState)
+        {
+            state = newState;
+        }
+
       private:
         std::string *receivedMsgPtr = nullptr;
         parserFSM::State state      = State::NoMsg;

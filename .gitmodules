@@ -62,3 +62,4 @@
 [submodule "module-bsp/board/rt1051/bsp/usb"]
 	path = module-bsp/board/rt1051/bsp/usb
 	url = git@github.com:mudita/usb_stack.git
+	branch = muditaos

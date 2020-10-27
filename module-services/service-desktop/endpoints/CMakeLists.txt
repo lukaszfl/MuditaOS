@@ -34,6 +34,7 @@ target_sources(${PROJECT_NAME}
 		"restore/RestoreEndpoint.cpp"
 		"update/UpdateEndpoint.cpp"
 		"update/UpdatePureOS.cpp"
+		"filesystem/FilesystemEndpoint.cpp"
 		"developerMode/DeveloperModeEndpoint.cpp"
 		"developerMode/DeveloperModeHelper.cpp"
 
