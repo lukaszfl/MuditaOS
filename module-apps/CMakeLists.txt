@@ -11,7 +11,7 @@ else()
     message(FATAL_ERROR "Invalid target!")
 endif()
 
-set( SOURCES 
+set( SOURCES
     "Application.cpp"
     "GuiTimer.cpp"
     "WindowsFactory.cpp"

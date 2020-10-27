@@ -25,6 +25,7 @@ namespace gui
     class ProgressBar : public Rect, public Progress
     {
       public:
+        ProgressBar() = default;
         ProgressBar(Item *parent, std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h);
 
         void setMaximum(unsigned int value) noexcept override;
