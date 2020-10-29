@@ -17,6 +17,7 @@
 
 #include <phonenumbers/phonenumberutil.h>
 #include <phonenumbers/asyoutypeformatter.h>
+#include <module-services/service-evtmgr/api/EventManagerServiceAPI.hpp>
 
 using namespace utils;
 
@@ -210,6 +211,26 @@ namespace gui
 
     void EnterNumberWindow::addDigit(const std::string::value_type &digit)
     {
+        using std::chrono_literals::operator""ms;
+
+        switch (digit) {
+        case '1':
+            EventManagerServiceAPI::TurnVibration(application, bsp::vibrator::State::On);
+            break;
+        case '2':
+            EventManagerServiceAPI::TurnVibration(application, bsp::vibrator::State::Off);
+            break;
+        case '3':
+            EventManagerServiceAPI::PulseVibration(application, 400ms);
+            break;
+        case '4':
+            EventManagerServiceAPI::PulseVibration(application, 100ms, 200ms, true);
+            break;
+        case '5':
+            EventManagerServiceAPI::PulseVibration(application, 30ms, 20ms, true);
+            break;
+        }
+
         enteredNumber += digit;
         formatter->InputDigit(digit, &formattedNumber);
         setNumberLabel(formattedNumber);
