@@ -1,4 +1,4 @@
-/*
+﻿/*
 
  * @file sqlite3port.c
  * @author Lukasz Skrzypczak (lukasz.skrypczak@mudita.com)
@@ -133,6 +133,10 @@
 #ifndef SQLITE_ECOPHONEVFS_BUFFERSZ
 #define SQLITE_ECOPHONEVFS_BUFFERSZ 8192
 #endif
+
+// mlucki
+#include "/home/mlucki/Praca/MuditaOS/module-apps/application-calendar/data/dateCommon.hpp"
+#include "/home/mlucki/Praca/MuditaOS/module-utils/time/time_conversion.hpp"
 
 /*
  ** The maximum pathname length supported by this VFS.
@@ -639,6 +643,12 @@ static int ecophoneRandomness(sqlite3_vfs *pVfs, int nByte, char *zByte)
     UNUSED(pVfs);
     UNUSED(nByte);
     UNUSED(zByte);
+
+    /*    for (int i = 0; i < nByte; i++)
+        {
+            zByte[i] = (rand() + i) % 255;
+        }*/
+
     return SQLITE_OK;
 }
 
@@ -667,11 +677,23 @@ static int ecophoneSleep(sqlite3_vfs *pVfs, int nMicro)
  ** value, it will stop working some time in the year 2038 AD (the so-called
  ** "year 2038" problem that afflicts systems that store time this way).
  */
+// mlucki
 static int ecophoneCurrentTime(sqlite3_vfs *pVfs, double *pTime)
 {
 
     time_t t = time(0);
     *pTime   = t / 86400.0 + 2440587.5;
+
+    /*utils::time::Timestamp x;
+    [[maybe_unused]]std::string xs = TimePointToString(TimePointFromTimeT(x.getTime()));
+
+    *pTime   = x.getTime() / 86400.0 + 2440587.5;
+
+    [[maybe_unused]]std::string s = TimePointToString(TimePointFromTimeT(t));*/
+
+    // utils::time::Timestamp x;
+    //[[maybe_unused]]std::string xs = TimePointToString(TimePointFromTimeT(x.getTime()));
+
     return SQLITE_OK;
 }
 

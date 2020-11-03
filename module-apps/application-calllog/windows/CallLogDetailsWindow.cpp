@@ -171,18 +171,19 @@ namespace gui
 
         // Duration
         durationLabel = decorateLabel(new gui::Label(this,
-                                                     duration::label::x,
-                                                     duration::label::y,
-                                                     duration::label::w,
+                                                     duration1::label::x,
+                                                     duration1::label::y,
+                                                     duration1::label::w,
                                                      0,
                                                      utils::localize.get("app_calllog_duration")));
-        durationData  = decorateData(new gui::Label(this, duration::data::x, duration::data::y, duration::data::w, 0));
+        durationData =
+            decorateData(new gui::Label(this, duration1::data::x, duration1::data::y, duration1::data::w, 0));
 
         // Date
         dateLabel = decorateLabel(new gui::Label(
-            this, date::label::x, date::label::y, date::label::w, 0, utils::localize.get("app_calllog_date")));
-        dateDay   = decorateData(new gui::Label(this, date::dataDay::x, date::dataDay::y, date::dataDay::w, 0));
-        dateDate  = decorateData(new gui::Label(this, date::dataDate::x, date::dataDate::y, date::dataDate::w, 0));
+            this, date1::label::x, date1::label::y, date1::label::w, 0, utils::localize.get("app_calllog_date")));
+        dateDay   = decorateData(new gui::Label(this, date1::dataDay::x, date1::dataDay::y, date1::dataDay::w, 0));
+        dateDate  = decorateData(new gui::Label(this, date1::dataDate::x, date1::dataDate::y, date1::dataDate::w, 0));
     }
 
     void CallLogDetailsWindow::destroyInterface()

@@ -6,6 +6,7 @@ project(module-db VERSION 1.0
 include(thirdparty)
 
 set (SQLITE3_SOURCE Database/sqlite3.c)
+#SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ldl -lpthread")
 
 set(SOURCES
         Common/Query.cpp
@@ -109,7 +110,7 @@ set(SOURCES
         queries/calendar/QueryEventsGetAllLimited.cpp
         queries/calendar/QueryEventsSelectFirstUpcoming.cpp
         queries/settings/QuerySettingsGet_v2.cpp
-        queries/settings/QuerySettingsUpdate_v2.cpp
+            queries/settings/QuerySettingsUpdate_v2.cpp
         queries/settings/QuerySettingsAddOrIgnore_v2.cpp
 )
 
@@ -162,7 +163,7 @@ target_compile_options(${PROJECT_NAME}
     -Wno-error=return-local-addr
 )
 
-target_link_libraries(${PROJECT_NAME} module-utils module-vfs )
+target_link_libraries(${PROJECT_NAME} module-utils module-vfs dl)
 
 # Host target configuration(mainly used for unit testing)
 if (${ENABLE_TESTS})

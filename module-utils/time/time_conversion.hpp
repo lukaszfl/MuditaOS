@@ -9,6 +9,12 @@
 #include <string>
 #include <log/log.hpp>
 
+#include <module-utils/date/include/date/date.h>
+using namespace std::chrono;
+
+using Clock     = system_clock;
+using TimePoint = time_point<Clock>;
+
 namespace utils
 {
     namespace time
@@ -74,10 +80,43 @@ namespace utils
                     LOG_ERROR("rtc_GetCurrentTimestamp failure!");
                 }
                 timeinfo = *localtime(&time);
+                timeinfo = *gmtime(&time);
             }
             Timestamp(time_t newtime) : time(newtime)
             {
                 timeinfo = *localtime(&time);
+            }
+
+            int WeekdayIndex()
+            {
+                time_point tp = system_clock::from_time_t(time);
+                auto ymw      = date::year_month_weekday{floor<date::days>(tp)};
+                return ymw.weekday().iso_encoding() - 1;
+            }
+
+            operator TimePoint()
+            {
+                return system_clock::from_time_t(time);
+            }
+
+            Timestamp getFirstWeekDay()
+            {
+                // time_point tp = system_clock::from_time_t(time);
+                TimePoint tp = *this;
+
+                date::year_month_day yearMonthDay = date::year_month_day{date::floor<date::days>(tp)};
+                // auto hourV                        = TimePointToHour24H(tp);
+                auto hourV = get_UTC_date_time_sub_value(utils::time::GetParameters::Hour);
+                // auto minuteV                      = TimePointToMinutes(tp);
+                auto minuteV = get_UTC_date_time_sub_value(utils::time::GetParameters::Minute);
+                while (date::weekday{yearMonthDay} != date::mon) {
+                    auto decrementedDay = --yearMonthDay.day();
+                    yearMonthDay        = yearMonthDay.year() / yearMonthDay.month() / decrementedDay;
+                }
+                auto finalDate     = date::sys_days{yearMonthDay.year() / yearMonthDay.month() / yearMonthDay.day()};
+                auto finalDateTime = finalDate + std::chrono::hours(hourV) + std::chrono::minutes(minuteV);
+
+                return Timestamp(system_clock::to_time_t(finalDateTime));
             }
 
             /// set Time time_t value held (set timestamp)

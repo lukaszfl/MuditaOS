@@ -19,7 +19,7 @@ extern sqlite3_vfs *sqlite3_ecophonevfs(void);
 
 extern "C"
 {
-
+#if 0
     int sqlite3_os_init(void)
     {
         /*
@@ -43,10 +43,45 @@ extern "C"
          ** that filesystem time.
          */
 
-        sqlite3_vfs_register(sqlite3_ecophonevfs(), 1);
+        // mlucki
+
+        [[maybe_unused]]auto vvc = sqlite3_vfs_find("unix");
+        [[maybe_unused]]auto vvc1 = sqlite3_vfs_find("unix-dotfile");
+        [[maybe_unused]]auto vvc2 = sqlite3_vfs_find("unix-excl");
+        [[maybe_unused]]auto vvc3 = sqlite3_vfs_find("unix-none");
+        [[maybe_unused]]sqlite3_vfs* pDefault = sqlite3_vfs_find("unix-none");
+        [[maybe_unused]]auto vvc4 = sqlite3_vfs_find("unix-namedsem");
+        [[maybe_unused]]auto vvc5 = sqlite3_vfs_find("unix-nolock");
+        [[maybe_unused]]auto vvc6 = sqlite3_vfs_find(NULL);
+
+        [[maybe_unused]]auto vvc7 = sqlite3_vfs_find("unix-posix");
+        [[maybe_unused]]auto vvc8 = sqlite3_vfs_find("unix-flock");
+        [[maybe_unused]]auto vvc9 = sqlite3_vfs_find("unix-flock");
+
+        //sqlite3mc_vfs_initialize(vvc6, 1);
+        //https://synopse.info/fossil/info/a78b036842ce4188
+
+
+        [[maybe_unused]]int ww = sqlite3_vfs_register(sqlite3_vfs_find("unix-nolock"), 1);
+
+        //sqlite3_vfs_register(sqlite3_ecophonevfs(), 1);
+
+
+
+        //[[maybe_unused]]auto vvc = sqlite3_vfs_find("unix");
+
+
+        //[[maybe_unused]]auto vvc = sqlite3_vfs_find("unix-dotfile");
+        //[[maybe_unused]]auto vvc1 = sqlite3_vfs_find(NULL);
+        //sqlite3_vfs_register(sqlite3_vfs_find("unix"), 1);
+
+
+
+        ////sqlite3_vfs_register(sqlite3_vfs_find( NULL), 1);
 
         return SQLITE_OK;
     }
+#endif
 
     /*
      ** Shutdown the operating system interface.
@@ -55,11 +90,13 @@ extern "C"
      ** to release dynamically allocated objects.  But not on unix.
      ** This routine is a no-op for unix.
      */
+#if 0
     int sqlite3_os_end(void)
     {
 
         return SQLITE_OK;
     }
+#endif
 
     /* Internal Defines ***********************/
     void errorLogCallback(void *pArg, int iErrCode, const char *zMsg)
@@ -71,7 +108,41 @@ extern "C"
 Database::Database(const char *name) : dbConnection(nullptr), dbName(name), isInitialized_(false)
 {
     LOG_INFO("creating database: %s", dbName);
-    auto rc = sqlite3_open(name, &dbConnection);
+
+    std::string c = name;
+    auto found    = c.find("events.db");
+
+    int rc;
+    if (found != std::string::npos) {
+        [[maybe_unused]] auto vvc              = sqlite3_vfs_find("unix");
+        [[maybe_unused]] auto vvc1             = sqlite3_vfs_find("unix-dotfile");
+        [[maybe_unused]] auto vvc2             = sqlite3_vfs_find("unix-excl");
+        [[maybe_unused]] auto vvc3             = sqlite3_vfs_find("unix-none");
+        [[maybe_unused]] sqlite3_vfs *pDefault = sqlite3_vfs_find("unix-none");
+        [[maybe_unused]] auto vvc4             = sqlite3_vfs_find("unix-namedsem");
+        [[maybe_unused]] auto vvc5             = sqlite3_vfs_find("unix-nolock");
+        [[maybe_unused]] auto vvc6             = sqlite3_vfs_find(NULL);
+
+        [[maybe_unused]] auto vvc7 = sqlite3_vfs_find("unix-posix");
+        [[maybe_unused]] auto vvc8 = sqlite3_vfs_find("unix-flock");
+        [[maybe_unused]] auto vvc9 = sqlite3_vfs_find("unix-flock");
+
+        rc = sqlite3_open_v2(
+            name, &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI, "unix-dotfile");
+
+        // rc = sqlite3_open(name, &dbConnection);
+        // rc = sqlite3_open_v2(name, &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    }
+    else {
+        rc = sqlite3_open(name, &dbConnection);
+        // rc = sqlite3_open_v2(name, &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    }
+
+    // auto rc = sqlite3_open(name, &dbConnection);
+    // mlucki
+    // auto rc = sqlite3_open_v2(name, &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI,
+    // NULL);
+
     if (rc != SQLITE_OK) {
         LOG_ERROR("SQLITE INITIALIZATION ERROR! rc=%d dbName=%s", rc, name);
     }

@@ -8,6 +8,8 @@
 
 #include <cassert>
 
+#include <time/time_conversion.hpp>
+
 EventsTable::EventsTable(Database *db) : Table(db)
 {}
 
@@ -537,6 +539,7 @@ uint32_t EventsTable::countByFieldId(const char *field, uint32_t id)
 
 std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_from, TimePoint filter_till)
 {
+#if 0
     auto retQuery =
         // db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes', 'utc') AS calc_dt, * "
         // db->query("SELECT DATETIME(DATETIME(date_from, '-' || reminder || ' minutes', 'utc'), 'utc') AS calc_dt, * "
@@ -545,7 +548,27 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
         // reminder || ' minutes'); db->query("SELECT strftime('%d/%m/%Y %H:%M', datetime(date_from,'localtime'), '-5
         // minutes') AS calc_dt, * "
 
-        db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes', 'utc') AS calc_dt, * "
+        //db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes') AS calc_dt, * "
+
+
+        //db->query("SELECT date_from, DATETIME(date_from, '-5 minutes') AS calc_dt, * "
+        db->query("SELECT DATETIME('now') AS now_dt, DATETIME('2020-10-29 06:00:00', '+5 minute') AS calc_dt, * "
+
+
+
+
+        //db->query("SELECT DATETIME('now', '+3 hours') AS now_dt, DATETIME(date_from, '-' || reminder || ' minutes', 'utc') AS calc_dt, * "
+
+        //db->query("SELECT DATETIME('now') AS now_dt, DATETIME(date_from, '+0 hours', '-5 minutes', '+0 seconds') AS calc_dt, * "
+        ////db->query("DATETIME(date_from, '-5 minutes') AS calc_dt_22, DATETIME(date_from, '+0 hours', '-5 minutes', '+0 seconds', 'utc') AS calc_dt, * "
+
+        //db->query("SELECT strftime('%%d-%%m-%%Y %%H:%%M:%%S', 'now') AS now_dt, DATETIME(date_from, '-' || reminder || ' minutes') AS calc_dt, * "
+
+        //db->query("SELECT reminder AS now_dt, DATETIME(date_from, '-' || reminder || ' minutes') AS calc_dt, * "
+        //db->query("SELECT date_till AS now_dt, DATETIME(date_from, '-5 minutes') AS calc_dt, * "
+
+        //db->query("SELECT strftime('%%d-%%m-%%Y %%H:%%M:%%S', 'now') AS now_dt ");
+        //db->query("SELECT strftime('%%d-%%m-%%Y %%H:%%M:%%S', 'now') AS now_dt ");
 
                   // db->query("SELECT DATETIME(date_from, '-' || reminder || ' minutes') AS calc_dt, * "
                   "FROM events "
@@ -564,6 +587,24 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
                   // As in 'to do' above
                   // TimePointToString(filter_till).c_str(),
                   TimePointToString(TIME_POINT_INVALID).c_str());
+#endif
+
+#if 1
+    auto retQuery =
+        // db->query("SELECT date_from, DATETIME(date_from, '-1 hours') AS calc_dt, * "
+        // db->query("SELECT date_from, DATETIME('2020-09-11 06:00:00', '-1 hours') AS calc_dt, * "
+        // db->query("SELECT date_from, datetime('2020-09-10 02:00:00', '-2 hours') AS calc_dt, * "
+        // db->query("SELECT time('10:20:30','+1 hours','+20 minutes'), datetime('2020-09-10 02:00:00', '-2 hours') AS
+        // calc_dt, * " db->query("SELECT strftime('%%H:%%M:%%S', '10:20:30', '-2 hours') AS now_dt, datetime('2020-09-10
+        // 02:00:00', '-2 hours') AS calc_dt, * "
+        db->query("SELECT strftime('%%H:%%M:%%S', '10:20:30', '-2 hours') AS now_dt, datetime('2020-09-10 03:00:00', "
+                  "'-2 hours'), * "
+                  "FROM events "
+                  //"ORDER BY calc_dt "
+        );
+
+    // DATETIME('now') AS now_dt
+#endif
 
     if ((retQuery == nullptr) || (retQuery->getRowCount() == 0)) {
         return std::vector<EventsTableRow>();
@@ -573,8 +614,25 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
 
     do {
         [[maybe_unused]] std::string x1 = (*retQuery)[0].getString().c_str();
+        [[maybe_unused]] std::string x2 = (*retQuery)[1].getString().c_str();
+
+        utils::time::Timestamp ts;
+        [[maybe_unused]] int ind      = ts.WeekdayIndex();
+        utils::time::Timestamp ts1    = ts.getFirstWeekDay();
+        [[maybe_unused]] auto ts1_str = ts1.str("%F %T");
+        // int WeekdayIndex();
+        // getFirstWeekDay();
 
         ret.push_back(EventsTableRow{
+            (*retQuery)[2].getUInt32(),                              // ID
+            (*retQuery)[3].getString(),                              // title
+            TimePointFromString((*retQuery)[4].getString().c_str()), // date_from
+            TimePointFromString((*retQuery)[5].getString().c_str()), // date_till
+            (*retQuery)[6].getUInt32(),                              // reminder
+            (*retQuery)[7].getUInt32(),                              // repeat
+            TimePointFromString((*retQuery)[8].getString().c_str())  // date_till
+        });
+        /*ret.push_back(EventsTableRow{
             (*retQuery)[1].getUInt32(),                              // ID
             (*retQuery)[2].getString(),                              // title
             TimePointFromString((*retQuery)[3].getString().c_str()), // date_from
@@ -582,7 +640,7 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
             (*retQuery)[5].getUInt32(),                              // reminder
             (*retQuery)[6].getUInt32(),                              // repeat
             TimePointFromString((*retQuery)[7].getString().c_str())  // date_till
-        });
+        });*/
     } while (retQuery->nextRow());
 
     return ret;

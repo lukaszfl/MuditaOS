@@ -26,7 +26,9 @@
 #define PATH_FACTORY  "factory"
 
 // this just concatenates two strings and creates a /user/ subdirectory filename
-#define USER_PATH(file) PATH_SYS "/" PATH_USER "/" file
+// mlucki
+//#define USER_PATH(file) PATH_SYS "/" PATH_USER "/" file
+#define USER_PATH(file) PATH_USER "/" file
 
 namespace fs = std::filesystem;
 
