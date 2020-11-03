@@ -32,7 +32,7 @@ namespace app
         class APMSwitch;
         class APMSwitchPrevApp;
     } // namespace manager
-}
+} // namespace app
 
 namespace app::manager
 {
@@ -110,7 +110,7 @@ namespace app::manager
     class ApplicationManager : public sys::Service, private ApplicationManagerBase
     {
       public:
-        static inline const std::string ServiceName = "ApplicationManager";
+        static constexpr auto ServiceName = "ApplicationManager";
 
         ApplicationManager(const std::string &serviceName,
                            std::vector<std::unique_ptr<app::ApplicationLauncher>> &&launchers,

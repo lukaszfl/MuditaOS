@@ -9,17 +9,17 @@
 
 namespace gui::window::name
 {
-    inline const std::string contact          = "Contact";
-    inline const std::string contact_options  = "Options";
-    inline const std::string namecard_options = "Namecard Options";
-    inline const std::string new_contact      = "New";
-    inline const std::string search           = "Search";
-    inline const std::string search_results   = "SearchResults";
-    inline const std::string dialog_yes_no    = "DialogYesNo";
-    inline const std::string dialog_confirm   = "DialogConfirm";
-    inline const std::string dialog           = "Dialog";
-    inline const std::string dialog_yes_no_icon_txt = "DialogYesNoIconTxt";
-    inline const std::string ice_contacts           = "IceContacts";
+    inline constexpr auto contact                = "Contact";
+    inline constexpr auto contact_options        = "Options";
+    inline constexpr auto namecard_options       = "Namecard Options";
+    inline constexpr auto new_contact            = "New";
+    inline constexpr auto search                 = "Search";
+    inline constexpr auto search_results         = "SearchResults";
+    inline constexpr auto dialog_yes_no          = "DialogYesNo";
+    inline constexpr auto dialog_confirm         = "DialogConfirm";
+    inline constexpr auto dialog                 = "Dialog";
+    inline constexpr auto dialog_yes_no_icon_txt = "DialogYesNoIconTxt";
+    inline constexpr auto ice_contacts           = "IceContacts";
 
 } // namespace gui::window::name
 

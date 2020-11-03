@@ -5,6 +5,10 @@
 #include "application-calculator/widgets/CalculatorStyle.hpp"
 #include <module-utils/tinyexpr/tinyexpr.h>
 #include <module-utils/i18/i18.hpp>
+
+#include <algorithm>
+#include <string_view>
+
 #include <cmath>
 
 Result Calculator::calculate(std::string source)
@@ -22,7 +26,7 @@ Result Calculator::calculate(std::string source)
         }
         if (utils::localize.get("app_calculator_decimal_separator") == style::calculator::symbols::strings::comma) {
             output.replace(output.find(style::calculator::symbols::strings::full_stop),
-                           style::calculator::symbols::strings::full_stop.length(),
+                           std::size(std::string_view(style::calculator::symbols::strings::full_stop)),
                            style::calculator::symbols::strings::comma);
         }
         return Result{source, output, false};
