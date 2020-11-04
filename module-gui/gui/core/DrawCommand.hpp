@@ -7,7 +7,7 @@
 
 #include "utf8/UTF8.hpp"
 #include "Color.hpp"
-#include "Common.hpp"
+#include <module-gui/gui/Common.hpp>
 
 namespace gui
 {

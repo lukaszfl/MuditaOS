@@ -1,6 +1,7 @@
 #include "GuiTimer.hpp"
 #include "Item.hpp"                    // for Item
-#include "Service/Timer.hpp"           // for Timer, Timer::Type, Timer::Ty...
+#include <module-os/RTOSWrapper/include/timer.hpp>
+#include <module-gui/gui/core/Timer.hpp>           // for Timer, Timer::Type, Timer::Ty...
 #include "module-apps/Application.hpp" // for Application
 #include <memory>                      // for allocator
 
