@@ -25,7 +25,7 @@ namespace gui::window::name
 
 namespace app
 {
-    const inline std::string name_phonebook      = "ApplicationPhonebook";
+    inline constexpr auto name_phonebook         = "ApplicationPhonebook";
     constexpr std::uint16_t phonebook_stack_size = 8192;
 
     class ApplicationPhonebook : public app::Application

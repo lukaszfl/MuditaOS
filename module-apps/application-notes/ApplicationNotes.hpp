@@ -10,7 +10,7 @@
 namespace app
 {
 
-    inline const std::string name_notes = "ApplicationNotes";
+    inline constexpr auto name_notes = "ApplicationNotes";
 
     class ApplicationNotes : public Application
     {

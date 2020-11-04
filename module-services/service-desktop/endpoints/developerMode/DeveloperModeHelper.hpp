@@ -30,6 +30,6 @@ namespace parserFSM
 
     namespace json::developerMode
     {
-        const inline std::string keyPressed = "keyPressed";
+        inline constexpr auto keyPressed = "keyPressed";
     }
 } // namespace parserFSM

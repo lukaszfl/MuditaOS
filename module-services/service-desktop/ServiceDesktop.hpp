@@ -4,7 +4,6 @@
 #pragma once
 
 #include <memory> // for allocator, unique_ptr
-#include <string> // for string
 
 #include "WorkerDesktop.hpp"
 #include "module-services/service-desktop/endpoints/update/UpdateMuditaOS.hpp"
@@ -17,14 +16,14 @@ class WorkerDesktop;
 
 namespace service::name
 {
-    const inline std::string service_desktop = "ServiceDesktop";
+    inline constexpr auto service_desktop = "ServiceDesktop";
 };
 
 namespace sdesktop
 {
-    const inline int service_stack         = 8192;
-    const inline int cdc_queue_len         = 10;
-    const inline int cdc_queue_object_size = 10;
+    inline constexpr auto service_stack         = 8192;
+    inline constexpr auto cdc_queue_len         = 10;
+    inline constexpr auto cdc_queue_object_size = 10;
 }; // namespace sdesktop
 
 class ServiceDesktop : public sys::Service
