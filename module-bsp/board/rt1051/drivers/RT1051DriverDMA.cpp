@@ -32,7 +32,7 @@ namespace drivers
             edma_config_t dmaConfig = {0};
 
             EDMA_GetDefaultConfig(&dmaConfig);
-            dmaConfig.enableRoundRobinArbitration = true;
+//            dmaConfig.enableRoundRobinArbitration = true;
             EDMA_Init(base, &dmaConfig);
             LOG_DEBUG("Init: DMA_0");
         } break;
