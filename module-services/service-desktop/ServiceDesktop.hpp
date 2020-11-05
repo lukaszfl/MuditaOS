@@ -3,23 +3,21 @@
 
 #pragma once
 
-#include <memory> // for allocator, unique_ptr
-
 #include "WorkerDesktop.hpp"
-#include "module-services/service-desktop/endpoints/update/UpdateMuditaOS.hpp"
-#include "Service/Common.hpp"  // for ReturnCodes, ServicePowerMode
-#include "Service/Message.hpp" // for Message_t, DataMessage (ptr only), ResponseMessage (ptr only)
-#include "Service/Service.hpp" // for Service
-#include "Constants.hpp"
+#include "UpdateMuditaOS.hpp"
+#include "module-services/service-desktop/endpoints/update/UpdateEndpoint.hpp"
 
-class UpdateMuditaOS;
-class WorkerDesktop;
+namespace service::name
+{
+    const inline std::string service_desktop = "ServiceDesktop";
+};
 
 namespace sdesktop
 {
-    inline constexpr auto service_stack         = 8192;
-    inline constexpr auto cdc_queue_len         = 10;
-    inline constexpr auto cdc_queue_object_size = 10;
+    const inline int service_stack         = 8192;
+    const inline int cdc_queue_len         = 10;
+    const inline int cdc_queue_object_size = 10;
+    const inline int file_transfer_timeout = 5000;
 }; // namespace sdesktop
 
 class ServiceDesktop : public sys::Service
@@ -31,6 +29,10 @@ class ServiceDesktop : public sys::Service
     sys::ReturnCodes DeinitHandler() override;
     sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override;
     sys::Message_t DataReceivedHandler(sys::DataMessage *msg, sys::ResponseMessage *resp) override;
+
+    // upload and download from the service perspective (download to phone, upload to computer)
+    sys::ReturnCodes startDownload(const fs::path &destinationFile, const uint32_t fileSize);
+    sys::ReturnCodes startUpload(const fs::path &sourceFile, const uint32_t fileSize);
 
     std::unique_ptr<UpdateMuditaOS> updateOS;
     std::unique_ptr<WorkerDesktop> desktopWorker;

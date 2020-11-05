@@ -10,6 +10,7 @@
 #include "backup/BackupEndpoint.hpp"
 #include "deviceInfo/DeviceInfoEndpoint.hpp"
 #include "update/UpdateEndpoint.hpp"
+#include "filesystem/FilesystemEndpoint.hpp"
 #include "restore/RestoreEndpoint.hpp"
 #include "factoryReset/FactoryResetEndpoint.hpp"
 #include "calllog/CalllogEndpoint.hpp"
@@ -26,6 +27,8 @@ class EndpointFactory
         switch (context.getEndpoint()) {
         case EndpointType::update:
             return std::make_unique<UpdateEndpoint>(ownerServicePtr);
+        case EndpointType::filesystemUpload:
+            return std::make_unique<FilesystemEndpoint>(ownerServicePtr);
         case EndpointType::backup:
             return std::make_unique<BackupEndpoint>(ownerServicePtr);
         case EndpointType::deviceInfo:
