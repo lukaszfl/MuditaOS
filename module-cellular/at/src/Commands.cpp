@@ -13,6 +13,7 @@ namespace at
         switch (set) {
         case commadsSet::modemInit:
             ret.push_back(AT::URC_NOTIF_CHANNEL);
+            ret.push_back(AT::CONFIGURE_URC_OPTION);
             ret.push_back(AT::RI_PIN_AUTO_CALL);
             ret.push_back(AT::RI_PIN_PULSE_SMS);
             ret.push_back(AT::RI_PIN_OFF_OTHER);
