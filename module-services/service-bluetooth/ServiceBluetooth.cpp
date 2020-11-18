@@ -18,6 +18,10 @@
 #include <bits/exception.h>
 #include <utility>
 
+static bd_addr_t wagner = {0x28, 0x7F, 0xCF, 0xBE, 0x90, 0xAF};
+// static bd_addr_t denon = {0x00, 0x05, 0xcd, 0x20, 0x00, 0x33};
+// static bd_addr_t t20 = {0x00, 0x02, 0x3C, 0x4A, 0x74, 0x02};
+
 ServiceBluetooth::ServiceBluetooth() : sys::Service(service::name::bluetooth)
 {
     LOG_INFO("[ServiceBluetooth] Initializing");
@@ -54,6 +58,7 @@ sys::MessagePointer ServiceBluetooth::DataReceivedHandler(sys::DataMessage *msg,
             switch (lmsg->req) {
             case BluetoothMessage::Start:
                 worker->run();
+                worker->setDeviceAddress(wagner);
 
                 break;
             case BluetoothMessage::Scan:

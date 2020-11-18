@@ -28,7 +28,7 @@ const char *c_str(Bt::Error::Code code)
     return "";
 }
 
-BluetoothWorker::BluetoothWorker(sys::Service *service) : Worker(service), currentProfile(std::make_shared<Bt::HSP>())
+BluetoothWorker::BluetoothWorker(sys::Service *service) : Worker(service), currentProfile(std::make_shared<Bt::A2DP>())
 {
     init({
         {"qBtIO", sizeof(Bt::Message), 10},

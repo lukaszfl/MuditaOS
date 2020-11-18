@@ -185,6 +185,7 @@ namespace Bt
 
     auto A2DP::A2DPImpl::fillSbcAudioBuffer(MediaContext *context) -> int
     {
+        // LOG_DEBUG("SBC callback");
         // perform sbc encodin
         int totalNumBytesRead                    = 0;
         unsigned int numAudioSamplesPerSbcBuffer = btstack_sbc_encoder_num_audio_frames();
@@ -195,8 +196,13 @@ namespace Bt
             AudioData_t audioData;
 
             if (sourceQueue != nullptr) {
-                if (xQueueReceive(sourceQueue, &audioData, 10) != pdPASS) {
+                if (xQueueReceive(sourceQueue, &audioData, 0) != pdPASS) {
+                    LOG_DEBUG("Empty queue");
+                    // break;
                     audioData.data.fill(0);
+                }
+                else {
+                    // LOG_DEBUG("Data fetched");
                 }
             }
             else {
@@ -214,6 +220,8 @@ namespace Bt
             context->sbc_storage_count += sbcFrameSize;
             context->samples_ready -= numAudioSamplesPerSbcBuffer;
         }
+
+        // LOG_DEBUG("SBC callback end");
         return totalNumBytesRead;
     }
 
@@ -452,7 +460,7 @@ namespace Bt
                      AVRCP::mediaTracker.local_seid,
                      a2dp_subevent_stream_established_get_remote_seid(packet));
 
-            sourceQueue = xQueueCreate(5, sizeof(AudioData_t));
+            sourceQueue = xQueueCreate(14, sizeof(AudioData_t));
             sinkQueue   = nullptr;
             if (sourceQueue != nullptr) {
                 sendAudioEvent(audio::EventType::BlutoothA2DPDeviceState, audio::Event::DeviceState::Connected);

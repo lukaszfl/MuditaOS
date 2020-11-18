@@ -48,8 +48,8 @@ namespace bsp
     }
     void outBluetoothAudioWorkerTask(void *pvp)
     {
-        auto *inst    = static_cast<RT1051BluetoothAudio *>(pvp);
-        auto dataSize = inst->metadata.samplesPerFrame;
+        auto *inst      = static_cast<RT1051BluetoothAudio *>(pvp);
+        auto dataSize   = inst->metadata.samplesPerFrame;
         auto fatalError = false;
 
         if (inst->sourceQueue == nullptr) {
@@ -58,16 +58,21 @@ namespace bsp
         }
 
         while (!fatalError) {
-            auto framesFetched = inst->GetAudioCallback()(nullptr, inst->audioData.data.data(), dataSize);
+            auto framesFetched = inst->GetAudioCallback()(nullptr, inst->audioData.data.data(), dataSize * 2);
             if (framesFetched == 0) {
                 break;
             }
             else if (framesFetched < inst->audioData.data.size()) {
-                std::fill(inst->audioData.data.begin() + framesFetched, inst->audioData.data.end(), 0);
+                // std::fill(inst->audioData.data.begin() + framesFetched, inst->audioData.data.end(), 0);
             }
 
             if (inst->sourceQueue != nullptr) {
-                xQueueSend(inst->sourceQueue, inst->audioData.data.data(), 2);
+                if (xQueueSend(inst->sourceQueue, inst->audioData.data.data(), portMAX_DELAY) == pdTRUE) {
+                    // LOG_DEBUG("Pushed data");
+                }
+                else {
+                    LOG_DEBUG("Failed to push data");
+                }
             }
             else {
                 LOG_ERROR("Queue nullptr");
@@ -86,7 +91,7 @@ namespace bsp
                         "outbluetoothaudio",
                         stackSize,
                         this,
-                        tskIDLE_PRIORITY,
+                        configMAX_PRIORITIES - 2,
                         &outWorkerThread) != pdPASS) {
             LOG_ERROR("Error during creating  output bluetooth audio task");
         }
