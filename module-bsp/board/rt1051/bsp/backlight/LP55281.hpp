@@ -41,8 +41,18 @@ namespace bsp
             uint8_t current : 6;
         }
 
+        // For specific leds registers
         constexpr auto MAX_DIODE_CURRENT_LIMIT = 0b11000000;
         constexpr auto MAX_BRIGHTNESS_INT      = 63;
+
+        // For BOOST_CTRL register. Agreed to output minimum voltage
+        constexpr auto BOOST_OUTPUT_4V = 0x00;
+
+        // For ENABLES register
+        constexpr auto NSTDBY       = 0b10000000; // Wakeup from standby
+        constexpr auto BOOST_EN     = 0b01000000; // Turn on boost converter
+        constexpr auto LED_PORTS_EN = 0b00001110; // Only ports 2-4 active on board
+        constexpr auto WAKEUP       = NSTDBY | BOOST_EN | LED_PORTS_EN;
 
         inline uint8_t encode_diode_brightness(float normalized_brightness)
         {

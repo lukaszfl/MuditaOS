@@ -52,5 +52,8 @@ namespace bsp
         // Wakeup module, last on intensity preserved
         void backlight_wakeup();
 
+        // Module reset
+        void backlight_reset();
+
     } // namespace backlight
 } // namespace bsp
