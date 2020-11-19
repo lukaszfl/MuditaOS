@@ -8,6 +8,8 @@
 extern "C"
 {
 #include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 }
 
 namespace bsp
@@ -17,7 +19,7 @@ namespace bsp
         // channel intensity 0.0 - 1.0 : min - max
         using DiodeIntensity = float;
 
-        typedef struct Rgb
+        struct Rgb
         {
             DiodeIntensity red;
             DiodeIntensity green;

@@ -33,13 +33,13 @@ namespace bsp
             LED_TEST   = 0x12,
             ADC_OUT    = 0x13,
             RESET      = 0x60,
-        }
+        };
 
-        typedef struct Diode_Reg
+        struct Diode_Reg
         {
             uint8_t max_current : 2;
             uint8_t current : 6;
-        }
+        };
 
         // For specific leds registers
         constexpr auto MAX_DIODE_CURRENT_LIMIT = 0b11000000;
