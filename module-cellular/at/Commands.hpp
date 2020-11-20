@@ -120,10 +120,6 @@ namespace at
         CUSD_SEND,
         SET_SMS_STORAGE,
         CPIN,
-        GET_CPIN,
-        QPINC, /// Get Pin/Puk attempts. For standard SIM facility (parameter) is "SC"
-        CLCK,
-        CPWD,
         ENABLE_TIME_ZONE_UPDATE,
         SET_TIME_ZONE_REPORTING,
         DISABLE_TIME_ZONE_UPDATE,
@@ -136,6 +132,7 @@ namespace at
         CFUN_DISABLE_TRANSMITTING, /// Disable the ME from both transmitting and receiving RF signals
         LIST_MESSAGES,             /// List all messages from message storage
         GET_IMEI,
+        CPWD,
         CCFC, /// Supplementary Services - Call Forwarding Number and Conditions Control
         CCWA, /// Supplementary Services - Call Waiting Control
         CCWA_GET,
@@ -220,11 +217,7 @@ namespace at
             {AT::CUSD_CLOSE_SESSION, {"AT+CUSD=2"}},
             {AT::CUSD_SEND, {"AT+CUSD=1,"}},
             {AT::SET_SMS_STORAGE, {"AT+CPMS=\"SM\",\"SM\",\"SM\"", 300}},
-            {AT::CPIN, {"AT+CPIN=", default_timeout}},
-            {AT::GET_CPIN, {"AT+CPIN?", default_timeout}},
-            {AT::QPINC, {"AT+QPINC=", default_timeout}},
-            {AT::CLCK, {"AT+CLCK=", default_timeout}},
-            {AT::CPWD, {"AT+CPWD=", default_timeout}},
+            {AT::CPIN, {"AT+CPIN="}},
             {AT::ENABLE_TIME_ZONE_UPDATE, {"AT+CTZU=3"}},
             {AT::SET_TIME_ZONE_REPORTING, {"AT+CTZR=2"}},
             {AT::DISABLE_TIME_ZONE_UPDATE, {"AT+CTZU=0"}},
@@ -248,7 +241,8 @@ namespace at
             {AT::COLP_GET, {"AT+COLP?", default_long_doc_timeout}},
             {AT::COLP_ENABLE, {"AT+COLP=1", default_long_doc_timeout}},
             {AT::COLP_DISABLE, {"AT+COLP=0", default_long_doc_timeout}},
-            {AT::CSSN, {"AT+CSSN=\"", default_doc_timeout}}};
+            {AT::CSSN, {"AT+CS SN=\"", default_doc_timeout}},
+            {AT::CPWD, {"AT+CPWD=", 5000}}};
 
         if (fact.count(at)) {
             return fact.at(at);

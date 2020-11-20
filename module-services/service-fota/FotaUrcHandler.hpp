@@ -25,7 +25,6 @@ class FotaUrcHandler : public UrcHandler
     virtual void Handle(Cmti &urc){};
     virtual void Handle(Cusd &urc){};
     virtual void Handle(Ctze &urc){};
-    virtual void Handle(Cpin &urc){};
     virtual void Handle(PoweredDown &urc){};
     virtual void Handle(UrcResponse &urc){};
 

@@ -7,7 +7,6 @@ set(SOURCES
     CellularUrcHandler.cpp
     ServiceCellular.cpp
     SignalStrength.cpp
-    SimCard.cpp
     RequestFactory.cpp
     CellularRequestHandler.cpp
     requests/Request.cpp
