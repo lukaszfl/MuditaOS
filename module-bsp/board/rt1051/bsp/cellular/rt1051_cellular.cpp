@@ -45,9 +45,14 @@ extern "C"
                                              (void *)&characterReceived,
                                              1,
                                              &xHigherPriorityTaskWoken);
-                    bsp::pit::start(25 * 1000, bsp::cellular::readline_timeout);
                 }
             }
+
+            if (isrReg & kLPUART_IdleLineFlag) {
+                LOG_DEBUG("celluar idle!");
+                bsp::cellular::readline_timeout();
+            }
+
             LPUART_ClearStatusFlags(CELLULAR_UART_BASE, isrReg);
 
             portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
@@ -89,7 +94,7 @@ namespace bsp
         s_cellularConfig.parityMode    = kLPUART_ParityDisabled;
         s_cellularConfig.isMsb         = false;
         s_cellularConfig.rxIdleType    = kLPUART_IdleTypeStartBit;
-        s_cellularConfig.rxIdleConfig  = kLPUART_IdleCharacter1;
+        s_cellularConfig.rxIdleConfig  = kLPUART_IdleCharacter64;
         s_cellularConfig.enableTx      = false;
         s_cellularConfig.enableRx      = false;
 
@@ -100,6 +105,7 @@ namespace bsp
         }
 
         LPUART_ClearStatusFlags(CELLULAR_UART_BASE, 0xFFFFFFFF);
+        LPUART_EnableInterrupts(CELLULAR_UART_BASE, kLPUART_IdleLineInterruptEnable);
         NVIC_ClearPendingIRQ(LPUART1_IRQn);
         NVIC_SetPriority(LPUART1_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
         NVIC_EnableIRQ(LPUART1_IRQn);
