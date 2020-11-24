@@ -36,12 +36,14 @@ bool WorkerDesktop::init(std::list<sys::WorkerQueueInfo> queues)
     receiveQueue                         = Worker::getQueueByName(WorkerDesktop::RECEIVE_QUEUE_BUFFER_NAME);
     parserFSM::MessageHandler::sendQueue = Worker::getQueueByName(WorkerDesktop::SEND_QUEUE_BUFFER_NAME);
 
-    cdcVcomStruct = static_cast<usb_cdc_vcom_struct_t *>(bsp::usbInit(receiveQueue));
-    if (cdcVcomStruct == NULL) {
-        LOG_ERROR("won't start desktop service without serial port");
+    usbComposite = static_cast<usb_device_composite_struct_t*>(bsp::usbInit(receiveQueue));
+    if (usbComposite == NULL) {
+        LOG_ERROR("won't start desktop service without usb subsystem");
         return false;
     }
 
+    VirtualComDemoInit(usbComposite);
+#if 0
     BaseType_t xReturned = xTaskCreate(&WorkerDesktop::deviceTask, "WorkerDesktop::deviceTask", 2048L / sizeof(portSTACK_TYPE), this, 2, &usbTaskHandle);
 
     if (xReturned == pdPASS) {
@@ -50,7 +52,7 @@ bool WorkerDesktop::init(std::list<sys::WorkerQueueInfo> queues)
         LOG_DEBUG("init can't create device task");
         return false;
     }
-
+#endif
     return true;
 }
 
@@ -97,7 +99,7 @@ bool WorkerDesktop::handleMessage(uint32_t queueID)
         if (xQueueReceive(queue, &sendMsg, 0) != pdTRUE)
             return false;
 
-        VirtualComSend(cdcVcomStruct, sendMsg->c_str(), sendMsg->length());
+        VirtualComSend(&usbComposite->cdcVcom, sendMsg->c_str(), sendMsg->length());
     }
 
     return true;
@@ -107,7 +109,7 @@ void WorkerDesktop::deviceTask(void *handle)
 {
     WorkerDesktop *worker = static_cast<WorkerDesktop *>(handle);
     char *input = (char *)pvPortMalloc(SERIAL_BUFFER_LEN);
-    usb_cdc_vcom_struct_t *cdcVcom = worker->getCdcVcomStruct();
+    usb_device_composite_struct_t *usbComposite = worker->getUsbComposite();
     xQueueHandle receiveQueue      = worker->getReceiveQueue();
     size_t len;
 
@@ -126,7 +128,7 @@ void WorkerDesktop::deviceTask(void *handle)
             vPortFree(input);
         }*/
 
-        len = VirtualComRecv(cdcVcom, input, SERIAL_BUFFER_LEN);
+        len = VirtualComRecv(&usbComposite->cdcVcom, input, SERIAL_BUFFER_LEN);
 
         if (len > 0) {
             if (worker->getTransferType() != WorkerDesktop::TransferType::JSONCommands) {

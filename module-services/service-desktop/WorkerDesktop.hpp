@@ -53,9 +53,9 @@ class WorkerDesktop : public sys::Worker, public cpp_freertos::Timer
     const std::string RECEIVE_QUEUE_BUFFER_NAME = "receiveQueueBuffer";
     const std::string SEND_QUEUE_BUFFER_NAME    = "sendQueueBuffer";
 
-    usb_cdc_vcom_struct_t *getCdcVcomStruct()
+    usb_device_composite_struct_t *getUsbComposite()
     {
-        return cdcVcomStruct;
+        return usbComposite;
     }
     xQueueHandle getReceiveQueue()
     {
@@ -72,7 +72,7 @@ class WorkerDesktop : public sys::Worker, public cpp_freertos::Timer
 
   private:
     xQueueHandle receiveQueue;
-    usb_cdc_vcom_struct_t *cdcVcomStruct = nullptr;
+    usb_device_composite_struct_t *usbComposite = nullptr;
     vfs::FILE *fileDes = nullptr;
     uint32_t writeFileSizeExpected = 0;
     uint32_t writeFileDataWritten  = 0;
