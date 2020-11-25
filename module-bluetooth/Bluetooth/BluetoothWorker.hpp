@@ -22,12 +22,14 @@ namespace Bt
     enum Message : uint8_t
     {
         /// asynchronous messages to use on event from irq
+        EvtSending,     ///
         EvtSent,        /// trigger Bt stack wrote, enable writting in HCI in BluetoothWorker task
-        EvtRecUnwanted, /// not requested recieve - probably receive came to fast from sent...
-        EvtRecError,    /// bsp error on receive
-        EvtSentError,   /// bsp error on send
-        EvtUartError,   /// generic uart error
+        EvtSendingError,   /// bsp error on send
+        EvtReceiving,   ///
         EvtReceived,    /// trigger Bt stack received, start processing HCI in BluetoothWorker task
+        EvtRecUnwanted, /// not requested recieve - probably receive came to fast from sent...
+        EvtReceivingError,    /// bsp error on receive
+        EvtUartError,   /// generic uart error
         EvtErrorRec,    /// there was error o queue receive
     };
 
@@ -40,9 +42,9 @@ namespace Bt
             return "EvtSent";
         case EvtRecUnwanted:
             return "EvtRecUnwanted";
-        case EvtRecError:
+        case EvtReceivingError:
             return "EvtRecError";
-        case EvtSentError:
+        case EvtSendingError:
             return "EvtSentError";
         case EvtUartError:
             return "EvtUartError";
