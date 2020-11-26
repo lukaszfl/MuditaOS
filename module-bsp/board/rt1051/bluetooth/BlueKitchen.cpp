@@ -36,7 +36,9 @@ BlueKitchen *BlueKitchen::getInstance()
 // request... from circ buffer to give data to buf
 ssize_t BlueKitchen::read(char *buf, size_t nbytes)
 {
+#ifdef DO_DEBUG_HCI_COMS
     LOG_DEBUG("BlueKitchen requested %d bytes to read", nbytes);
+#endif
 
     ssize_t i            = 0;
     BaseType_t taskwoken = 0;
@@ -70,14 +72,13 @@ void BlueKitchen::set_flowcontrol(int on)
 ssize_t BlueKitchen::write(char *buf, size_t size)
 {
 
-    LOG_DEBUG("BlueKitchen sends %d bytes", size);
-
     ssize_t i            = 0;
     BaseType_t taskwoken = 0;
     uint8_t val;
 
-#define DO_DEBUG_HCI_COMS
 #ifdef DO_DEBUG_HCI_COMS
+    LOG_DEBUG("BlueKitchen sends %d bytes", size);
+
     std::stringstream ss;
     for (int i = 0; i < size; ++i) {
         ss << " 0x" << std::hex << (int)buf[i];
