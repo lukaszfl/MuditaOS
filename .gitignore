@@ -43,3 +43,7 @@ docker/Dockerfile
 docker/assets/actions*
 docker/assets/cmake*
 docker/assets/gcc-arm*
+
+#memory usage temp files
+tools/current_commit.txt
+tools/mem_ussage.txt
