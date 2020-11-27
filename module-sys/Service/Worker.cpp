@@ -22,6 +22,7 @@ namespace sys
     void Worker::taskAdapter(void *taskParam)
     {
         Worker *worker = static_cast<Worker *>(taskParam);
+        worker->setState(State::Running);
         worker->task();
     }
 
@@ -51,6 +52,7 @@ namespace sys
     void Worker::task()
     {
         QueueSetMemberHandle_t activeMember;
+        assert(getState() == State::Running);
 
         while (getState() == State::Running) {
             activeMember = xQueueSelectFromSet(queueSet, portMAX_DELAY);
@@ -76,6 +78,9 @@ namespace sys
     }
 
     Worker::Worker(sys::Service *service) : service{service}
+    {}
+
+    Worker::Worker(const char *namePrefix) : namePrefix(namePrefix)
     {}
 
     Worker::~Worker()
@@ -106,7 +111,13 @@ namespace sys
         id = count++;
         taskEXIT_CRITICAL();
 
-        name = service->GetName() + "_w" + std::to_string(id);
+        if (service) {
+            name = service->GetName();
+            name.append("_w" + std::to_string(id));
+        }
+        else {
+            name = "namePrefix";
+        }
 
         // initial value is because there is always a service and control queue
         // to communicate with the parent service
@@ -146,14 +157,19 @@ namespace sys
 
         // create and add all queues provided from service
         for (auto wqi : queuesList) {
-            auto q = xQueueCreate(wqi.length, wqi.elementSize);
-            if (q == nullptr) {
-                LOG_FATAL("xQueueCreate %s failed", wqi.name.c_str());
-                state = State::Invalid;
-                deinit();
-                return false;
+            if (wqi.handle == nullptr) {
+                auto q = xQueueCreate(wqi.length, wqi.elementSize);
+                if (q == nullptr) {
+                    LOG_FATAL("xQueueCreate %s failed", wqi.name.c_str());
+                    state = State::Invalid;
+                    deinit();
+                    return false;
+                }
+                addQueueInfo(q, wqi.name);
             }
-            addQueueInfo(q, wqi.name);
+            else {
+                addQueueInfo(wqi.handle, wqi.name);
+            }
         };
 
         // iterate over all queues and add them to set
@@ -209,14 +225,20 @@ namespace sys
 
         runnerTask = xTaskGetCurrentTaskHandle();
 
-        BaseType_t task_error =
-            xTaskCreate(Worker::taskAdapter, name.c_str(), defaultStackSize, this, service->GetPriority(), &taskHandle);
+        BaseType_t task_error = 0;
+        if (service) {
+            task_error = xTaskCreate(
+                Worker::taskAdapter, name.c_str(), defaultStackSize, this, service->GetPriority(), &taskHandle);
+        }
+        else {
+            task_error = xTaskCreate(Worker::taskAdapter, name.c_str(), defaultStackSize, this, 4, &taskHandle);
+        }
+
         if (task_error != pdPASS) {
             LOG_ERROR("Failed to start the task");
             return false;
         }
 
-        setState(State::Running);
         return true;
     }
 
@@ -302,5 +324,4 @@ namespace sys
         // a worker in case of unexpected failure without knowing its state.
         vTaskDelete(taskHandle);
     }
-
 } /* namespace sys */

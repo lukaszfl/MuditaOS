@@ -4,6 +4,11 @@
 #pragma once
 
 #include "Operation.hpp"
+#include "Audio/Stream.hpp"
+#include "Audio/Endpoint.hpp"
+#include "Audio/decoder/DecoderWorker.hpp"
+#include "Audio/StreamQueuedEventsListener.hpp"
+#include "Audio/decoder/Decoder.hpp"
 
 #include <bsp/audio/bsp_audio.hpp>
 
@@ -15,9 +20,6 @@ namespace audio::playbackDefaults
 
 namespace audio
 {
-    class decoder;
-    struct Tags;
-
     class PlaybackOperation : public Operation
     {
       public:
@@ -40,8 +42,17 @@ namespace audio
         Position GetPosition() final;
 
       private:
-        std::unique_ptr<decoder> dec;
+        // for efficiency multiple of 24 and 32 (max audio samples size)
+        static constexpr auto defaultAudioStreamBlockSize = 2048;
+        StandardStreamAllocator allocator;
+        Stream audioOutStream{allocator, defaultAudioStreamBlockSize};
+
+        Source audioDecoderSource;
+
+        std::unique_ptr<Decoder> dec;
         std::unique_ptr<Tags> tags;
+
+        DecoderWorker::EndOfFileCallback endOfFileCallback;
     };
 
 } // namespace audio

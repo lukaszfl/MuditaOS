@@ -28,7 +28,7 @@ namespace audio
 
     std::optional<Tags> Audio::GetFileTags(const char *filename)
     {
-        auto ret = decoder::Create(filename);
+        auto ret = Decoder::Create(filename);
         if (ret == nullptr) {
             return {};
         }

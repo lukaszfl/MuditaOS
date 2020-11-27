@@ -3,12 +3,13 @@
 
 #include "PlaybackOperation.hpp"
 
-#include "Audio/decoder/decoder.hpp"
+#include "Audio/decoder/Decoder.hpp"
 #include "Audio/Profiles/Profile.hpp"
 
 #include "Audio/AudioCommon.hpp"
 
 #include <bsp/audio/bsp_audio.hpp>
+#include <board/rt1051/bsp/audio/RT1051Audiocodec.hpp>
 #include <log/log.hpp>
 
 namespace audio
@@ -65,7 +66,7 @@ namespace audio
         }
         currentProfile = defaultProfile;
 
-        dec = decoder::Create(file);
+        dec = Decoder::Create(file);
         if (dec == nullptr) {
             throw AudioInitException("Error during initializing decoder", RetCode::FileDoesntExist);
         }
@@ -74,6 +75,13 @@ namespace audio
         if (retCode != RetCode::Success) {
             throw AudioInitException("Failed to switch audio profile", retCode);
         }
+
+        endOfFileCallback = [this]() {
+            state = State::Idle;
+            eventCallback({PlaybackEventType::EndOfFile, operationToken});
+        };
+
+        dec->startDecodingWorker(audioOutStream, endOfFileCallback);
     }
 
     audio::RetCode PlaybackOperation::Start(audio::AsyncCallback callback, audio::Token token)
@@ -188,11 +196,17 @@ namespace audio
             return RetCode::UnsupportedProfile;
         }
 
+        if (dec->isConnected()) {
+            dec->disconnectStream();
+        }
+
         audioDevice = bsp::AudioDevice::Create(currentProfile->GetAudioDeviceType(), audioCallback).value_or(nullptr);
         if (audioDevice == nullptr) {
             LOG_ERROR("Error creating AudioDevice");
             return RetCode::Failed;
         }
+
+        dec->connect(*static_cast<bsp::RT1051Audiocodec *>(audioDevice.get()), audioOutStream);
 
         currentProfile->SetSampleRate(currentSampleRate);
         currentProfile->SetInOutFlags(currentInOutFlags);

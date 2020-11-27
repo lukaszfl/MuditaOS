@@ -456,39 +456,27 @@ namespace bsp
 
     void txAudioCodecCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
     {
-        static RT1051Audiocodec::TransferState state = RT1051Audiocodec::TransferState::HalfTransfer;
-        RT1051Audiocodec *inst                       = (RT1051Audiocodec *)userData;
-        sai_transfer_t xfer                          = {0};
-        BaseType_t xHigherPriorityTaskWoken          = pdFALSE;
+        audio::Stream::Span dataSpan;
+        auto self = static_cast<RT1051Audiocodec *>(userData);
+        auto sink = static_cast<audio::Sink *>(self);
 
-        if (inst->state == RT1051Audiocodec::State::Stopped) {
+        /// must not happen
+        if (!sink->isConnected()) {
             return;
         }
 
-        if (state == RT1051Audiocodec::TransferState::HalfTransfer) {
+        /// pop previous read and peek next
+        sink->getStream()->consume();
+        sink->getStream()->peek(dataSpan);
 
-            xfer.dataSize = inst->saiOutFormat.dataSize;
-            xfer.data     = inst->saiOutFormat.data + (inst->saiOutFormat.dataSize);
-            SAI_TransferSendEDMA(BOARD_AUDIOCODEC_SAIx, &inst->txHandle, &xfer);
+        /*LOG_DEBUG("Received: %x %x %x %x",
+                  dataSpan.data[0] & 0xff,
+                  dataSpan.data[1] & 0xff,
+                  dataSpan.data[2] & 0xff,
+                  dataSpan.data[3] & 0xff);*/
 
-            /* Notify the task that the transmission is complete. */
-            xTaskNotifyFromISR(
-                inst->outWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
-
-            state = RT1051Audiocodec::TransferState::FullTransfer;
-        }
-        else {
-            xfer.dataSize = inst->saiOutFormat.dataSize;
-            xfer.data     = inst->saiOutFormat.data;
-            SAI_TransferSendEDMA(BOARD_AUDIOCODEC_SAIx, &inst->txHandle, &xfer);
-
-            /* Notify the task that the transmission is complete. */
-            xTaskNotifyFromISR(
-                inst->outWorkerThread, static_cast<uint32_t>(state), eSetBits, &xHigherPriorityTaskWoken);
-            state = RT1051Audiocodec::TransferState::HalfTransfer;
-        }
-
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        sai_transfer_t xfer{.data = dataSpan.data, .dataSize = dataSpan.dataSize};
+        SAI_TransferSendEDMA(BOARD_AUDIOCODEC_SAIx, &self->txHandle, &xfer);
     }
 
 } // namespace bsp
