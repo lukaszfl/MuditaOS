@@ -10,7 +10,7 @@
 
 namespace gui
 {
-    constexpr static const int reminderLifeDuration = 20000;
+    constexpr static const int reminderLifeDuration = 10000;
 
     EventReminderWindow::EventReminderWindow(app::Application *app, std::string name)
         : AppWindow(app, style::window::calendar::name::event_reminder_window)
@@ -109,6 +109,8 @@ namespace gui
 
     auto EventReminderWindow::handleSwitchData(SwitchData *data) -> bool
     {
+        startTimer();
+
         if (data == nullptr) {
             return false;
         }
@@ -122,8 +124,6 @@ namespace gui
         dateLabel->setText(TimePointToLocalizedDateString(eventRecord->date_from));
         timeLabel->setText(TimePointToLocalizedTimeString(eventRecord->date_from));
         descriptionLabel->setText(eventRecord->title);
-
-        startTimer();
 
         return true;
     }
