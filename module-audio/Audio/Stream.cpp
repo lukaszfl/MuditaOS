@@ -2,10 +2,9 @@
 
 using namespace audio;
 
-Stream::Stream(std::size_t blockSize, unsigned int bufferingSize)
-    : _blockSize(blockSize), _blockCount(bufferingSize),
-      _buffer(std::make_unique<std::uint8_t[]>(blockSize * bufferingSize)),
-      _emptyBuffer(std::make_unique<std::uint8_t[]>(blockSize))
+Stream::Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferingSize)
+    : _allocator(allocator), _blockSize(blockSize), _blockCount(bufferingSize),
+      _buffer(_allocator.allocate(_blockSize * _blockCount)), _emptyBuffer(_allocator.allocate(_blockSize))
 {
     std::fill(_emptyBuffer.get(), _emptyBuffer.get() + blockSize, 0);
 }
@@ -57,4 +56,24 @@ bool Stream::isEmpty() const noexcept
 bool Stream::isFull() const noexcept
 {
     return getUsedBlockCount() == getBlockCount();
+}
+
+#if 0
+Stream::UniqueStreamBuffer Stream::allocateBuffer(std::size_t size)
+{
+    auto buf = std::unique_ptr(static_cast<std::uint8_t[]>(_allocator.allocate()),
+                               [&_allocator](uint8_t[] buf) { _allocator.deallocate(buf); });
+    return std::move(buf);
+}
+#endif
+
+Stream::UniqueStreamBuffer StandardStreamAllocator::allocate(std::size_t size)
+{
+    return std::make_unique<uint8_t[]>(size);
+}
+
+Stream::UniqueStreamBuffer NonCacheableStreamAllocator::allocate(std::size_t size)
+{
+    return std::unique_ptr<std::uint8_t[], std::function<void(uint8_t[])>>(
+        allocator.allocate(size), [this, size](std::uint8_t ptr[]) { allocator.deallocate(ptr, size); });
 }
