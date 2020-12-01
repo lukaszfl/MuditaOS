@@ -20,6 +20,7 @@ namespace audio
 
         enum class Event
         {
+            NoEvent,
             StreamFull,
             StreamEmpty
         };
@@ -33,7 +34,7 @@ namespace audio
         class EventListener
         {
           public:
-            virtual void onEvent(Event event, EventSourceMode source) = 0;
+            virtual void onEvent(Stream *stream, Event event, EventSourceMode source) = 0;
         };
 
         static constexpr auto defaultBufferingSize = 4U;

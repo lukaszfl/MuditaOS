@@ -33,6 +33,6 @@ void Stream::broadcastEvent(Event event)
 {
     // TODO: detect isr mode
     for (auto listener : listeners) {
-        listener.get().onEvent(event, EventSourceMode::Thread);
+        listener.get().onEvent(this, event, EventSourceMode::Thread);
     }
 }
