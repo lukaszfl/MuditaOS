@@ -15,6 +15,8 @@
 #include "drivers/dmamux/DriverDMAMux.hpp"
 #include "drivers/dma/DriverDMA.hpp"
 
+#include <Audio/Endpoint.hpp>
+
 #include <mutex.hpp>
 
 namespace bsp
@@ -25,7 +27,7 @@ namespace bsp
     void inAudioCodecWorkerTask(void *pvp);
     void outAudioCodecWorkerTask(void *pvp);
 
-    class RT1051Audiocodec : public AudioDevice
+    class RT1051Audiocodec : public AudioDevice, public audio::Sink
     {
 
       public:

@@ -9,12 +9,15 @@ namespace audio
     class Endpoint
     {
       public:
-        /// TODO: make setStream and unsetStream not accessible to the clients of
-        /// Endpoint childrens' clients
         void setStream(Stream &stream)
         {
             assert(_stream == nullptr);
             _stream = &stream;
+        }
+
+        Stream *getStream(void) const noexcept
+        {
+            return _stream;
         }
 
         void unsetStream()
@@ -35,7 +38,7 @@ namespace audio
     class Sink : public Endpoint
     {};
 
-    class Source : protected Endpoint
+    class Source : public Endpoint
     {
       public:
         void connect(Sink &sink, Stream &stream)
