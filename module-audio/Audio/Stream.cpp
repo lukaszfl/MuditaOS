@@ -3,7 +3,8 @@
 using namespace audio;
 
 Stream::Stream(std::size_t blockSize, unsigned int bufferingSize)
-    : _blockSize(blockSize), _buffer(std::make_unique<std::uint8_t[]>(blockSize * bufferingSize)),
+    : _blockSize(blockSize), _blockCount(bufferingSize),
+      _buffer(std::make_unique<std::uint8_t[]>(blockSize * bufferingSize)),
       _emptyBuffer(std::make_unique<std::uint8_t[]>(blockSize))
 {
     std::fill(_emptyBuffer.get(), _emptyBuffer.get() + blockSize, 0);
@@ -35,4 +36,25 @@ void Stream::broadcastEvent(Event event)
     for (auto listener : listeners) {
         listener.get().onEvent(this, event, EventSourceMode::Thread);
     }
+}
+
+std::size_t Stream::getBlockCount() const noexcept
+{
+    return _blockCount;
+}
+
+std::size_t Stream::getUsedBlockCount() const noexcept
+{
+    /// TODO: return blocks used
+    return 0;
+}
+
+bool Stream::isEmpty() const noexcept
+{
+    return getUsedBlockCount() == 0;
+}
+
+bool Stream::isFull() const noexcept
+{
+    return getUsedBlockCount() == getBlockCount();
 }
