@@ -10,6 +10,18 @@
 
 namespace audio
 {
+    using namespace cpp_freertos;
+
+    class EventsListenerQueue : public Queue
+    {
+      public:
+        using Queue::Queue;
+        QueueHandle_t GetQueueHandle()
+        {
+            return handle;
+        }
+    };
+
     class StreamQueuedEventsListener : public Stream::EventListener
     {
       private:
@@ -34,6 +46,7 @@ namespace audio
         queueInfo getQueueInfo() const;
 
       private:
+        std::unique_ptr<EventsListenerQueue> queue;
         QueueHandle_t eventsQueue;
     };
 

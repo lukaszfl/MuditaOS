@@ -11,8 +11,9 @@
 #include <service-bluetooth/ServiceBluetoothCommon.hpp>
 
 #include "AudioCommon.hpp"
+#include "Stream.hpp"
 #include "Operation/Operation.hpp"
-#include "decoder/decoder.hpp"
+#include "decoder/Decoder.hpp"
 
 namespace audio
 {

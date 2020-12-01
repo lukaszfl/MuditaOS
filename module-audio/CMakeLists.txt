@@ -5,7 +5,7 @@ project(module-audio VERSION 1.0
 
 
 set(SOURCES
-        "${CMAKE_CURRENT_SOURCE_DIR}/Audio/decoder/decoder.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Audio/decoder/Decoder.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/decoder/decoderFLAC.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/decoder/decoderMP3.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/decoder/decoderWAV.cpp"
@@ -25,7 +25,7 @@ set(SOURCES
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/Operation/RouterOperation.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/Operation/IdleOperation.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Audio/Profiles/Profile.cpp"
-        )
+        "${CMAKE_CURRENT_SOURCE_DIR}/Audio/decoder/DecoderWorker.cpp")
 
 if(NOT ${PROJECT_TARGET} STREQUAL "TARGET_Linux")
     include(targets/Target_Cross.cmake)

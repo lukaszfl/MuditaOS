@@ -19,6 +19,7 @@ namespace sys
         std::string name;
         int elementSize;
         int length;
+        QueueHandle_t handle = nullptr;
     };
 
     struct WorkerCommand
@@ -68,7 +69,6 @@ namespace sys
         static void taskAdapter(void *taskParam);
         bool handleControlMessage();
         void task();
-        void addQueueInfo(xQueueHandle queue, std::string queueName);
         void setState(State newState);
         std::string getControlQueueName() const;
 
@@ -84,6 +84,7 @@ namespace sys
         xTaskHandle taskHandle         = nullptr;
 
         Id id;
+        std::string namePrefix;
         std::string name;
         State state = State::New;
 
@@ -108,6 +109,7 @@ namespace sys
 
       public:
         Worker(sys::Service *service);
+        Worker(const char *namePrefix);
         virtual ~Worker();
 
         /**
@@ -147,6 +149,8 @@ namespace sys
          * @brief Kills the worker. Does not deinit it.
          */
         void kill();
+
+        void addQueueInfo(xQueueHandle queue, std::string queueName);
     };
 
 } /* namespace sys */

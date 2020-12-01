@@ -6,7 +6,7 @@
 #include "minimp3/minimp3.h"
 
 #include <cstring>
-#include "decoder.hpp"
+#include "Decoder.hpp"
 
 extern "C"
 {
@@ -16,7 +16,7 @@ extern "C"
 namespace audio
 {
 
-    class decoderMP3 : public decoder
+    class decoderMP3 : public Decoder
     {
 
       public:

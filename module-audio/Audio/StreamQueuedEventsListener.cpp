@@ -2,37 +2,53 @@
 
 using namespace audio;
 
-// TODO: create queue in the constructor
 StreamQueuedEventsListener::StreamQueuedEventsListener(std::size_t eventsQueueCapacity)
-{}
+{
+    queue = std::make_unique<EventsListenerQueue>(eventsQueueCapacity, sizeof(EventStorage));
+}
 
 void StreamQueuedEventsListener::onEvent(Stream *stream, Stream::Event event, Stream::EventSourceMode source)
 {
-    /// TODO: use eventstorage to store the incoming event in the queue
-    /// TODO: use proper "queue push" method depending if in the IRQ mode
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    EventStorage newStorage = {stream, event};
+
+    if (source == Stream::EventSourceMode::ISR) {
+        queue->EnqueueFromISR(&newStorage, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken) {
+            taskYIELD();
+        }
+    }
+    else if (!queue->Enqueue(&newStorage)) {
+        LOG_ERROR("Queue full.");
+    }
 }
 
 StreamQueuedEventsListener::queuedEvent StreamQueuedEventsListener::waitForEvent()
 {
-    /// TODO: get single event (blocking), return "no event" if there is no event
-    return std::make_pair(static_cast<Stream *>(nullptr), Stream::Event::NoEvent);
+    EventStorage queueStorage;
+    if (queue->Dequeue(&queueStorage)) {
+        return std::make_pair(queueStorage.stream, queueStorage.event);
+    }
+    return std::make_pair(nullptr, Stream::Event::NoEvent);
 }
 
 std::size_t StreamQueuedEventsListener::getEventsCount() const
 {
-    /// TODO: get queue current capacity
-    return 0;
+    return queue->NumItems();
 }
 
 StreamQueuedEventsListener::queuedEvent StreamQueuedEventsListener::getEvent()
 {
-    /// TODO: get single event if any, return "no event" otherwise
-    return std::make_pair(static_cast<Stream *>(nullptr), Stream::Event::NoEvent);
+    EventStorage queueStorage;
+
+    if (queue->Dequeue(&queueStorage, 0)) {
+        return std::make_pair(queueStorage.stream, queueStorage.event);
+    }
+
+    return std::make_pair(nullptr, Stream::Event::NoEvent);
 }
 
 StreamQueuedEventsListener::queueInfo StreamQueuedEventsListener::getQueueInfo() const
 {
-    /// TODO: get the internal queue handle and name
-    /// use this method to register the queue in the Worker
-    return std::make_pair(static_cast<QueueHandle_t>(nullptr), "");
+    return std::make_pair(queue->GetQueueHandle(), "");
 }

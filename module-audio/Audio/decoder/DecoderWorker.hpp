@@ -1,0 +1,33 @@
+// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
+
+#pragma once
+
+#include <module-sys/Service/Worker.hpp>
+#include "Audio/StreamQueuedEventsListener.hpp"
+
+namespace audio
+{
+    class Decoder;
+    class DecoderWorker : public sys::Worker
+    {
+      public:
+        using EndOfFileCallback = std::function<void()>;
+
+        DecoderWorker(Stream &audioStreamOut, Decoder *decoder, EndOfFileCallback endOfFileCallback);
+        virtual auto init(std::list<sys::WorkerQueueInfo> queues) -> bool override;
+        virtual auto handleMessage(uint32_t queueID) -> bool override;
+
+      private:
+        using BufferInternalType = int16_t;
+
+        Stream &audioStreamOut;
+        Decoder *decoder;
+        EndOfFileCallback endOfFileCallback;
+
+        const int bufferSize;
+        std::unique_ptr<BufferInternalType[]> decoderBuffer;
+
+        QueueHandle_t sourceQueue = nullptr;
+    };
+} // namespace audio
