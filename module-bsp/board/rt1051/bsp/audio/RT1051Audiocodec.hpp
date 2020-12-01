@@ -27,7 +27,7 @@ namespace bsp
     void inAudioCodecWorkerTask(void *pvp);
     void outAudioCodecWorkerTask(void *pvp);
 
-    class RT1051Audiocodec : public AudioDevice, public audio::Sink
+    class RT1051Audiocodec : public AudioDevice, public audio::Sink, public audio::Source
     {
 
       public:

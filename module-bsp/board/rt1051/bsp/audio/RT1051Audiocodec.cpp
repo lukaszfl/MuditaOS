@@ -458,15 +458,16 @@ namespace bsp
     {
         audio::Stream::Span dataSpan;
         auto self = static_cast<RT1051Audiocodec *>(userData);
+        auto sink = static_cast<audio::Sink *>(self);
 
         /// must not happen
-        if (!self->isConnected()) {
+        if (!sink->isConnected()) {
             return;
         }
 
         /// pop previous read and peek next
-        self->getStream()->pop();
-        self->getStream()->peek(dataSpan);
+        sink->getStream()->pop();
+        sink->getStream()->peek(dataSpan);
 
         sai_transfer_t xfer{.data = dataSpan.data, .dataSize = dataSpan.dataSize};
         SAI_TransferSendEDMA(BOARD_AUDIOCODEC_SAIx, &self->txHandle, &xfer);
