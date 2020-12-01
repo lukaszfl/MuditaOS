@@ -9,6 +9,24 @@ Stream::Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferi
     std::fill(_emptyBuffer.get(), _emptyBuffer.get() + blockSize, 0);
 }
 
+bool Stream::push(void *data, std::size_t dataSize)
+{
+    /// TODO: implement
+    return false;
+}
+
+bool Stream::pop()
+{
+    /// TODO: implement
+    return false;
+}
+
+bool Stream::peek(Span &span)
+{
+    /// TODO: implement
+    return false;
+}
+
 bool Stream::push(const Span &span)
 {
     return push(span.data, span.dataSize);
