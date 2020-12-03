@@ -1,0 +1,18 @@
+@startuml
+component [PurePhone] as PP
+component [MuditaCenter] as MC
+
+interface "Comunication" as COM
+
+PP - COM
+COM - MC
+
+note top of COM
+    For now we ignore communication medium - will be covered separately.
+    We will define Single protocol contract in special file, used by both
+    sides, and therefor common way of defining objects.
+end note
+
+
+
+@enduml

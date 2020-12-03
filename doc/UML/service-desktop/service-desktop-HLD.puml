@@ -1,0 +1,43 @@
+@startuml
+package Services {
+    component [Cellular Service] as CellularSrv
+    component [Messages Service] as MessagesSrv
+    component [Contacts Service] as ContactsSrv
+}
+
+package service-desktop {
+    package Endpoints {
+        component [Cellular Endpoint] as CellularEnd
+        component [Messages Endpoint] as MessagesEnd
+        component [Contacts Endpoint] as ContactsEnd
+    }
+    
+    component [Service-desktop] as SrvDsk 
+    component [Data connector] as DataCon
+
+    interface Endpoint
+    interface Stream
+}
+
+interface Bluetooth
+interface "serial port" as Serial
+interface "TCP/IP" as TCP
+
+
+CellularSrv -down- CellularEnd
+MessagesSrv -down- MessagesEnd
+ContactsSrv -down- ContactsEnd
+
+CellularEnd  -down- Endpoint
+MessagesEnd -down- Endpoint
+ContactsEnd -down- Endpoint
+
+SrvDsk -up- Endpoint
+SrvDsk -down- Stream
+
+DataCon -down- Serial
+DataCon -down- TCP
+DataCon -down- Bluetooth
+DataCon -up- Stream
+
+@enduml
