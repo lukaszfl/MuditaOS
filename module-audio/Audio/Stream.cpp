@@ -1,17 +1,32 @@
 #include "Stream.hpp"
 
+#include <algorithm>
+
 using namespace audio;
 
 Stream::Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferingSize)
     : _allocator(allocator), _blockSize(blockSize), _blockCount(bufferingSize),
-      _buffer(_allocator.allocate(_blockSize * _blockCount)), _emptyBuffer(_allocator.allocate(_blockSize))
+      _buffer(_allocator.allocate(_blockSize * _blockCount)), _emptyBuffer(_allocator.allocate(_blockSize)),
+      _dataStart(_buffer.get(), _blockSize * _blockCount, _buffer.get(), _blockSize), _dataEnd(_dataStart),
+      _peekPosition(_dataStart), _writeReservationPosition(_dataStart)
 {
     std::fill(_emptyBuffer.get(), _emptyBuffer.get() + blockSize, 0);
 }
 
 bool Stream::push(void *data, std::size_t dataSize)
 {
-    /// TODO: implement
+    /// sanity - do not store buffers different than internal block size
+    if (dataSize != _blockSize) {
+        return false;
+    }
+
+    /// no space left
+    if (_blockUsed == _blockCount) {
+        return false;
+    }
+
+    // std::copy(_dataEnd, ++_dataEnd, );
+
     return false;
 }
 
@@ -62,8 +77,7 @@ std::size_t Stream::getBlockCount() const noexcept
 
 std::size_t Stream::getUsedBlockCount() const noexcept
 {
-    /// TODO: return blocks used
-    return 0;
+    return _blocksUsed;
 }
 
 bool Stream::isEmpty() const noexcept

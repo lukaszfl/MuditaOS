@@ -47,26 +47,6 @@ namespace audio
             virtual void onEvent(Stream *stream, Event event, EventSourceMode source) = 0;
         };
 
-        class RawBlockIterator
-        {
-          public:
-            RawBlockIterator(std::uint8_t *bufStart, std::size_t bufSize, std::uint8_t *ptr, std::size_t stepSize);
-
-            bool operator==(const RawBlockIterator &rhs);
-            bool operator!=(const RawBlockIterator &rhs);
-            RawBlockIterator &operator++();
-            RawBlockIterator &operator--();
-            RawBlockIterator operator++(int);
-            RawBlockIterator operator--(int);
-            Span operator*();
-
-          private:
-            std::uint8_t *_bufStart;
-            std::uint8_t *_bufEnd;
-            std::uint8_t *_curPos;
-            std::size_t _stepSize;
-        };
-
         static constexpr auto defaultBufferingSize = 4U;
 
         Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferingSize = defaultBufferingSize);
@@ -89,15 +69,42 @@ namespace audio
 
         void registerListener(EventListener &listener);
 
+      protected:
+        class RawBlockIterator
+        {
+          public:
+            RawBlockIterator(std::uint8_t *bufStart, std::size_t bufSize, std::uint8_t *ptr, std::size_t stepSize);
+
+            bool operator==(const RawBlockIterator &rhs);
+            bool operator!=(const RawBlockIterator &rhs);
+            RawBlockIterator &operator++();
+            RawBlockIterator &operator--();
+            RawBlockIterator operator++(int);
+            RawBlockIterator operator--(int);
+            Span operator*();
+
+          private:
+            std::uint8_t *_bufStart;
+            std::uint8_t *_bufEnd;
+            std::uint8_t *_curPos;
+            std::size_t _stepSize;
+        };
+
       private:
         void broadcastEvent(Event event);
 
         Allocator &_allocator;
         std::size_t _blockSize  = 0;
         std::size_t _blockCount = 0;
+        std::size_t _blocksUsed = 0;
         UniqueStreamBuffer _buffer;
         UniqueStreamBuffer _emptyBuffer;
         std::list<std::reference_wrapper<EventListener>> listeners;
+
+        RawBlockIterator _dataStart;
+        RawBlockIterator _dataEnd;
+        RawBlockIterator _peekPosition;
+        RawBlockIterator _writeReservationPosition;
     };
 
     class StandardStreamAllocator : public Stream::Allocator
