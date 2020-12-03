@@ -20,6 +20,8 @@ namespace audio
         {
             std::uint8_t *data   = nullptr;
             std::size_t dataSize = 0;
+
+            std::uint8_t *dataEnd() const noexcept;
         };
 
         class Allocator

@@ -15,19 +15,7 @@ Stream::Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferi
 
 bool Stream::push(void *data, std::size_t dataSize)
 {
-    /// sanity - do not store buffers different than internal block size
-    if (dataSize != _blockSize) {
-        return false;
-    }
-
-    /// no space left
-    if (_blockUsed == _blockCount) {
-        return false;
-    }
-
-    // std::copy(_dataEnd, ++_dataEnd, );
-
-    return false;
+    return push(Span{.data = static_cast<std::uint8_t *>(data), .dataSize = dataSize});
 }
 
 bool Stream::pop()
@@ -44,12 +32,40 @@ bool Stream::peek(Span &span)
 
 bool Stream::push(const Span &span)
 {
-    return push(span.data, span.dataSize);
+    /// sanity - do not store buffers different than internal block size
+    if (span.dataSize != _blockSize) {
+        return false;
+    }
+
+    /// no space left
+    if (_blocksUsed == _blockCount) {
+        return false;
+    }
+
+    auto nextDataBlock = *_dataEnd;
+    std::copy(nextDataBlock.data, nextDataBlock.dataEnd(), span.data);
+
+    _dataEnd++;
+    _blocksUsed++;
+
+    return true;
 }
 
 bool Stream::pop(Span &span)
 {
-    return peek(span) && pop();
+    if (span.dataSize != _blockSize) {
+        return false;
+    }
+
+    if (_blocksUsed == 0) {
+        return false;
+    }
+
+    std::copy(span.data, span.dataEnd(), (*_dataStart).data);
+    _dataStart++;
+    _blocksUsed--;
+
+    return true;
 }
 
 std::size_t Stream::getBlockSize() const noexcept
@@ -166,4 +182,9 @@ Stream::RawBlockIterator Stream::RawBlockIterator::operator--(int)
 Stream::Span Stream::RawBlockIterator::operator*()
 {
     return Stream::Span{.data = _curPos, .dataSize = _stepSize};
+}
+
+std::uint8_t *Stream::Span::dataEnd() const noexcept
+{
+    return data + dataSize;
 }
