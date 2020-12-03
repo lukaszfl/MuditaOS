@@ -47,6 +47,26 @@ namespace audio
             virtual void onEvent(Stream *stream, Event event, EventSourceMode source) = 0;
         };
 
+        class RawBlockIterator
+        {
+          public:
+            RawBlockIterator(std::uint8_t *bufStart, std::size_t bufSize, std::uint8_t *ptr, std::size_t stepSize);
+
+            bool operator==(const RawBlockIterator &rhs);
+            bool operator!=(const RawBlockIterator &rhs);
+            RawBlockIterator &operator++();
+            RawBlockIterator &operator--();
+            RawBlockIterator operator++(int);
+            RawBlockIterator operator--(int);
+            Span operator*();
+
+          private:
+            std::uint8_t *_bufStart;
+            std::uint8_t *_bufEnd;
+            std::uint8_t *_curPos;
+            std::size_t _stepSize;
+        };
+
         static constexpr auto defaultBufferingSize = 4U;
 
         Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferingSize = defaultBufferingSize);

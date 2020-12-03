@@ -95,3 +95,61 @@ Stream::UniqueStreamBuffer NonCacheableStreamAllocator::allocate(std::size_t siz
     return std::unique_ptr<std::uint8_t[], std::function<void(uint8_t[])>>(
         allocator.allocate(size), [this, size](std::uint8_t ptr[]) { allocator.deallocate(ptr, size); });
 }
+
+Stream::RawBlockIterator::RawBlockIterator(std::uint8_t *bufStart,
+                                           std::size_t bufSize,
+                                           std::uint8_t *ptr,
+                                           std::size_t stepSize)
+    : _bufStart(bufStart), _bufEnd(bufStart + bufSize), _curPos(ptr), _stepSize(stepSize)
+{}
+
+Stream::RawBlockIterator &Stream::RawBlockIterator::operator++()
+{
+    _curPos += _stepSize;
+    if (_curPos == _bufEnd) {
+        _curPos = _bufStart;
+    }
+
+    return *this;
+}
+
+bool Stream::RawBlockIterator::operator==(const Stream::RawBlockIterator &rhs)
+{
+    return _curPos == rhs._curPos;
+}
+
+bool Stream::RawBlockIterator::operator!=(const Stream::RawBlockIterator &rhs)
+{
+    return !operator==(rhs);
+}
+
+Stream::RawBlockIterator Stream::RawBlockIterator::operator++(int)
+{
+    RawBlockIterator tmp(*this);
+    operator++();
+    return tmp;
+}
+
+Stream::RawBlockIterator &Stream::RawBlockIterator::operator--()
+{
+    if (_curPos == _bufStart) {
+        _curPos = _bufEnd - _stepSize;
+    }
+    else {
+        _curPos -= _stepSize;
+    }
+
+    return *this;
+}
+
+Stream::RawBlockIterator Stream::RawBlockIterator::operator--(int)
+{
+    RawBlockIterator tmp(*this);
+    operator--();
+    return tmp;
+}
+
+Stream::Span Stream::RawBlockIterator::operator*()
+{
+    return Stream::Span{.data = _curPos, .dataSize = _stepSize};
+}
