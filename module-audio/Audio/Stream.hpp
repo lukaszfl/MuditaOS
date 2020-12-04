@@ -82,19 +82,20 @@ namespace audio
 
         /// zero copy write
         bool reserve(Span &span);
-        bool commit();
-        bool release();
+        void commit();
+        void release();
 
         /// zero copy read
         bool peek(Span &span);
-        bool consume();
-        bool unpeek();
+        void consume();
+        void unpeek();
 
         std::size_t getBlockSize() const noexcept;
         std::size_t getBlockCount() const noexcept;
         std::size_t getUsedBlockCount() const noexcept;
         bool isEmpty() const noexcept;
         bool isFull() const noexcept;
+        bool blocksAvailable() const noexcept;
 
         void registerListener(EventListener &listener);
 

@@ -31,7 +31,7 @@ bool Stream::push(const Span &span)
     }
 
     /// no space left
-    if (_blocksUsed == _blockCount) {
+    if (isFull()) {
         return false;
     }
 
@@ -51,11 +51,7 @@ bool Stream::push()
 
 bool Stream::pop(Span &span)
 {
-    if (span.dataSize != _blockSize) {
-        return false;
-    }
-
-    if (_blocksUsed == 0) {
+    if (isEmpty()) {
         return false;
     }
 
@@ -66,49 +62,46 @@ bool Stream::pop(Span &span)
     return true;
 }
 
-bool Stream::consume()
+void Stream::consume()
 {
-    if (_blocksUsed > 0) {
-        _blocksUsed -= std::distance(_dataStart, _peekPosition);
-        _dataStart = _peekPosition;
-    }
-
-    return true;
+    _blocksUsed -= std::distance(_dataStart, _peekPosition);
+    _dataStart = _peekPosition;
 }
 
 bool Stream::peek(Span &span)
 {
-    span = *++_peekPosition;
+    if (blocksAvailable()) {
+        span = *++_peekPosition;
+        return true;
+    }
 
-    return true;
+    return false;
 }
 
-bool Stream::unpeek()
+void Stream::unpeek()
 {
     _peekPosition = _dataStart;
-
-    return true;
 }
 
 bool Stream::reserve(Span &span)
 {
-    span = *++_writeReservationPosition;
+    if (blocksAvailable()) {
+        span = *++_writeReservationPosition;
+        return true;
+    }
 
-    return true;
+    return false;
 }
 
-bool Stream::commit()
+void Stream::commit()
 {
     _blocksUsed += std::distance(_dataEnd, _writeReservationPosition);
     _dataEnd = _writeReservationPosition;
-
-    return true;
 }
 
-bool Stream::release()
+void Stream::release()
 {
     _writeReservationPosition = _dataEnd;
-    return true;
 }
 
 std::size_t Stream::getBlockSize() const noexcept
@@ -147,6 +140,11 @@ bool Stream::isEmpty() const noexcept
 bool Stream::isFull() const noexcept
 {
     return getUsedBlockCount() == getBlockCount();
+}
+
+bool Stream::blocksAvailable() const noexcept
+{
+    return !isFull();
 }
 
 Stream::UniqueStreamBuffer StandardStreamAllocator::allocate(std::size_t size)
