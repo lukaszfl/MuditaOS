@@ -53,15 +53,24 @@ namespace audio
 
         Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferingSize = defaultBufferingSize);
 
+        /// push
         bool push(void *data, std::size_t dataSize);
         bool push(const Span &span);
+        bool push();
 
-        bool reserve(Span &span);
-
-        bool peek(Span &span);
-
-        bool pop();
+        /// pop
         bool pop(Span &span);
+        bool pop();
+
+        /// zero copy write
+        bool reserve(Span &span);
+        bool commit();
+        bool release();
+
+        /// zero copy read
+        bool peek(Span &span);
+        bool consume();
+        bool unpeek();
 
         std::size_t getBlockSize() const noexcept;
         std::size_t getBlockCount() const noexcept;
@@ -94,6 +103,7 @@ namespace audio
 
       private:
         void broadcastEvent(Event event);
+        Span getNullSpan() const noexcept;
 
         Allocator &_allocator;
         std::size_t _blockSize  = 0;

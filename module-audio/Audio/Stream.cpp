@@ -4,6 +4,10 @@
 
 using namespace audio;
 
+/// TODO: push/pop vs peek and friends interactions
+/// TODO: synchronization
+/// TODO: ISR safe synchronization
+
 Stream::Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferingSize)
     : _allocator(allocator), _blockSize(blockSize), _blockCount(bufferingSize),
       _buffer(_allocator.allocate(_blockSize * _blockCount)), _emptyBuffer(_allocator.allocate(_blockSize)),
@@ -16,18 +20,6 @@ Stream::Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferi
 bool Stream::push(void *data, std::size_t dataSize)
 {
     return push(Span{.data = static_cast<std::uint8_t *>(data), .dataSize = dataSize});
-}
-
-bool Stream::pop()
-{
-    /// TODO: implement
-    return false;
-}
-
-bool Stream::peek(Span &span)
-{
-    /// TODO: implement
-    return false;
 }
 
 bool Stream::push(const Span &span)
@@ -51,6 +43,11 @@ bool Stream::push(const Span &span)
     return true;
 }
 
+bool Stream::push()
+{
+    return push(getNullSpan());
+}
+
 bool Stream::pop(Span &span)
 {
     if (span.dataSize != _blockSize) {
@@ -66,6 +63,22 @@ bool Stream::pop(Span &span)
     _blocksUsed--;
 
     return true;
+}
+
+bool Stream::pop()
+{
+    if (_blocksUsed > 0) {
+        _dataStart++;
+        _blocksUsed--;
+    }
+
+    return true;
+}
+
+bool Stream::peek(Span &span)
+{
+    /// TODO: implement
+    return false;
 }
 
 std::size_t Stream::getBlockSize() const noexcept
@@ -187,4 +200,9 @@ Stream::Span Stream::RawBlockIterator::operator*()
 std::uint8_t *Stream::Span::dataEnd() const noexcept
 {
     return data + dataSize;
+}
+
+Stream::Span Stream::getNullSpan() const noexcept
+{
+    return Span{.data = _emptyBuffer.get(), .dataSize = _blockSize};
 }
