@@ -5,9 +5,6 @@
 
 using namespace audio;
 
-/// TODO: synchronization
-/// TODO: ISR safe synchronization
-
 Stream::Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferingSize)
     : _allocator(allocator), _blockSize(blockSize), _blockCount(bufferingSize),
       _buffer(_allocator.allocate(_blockSize * _blockCount)), _emptyBuffer(_allocator.allocate(_blockSize)),
@@ -19,11 +16,14 @@ Stream::Stream(Allocator &allocator, std::size_t blockSize, unsigned int bufferi
 
 bool Stream::push(void *data, std::size_t dataSize)
 {
+    /// wrapper - no synchronization needed
     return push(Span{.data = static_cast<std::uint8_t *>(data), .dataSize = dataSize});
 }
 
 bool Stream::push(const Span &span)
 {
+    LockGuard lock(mutex);
+
     /// sanity - do not store buffers different than internal block size
     if (span.dataSize != _blockSize) {
         return false;
@@ -50,11 +50,14 @@ bool Stream::push(const Span &span)
 
 bool Stream::push()
 {
+    /// wrapper - no synchronization needed
     return push(getNullSpan());
 }
 
 bool Stream::pop(Span &span)
 {
+    LockGuard lock(mutex);
+
     if (isEmpty()) {
         return false;
     }
@@ -73,12 +76,16 @@ bool Stream::pop(Span &span)
 
 void Stream::consume()
 {
+    LockGuard lock(mutex);
+
     _blocksUsed -= std::distance(_dataStart, _peekPosition);
     _dataStart = _peekPosition;
 }
 
 bool Stream::peek(Span &span)
 {
+    LockGuard lock(mutex);
+
     if (blocksAvailable()) {
         span = *++_peekPosition;
         return true;
@@ -89,11 +96,15 @@ bool Stream::peek(Span &span)
 
 void Stream::unpeek()
 {
+    LockGuard lock(mutex);
+
     _peekPosition = _dataStart;
 }
 
 bool Stream::reserve(Span &span)
 {
+    LockGuard lock(mutex);
+
     if (blocksAvailable()) {
         span = *++_writeReservationPosition;
         return true;
@@ -104,12 +115,16 @@ bool Stream::reserve(Span &span)
 
 void Stream::commit()
 {
+    LockGuard lock(mutex);
+
     _blocksUsed += std::distance(_dataEnd, _writeReservationPosition);
     _dataEnd = _writeReservationPosition;
 }
 
 void Stream::release()
 {
+    LockGuard lock(mutex);
+
     _writeReservationPosition = _dataEnd;
 }
 
@@ -120,6 +135,8 @@ std::size_t Stream::getBlockSize() const noexcept
 
 void Stream::registerListener(EventListener &listener)
 {
+    LockGuard lock(mutex);
+
     listeners.push_back(std::ref(listener));
 }
 

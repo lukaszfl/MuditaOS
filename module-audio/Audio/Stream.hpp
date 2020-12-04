@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory/NonCachedMemAllocator.hpp>
+#include <mutex.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -100,6 +101,8 @@ namespace audio
         void registerListener(EventListener &listener);
 
       private:
+        using LockGuard = cpp_freertos::LockGuard;
+
         void broadcastEvent(Event event);
         Span getNullSpan() const noexcept;
 
@@ -115,6 +118,8 @@ namespace audio
         RawBlockIterator _dataEnd;
         RawBlockIterator _peekPosition;
         RawBlockIterator _writeReservationPosition;
+
+        cpp_freertos::MutexRecursive mutex;
     };
 
     class StandardStreamAllocator : public Stream::Allocator
