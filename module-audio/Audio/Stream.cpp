@@ -147,6 +147,8 @@ void Stream::release()
 
 std::size_t Stream::getBlockSize() const noexcept
 {
+    LockGuard lock();
+
     return _blockSize;
 }
 
@@ -183,21 +185,25 @@ void Stream::broadcastStateEvents()
 
 std::size_t Stream::getBlockCount() const noexcept
 {
+    LockGuard lock();
     return _blockCount;
 }
 
 std::size_t Stream::getUsedBlockCount() const noexcept
 {
+    LockGuard lock();
     return _blocksUsed;
 }
 
 bool Stream::isEmpty() const noexcept
 {
+    LockGuard lock();
     return getUsedBlockCount() == 0;
 }
 
 bool Stream::isFull() const noexcept
 {
+    LockGuard lock();
     return getUsedBlockCount() == getBlockCount();
 }
 
