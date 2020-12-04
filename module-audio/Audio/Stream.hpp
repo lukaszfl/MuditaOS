@@ -54,7 +54,10 @@ namespace audio
         {
             NoEvent,
             StreamFull,
-            StreamEmpty
+            StreamHalfUsed,
+            StreamEmpty,
+            StreamOverflow,
+            StreamUnderFlow
         };
 
         enum class EventSourceMode
@@ -101,9 +104,11 @@ namespace audio
         void registerListener(EventListener &listener);
 
       private:
+        // TODO: isr safe lock
         using LockGuard = cpp_freertos::LockGuard;
 
         void broadcastEvent(Event event);
+        void broadcastStateEvents();
         Span getNullSpan() const noexcept;
 
         Allocator &_allocator;

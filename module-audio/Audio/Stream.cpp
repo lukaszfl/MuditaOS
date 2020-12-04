@@ -36,6 +36,7 @@ bool Stream::push(const Span &span)
 
     /// no space left
     if (isFull()) {
+        broadcastEvent(Event::StreamOverflow);
         return false;
     }
 
@@ -44,6 +45,8 @@ bool Stream::push(const Span &span)
 
     _dataEnd++;
     _blocksUsed++;
+
+    broadcastStateEvents();
 
     return true;
 }
@@ -59,6 +62,7 @@ bool Stream::pop(Span &span)
     LockGuard lock(mutex);
 
     if (isEmpty()) {
+        broadcastEvent(Event::StreamUnderFlow);
         return false;
     }
 
@@ -71,6 +75,7 @@ bool Stream::pop(Span &span)
     _dataStart++;
     _blocksUsed--;
 
+    broadcastStateEvents();
     return true;
 }
 
@@ -80,6 +85,8 @@ void Stream::consume()
 
     _blocksUsed -= std::distance(_dataStart, _peekPosition);
     _dataStart = _peekPosition;
+
+    broadcastStateEvents();
 }
 
 bool Stream::peek(Span &span)
@@ -91,6 +98,7 @@ bool Stream::peek(Span &span)
         return true;
     }
 
+    broadcastEvent(Event::StreamUnderFlow);
     return false;
 }
 
@@ -110,6 +118,7 @@ bool Stream::reserve(Span &span)
         return true;
     }
 
+    broadcastEvent(Event::StreamOverflow);
     return false;
 }
 
@@ -119,6 +128,8 @@ void Stream::commit()
 
     _blocksUsed += std::distance(_dataEnd, _writeReservationPosition);
     _dataEnd = _writeReservationPosition;
+
+    broadcastStateEvents();
 }
 
 void Stream::release()
@@ -145,6 +156,21 @@ void Stream::broadcastEvent(Event event)
     // TODO: detect isr mode
     for (auto listener : listeners) {
         listener.get().onEvent(this, event, EventSourceMode::Thread);
+    }
+}
+
+void Stream::broadcastStateEvents()
+{
+    if (_blocksUsed == (_blockCount / 2)) {
+        broadcastEvent(Event::StreamHalfUsed);
+    }
+
+    else if (isEmpty()) {
+        broadcastEvent(Event::StreamEmpty);
+    }
+
+    else if (isFull()) {
+        broadcastEvent(Event::StreamFull);
     }
 }
 
