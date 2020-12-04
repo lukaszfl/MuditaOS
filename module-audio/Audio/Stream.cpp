@@ -45,6 +45,7 @@ bool Stream::push(const Span &span)
 
     _dataEnd++;
     _blocksUsed++;
+    _writeReservationPosition = _dataEnd;
 
     broadcastStateEvents();
 
@@ -72,8 +73,10 @@ bool Stream::pop(Span &span)
     }
 
     std::copy(span.data, span.dataEnd(), (*_dataStart).data);
+
     _dataStart++;
     _blocksUsed--;
+    _peekPosition = _dataStart;
 
     broadcastStateEvents();
     return true;
