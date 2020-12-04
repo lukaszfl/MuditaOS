@@ -43,6 +43,7 @@
 /module-services/service-db                 @mudita/embedded-abs @PrzeBrudny
 /module-services/service-desktop            @SP2FET @rkubiak01
 /module_services/service-file-indexer       @lucckb
+/module-servoces/service-usb                @niepiekm
 
 #apps
 /module-apps                                @piotr-tanski @pholat @PrzeBrudny
