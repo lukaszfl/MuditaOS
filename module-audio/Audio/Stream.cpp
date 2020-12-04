@@ -24,7 +24,7 @@ bool Stream::push(void *data, std::size_t dataSize)
 
 bool Stream::push(const Span &span)
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     /// sanity - do not store buffers different than internal block size
     if (span.dataSize != _blockSize) {
@@ -62,7 +62,7 @@ bool Stream::push()
 
 bool Stream::pop(Span &span)
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     if (isEmpty()) {
         broadcastEvent(Event::StreamUnderFlow);
@@ -86,7 +86,7 @@ bool Stream::pop(Span &span)
 
 void Stream::consume()
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     _blocksUsed -= std::distance(_dataStart, _peekPosition);
     _dataStart = _peekPosition;
@@ -96,7 +96,7 @@ void Stream::consume()
 
 bool Stream::peek(Span &span)
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     if (blocksAvailable()) {
         span = *++_peekPosition;
@@ -110,14 +110,14 @@ bool Stream::peek(Span &span)
 
 void Stream::unpeek()
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     _peekPosition = _dataStart;
 }
 
 bool Stream::reserve(Span &span)
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     if (blocksAvailable()) {
         span = *++_writeReservationPosition;
@@ -130,7 +130,7 @@ bool Stream::reserve(Span &span)
 
 void Stream::commit()
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     _blocksUsed += std::distance(_dataEnd, _writeReservationPosition);
     _dataEnd = _writeReservationPosition;
@@ -140,7 +140,7 @@ void Stream::commit()
 
 void Stream::release()
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     _writeReservationPosition = _dataEnd;
 }
@@ -152,7 +152,7 @@ std::size_t Stream::getBlockSize() const noexcept
 
 void Stream::registerListener(EventListener &listener)
 {
-    LockGuard lock(mutex);
+    LockGuard lock();
 
     listeners.push_back(std::ref(listener));
 }

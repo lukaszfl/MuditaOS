@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory/NonCachedMemAllocator.hpp>
-#include <mutex.hpp>
+#include <CriticalSectionGuard.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -105,8 +105,7 @@ namespace audio
         void registerListener(EventListener &listener);
 
       private:
-        // TODO: isr safe lock
-        using LockGuard = cpp_freertos::LockGuard;
+        using LockGuard = cpp_freertos::CriticalSectionGuard;
 
         void broadcastEvent(Event event);
         void broadcastStateEvents();
@@ -124,8 +123,6 @@ namespace audio
         RawBlockIterator _dataEnd;
         RawBlockIterator _peekPosition;
         RawBlockIterator _writeReservationPosition;
-
-        cpp_freertos::MutexRecursive mutex;
     };
 
     class StandardStreamAllocator : public Stream::Allocator
