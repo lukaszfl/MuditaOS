@@ -5,7 +5,6 @@
 
 using namespace audio;
 
-/// TODO: push/pop vs peek and friends interactions
 /// TODO: synchronization
 /// TODO: ISR safe synchronization
 
@@ -27,6 +26,11 @@ bool Stream::push(const Span &span)
 {
     /// sanity - do not store buffers different than internal block size
     if (span.dataSize != _blockSize) {
+        return false;
+    }
+
+    /// write reservation in progress
+    if (_dataEnd != _writeReservationPosition) {
         return false;
     }
 
@@ -52,6 +56,11 @@ bool Stream::push()
 bool Stream::pop(Span &span)
 {
     if (isEmpty()) {
+        return false;
+    }
+
+    /// peek in progress
+    if (_dataStart != _peekPosition) {
         return false;
     }
 
