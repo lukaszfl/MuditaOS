@@ -1,6 +1,7 @@
 #include "Stream.hpp"
 
 #include <algorithm>
+#include <iterator>
 
 using namespace audio;
 
@@ -65,11 +66,11 @@ bool Stream::pop(Span &span)
     return true;
 }
 
-bool Stream::pop()
+bool Stream::consume()
 {
     if (_blocksUsed > 0) {
-        _dataStart++;
-        _blocksUsed--;
+        _blocksUsed -= std::distance(_dataStart, _peekPosition);
+        _dataStart = _peekPosition;
     }
 
     return true;
@@ -77,8 +78,37 @@ bool Stream::pop()
 
 bool Stream::peek(Span &span)
 {
-    /// TODO: implement
-    return false;
+    span = *++_peekPosition;
+
+    return true;
+}
+
+bool Stream::unpeek()
+{
+    _peekPosition = _dataStart;
+
+    return true;
+}
+
+bool Stream::reserve(Span &span)
+{
+    span = *++_writeReservationPosition;
+
+    return true;
+}
+
+bool Stream::commit()
+{
+    _blocksUsed += std::distance(_dataEnd, _writeReservationPosition);
+    _dataEnd = _writeReservationPosition;
+
+    return true;
+}
+
+bool Stream::release()
+{
+    _writeReservationPosition = _dataEnd;
+    return true;
 }
 
 std::size_t Stream::getBlockSize() const noexcept
@@ -118,15 +148,6 @@ bool Stream::isFull() const noexcept
 {
     return getUsedBlockCount() == getBlockCount();
 }
-
-#if 0
-Stream::UniqueStreamBuffer Stream::allocateBuffer(std::size_t size)
-{
-    auto buf = std::unique_ptr(static_cast<std::uint8_t[]>(_allocator.allocate()),
-                               [&_allocator](uint8_t[] buf) { _allocator.deallocate(buf); });
-    return std::move(buf);
-}
-#endif
 
 Stream::UniqueStreamBuffer StandardStreamAllocator::allocate(std::size_t size)
 {

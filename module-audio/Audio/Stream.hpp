@@ -23,6 +23,25 @@ namespace audio
 
             std::uint8_t *dataEnd() const noexcept;
         };
+        class RawBlockIterator
+        {
+          public:
+            RawBlockIterator(std::uint8_t *bufStart, std::size_t bufSize, std::uint8_t *ptr, std::size_t stepSize);
+
+            bool operator==(const RawBlockIterator &rhs);
+            bool operator!=(const RawBlockIterator &rhs);
+            RawBlockIterator &operator++();
+            RawBlockIterator &operator--();
+            RawBlockIterator operator++(int);
+            RawBlockIterator operator--(int);
+            Span operator*();
+
+          private:
+            std::uint8_t *_bufStart;
+            std::uint8_t *_bufEnd;
+            std::uint8_t *_curPos;
+            std::size_t _stepSize;
+        };
 
         class Allocator
         {
@@ -60,7 +79,6 @@ namespace audio
 
         /// pop
         bool pop(Span &span);
-        bool pop();
 
         /// zero copy write
         bool reserve(Span &span);
@@ -79,27 +97,6 @@ namespace audio
         bool isFull() const noexcept;
 
         void registerListener(EventListener &listener);
-
-      protected:
-        class RawBlockIterator
-        {
-          public:
-            RawBlockIterator(std::uint8_t *bufStart, std::size_t bufSize, std::uint8_t *ptr, std::size_t stepSize);
-
-            bool operator==(const RawBlockIterator &rhs);
-            bool operator!=(const RawBlockIterator &rhs);
-            RawBlockIterator &operator++();
-            RawBlockIterator &operator--();
-            RawBlockIterator operator++(int);
-            RawBlockIterator operator--(int);
-            Span operator*();
-
-          private:
-            std::uint8_t *_bufStart;
-            std::uint8_t *_bufEnd;
-            std::uint8_t *_curPos;
-            std::size_t _stepSize;
-        };
 
       private:
         void broadcastEvent(Event event);
@@ -136,3 +133,15 @@ namespace audio
     };
 
 } // namespace audio
+
+namespace std
+{
+    template <> struct iterator_traits<audio::Stream::RawBlockIterator>
+    {
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = audio::Stream::Span;
+        using difference_type   = std::size_t;
+        using pointer           = audio::Stream::Span *;
+        using reference         = audio::Stream::Span &;
+    };
+}; // namespace std
