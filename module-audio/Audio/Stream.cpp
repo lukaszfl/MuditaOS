@@ -1,5 +1,7 @@
 #include "Stream.hpp"
 
+#include <macros.h>
+
 #include <algorithm>
 #include <iterator>
 
@@ -101,6 +103,7 @@ bool Stream::peek(Span &span)
         return true;
     }
 
+    span = getNullSpan();
     broadcastEvent(Event::StreamUnderFlow);
     return false;
 }
@@ -156,9 +159,10 @@ void Stream::registerListener(EventListener &listener)
 
 void Stream::broadcastEvent(Event event)
 {
-    // TODO: detect isr mode
+    auto eventMode = isIRQ() ? EventSourceMode::ISR : EventSourceMode::Thread;
+
     for (auto listener : listeners) {
-        listener.get().onEvent(this, event, EventSourceMode::Thread);
+        listener.get().onEvent(this, event, eventMode);
     }
 }
 

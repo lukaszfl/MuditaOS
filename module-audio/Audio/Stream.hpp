@@ -24,6 +24,7 @@ namespace audio
 
             std::uint8_t *dataEnd() const noexcept;
         };
+
         class RawBlockIterator
         {
           public:

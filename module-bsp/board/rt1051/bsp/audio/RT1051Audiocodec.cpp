@@ -466,7 +466,7 @@ namespace bsp
         }
 
         /// pop previous read and peek next
-        sink->getStream()->pop();
+        sink->getStream()->consume();
         sink->getStream()->peek(dataSpan);
 
         sai_transfer_t xfer{.data = dataSpan.data, .dataSize = dataSpan.dataSize};
