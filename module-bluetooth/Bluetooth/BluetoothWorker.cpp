@@ -59,8 +59,9 @@ bool BluetoothWorker::run()
     }
     if (Worker::run()) {
         is_running                          = true;
-        auto el                             = queues[queueIO_handle];
-        BlueKitchen::getInstance()->qHandle = el;
+        // auto el                             = queues[queueIO_handle];
+
+        BlueKitchen::getInstance()->qHandle = xQueueCreate(5, sizeof(Bt::Message));
         Bt::initialize_stack();
         Bt::register_hw_error_callback();
         Bt::GAP::register_scan();
@@ -135,16 +136,16 @@ bool BluetoothWorker::handleMessage(uint32_t queueID)
         LOG_ERROR("Queue receive failure!");
         return false;
     }
-    auto bt = BlueKitchen::getInstance();
+    // auto bt = BlueKitchen::getInstance();
     switch (notification) {
     case Bt::Message::EvtSending:
         logHciEvt("[evt] sending");
         break;
     case Bt::Message::EvtSent:
         logHciEvt("[evt] sent");
-        if (bt->write_done_cb) {
-            bt->write_done_cb();
-        }
+        //        if (bt->write_done_cb) {
+        //            bt->write_done_cb();
+        //        }
         break;
     case Bt::Message::EvtReceiving:
         logHciEvt("[evt] receiving");
@@ -157,11 +158,11 @@ bool BluetoothWorker::handleMessage(uint32_t queueID)
         }
         logHciEvt("[evt] BT DMA received <-- [%ld]>%s<", bt->read_len, ss.str().c_str());
 #endif
-        bt->read_len = 0;
+        //        bt->read_len = 0;
 
-        if (bt->read_ready_cb) {
-            bt->read_ready_cb();
-        }
+        //        if (bt->read_ready_cb) {
+        //            bt->read_ready_cb();
+        //        }
     } break;
     case Bt::Message::EvtSendingError:
     case Bt::Message::EvtReceivingError:

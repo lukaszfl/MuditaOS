@@ -3,11 +3,9 @@
 
 #include <bsp/bluetooth/Bluetooth.hpp>
 #include <log/log.hpp>
+#include <module-bluetooth/Bluetooth/BluetoothWorker.hpp>
 
 using namespace bsp;
-
-extern "C"
-{
 
 #include "btstack_uart_block_rt1051.h"
 #include <hci_transport.h>
@@ -15,7 +13,68 @@ extern "C"
 #include <btstack_uart_block.h>
 #include <stddef.h> // for null
 #include <btstack_run_loop_freertos.h>
+static btstack_data_source_t test_datasource;
 
+#if DEBUG_BLUETOOTH_HCI_COMS >= 1
+#include <sstream>
+#define logHciEvt(...) LOG_DEBUG(__VA_ARGS__)
+#else
+#define logHciEvt(...)
+#endif
+
+static void btstack_uart_embedded_process(btstack_data_source_t *_ds, btstack_data_source_callback_type_t callback_type)
+{
+    switch (callback_type) {
+    case DATA_SOURCE_CALLBACK_POLL: {
+        auto bt = BlueKitchen::getInstance();
+
+        Bt::Message notification = Bt::Message::EvtErrorRec;
+        if (xQueueReceive(bt->qHandle, &notification, 0) != pdTRUE) {
+            LOG_ERROR("Queue receive failure!");
+            break;
+        }
+        switch (notification) {
+        case Bt::Message::EvtSending:
+            logHciEvt("[evt] sending");
+            break;
+        case Bt::Message::EvtSent:
+            logHciEvt("[evt] sent");
+            if (bt->write_done_cb) {
+                bt->write_done_cb();
+            }
+            break;
+        case Bt::Message::EvtReceiving:
+            logHciEvt("[evt] receiving");
+            break;
+        case Bt::Message::EvtReceived: {
+#if DEBUG_BLUETOOTH_HCI_COMS >= 3
+            std::stringstream ss;
+            for (int i = 0; i < bt->read_len; ++i) {
+                ss << " 0x" << std::hex << (int)*(bt->read_buff + i);
+            }
+            logHciEvt("[evt] BT DMA received <-- [%ld]>%s<", bt->read_len, ss.str().c_str());
+#endif
+            bt->read_len = 0;
+
+            if (bt->read_ready_cb) {
+                bt->read_ready_cb();
+            }
+        } break;
+        case Bt::Message::EvtSendingError:
+        case Bt::Message::EvtReceivingError:
+        case Bt::Message::EvtUartError:
+        case Bt::Message::EvtRecUnwanted:
+            LOG_ERROR("Uart error [%d]: %s", notification, Bt::MessageCstr(notification));
+            break;
+        default:
+            LOG_ERROR("ERROR");
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
     // #define DEBUG_UART
 
     // and it's hci_transport_config_uart_t which is a bit different...
@@ -30,13 +89,19 @@ extern "C"
     {
         LOG_INFO("BlueKitchen uart open");
         BlueKitchen::getInstance()->open();
+        btstack_run_loop_set_data_source_handler(&test_datasource, &btstack_uart_embedded_process);
+        btstack_run_loop_enable_data_source_callbacks(&test_datasource, DATA_SOURCE_CALLBACK_POLL);
+        btstack_run_loop_add_data_source(&test_datasource);
         return 0;
     }
 
     static int uart_rt1051_close()
     {
         LOG_INFO("BlueKitchen uart close");
+        btstack_run_loop_disable_data_source_callbacks(&test_datasource, DATA_SOURCE_CALLBACK_POLL);
+        btstack_run_loop_remove_data_source(&test_datasource);
         BlueKitchen::getInstance()->close();
+
         return 0;
     }
 
@@ -107,4 +172,3 @@ extern "C"
         LOG_INFO("btstack_uart_block_rt1051_instance");
         return &btstack_uart_posix;
     }
-};

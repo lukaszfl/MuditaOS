@@ -71,6 +71,7 @@ bool BlueKitchen::write(const uint8_t *buf, size_t size)
 
     if (BluetoothCommon::write(buf, size) == true) {
         val = Bt::Message::EvtSending;
+
         xQueueSend(qHandle, &val, portMAX_DELAY);
     }
     else {
