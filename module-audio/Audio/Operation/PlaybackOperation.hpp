@@ -49,8 +49,6 @@ namespace audio
 
         Source audioDecoderSource;
 
-        StreamQueuedEventsListener queueListener;
-
         std::unique_ptr<Decoder> dec;
         std::unique_ptr<Tags> tags;
 

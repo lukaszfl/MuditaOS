@@ -122,15 +122,11 @@ namespace audio
     }
 
     void Decoder::startDecodingWorker(Stream &audioStream,
-                                      StreamQueuedEventsListener &queueListener,
                                       DecoderWorker::EndOfFileCallback endOfFileCallback)
     {
         audioWorker = std::make_unique<DecoderWorker>(audioStream, this, endOfFileCallback);
-        audioStream.registerListener(queueListener);
 
-        std::list<sys::WorkerQueueInfo> list;
-        list.push_back({queueListener.getQueueInfo().second, 1, 1, queueListener.getQueueInfo().first});
-        audioWorker->init(list);
+        audioWorker->init();
         audioWorker->run();
     }
 } // namespace audio

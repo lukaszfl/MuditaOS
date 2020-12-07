@@ -81,7 +81,7 @@ namespace audio
             eventCallback({PlaybackEventType::EndOfFile, operationToken});
         };
 
-        dec->startDecodingWorker(audioOutStream, queueListener, endOfFileCallback);
+        dec->startDecodingWorker(audioOutStream, endOfFileCallback);
     }
 
     audio::RetCode PlaybackOperation::Start(audio::AsyncCallback callback, audio::Token token)

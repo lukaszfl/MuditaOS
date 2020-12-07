@@ -15,7 +15,7 @@ namespace audio
         using EndOfFileCallback = std::function<void()>;
 
         DecoderWorker(Stream &audioStreamOut, Decoder *decoder, EndOfFileCallback endOfFileCallback);
-        virtual auto init(std::list<sys::WorkerQueueInfo> queues) -> bool override;
+        virtual auto init(std::list<sys::WorkerQueueInfo> queues = std::list<sys::WorkerQueueInfo>()) -> bool override;
         virtual auto handleMessage(uint32_t queueID) -> bool override;
 
       private:
@@ -24,6 +24,7 @@ namespace audio
         Stream &audioStreamOut;
         Decoder *decoder;
         EndOfFileCallback endOfFileCallback;
+        StreamQueuedEventsListener queueListener;
 
         const int bufferSize;
         std::unique_ptr<BufferInternalType[]> decoderBuffer;

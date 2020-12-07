@@ -82,7 +82,6 @@ namespace audio
         virtual uint32_t decode(uint32_t samplesToRead, int16_t *pcmData) = 0;
 
         void startDecodingWorker(Stream &audioStream,
-                                 StreamQueuedEventsListener &queueListener,
                                  DecoderWorker::EndOfFileCallback endOfFileCallback);
 
         std::unique_ptr<Tags> fetchTags();

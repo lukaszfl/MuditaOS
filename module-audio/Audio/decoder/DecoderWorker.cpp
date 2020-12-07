@@ -11,15 +11,14 @@ audio::DecoderWorker::DecoderWorker(Stream &audioStreamOut, Decoder *decoder, En
 
 auto audio::DecoderWorker::init(std::list<sys::WorkerQueueInfo> queues) -> bool
 {
-    if (queues.size() != 0) {
-        sourceQueue = queues.begin()->handle;
-    }
-    else {
-        LOG_ERROR("Queue has not been assigned. Worker will not work.");
-    }
+    audioStreamOut.registerListener(queueListener);
+
+    std::list<sys::WorkerQueueInfo> list;
+    list.push_back({queueListener.getQueueInfo().second, 1, 1, queueListener.getQueueInfo().first});
+    sourceQueue = queues.begin()->handle;
 
     decoderBuffer = std::make_unique<BufferInternalType[]>(bufferSize);
-    return Worker::init(queues);
+    return Worker::init(list);
 }
 
 bool audio::DecoderWorker::handleMessage(uint32_t queueID)
