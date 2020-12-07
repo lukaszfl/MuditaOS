@@ -182,7 +182,7 @@ void Stream::broadcastEvent(Event event)
 
 void Stream::broadcastStateEvents()
 {
-    if (_blocksUsed == (_blockCount / 2)) {
+    if (_blocksUsed == (getUsedBlockCount() / 2)) {
         broadcastEvent(Event::StreamHalfUsed);
     }
 
