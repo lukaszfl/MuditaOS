@@ -64,6 +64,11 @@ bool Stream::pop(Span &span)
 {
     LockGuard lock();
 
+    /// sanity - do not store buffers different than internal block size
+    if (span.dataSize != _blockSize) {
+        return false;
+    }
+
     if (isEmpty()) {
         broadcastEvent(Event::StreamUnderFlow);
         return false;
@@ -74,7 +79,7 @@ bool Stream::pop(Span &span)
         return false;
     }
 
-    std::copy(span.data, span.dataEnd(), (*_dataStart).data);
+    std::copy((*_dataStart).data, (*_dataStart).dataEnd(), span.data);
 
     _dataStart++;
     _blocksUsed--;

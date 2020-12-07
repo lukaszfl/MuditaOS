@@ -1,5 +1,93 @@
 #include <gtest/gtest.h>
 
+#include <Audio/Stream.hpp>
+
+#include <cstdint>
+#include <cstring>
+
+constexpr std::size_t defaultBlockSize = 64U;
+constexpr std::size_t defaultBuffering = 4U;
+
+using namespace audio;
+
+static std::uint8_t testData[defaultBuffering][defaultBlockSize];
+
+#include <iostream>
+
+static void initTestData()
+{
+    auto fillbuf = [](std::uint8_t *b, std::size_t s, unsigned step) {
+        std::uint8_t v = 0;
+        for (unsigned int i = 0; i < s; ++i, v += step) {
+            b[i] = v; // & (UINT8_MAX - 1);
+        }
+    };
+
+    fillbuf(testData[0], defaultBlockSize, 1);
+    fillbuf(testData[1], defaultBlockSize, 3);
+    fillbuf(testData[2], defaultBlockSize, 7);
+    fillbuf(testData[3], defaultBlockSize, 13);
+}
+
+static void printBuf(std::uint8_t *buf, std::size_t s)
+{
+    for (unsigned int i = 0; i < s; i++) {
+        std::cout << static_cast<unsigned int>(buf[i]) << " ";
+    }
+
+    std::cout << std::endl;
+}
+
+[[maybe_unused]] static void printBuf(Stream::Span s)
+{
+    printBuf(s.data, s.dataSize);
+}
+
+TEST(Stream, Init)
+{
+    StandardStreamAllocator a;
+    constexpr auto bufferingSize = 2U;
+    Stream s(a, defaultBlockSize, bufferingSize);
+
+    EXPECT_EQ(s.getBlockCount(), bufferingSize);
+    EXPECT_EQ(s.getBlockSize(), defaultBlockSize);
+    EXPECT_EQ(s.getUsedBlockCount(), 0);
+}
+
+TEST(Stream, Push)
+{
+    StandardStreamAllocator a;
+    Stream s(a, defaultBlockSize);
+    auto block = testData[0];
+
+    EXPECT_TRUE(s.push(block, defaultBlockSize));
+    EXPECT_TRUE(s.push(block, defaultBlockSize));
+    EXPECT_TRUE(s.push(block, defaultBlockSize));
+    EXPECT_TRUE(s.push(block, defaultBlockSize));
+    EXPECT_EQ(s.getUsedBlockCount(), 4);
+    EXPECT_FALSE(s.push(block, defaultBlockSize));
+}
+
+TEST(Stream, PushPop)
+{
+    StandardStreamAllocator a;
+    Stream s(a, defaultBlockSize);
+
+    initTestData();
+
+    EXPECT_TRUE(s.push(testData[0], defaultBlockSize));
+    EXPECT_EQ(s.getUsedBlockCount(), 1);
+
+    {
+        std::uint8_t buf[defaultBlockSize];
+        Stream::Span popped = {.data = buf, .dataSize = defaultBlockSize};
+        EXPECT_TRUE(s.pop(popped));
+        ASSERT_EQ(popped.dataSize, defaultBlockSize);
+        ASSERT_EQ(popped.data, buf);
+        ASSERT_EQ(memcmp(popped.data, testData[0], defaultBlockSize), 0);
+    }
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
