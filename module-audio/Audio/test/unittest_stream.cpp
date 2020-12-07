@@ -112,6 +112,41 @@ TEST(Stream, PushPop)
             ASSERT_EQ(memcmp(popped.data, testData[i], defaultBlockSize), 0);
         }
     }
+
+    ASSERT_EQ(s.getUsedBlockCount(), 0);
+}
+
+TEST(Stream, Peek)
+{
+    StandardStreamAllocator a;
+    Stream s(a, defaultBlockSize);
+
+    initTestData();
+
+    {
+        Stream::Span span;
+
+        EXPECT_FALSE(s.peek(span));
+        ASSERT_EQ(memcmp(span.data, emptyBlock, span.dataSize), 0);
+    }
+
+    {
+        Stream::Span span;
+        Stream::Span popped;
+
+        EXPECT_TRUE(s.push(testData[0], defaultBlockSize));
+        EXPECT_TRUE(s.peek(span));
+        ASSERT_EQ(memcmp(span.data, testData[0], defaultBlockSize), 0);
+        EXPECT_EQ(s.getUsedBlockCount(), 1);
+        EXPECT_FALSE(s.pop(popped));
+        EXPECT_EQ(s.getUsedBlockCount(), 1);
+
+        s.unpeek();
+        EXPECT_TRUE(s.peek(span));
+        ASSERT_EQ(memcmp(span.data, testData[0], defaultBlockSize), 0);
+        s.consume();
+        EXPECT_EQ(s.getUsedBlockCount(), 0);
+    }
 }
 
 int main(int argc, char **argv)

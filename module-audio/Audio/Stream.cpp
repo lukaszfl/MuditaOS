@@ -215,7 +215,7 @@ bool Stream::isFull() const noexcept
 
 bool Stream::blocksAvailable() const noexcept
 {
-    return !isFull();
+    return !isEmpty();
 }
 
 Stream::UniqueStreamBuffer StandardStreamAllocator::allocate(std::size_t size)
