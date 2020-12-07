@@ -15,7 +15,7 @@ auto audio::DecoderWorker::init(std::list<sys::WorkerQueueInfo> queues) -> bool
 
     std::list<sys::WorkerQueueInfo> list;
     list.push_back({queueListener.getQueueInfo().second, 1, 1, queueListener.getQueueInfo().first});
-    sourceQueue = queues.begin()->handle;
+    sourceQueue = queueListener.getQueueInfo().first;
 
     decoderBuffer = std::make_unique<BufferInternalType[]>(bufferSize);
     return Worker::init(list);
@@ -25,13 +25,9 @@ bool audio::DecoderWorker::handleMessage(uint32_t queueID)
 {
     QueueHandle_t queue = queues[queueID];
     if (queue == sourceQueue) {
-        Stream::Event streamEvent;
-        if (xQueueReceive(queue, &streamEvent, 0) != pdTRUE) {
-            LOG_ERROR("Receive failure!");
-            return false;
-        }
+        auto event = queueListener.getEvent();
 
-        switch (streamEvent) {
+        switch (event.second) {
         case Stream::Event::StreamOverflow:
             LOG_DEBUG("StreamOverflow");
             break;
