@@ -126,6 +126,7 @@ namespace audio
                                       DecoderWorker::EndOfFileCallback endOfFileCallback)
     {
         audioWorker = std::make_unique<DecoderWorker>(audioStream, this, endOfFileCallback);
+        audioStream.registerListener(queueListener);
 
         std::list<sys::WorkerQueueInfo> list;
         list.push_back({queueListener.getQueueInfo().second, 1, 1, queueListener.getQueueInfo().first});
