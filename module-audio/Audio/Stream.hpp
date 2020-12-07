@@ -98,6 +98,7 @@ namespace audio
         std::size_t getBlockSize() const noexcept;
         std::size_t getBlockCount() const noexcept;
         std::size_t getUsedBlockCount() const noexcept;
+        std::size_t getPeekedCount() const noexcept;
         bool isEmpty() const noexcept;
         bool isFull() const noexcept;
         bool blocksAvailable() const noexcept;
@@ -115,6 +116,7 @@ namespace audio
         std::size_t _blockSize  = 0;
         std::size_t _blockCount = 0;
         std::size_t _blocksUsed = 0;
+        std::size_t _peekCount  = 0;
         UniqueStreamBuffer _buffer;
         UniqueStreamBuffer _emptyBuffer;
         std::list<std::reference_wrapper<EventListener>> listeners;

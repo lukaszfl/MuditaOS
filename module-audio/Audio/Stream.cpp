@@ -94,7 +94,7 @@ void Stream::consume()
 {
     LockGuard lock();
 
-    _blocksUsed -= std::distance(_dataStart, _peekPosition);
+    _blocksUsed -= _peekCount;
     _dataStart = _peekPosition;
 
     broadcastStateEvents();
@@ -104,8 +104,9 @@ bool Stream::peek(Span &span)
 {
     LockGuard lock();
 
-    if (blocksAvailable()) {
+    if (getPeekedCount() < getUsedBlockCount()) {
         span = *++_peekPosition;
+        _peekCount++;
         return true;
     }
 
@@ -119,6 +120,7 @@ void Stream::unpeek()
     LockGuard lock();
 
     _peekPosition = _dataStart;
+    _peekCount    = 0;
 }
 
 bool Stream::reserve(Span &span)
@@ -138,7 +140,7 @@ void Stream::commit()
 {
     LockGuard lock();
 
-    _blocksUsed += std::distance(_dataEnd, _writeReservationPosition);
+    _blocksUsed += _peekCount;
     _dataEnd = _writeReservationPosition;
 
     broadcastStateEvents();
@@ -199,6 +201,11 @@ std::size_t Stream::getUsedBlockCount() const noexcept
 {
     LockGuard lock();
     return _blocksUsed;
+}
+
+std::size_t Stream::getPeekedCount() const noexcept
+{
+    return _peekCount;
 }
 
 bool Stream::isEmpty() const noexcept

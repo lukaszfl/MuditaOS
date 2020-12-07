@@ -135,6 +135,8 @@ TEST(Stream, Peek)
         Stream::Span popped;
 
         EXPECT_TRUE(s.push(testData[0], defaultBlockSize));
+        ASSERT_EQ(s.getPeekedCount(), 0);
+        ASSERT_EQ(s.getUsedBlockCount(), 1);
         EXPECT_TRUE(s.peek(span));
         ASSERT_EQ(memcmp(span.data, testData[0], defaultBlockSize), 0);
         EXPECT_EQ(s.getUsedBlockCount(), 1);
@@ -147,6 +149,31 @@ TEST(Stream, Peek)
         s.consume();
         EXPECT_EQ(s.getUsedBlockCount(), 0);
     }
+}
+
+TEST(Stream, GreedyPeek)
+{
+    StandardStreamAllocator a;
+    Stream s(a, defaultBlockSize);
+    Stream::Span span;
+
+    initTestData();
+
+    for (unsigned int i = 0; i < s.getBlockCount(); ++i) {
+        ASSERT_TRUE(s.push(testData[i], defaultBlockSize));
+    }
+
+    ASSERT_EQ(s.getUsedBlockCount(), defaultBuffering);
+
+    for (unsigned int i = 0; i < s.getBlockCount(); ++i) {
+        EXPECT_EQ(s.getPeekedCount(), i);
+        EXPECT_TRUE(s.peek(span));
+        EXPECT_EQ(s.getPeekedCount(), i + 1);
+        ASSERT_EQ(span.dataSize, defaultBlockSize);
+        ASSERT_EQ(memcmp(span.data, testData[i], defaultBlockSize), 0);
+    }
+
+    ASSERT_FALSE(s.peek(span));
 }
 
 int main(int argc, char **argv)
