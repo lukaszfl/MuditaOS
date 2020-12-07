@@ -11,6 +11,7 @@ constexpr std::size_t defaultBuffering = 4U;
 using namespace audio;
 
 static std::uint8_t testData[defaultBuffering][defaultBlockSize];
+static std::uint8_t emptyBlock[defaultBlockSize];
 
 #include <iostream>
 
@@ -27,6 +28,7 @@ static void initTestData()
     fillbuf(testData[1], defaultBlockSize, 3);
     fillbuf(testData[2], defaultBlockSize, 7);
     fillbuf(testData[3], defaultBlockSize, 13);
+    fillbuf(emptyBlock, defaultBlockSize, 0);
 }
 
 static void printBuf(std::uint8_t *buf, std::size_t s)
@@ -85,6 +87,15 @@ TEST(Stream, PushPop)
         ASSERT_EQ(popped.dataSize, defaultBlockSize);
         ASSERT_EQ(popped.data, buf);
         ASSERT_EQ(memcmp(popped.data, testData[0], defaultBlockSize), 0);
+    }
+
+    {
+        std::uint8_t buf[defaultBlockSize];
+        Stream::Span popped = {.data = buf, .dataSize = defaultBlockSize};
+        EXPECT_FALSE(s.pop(popped));
+        ASSERT_EQ(popped.dataSize, defaultBlockSize);
+        ASSERT_NE(popped.data, buf);
+        ASSERT_EQ(memcmp(popped.data, emptyBlock, defaultBlockSize), 0);
     }
 }
 

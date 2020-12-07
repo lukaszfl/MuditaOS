@@ -69,13 +69,14 @@ bool Stream::pop(Span &span)
         return false;
     }
 
-    if (isEmpty()) {
-        broadcastEvent(Event::StreamUnderFlow);
+    /// peek in progress
+    if (_dataStart != _peekPosition) {
         return false;
     }
 
-    /// peek in progress
-    if (_dataStart != _peekPosition) {
+    if (isEmpty()) {
+        span = getNullSpan();
+        broadcastEvent(Event::StreamUnderFlow);
         return false;
     }
 
