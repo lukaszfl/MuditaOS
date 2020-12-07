@@ -176,6 +176,33 @@ TEST(Stream, GreedyPeek)
     ASSERT_FALSE(s.peek(span));
 }
 
+TEST(Stream, Reserve)
+{
+    StandardStreamAllocator a;
+    Stream s(a, defaultBlockSize);
+    Stream::Span span;
+
+    EXPECT_EQ(s.getReservedCount(), 0);
+    EXPECT_TRUE(s.reserve(span));
+    EXPECT_EQ(s.getReservedCount(), 1);
+    EXPECT_EQ(s.getUsedBlockCount(), 0);
+
+    s.release();
+    EXPECT_EQ(s.getReservedCount(), 0);
+    EXPECT_EQ(s.getUsedBlockCount(), 0);
+
+    for (unsigned int i = 0; i < s.getBlockCount(); ++i) {
+        EXPECT_EQ(s.getReservedCount(), i);
+        EXPECT_TRUE(s.reserve(span));
+        EXPECT_EQ(s.getReservedCount(), i + 1);
+    }
+
+    EXPECT_FALSE(s.reserve(span));
+
+    s.commit();
+    EXPECT_EQ(s.getUsedBlockCount(), s.getBlockCount());
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
