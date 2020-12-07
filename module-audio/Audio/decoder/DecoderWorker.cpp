@@ -18,6 +18,7 @@ auto audio::DecoderWorker::init(std::list<sys::WorkerQueueInfo> queues) -> bool
     sourceQueue = queueListener.getQueueInfo().first;
 
     decoderBuffer = std::make_unique<BufferInternalType[]>(bufferSize);
+    LOG_DEBUG("Allocating %d bytes sized buffer", bufferSize * sizeof(BufferInternalType));
     return Worker::init(list);
 }
 
@@ -42,7 +43,6 @@ bool audio::DecoderWorker::handleMessage(uint32_t queueID)
             return true;
         case Stream::Event::StreamHalfUsed:
         case Stream::Event::StreamEmpty:
-            LOG_DEBUG("StreamEmpty");
             auto samplesRead = 0;
 
             while (!audioStreamOut.isFull()) {
@@ -52,7 +52,11 @@ bool audio::DecoderWorker::handleMessage(uint32_t queueID)
                     endOfFileCallback();
                     break;
                 }
-
+                LOG_DEBUG("Buf: %x %x %x %x",
+                          (decoderBuffer.get()[0]) & 0xff,
+                          (decoderBuffer.get()[0] >> 8) & 0xff,
+                          (decoderBuffer.get()[1]) & 0xff,
+                          (decoderBuffer.get()[1] >> 8) & 0xff);
                 if (!audioStreamOut.push(decoderBuffer.get(), samplesRead * sizeof(BufferInternalType))) {
                     LOG_FATAL("Decoder failed to push to stream.");
                     break;

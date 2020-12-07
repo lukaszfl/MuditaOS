@@ -43,7 +43,7 @@ namespace audio
 
       private:
         // for efficiency multiple of 24 and 32 (max audio samples size)
-        static constexpr auto defaultAudioStreamBlockSize = 960;
+        static constexpr auto defaultAudioStreamBlockSize = 2048;
         StandardStreamAllocator allocator;
         Stream audioOutStream{allocator, defaultAudioStreamBlockSize};
 

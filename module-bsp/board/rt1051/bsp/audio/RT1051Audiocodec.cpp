@@ -469,6 +469,12 @@ namespace bsp
         sink->getStream()->consume();
         sink->getStream()->peek(dataSpan);
 
+        LOG_DEBUG("Received: %x %x %x %x",
+                  dataSpan.data[0] & 0xff,
+                  dataSpan.data[1] & 0xff,
+                  dataSpan.data[2] & 0xff,
+                  dataSpan.data[3] & 0xff);
+
         sai_transfer_t xfer{.data = dataSpan.data, .dataSize = dataSpan.dataSize};
         SAI_TransferSendEDMA(BOARD_AUDIOCODEC_SAIx, &self->txHandle, &xfer);
     }

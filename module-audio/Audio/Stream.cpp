@@ -43,7 +43,7 @@ bool Stream::push(const Span &span)
     }
 
     auto nextDataBlock = *_dataEnd;
-    std::copy(nextDataBlock.data, nextDataBlock.dataEnd(), span.data);
+    std::copy(span.data, span.dataEnd(), nextDataBlock.data);
 
     _dataEnd++;
     _blocksUsed++;
