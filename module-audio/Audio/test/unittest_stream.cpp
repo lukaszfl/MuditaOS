@@ -97,6 +97,21 @@ TEST(Stream, PushPop)
         ASSERT_NE(popped.data, buf);
         ASSERT_EQ(memcmp(popped.data, emptyBlock, defaultBlockSize), 0);
     }
+
+    {
+        for (unsigned int i = 0; i < s.getBlockCount(); ++i) {
+            ASSERT_TRUE(s.push(testData[i], defaultBlockSize));
+        }
+
+        for (unsigned int i = 0; i < s.getBlockCount(); ++i) {
+            std::uint8_t buf[defaultBlockSize];
+            Stream::Span popped = {.data = buf, .dataSize = defaultBlockSize};
+            EXPECT_TRUE(s.pop(popped));
+            ASSERT_EQ(popped.dataSize, defaultBlockSize);
+            ASSERT_EQ(popped.data, buf);
+            ASSERT_EQ(memcmp(popped.data, testData[i], defaultBlockSize), 0);
+        }
+    }
 }
 
 int main(int argc, char **argv)
