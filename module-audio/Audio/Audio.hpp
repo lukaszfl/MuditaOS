@@ -118,6 +118,11 @@ namespace audio
 
         AsyncCallback asyncCallback;
         DbCallback dbCallback;
+
+        // for efficiency multiple of 24 and 32 (max audio samples size)
+        static constexpr auto defaultAudioStreamBlockSize = 2048;
+        StandardStreamAllocator allocator;
+        Stream dataStream{allocator, defaultAudioStreamBlockSize};
     };
 
 } // namespace audio

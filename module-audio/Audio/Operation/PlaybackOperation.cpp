@@ -80,8 +80,6 @@ namespace audio
             state = State::Idle;
             eventCallback({PlaybackEventType::EndOfFile, operationToken});
         };
-
-        dec->startDecodingWorker(audioOutStream, endOfFileCallback);
     }
 
     audio::RetCode PlaybackOperation::Start(audio::AsyncCallback callback, audio::Token token)
@@ -90,6 +88,8 @@ namespace audio
             return RetCode::InvokedInIncorrectState;
         }
         operationToken = token;
+
+        dec->startDecodingWorker(*dataStream, endOfFileCallback);
 
         if (!tags) {
             tags = dec->fetchTags();
@@ -206,7 +206,7 @@ namespace audio
             return RetCode::Failed;
         }
 
-        dec->connect(*static_cast<bsp::RT1051Audiocodec *>(audioDevice.get()), audioOutStream);
+        dec->connect(*static_cast<bsp::RT1051Audiocodec *>(audioDevice.get()), *dataStream);
 
         currentProfile->SetSampleRate(currentSampleRate);
         currentProfile->SetInOutFlags(currentInOutFlags);

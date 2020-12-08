@@ -91,6 +91,8 @@ namespace audio
                 break;
             }
             currentOperation = std::move(ret);
+            currentOperation->SetDataStream(&dataStream);
+
             UpdateProfiles();
 
             if (btData) {

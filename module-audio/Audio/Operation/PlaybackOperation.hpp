@@ -42,13 +42,6 @@ namespace audio
         Position GetPosition() final;
 
       private:
-        // for efficiency multiple of 24 and 32 (max audio samples size)
-        static constexpr auto defaultAudioStreamBlockSize = 2048;
-        StandardStreamAllocator allocator;
-        Stream audioOutStream{allocator, defaultAudioStreamBlockSize};
-
-        Source audioDecoderSource;
-
         std::unique_ptr<Decoder> dec;
         std::unique_ptr<Tags> tags;
 
