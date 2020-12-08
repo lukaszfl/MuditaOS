@@ -106,7 +106,7 @@ bool Stream::peek(Span &span)
     LockGuard lock();
 
     if (getPeekedCount() < getUsedBlockCount()) {
-        span = *++_peekPosition;
+        span = *_peekPosition++;
         _peekCount++;
         return true;
     }
