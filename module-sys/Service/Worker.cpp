@@ -22,6 +22,7 @@ namespace sys
     void Worker::taskAdapter(void *taskParam)
     {
         Worker *worker = static_cast<Worker *>(taskParam);
+        worker->setState(State::Running);
         worker->task();
     }
 
@@ -51,6 +52,7 @@ namespace sys
     void Worker::task()
     {
         QueueSetMemberHandle_t activeMember;
+        assert(getState() == State::Running);
 
         while (getState() == State::Running) {
             activeMember = xQueueSelectFromSet(queueSet, portMAX_DELAY);
@@ -111,11 +113,11 @@ namespace sys
 
         if (service) {
             name = service->GetName();
+            name.append("_w" + std::to_string(id));
         }
         else {
-            name = namePrefix;
+            name = "namePrefix";
         }
-        name.append("_w" + std::to_string(id));
 
         // initial value is because there is always a service and control queue
         // to communicate with the parent service
@@ -229,7 +231,7 @@ namespace sys
                 Worker::taskAdapter, name.c_str(), defaultStackSize, this, service->GetPriority(), &taskHandle);
         }
         else {
-            task_error = xTaskCreate(Worker::taskAdapter, name.c_str(), defaultStackSize, this, 0, &taskHandle);
+            task_error = xTaskCreate(Worker::taskAdapter, name.c_str(), defaultStackSize, this, 4, &taskHandle);
         }
 
         if (task_error != pdPASS) {
@@ -237,7 +239,6 @@ namespace sys
             return false;
         }
 
-        setState(State::Running);
         return true;
     }
 

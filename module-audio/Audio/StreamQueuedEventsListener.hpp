@@ -25,7 +25,7 @@ namespace audio
     class StreamQueuedEventsListener : public Stream::EventListener
     {
       private:
-        static constexpr std::size_t defaultEventsQueueCapacity = 16U;
+        static constexpr std::size_t defaultEventsQueueCapacity = 1024U;
         struct EventStorage
         {
             Stream *stream;

@@ -14,7 +14,8 @@ auto audio::DecoderWorker::init(std::list<sys::WorkerQueueInfo> queues) -> bool
     audioStreamOut.registerListener(queueListener);
 
     std::list<sys::WorkerQueueInfo> list;
-    list.push_back({queueListener.getQueueInfo().second, 1, 1, queueListener.getQueueInfo().first});
+    // TODO properly pass length and element size of the queue
+    list.push_back({queueListener.getQueueInfo().second, 8, 1024, queueListener.getQueueInfo().first});
     sourceQueue = queueListener.getQueueInfo().first;
 
     decoderBuffer = std::make_unique<BufferInternalType[]>(bufferSize);
@@ -30,19 +31,22 @@ bool audio::DecoderWorker::handleMessage(uint32_t queueID)
 
         switch (event.second) {
         case Stream::Event::StreamOverflow:
-            LOG_DEBUG("StreamOverflow");
+            // LOG_DEBUG("StreamOverflow");
             break;
         case Stream::Event::StreamUnderFlow:
-            LOG_DEBUG("NO event");
+            // LOG_DEBUG("NO event");
             break;
         case Stream::Event::NoEvent:
-            LOG_DEBUG("StreamUnderFlow");
+            // LOG_DEBUG("StreamUnderFlow");
             return true;
         case Stream::Event::StreamFull:
-            LOG_DEBUG("StreamFull");
+            // LOG_DEBUG("StreamFull");
             return true;
         case Stream::Event::StreamHalfUsed:
+            // LOG_DEBUG("Half");
+            [[fallthrough]];
         case Stream::Event::StreamEmpty:
+            // LOG_DEBUG("Stream");
             auto samplesRead = 0;
 
             while (!audioStreamOut.isFull()) {
@@ -52,11 +56,11 @@ bool audio::DecoderWorker::handleMessage(uint32_t queueID)
                     endOfFileCallback();
                     break;
                 }
-                LOG_DEBUG("Buf: %x %x %x %x",
+                /*LOG_DEBUG("Buf: %x %x %x %x",
                           (decoderBuffer.get()[0]) & 0xff,
                           (decoderBuffer.get()[0] >> 8) & 0xff,
                           (decoderBuffer.get()[1]) & 0xff,
-                          (decoderBuffer.get()[1] >> 8) & 0xff);
+                          (decoderBuffer.get()[1] >> 8) & 0xff);*/
                 if (!audioStreamOut.push(decoderBuffer.get(), samplesRead * sizeof(BufferInternalType))) {
                     LOG_FATAL("Decoder failed to push to stream.");
                     break;
