@@ -459,7 +459,7 @@ namespace bsp
         audio::Stream::Span dataSpan;
         auto self = static_cast<RT1051Audiocodec *>(userData);
         auto sink = static_cast<audio::Sink *>(self);
-
+        LOG_DEBUG("receive");
         /// must not happen
         if (!sink->isConnected()) {
             return;

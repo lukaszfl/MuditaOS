@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <queue.hpp>
 
 namespace sys
 {
@@ -19,7 +20,17 @@ namespace sys
         std::string name;
         int elementSize;
         int length;
-        QueueHandle_t handle = nullptr;
+    };
+
+    class WorkerQueue : public cpp_freertos::Queue
+    {
+      public:
+        using Queue::Queue;
+
+        QueueHandle_t GetQueueHandle()
+        {
+            return handle;
+        }
     };
 
     struct WorkerCommand
@@ -77,7 +88,8 @@ namespace sys
         static constexpr TickType_t defaultJoinTimeout    = portMAX_DELAY;
         static constexpr auto controlQueueNamePrefix      = "wctrl";
 
-        xQueueHandle controlQueue      = nullptr;
+        std::unique_ptr<WorkerQueue> controlQueue = nullptr;
+
         xSemaphoreHandle joinSemaphore = nullptr;
         xTaskHandle runnerTask         = nullptr;
         xSemaphoreHandle stateMutex    = nullptr;
@@ -100,16 +112,17 @@ namespace sys
         const std::string SERVICE_QUEUE_NAME       = "ServiceQueue";
 
         static unsigned int count;
+        const UBaseType_t priority;
 
-        sys::Service *service     = nullptr;
-        xQueueHandle serviceQueue = nullptr;
+        std::unique_ptr<WorkerQueue> serviceQueue = nullptr;
         QueueSetHandle_t queueSet = nullptr;
         std::vector<xQueueHandle> queues;
-        std::map<xQueueHandle, std::string> queueNameMap;
+        std::map<std::unique_ptr<WorkerQueue>, std::string> queueNameMap;
 
       public:
         Worker(sys::Service *service);
-        Worker(const char *namePrefix);
+        Worker(const std::string &workerNamePrefix, const UBaseType_t priority);
+
         virtual ~Worker();
 
         /**
@@ -152,5 +165,4 @@ namespace sys
 
         void addQueueInfo(xQueueHandle queue, std::string queueName);
     };
-
 } /* namespace sys */

@@ -29,8 +29,7 @@ namespace sys
     bool Worker::handleControlMessage()
     {
         std::uint8_t receivedMessage;
-
-        xQueueReceive(controlQueue, &receivedMessage, 0);
+        controlQueue->Dequeue(&receivedMessage, 0);
         LOG_INFO("Handle control message: %u", receivedMessage);
         assert(receivedMessage < controlMessagesCount);
 
@@ -58,7 +57,7 @@ namespace sys
             activeMember = xQueueSelectFromSet(queueSet, portMAX_DELAY);
 
             // handle control messages from parent service
-            if (activeMember == controlQueue) {
+            if (activeMember == controlQueue->GetQueueHandle()) {
                 handleControlMessage();
                 continue;
             }
@@ -77,10 +76,11 @@ namespace sys
         vTaskDelete(nullptr);
     }
 
-    Worker::Worker(sys::Service *service) : service{service}
+    Worker::Worker(sys::Service *service) : name(service->GetName()), priority(service->GetPriority())
     {}
 
-    Worker::Worker(const char *namePrefix) : namePrefix(namePrefix)
+    Worker::Worker(const std::string &workerNamePrefix, UBaseType_t priority)
+        : name(workerNamePrefix), priority(priority)
     {}
 
     Worker::~Worker()
@@ -111,13 +111,7 @@ namespace sys
         id = count++;
         taskEXIT_CRITICAL();
 
-        if (service) {
-            name = service->GetName();
-            name.append("_w" + std::to_string(id));
-        }
-        else {
-            name = "namePrefix";
-        }
+        name.append("_w" + std::to_string(id));
 
         // initial value is because there is always a service and control queue
         // to communicate with the parent service
@@ -136,28 +130,27 @@ namespace sys
         }
 
         // create and add all queues to the set. First service queue is created.
-        serviceQueue = xQueueCreate(SERVICE_QUEUE_LENGTH, SERVICE_QUEUE_SIZE);
+        serviceQueue = std::make_unique<WorkerQueue>(SERVICE_QUEUE_LENGTH, SERVICE_QUEUE_SIZE);
         if (serviceQueue == nullptr) {
             state = State::Invalid;
             deinit();
             return false;
         }
 
-        addQueueInfo(serviceQueue, SERVICE_QUEUE_NAME);
+        addQueueInfo(serviceQueue->GetQueueHandle(), SERVICE_QUEUE_NAME);
 
         // create control queue
-        controlQueue = xQueueCreate(CONTROL_QUEUE_LENGTH, sizeof(std::uint8_t));
+        controlQueue = std::make_unique<WorkerQueue>(CONTROL_QUEUE_LENGTH, sizeof(std::uint8_t));
         if (controlQueue == nullptr) {
             state = State::Invalid;
             deinit();
             return false;
         }
 
-        addQueueInfo(controlQueue, getControlQueueName());
+        addQueueInfo(controlQueue->GetQueueHandle(), getControlQueueName());
 
         // create and add all queues provided from service
         for (auto wqi : queuesList) {
-            if (wqi.handle == nullptr) {
                 auto q = xQueueCreate(wqi.length, wqi.elementSize);
                 if (q == nullptr) {
                     LOG_FATAL("xQueueCreate %s failed", wqi.name.c_str());
@@ -166,10 +159,6 @@ namespace sys
                     return false;
                 }
                 addQueueInfo(q, wqi.name);
-            }
-            else {
-                addQueueInfo(wqi.handle, wqi.name);
-            }
         };
 
         // iterate over all queues and add them to set
@@ -226,13 +215,7 @@ namespace sys
         runnerTask = xTaskGetCurrentTaskHandle();
 
         BaseType_t task_error = 0;
-        if (service) {
-            task_error = xTaskCreate(
-                Worker::taskAdapter, name.c_str(), defaultStackSize, this, service->GetPriority(), &taskHandle);
-        }
-        else {
-            task_error = xTaskCreate(Worker::taskAdapter, name.c_str(), defaultStackSize, this, 4, &taskHandle);
-        }
+        task_error = xTaskCreate(Worker::taskAdapter, name.c_str(), defaultStackSize, this, priority, &taskHandle);
 
         if (task_error != pdPASS) {
             LOG_ERROR("Failed to start the task");
@@ -253,7 +236,7 @@ namespace sys
     bool Worker::sendControlMessage(ControlMessage message)
     {
         auto messageToSend = static_cast<std::uint8_t>(message);
-        return xQueueSend(controlQueue, &messageToSend, portMAX_DELAY) == pdTRUE;
+        return controlQueue->Enqueue(&messageToSend, portMAX_DELAY);
     }
 
     bool Worker::send(uint32_t cmd, uint32_t *data)
@@ -263,7 +246,7 @@ namespace sys
 
         if (serviceQueue != nullptr) {
             WorkerCommand workerCommand{cmd, data};
-            if (xQueueSend(serviceQueue, &workerCommand, portMAX_DELAY) == pdTRUE) {
+            if (serviceQueue->Enqueue(&workerCommand, portMAX_DELAY)) {
                 return true;
             }
         }

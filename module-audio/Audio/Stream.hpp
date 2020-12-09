@@ -106,6 +106,13 @@ namespace audio
 
         void registerListener(EventListener &listener);
 
+        void cleanListeners()
+        {
+            LockGuard lock();
+
+            listeners.clear();
+        }
+
       private:
         using LockGuard = cpp_freertos::CriticalSectionGuard;
 

@@ -12,20 +12,9 @@ namespace audio
 {
     using namespace cpp_freertos;
 
-    class EventsListenerQueue : public Queue
-    {
-      public:
-        using Queue::Queue;
-        QueueHandle_t GetQueueHandle()
-        {
-            return handle;
-        }
-    };
-
     class StreamQueuedEventsListener : public Stream::EventListener
     {
       private:
-        static constexpr std::size_t defaultEventsQueueCapacity = 1024U;
         struct EventStorage
         {
             Stream *stream;
@@ -35,19 +24,17 @@ namespace audio
       public:
         using queueInfo   = std::pair<QueueHandle_t, std::string>;
         using queuedEvent = std::pair<Stream *, Stream::Event>;
+        static constexpr auto listenerElementSize = sizeof(EventStorage);
 
-        StreamQueuedEventsListener(std::size_t eventsQueueCapacity = defaultEventsQueueCapacity);
+        StreamQueuedEventsListener(Queue &eventsQueue);
 
         void onEvent(Stream *stream, Stream::Event event, Stream::EventSourceMode source);
 
         queuedEvent waitForEvent();
-        std::size_t getEventsCount() const;
         queuedEvent getEvent();
-        queueInfo getQueueInfo() const;
 
       private:
-        std::unique_ptr<EventsListenerQueue> queue;
-        QueueHandle_t eventsQueue;
+        Queue &queue;
     };
 
 }; // namespace audio

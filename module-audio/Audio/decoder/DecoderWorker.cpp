@@ -5,22 +5,23 @@
 #include "Audio/decoder/Decoder.hpp"
 
 audio::DecoderWorker::DecoderWorker(Stream &audioStreamOut, Decoder *decoder, EndOfFileCallback endOfFileCallback)
-    : sys::Worker("DecoderWorker"), audioStreamOut(audioStreamOut), decoder(decoder),
-      endOfFileCallback(endOfFileCallback), bufferSize(audioStreamOut.getBlockSize() / sizeof(BufferInternalType))
+    : sys::Worker(DecoderWorker::workerName, DecoderWorker::workerPriority), audioStreamOut(audioStreamOut),
+      decoder(decoder), endOfFileCallback(endOfFileCallback),
+      bufferSize(audioStreamOut.getBlockSize() / sizeof(BufferInternalType))
 {}
 
 auto audio::DecoderWorker::init(std::list<sys::WorkerQueueInfo> queues) -> bool
 {
-    audioStreamOut.registerListener(queueListener);
+    std::list<sys::WorkerQueueInfo> list{
+        {listenerQueueName, StreamQueuedEventsListener::listenerElementSize, listenerQueueCapacity}};
+    Worker::init(list);
+    queueListener.emplace(StreamQueuedEventsListener(getQueueByName(listenerQueueName)));
 
-    std::list<sys::WorkerQueueInfo> list;
-    // TODO properly pass length and element size of the queue
-    list.push_back({queueListener.getQueueInfo().second, 8, 1024, queueListener.getQueueInfo().first});
-    sourceQueue = queueListener.getQueueInfo().first;
+    audioStreamOut.registerListener(queueListener);
 
     decoderBuffer = std::make_unique<BufferInternalType[]>(bufferSize);
     LOG_DEBUG("Allocating %d bytes sized buffer", bufferSize * sizeof(BufferInternalType));
-    return Worker::init(list);
+    return
 }
 
 bool audio::DecoderWorker::handleMessage(uint32_t queueID)
@@ -53,6 +54,7 @@ bool audio::DecoderWorker::handleMessage(uint32_t queueID)
                 samplesRead = decoder->decode(bufferSize, decoderBuffer.get());
 
                 if (samplesRead == 0) {
+                    audioStreamOut.cleanListeners();
                     endOfFileCallback();
                     break;
                 }

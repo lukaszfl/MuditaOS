@@ -110,8 +110,9 @@ namespace audio
 
         currentProfile->SetSampleRate(tags->sample_rate);
 
-        auto ret = audioDevice->Start(currentProfile->GetAudioFormat());
-        return GetDeviceError(ret);
+        // auto ret = audioDevice->Start(currentProfile->GetAudioFormat());
+        // return GetDeviceError(ret);
+        return audio::RetCode::Success;
     }
 
     audio::RetCode PlaybackOperation::Stop()

@@ -73,6 +73,7 @@ class BluetoothWorker : private sys::Worker
     };
 
     TaskHandle_t bt_worker_task = nullptr;
+    sys::Service *service       = nullptr;
     int is_running              = false;
 
   public:
