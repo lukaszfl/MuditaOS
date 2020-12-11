@@ -26,15 +26,17 @@ namespace audio
         using queuedEvent = std::pair<Stream *, Stream::Event>;
         static constexpr auto listenerElementSize = sizeof(EventStorage);
 
-        StreamQueuedEventsListener(Queue &eventsQueue);
+        StreamQueuedEventsListener(std::shared_ptr<Queue> eventsQueue);
 
         void onEvent(Stream *stream, Stream::Event event, Stream::EventSourceMode source);
 
         queuedEvent waitForEvent();
         queuedEvent getEvent();
 
+        std::size_t getEventsCount() const;
+
       private:
-        Queue &queue;
+        std::shared_ptr<Queue> queue;
     };
 
 }; // namespace audio

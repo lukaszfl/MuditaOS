@@ -14,40 +14,43 @@ auto audio::DecoderWorker::init(std::list<sys::WorkerQueueInfo> queues) -> bool
 {
     std::list<sys::WorkerQueueInfo> list{
         {listenerQueueName, StreamQueuedEventsListener::listenerElementSize, listenerQueueCapacity}};
-    Worker::init(list);
-    queueListener.emplace(StreamQueuedEventsListener(getQueueByName(listenerQueueName)));
+
+    auto isSuccessful = Worker::init(list);
+
+    queueListener = std::make_shared<StreamQueuedEventsListener>(getQueueByName(listenerQueueName));
+    if (!queueListener) {
+        return false;
+    }
 
     audioStreamOut.registerListener(queueListener);
 
     decoderBuffer = std::make_unique<BufferInternalType[]>(bufferSize);
+    if (!decoderBuffer) {
+        return false;
+    }
     LOG_DEBUG("Allocating %d bytes sized buffer", bufferSize * sizeof(BufferInternalType));
-    return
+
+    return isSuccessful;
 }
 
 bool audio::DecoderWorker::handleMessage(uint32_t queueID)
 {
-    QueueHandle_t queue = queues[queueID];
-    if (queue == sourceQueue) {
-        auto event = queueListener.getEvent();
+    auto queue = queues[queueID];
+    if (queue->GetQueueName() == listenerQueueName && queueListener) {
+        auto event = queueListener->getEvent();
 
         switch (event.second) {
         case Stream::Event::StreamOverflow:
-            // LOG_DEBUG("StreamOverflow");
             break;
         case Stream::Event::StreamUnderFlow:
-            // LOG_DEBUG("NO event");
             break;
         case Stream::Event::NoEvent:
-            // LOG_DEBUG("StreamUnderFlow");
             return true;
         case Stream::Event::StreamFull:
-            // LOG_DEBUG("StreamFull");
             return true;
         case Stream::Event::StreamHalfUsed:
-            // LOG_DEBUG("Half");
             [[fallthrough]];
         case Stream::Event::StreamEmpty:
-            // LOG_DEBUG("Stream");
             auto samplesRead = 0;
 
             while (!audioStreamOut.isFull()) {

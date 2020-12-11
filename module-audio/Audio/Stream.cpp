@@ -164,11 +164,11 @@ std::size_t Stream::getBlockSize() const noexcept
     return _blockSize;
 }
 
-void Stream::registerListener(EventListener &listener)
+void Stream::registerListener(std::shared_ptr<EventListener> listener)
 {
     LockGuard lock();
 
-    listeners.push_back(std::ref(listener));
+    listeners.push_back(listener);
 }
 
 void Stream::broadcastEvent(Event event)
@@ -176,7 +176,9 @@ void Stream::broadcastEvent(Event event)
     auto eventMode = isIRQ() ? EventSourceMode::ISR : EventSourceMode::Thread;
 
     for (auto listener : listeners) {
-        listener.get().onEvent(this, event, eventMode);
+        if (listener) {
+            listener->onEvent(this, event, eventMode);
+        }
     }
 }
 

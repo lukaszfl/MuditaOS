@@ -54,7 +54,7 @@ bool BluetoothWorker::run()
     if (Worker::run()) {
         is_running                          = true;
         auto el                             = queues[queueIO_handle];
-        BlueKitchen::getInstance()->qHandle = el;
+        BlueKitchen::getInstance()->qHandle = el->GetQueueHandle();
         Bt::initialize_stack();
         Bt::register_hw_error_callback();
         Bt::GAP::register_scan();
@@ -115,8 +115,7 @@ bool BluetoothWorker::start_pan()
 
 bool BluetoothWorker::handleMessage(uint32_t queueID)
 {
-
-    QueueHandle_t queue = queues[queueID];
+    auto queue = queues[queueID];
     if (queueID == queueService) {
         LOG_DEBUG("not interested");
         return true;
@@ -127,7 +126,7 @@ bool BluetoothWorker::handleMessage(uint32_t queueID)
     }
 
     Bt::Message notification = Bt::Message::EvtErrorRec;
-    if (xQueueReceive(queue, &notification, 0) != pdTRUE) {
+    if (!queue->Dequeue(&notification, 0)) {
         LOG_ERROR("Receive failure!");
         return false;
     }

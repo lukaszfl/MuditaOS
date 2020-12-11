@@ -2,7 +2,7 @@
 
 using namespace audio;
 
-StreamQueuedEventsListener::StreamQueuedEventsListener(Queue &eventsQueue) : queue(eventsQueue)
+StreamQueuedEventsListener::StreamQueuedEventsListener(std::shared_ptr<Queue> eventsQueue) : queue(eventsQueue)
 {
 }
 
@@ -12,12 +12,12 @@ void StreamQueuedEventsListener::onEvent(Stream *stream, Stream::Event event, St
     EventStorage newStorage = {stream, event};
 
     if (source == Stream::EventSourceMode::ISR) {
-        queue.EnqueueFromISR(&newStorage, &xHigherPriorityTaskWoken);
+        queue->EnqueueFromISR(&newStorage, &xHigherPriorityTaskWoken);
         if (xHigherPriorityTaskWoken) {
             taskYIELD();
         }
     }
-    else if (!queue.Enqueue(&newStorage)) {
+    else if (!queue->Enqueue(&newStorage)) {
         LOG_ERROR("Queue full.");
     }
 }
@@ -25,7 +25,7 @@ void StreamQueuedEventsListener::onEvent(Stream *stream, Stream::Event event, St
 StreamQueuedEventsListener::queuedEvent StreamQueuedEventsListener::waitForEvent()
 {
     EventStorage queueStorage;
-    if (queue.Dequeue(&queueStorage)) {
+    if (queue->Dequeue(&queueStorage)) {
         return std::make_pair(queueStorage.stream, queueStorage.event);
     }
     return std::make_pair(nullptr, Stream::Event::NoEvent);
@@ -33,14 +33,14 @@ StreamQueuedEventsListener::queuedEvent StreamQueuedEventsListener::waitForEvent
 
 std::size_t StreamQueuedEventsListener::getEventsCount() const
 {
-    return queue.NumItems();
+    return queue->NumItems();
 }
 
 StreamQueuedEventsListener::queuedEvent StreamQueuedEventsListener::getEvent()
 {
     EventStorage queueStorage;
 
-    if (queue.Dequeue(&queueStorage, 0)) {
+    if (queue->Dequeue(&queueStorage, 0)) {
         return std::make_pair(queueStorage.stream, queueStorage.event);
     }
 

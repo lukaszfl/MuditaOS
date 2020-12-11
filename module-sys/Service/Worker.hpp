@@ -25,12 +25,21 @@ namespace sys
     class WorkerQueue : public cpp_freertos::Queue
     {
       public:
-        using Queue::Queue;
+        WorkerQueue(std::string &name, UBaseType_t maxItems, UBaseType_t itemSize)
+            : Queue(maxItems, itemSize), name(name){};
 
-        QueueHandle_t GetQueueHandle()
+        QueueHandle_t GetQueueHandle() const
         {
             return handle;
         }
+
+        const std::string &GetQueueName() const
+        {
+            return name;
+        }
+
+      private:
+        const std::string name;
     };
 
     struct WorkerCommand
@@ -82,13 +91,17 @@ namespace sys
         void task();
         void setState(State newState);
         std::string getControlQueueName() const;
+        size_t addQueue(std::string queueName, UBaseType_t maxItems, UBaseType_t itemSize);
+
+        std::optional<size_t> controlQueueIndex;
+        std::optional<size_t> serviceQueueIndex;
+        WorkerQueue &getControlQueue();
+        WorkerQueue &getServiceQueue();
 
         static constexpr std::size_t controlMessagesCount = static_cast<std::size_t>(ControlMessage::MessageCount);
         static constexpr std::size_t defaultStackSize     = 2048;
         static constexpr TickType_t defaultJoinTimeout    = portMAX_DELAY;
         static constexpr auto controlQueueNamePrefix      = "wctrl";
-
-        std::unique_ptr<WorkerQueue> controlQueue = nullptr;
 
         xSemaphoreHandle joinSemaphore = nullptr;
         xTaskHandle runnerTask         = nullptr;
@@ -102,7 +115,10 @@ namespace sys
 
       protected:
         virtual bool handleMessage(uint32_t queueID) = 0;
-        xQueueHandle getQueueByName(std::string queueName);
+
+        xQueueHandle getQueueHandleByName(const std::string qname) const;
+        std::shared_ptr<WorkerQueue> getQueueByName(const std::string qname) const;
+
         bool sendControlMessage(ControlMessage message);
         State getState() const;
 
@@ -114,14 +130,12 @@ namespace sys
         static unsigned int count;
         const UBaseType_t priority;
 
-        std::unique_ptr<WorkerQueue> serviceQueue = nullptr;
         QueueSetHandle_t queueSet = nullptr;
-        std::vector<xQueueHandle> queues;
-        std::map<std::unique_ptr<WorkerQueue>, std::string> queueNameMap;
+        std::vector<std::shared_ptr<WorkerQueue>> queues;
 
       public:
         Worker(sys::Service *service);
-        Worker(const std::string &workerNamePrefix, const UBaseType_t priority);
+        Worker(std::string workerNamePrefix, const UBaseType_t priority);
 
         virtual ~Worker();
 
@@ -129,7 +143,7 @@ namespace sys
          * @brief This function is responsible for creating all queues provided in the constructor.
          * When all queues are created this method creates set of queues.
          */
-        virtual bool init(std::list<WorkerQueueInfo> queues = std::list<WorkerQueueInfo>());
+        virtual bool init(std::list<WorkerQueueInfo> queuesList = std::list<WorkerQueueInfo>());
         /**
          * @brief This function is responsible for destroying all resources created in the
          * init mehtod.
@@ -162,7 +176,5 @@ namespace sys
          * @brief Kills the worker. Does not deinit it.
          */
         void kill();
-
-        void addQueueInfo(xQueueHandle queue, std::string queueName);
     };
 } /* namespace sys */

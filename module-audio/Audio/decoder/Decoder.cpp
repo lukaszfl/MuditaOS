@@ -35,8 +35,9 @@ namespace audio
             LOG_DEBUG("Decoding worker destroy start");
             // audioWorker->stop();
             LOG_DEBUG("Decoding worker stopped");
-            audioWorker->deinit();
+            // audioWorker->deinit();
             LOG_DEBUG("Decoding worker after deinit");
+            audioWorker->close();
         }
         if (fd) {
             std::fclose(fd);
@@ -130,6 +131,6 @@ namespace audio
         audioWorker = std::make_unique<DecoderWorker>(audioStream, this, endOfFileCallback);
 
         audioWorker->init();
-        // audioWorker->run();
+        audioWorker->run();
     }
 } // namespace audio

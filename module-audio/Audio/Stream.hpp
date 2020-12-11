@@ -104,7 +104,7 @@ namespace audio
         bool isFull() const noexcept;
         bool blocksAvailable() const noexcept;
 
-        void registerListener(EventListener &listener);
+        void registerListener(std::shared_ptr<EventListener> listener);
 
         void cleanListeners()
         {
@@ -128,7 +128,7 @@ namespace audio
         std::size_t _reserveCount = 0;
         UniqueStreamBuffer _buffer;
         UniqueStreamBuffer _emptyBuffer;
-        std::list<std::reference_wrapper<EventListener>> listeners;
+        std::list<std::shared_ptr<EventListener>> listeners;
 
         RawBlockIterator _dataStart;
         RawBlockIterator _dataEnd;

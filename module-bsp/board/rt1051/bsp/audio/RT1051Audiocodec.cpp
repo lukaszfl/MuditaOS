@@ -301,6 +301,7 @@ namespace bsp
         xfer.dataSize = saiOutFormat.dataSize;
         SAI_TransferSendEDMA(BOARD_AUDIOCODEC_SAIx, &txHandle, &xfer);
 
+        LOG_ERROR("HUBERT BEFORE START");
         if (xTaskCreate(outAudioCodecWorkerTask, "outaudiocodec", 1024, this, 0, &outWorkerThread) != pdPASS) {
             LOG_ERROR("Error during creating  output audiocodec task");
         }
@@ -316,6 +317,7 @@ namespace bsp
             SAI_TransferTerminateSendEDMA(BOARD_AUDIOCODEC_SAIx, &txHandle);
         }
         memset(&txHandle, 0, sizeof(txHandle));
+        LOG_ERROR("HUBERT AFTER STOP");
     }
 
     void RT1051Audiocodec::InStop()
@@ -375,7 +377,7 @@ namespace bsp
     {
         std::uint32_t ulNotificationValue = 0;
         RT1051Audiocodec *inst            = reinterpret_cast<RT1051Audiocodec *>(pvp);
-
+        LOG_ERROR("HCHRZANIUK START THREAD");
         while (true) {
             xTaskNotifyWait(0x00,                 /* Don't clear any bits on entry. */
                             UINT32_MAX,           /* Clear all bits on exit. */
@@ -411,8 +413,8 @@ namespace bsp
                 }
             }
         }
-
         vTaskDelete(nullptr);
+        LOG_ERROR("HCHRZANIUK LEAVE THREAD");
     }
 
     void rxAudioCodecCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
@@ -459,7 +461,7 @@ namespace bsp
         audio::Stream::Span dataSpan;
         auto self = static_cast<RT1051Audiocodec *>(userData);
         auto sink = static_cast<audio::Sink *>(self);
-        LOG_DEBUG("receive");
+
         /// must not happen
         if (!sink->isConnected()) {
             return;

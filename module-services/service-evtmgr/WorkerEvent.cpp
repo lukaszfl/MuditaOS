@@ -43,12 +43,12 @@ extern "C"
 bool WorkerEvent::handleMessage(uint32_t queueID)
 {
 
-    xQueueHandle queue = queues[queueID];
+    auto queue = queues[queueID];
 
     // service queue
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueService)) {
         sys::WorkerCommand wcmd;
-        if (xQueueReceive(queue, &wcmd, 0) != pdTRUE) {
+        if (!queue->Dequeue(&wcmd, 0)) {
             return false;
         }
         wcmd.command = 1;
@@ -57,7 +57,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueKeyboardIRQ)) {
         uint8_t notification;
-        if (xQueueReceive(queue, &notification, 0) != pdTRUE) {
+        if (!queue->Dequeue(&notification, 0)) {
             return false;
         }
         uint8_t state, code;
@@ -68,7 +68,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueHeadsetIRQ)) {
         uint8_t notification;
-        if (xQueueReceive(queue, &notification, 0) != pdTRUE) {
+        if (!queue->Dequeue(&notification, 0)) {
             return false;
         }
 
@@ -83,7 +83,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueBattery)) {
         uint8_t notification;
-        if (xQueueReceive(queue, &notification, 0) != pdTRUE) {
+        if (!queue->Dequeue(&notification, 0)) {
             return false;
         }
         if (notification & static_cast<uint8_t>(bsp::batteryIRQSource::INTB)) {
@@ -107,7 +107,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueRTC)) {
         uint8_t notification;
-        if (xQueueReceive(queue, &notification, 0) != pdTRUE) {
+        if (!queue->Dequeue(&notification, 0)) {
             return false;
         }
 
@@ -126,7 +126,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueCellular)) {
         uint8_t notification;
-        if (xQueueReceive(queue, &notification, 0) != pdTRUE) {
+        if (!queue->Dequeue(&notification, 0)) {
             return false;
         }
 
@@ -154,7 +154,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueMagnetometerIRQ)) {
         uint8_t notification;
-        if (xQueueReceive(queue, &notification, 0) != pdTRUE) {
+        if (!queue->Dequeue(&notification, 0)) {
             return false;
         }
 
@@ -167,18 +167,17 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
     return true;
 }
 
-bool WorkerEvent::init(std::list<sys::WorkerQueueInfo> queues)
+bool WorkerEvent::init(std::list<sys::WorkerQueueInfo> queuesList)
 {
-    Worker::init(queues);
-    std::vector<xQueueHandle> qhandles = this->queues;
+    Worker::init(queuesList);
     bsp::vibrator::init();
-    bsp::keyboard_Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueKeyboardIRQ)]);
-    bsp::headset::Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueHeadsetIRQ)]);
-    bsp::battery_Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueBattery)]);
-    bsp::rtc_Init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueRTC)]);
-    bsp::cellular::init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueCellular)]);
-    bsp::magnetometer::init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueMagnetometerIRQ)]);
-    bsp::torch::init(qhandles[static_cast<int32_t>(WorkerEventQueues::queueTorch)]);
+    bsp::keyboard_Init(queues[static_cast<int32_t>(WorkerEventQueues::queueKeyboardIRQ)]->GetQueueHandle());
+    bsp::headset::Init(queues[static_cast<int32_t>(WorkerEventQueues::queueHeadsetIRQ)]->GetQueueHandle());
+    bsp::battery_Init(queues[static_cast<int32_t>(WorkerEventQueues::queueBattery)]->GetQueueHandle());
+    bsp::rtc_Init(queues[static_cast<int32_t>(WorkerEventQueues::queueRTC)]->GetQueueHandle());
+    bsp::cellular::init(queues[static_cast<int32_t>(WorkerEventQueues::queueCellular)]->GetQueueHandle());
+    bsp::magnetometer::init(queues[static_cast<int32_t>(WorkerEventQueues::queueMagnetometerIRQ)]->GetQueueHandle());
+    bsp::torch::init(queues[static_cast<int32_t>(WorkerEventQueues::queueTorch)]->GetQueueHandle());
 
     time_t timestamp;
     bsp::rtc_GetCurrentTimestamp(&timestamp);

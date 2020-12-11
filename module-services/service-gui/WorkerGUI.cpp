@@ -29,13 +29,13 @@ namespace sgui
 
     bool WorkerGUI::handleMessage(uint32_t queueID)
     {
-        QueueHandle_t queue = queues[queueID];
+        auto queue = queues[queueID];
 
         auto serviceGUI = static_cast<sgui::ServiceGUI *>(service);
 
         if (queueID == 0) {
             sys::WorkerCommand received;
-            xQueueReceive(queue, &received, 0);
+            queue->Dequeue(&received, 0);
 
             std::list<std::unique_ptr<gui::DrawCommand>> uniqueCommands;
             if (xSemaphoreTake(serviceGUI->semCommands, pdMS_TO_TICKS(1000)) == pdTRUE) {
