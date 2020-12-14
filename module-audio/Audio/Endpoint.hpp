@@ -2,34 +2,15 @@
 
 #include "Stream.hpp"
 
-#include <cassert> // assert
-
 namespace audio
 {
     class Endpoint
     {
       public:
-        void setStream(Stream &stream)
-        {
-            assert(_stream == nullptr);
-            _stream = &stream;
-        }
-
-        Stream *getStream(void) const noexcept
-        {
-            return _stream;
-        }
-
-        void unsetStream()
-        {
-            assert(_stream != nullptr);
-            _stream = nullptr;
-        }
-
-        bool isConnected() const noexcept
-        {
-            return _stream != nullptr;
-        }
+        void setStream(Stream &stream);
+        Stream *getStream(void) const noexcept;
+        void unsetStream();
+        bool isConnected() const noexcept;
 
       private:
         Stream *_stream = nullptr;
@@ -41,19 +22,8 @@ namespace audio
     class Source : public Endpoint
     {
       public:
-        void connect(Sink &sink, Stream &stream)
-        {
-            connectedSink = &sink;
-            connectedSink->setStream(stream);
-            this->setStream(stream);
-        }
-
-        void disconnectStream()
-        {
-            this->unsetStream();
-            connectedSink->unsetStream();
-            connectedSink = nullptr;
-        }
+        void connect(Sink &sink, Stream &stream);
+        void disconnectStream();
 
       private:
         Sink *connectedSink = nullptr;

@@ -8,8 +8,6 @@
 
 #include "Audio/AudioCommon.hpp"
 
-#include <bsp/audio/bsp_audio.hpp>
-#include <board/rt1051/bsp/audio/RT1051Audiocodec.hpp>
 #include <log/log.hpp>
 
 namespace audio
@@ -206,7 +204,7 @@ namespace audio
             return RetCode::Failed;
         }
 
-        dec->connect(*static_cast<bsp::RT1051Audiocodec *>(audioDevice.get()), audioOutStream);
+        dec->connect(audioDevice->sink, audioOutStream);
 
         currentProfile->SetSampleRate(currentSampleRate);
         currentProfile->SetInOutFlags(currentInOutFlags);

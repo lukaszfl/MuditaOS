@@ -15,8 +15,6 @@
 #include "drivers/dmamux/DriverDMAMux.hpp"
 #include "drivers/dma/DriverDMA.hpp"
 
-#include <Audio/Endpoint.hpp>
-
 #include <mutex.hpp>
 
 namespace bsp
@@ -27,7 +25,7 @@ namespace bsp
     void inAudioCodecWorkerTask(void *pvp);
     void outAudioCodecWorkerTask(void *pvp);
 
-    class RT1051Audiocodec : public AudioDevice, public audio::Sink, public audio::Source
+    class RT1051Audiocodec : public AudioDevice
     {
 
       public:
@@ -85,8 +83,7 @@ namespace bsp
         State state = State::Stopped;
         SAIFormat saiInFormat;
         SAIFormat saiOutFormat;
-        TaskHandle_t inWorkerThread  = nullptr;
-        TaskHandle_t outWorkerThread = nullptr;
+        TaskHandle_t inWorkerThread = nullptr;
         CodecParamsMAX98090 codecParams;
         CodecMAX98090 codec;
 
@@ -102,9 +99,6 @@ namespace bsp
 
         // CODEC_CHANNEL_PCM_BUFFER_SIZE * 2 for double buffering
         static ALIGN_(4) int16_t inBuffer[CODEC_CHANNEL_PCM_BUFFER_SIZE * 2];
-
-        // CODEC_CHANNEL_PCM_BUFFER_SIZE * 2 for double buffering
-        static ALIGN_(4) int16_t outBuffer[CODEC_CHANNEL_PCM_BUFFER_SIZE * 2];
 
         void OutStart();
         void InStart();
