@@ -43,6 +43,19 @@ namespace audio
                     auto rangeStart = static_cast<const std::uint16_t *>(inputBuffer);
                     auto rangeEnd   = rangeStart + framesPerBuffer;
                     std::copy(rangeStart, rangeEnd, std::begin(audioDeviceBuffer));
+                    /* =============================================== */
+                    //This is experimental code !!!!
+                    //this is the try to cancel echo by substracting output samples (from loudspeaker) from input buffer
+#if 1
+                    //if ((inst->GetOutputPath() == bsp::AudioDevice::OutputPath::Loudspeaker) || (inst->GetOutputPath() == bsp::AudioDevice::OutputPath::LoudspeakerMono)) {
+                    if (outputBuffer != nullptr) {
+                        const auto att = 2;
+                        for (unsigned long i = 0; i < framesPerBuffer; i++) {
+                            audioDeviceBuffer[i] -= static_cast<uint16_t*>(outputBuffer)[i] / att;
+                        }
+                    }
+#endif
+                    /* =============================================== */
                 }
             }
 
