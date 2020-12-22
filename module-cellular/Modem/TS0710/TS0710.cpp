@@ -556,3 +556,9 @@ void TS0710::ExitSleepMode(void)
 {
     return pv_cellular->ExitSleep();
 }
+
+TS0710::ConfState TS0710::EchoCancelConfProcedure() {
+    
+    auto ret = parser->cmd("AT+QAUDMOD=2");
+    return ConfState ::Success;
+}

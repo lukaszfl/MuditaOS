@@ -504,6 +504,9 @@ bool ServiceCellular::handle_audio_conf_procedure()
 {
     auto audioRet = cmux->AudioConfProcedure();
     if (audioRet == TS0710::ConfState::Success) {
+        //!!!REM
+        cmux->EchoCancelConfProcedure();
+        //!!!REM
         auto cmd = at::factory(at::AT::IPR) + std::to_string(ATPortSpeeds_text[cmux->getStartParams().PortSpeed]);
         LOG_DEBUG("Setting baudrate %i baud", ATPortSpeeds_text[cmux->getStartParams().PortSpeed]);
         if (!cmux->getParser()->cmd(cmd)) {

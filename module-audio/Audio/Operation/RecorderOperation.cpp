@@ -42,7 +42,7 @@ namespace audio
             return ret;
         };
 
-        constexpr audio::Gain defaultRecordingOnBoardMicGain = 200;
+        constexpr audio::Gain defaultRecordingOnBoardMicGain = 0;
         constexpr audio::Gain defaultRecordingHeadsetGain    = 100;
 
         const auto dbRecordingOnBoardMicGainPath =

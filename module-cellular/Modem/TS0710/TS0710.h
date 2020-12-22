@@ -342,6 +342,7 @@ class TS0710
     ConfState BaudDetectProcedure(uint16_t timeout_s = 30);
     ConfState ConfProcedure();
     ConfState AudioConfProcedure();
+    ConfState EchoCancelConfProcedure();
     ConfState StartMultiplexer();
 
     ssize_t ReceiveData(std::vector<uint8_t> &data, uint32_t timeout);

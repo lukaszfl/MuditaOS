@@ -152,6 +152,8 @@ namespace at
         COLP_ENABLE,
         COLP_DISABLE,
         CSSN, /// Supplementary Services - Supplementary Service Notifications
+        EEC_EARSPK, /// Echo cancelation for Earspeaker
+        EEC_LOUDSPK, /// Echo cancelation for Loudspeaker
     };
 
     // below timeouts are defined in Quectel_EC25&EC21_AT_Commands_Manual_V1.3.pdf
@@ -248,7 +250,9 @@ namespace at
             {AT::COLP_GET, {"AT+COLP?", default_long_doc_timeout}},
             {AT::COLP_ENABLE, {"AT+COLP=1", default_long_doc_timeout}},
             {AT::COLP_DISABLE, {"AT+COLP=0", default_long_doc_timeout}},
-            {AT::CSSN, {"AT+CSSN=\"", default_doc_timeout}}};
+            {AT::CSSN, {"AT+CSSN=\"", default_doc_timeout}},
+            {AT::EEC_EARSPK, {"AT+QAUDMOD=0", default_doc_timeout}},
+            {AT::EEC_LOUDSPK, {"AT+QAUDMOD=2", default_doc_timeout}}};
 
         if (fact.count(at)) {
             return fact.at(at);
