@@ -17,11 +17,14 @@
 #include <Audio/AudioCommon.hpp>
 #include <service-audio/AudioMessage.hpp>
 #include <service-evtmgr/Constants.hpp>
+#include <mutex.hpp>
 extern "C"
 {
 #include "module-bluetooth/lib/btstack/src/btstack.h"
 #include <btstack_defines.h>
 }
+
+#include <cassert>
 
 namespace Bt
 {
@@ -70,11 +73,6 @@ namespace Bt
         pimpl->setOwnerService(service);
     }
 
-    auto A2DP::getStreamData() -> std::shared_ptr<BluetoothStreamData>
-    {
-        return pimpl->getStreamData();
-    }
-
     void A2DP::connect()
     {
         pimpl->start();
@@ -97,8 +95,9 @@ namespace Bt
         0xFF, //(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
         2,
         53};
-
     /* LISTING_START(MainConfiguration): Setup Audio Source and AVRCP Target services */
+    audio::Stream *_stream = nullptr;
+    cpp_freertos::MutexStandard mutex;
 
     auto A2DP::A2DPImpl::init() -> Error::Code
     {
@@ -188,23 +187,20 @@ namespace Bt
         // perform sbc encodin
         int totalNumBytesRead                    = 0;
         unsigned int numAudioSamplesPerSbcBuffer = btstack_sbc_encoder_num_audio_frames();
+        audio::Stream::Span dataSpan;
+        auto stream = getOutputStream();
+
+        if (stream == nullptr) {
+            return 0;
+        }
+
         while (context->samples_ready >= numAudioSamplesPerSbcBuffer &&
                (context->max_media_payload_size - context->sbc_storage_count) >=
                    btstack_sbc_encoder_sbc_buffer_length()) {
+            stream->consume();
+            stream->peek(dataSpan);
 
-            AudioData_t audioData;
-
-            if (sourceQueue != nullptr) {
-                if (xQueueReceive(sourceQueue, &audioData, 10) != pdPASS) {
-                    audioData.data.fill(0);
-                }
-            }
-            else {
-                audioData.data.fill(0);
-                LOG_ERROR("queue is nullptr!");
-            }
-
-            btstack_sbc_encoder_process_data(audioData.data.data());
+            btstack_sbc_encoder_process_data(reinterpret_cast<int16_t *>(dataSpan.data));
 
             uint16_t sbcFrameSize = btstack_sbc_encoder_sbc_buffer_length();
             uint8_t *sbcFrame     = btstack_sbc_encoder_sbc_buffer();
@@ -586,16 +582,28 @@ namespace Bt
         ownerService = service;
     }
 
-    auto A2DP::A2DPImpl::getStreamData() -> std::shared_ptr<BluetoothStreamData>
-    {
-        return std::make_shared<BluetoothStreamData>(sinkQueue, sourceQueue, metadata);
-    }
-
     void A2DP::A2DPImpl::sendAudioEvent(audio::EventType event, audio::Event::DeviceState state)
     {
         auto evt = std::make_shared<audio::Event>(event, state);
         auto msg = std::make_shared<AudioEventRequest>(std::move(evt));
         sys::Bus::SendUnicast(std::move(msg), service::name::evt_manager, const_cast<sys::Service *>(ownerService));
+    }
+
+    void A2DP::setOutputStream(audio::Stream *stream)
+    {
+        pimpl->setOutputStream(stream);
+    }
+
+    void A2DP::A2DPImpl::setOutputStream(audio::Stream *stream)
+    {
+        cpp_freertos::LockGuard lock(mutex);
+        _stream = stream;
+    }
+
+    auto A2DP::A2DPImpl::getOutputStream() -> audio::Stream *
+    {
+        cpp_freertos::LockGuard lock(mutex);
+        return _stream;
     }
 
 } // namespace Bt

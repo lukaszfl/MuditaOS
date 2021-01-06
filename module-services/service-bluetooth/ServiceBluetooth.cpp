@@ -111,12 +111,6 @@ sys::MessagePointer ServiceBluetooth::DataReceivedHandler(sys::DataMessage *msg,
             auto addrMsg = static_cast<BluetoothAddrMessage *>(msg);
             worker->setDeviceAddress(addrMsg->addr);
         } break;
-        case MessageType::BluetoothRequestStream: {
-            auto result =
-                std::make_shared<BluetoothRequestStreamResultMessage>(worker->currentProfile->getStreamData());
-            sys::Bus::SendUnicast(std::move(result), "ServiceAudio", this);
-            LOG_INFO("Queues sent after a request!");
-        } break;
         default:
             LOG_INFO("BT not handled!");
             break;

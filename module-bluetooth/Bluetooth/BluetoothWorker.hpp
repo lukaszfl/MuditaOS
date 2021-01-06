@@ -4,12 +4,15 @@
 #pragma once
 
 #include "Device.hpp"
-#include "Service/Worker.hpp"
+
 #include "interface/profiles/Profile.hpp"
-#include <FreeRTOS.h>
+
+#include <Audio/Stream.hpp>
 #include <bsp/bluetooth/Bluetooth.hpp>
-#include <memory>
+#include <Service/Worker.hpp>
+
 #include <task.h>
+#include <memory>
 #include <vector>
 
 struct HCI;
@@ -109,6 +112,8 @@ class BluetoothWorker : private sys::Worker
     void stopScan();
     void setDeviceAddress(bd_addr_t addr);
     void initAudioBT();
+
+    void setOutputStream(audio::Stream *stream);
 
     std::shared_ptr<Bt::Profile> currentProfile;
 };

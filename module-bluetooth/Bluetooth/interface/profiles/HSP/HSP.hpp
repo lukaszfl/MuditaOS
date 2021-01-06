@@ -24,7 +24,6 @@ namespace Bt
 
         auto init() -> Error::Code override;
         void setDeviceAddress(uint8_t *addr) override;
-        auto getStreamData() -> std::shared_ptr<BluetoothStreamData> override;
         void setOwnerService(const sys::Service *service) override;
 
         void connect() override;

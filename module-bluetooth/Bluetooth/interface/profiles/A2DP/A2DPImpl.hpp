@@ -8,6 +8,8 @@
 #include <BtCommand.hpp>
 #include <log/log.hpp>
 #include <Audio/AudioCommon.hpp>
+#include <Audio/Stream.hpp>
+#include <mutex.hpp>
 
 extern "C"
 {
@@ -59,6 +61,8 @@ namespace Bt
         static QueueHandle_t sourceQueue;
         static QueueHandle_t sinkQueue;
         static DeviceMetadata_t metadata;
+        static audio::Stream *_stream;
+        static cpp_freertos::MutexStandard mutex;
 
         static void startTimer(MediaContext *context);
         static void stopTimer(MediaContext *context);
@@ -68,6 +72,7 @@ namespace Bt
         static void sendMediaPacket();
         static auto fillSbcAudioBuffer(MediaContext *context) -> int;
         static void sendAudioEvent(audio::EventType event, audio::Event::DeviceState state);
+        static auto getOutputStream() -> audio::Stream *;
 
       public:
         auto init() -> Error::Code;
@@ -75,6 +80,6 @@ namespace Bt
         void stop();
         void setDeviceAddress(bd_addr_t addr);
         void setOwnerService(const sys::Service *service);
-        auto getStreamData() -> std::shared_ptr<BluetoothStreamData>;
+        void setOutputStream(audio::Stream *stream);
     };
 } // namespace Bt

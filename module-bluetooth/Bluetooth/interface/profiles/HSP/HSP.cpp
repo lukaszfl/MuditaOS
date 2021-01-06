@@ -50,11 +50,6 @@ namespace Bt
         pimpl->setOwnerService(service);
     }
 
-    auto HSP::getStreamData() -> std::shared_ptr<BluetoothStreamData>
-    {
-        return pimpl->getStreamData();
-    }
-
     void HSP::connect()
     {
         pimpl->start();

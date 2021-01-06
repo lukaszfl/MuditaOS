@@ -11,7 +11,7 @@
 #include <service-bluetooth/ServiceBluetoothCommon.hpp>
 namespace Bt
 {
-    class A2DP : public Profile
+    class A2DP : public AudioProfile
     {
       public:
         A2DP();
@@ -25,10 +25,11 @@ namespace Bt
         auto init() -> Error::Code override;
         void setDeviceAddress(uint8_t *addr) override;
         void setOwnerService(const sys::Service *service) override;
-        [[nodiscard]] auto getStreamData() -> std::shared_ptr<BluetoothStreamData> override;
 
         void connect() override;
         void disconnect() override;
+
+        void setOutputStream(audio::Stream *stream) override;
 
       private:
         class A2DPImpl;

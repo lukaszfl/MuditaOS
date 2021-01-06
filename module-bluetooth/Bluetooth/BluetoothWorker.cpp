@@ -43,7 +43,7 @@ const char *c_str(Bt::Error::Code code)
 }
 
 BluetoothWorker::BluetoothWorker(sys::Service *service)
-    : Worker(service), service(service), currentProfile(std::make_shared<Bt::HSP>())
+    : Worker(service), service(service), currentProfile(std::make_shared<Bt::A2DP>())
 {
     init({
         {"qBtIO", sizeof(Bt::Message), 10},
@@ -209,3 +209,6 @@ void BluetoothWorker::setDeviceAddress(bd_addr_t addr)
     Bt::GAP::do_pairing(addr);
     currentProfile->setDeviceAddress(addr);
 }
+
+void BluetoothWorker::setOutputStream(audio::Stream *stream)
+{}
