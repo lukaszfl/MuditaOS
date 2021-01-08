@@ -1,0 +1,10 @@
+@startuml
+participant "Service GUI" as gui
+participant "Context Pool" as pool
+participant "Rendering Worker" as worker
+participant "Service Eink" as eink
+
+gui -> gui: Cache frame
+gui -> pool: Return context
+
+@enduml
