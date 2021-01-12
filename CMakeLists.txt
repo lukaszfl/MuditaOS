@@ -14,30 +14,7 @@ include(ModuleConfig)
 include(module-lwip/lwip-includes.cmake)
 include(SerialPort)
 include(CopyGdbInit)
-
-# function(multicomp_install TYPE OBJECTS DESTINATION COMPONENTS)
-#     if(ARGN)
-#         set(PERMS_KEYWORD "PERMISSIONS")
-#     endif()
-#     foreach(COMP IN LISTS COMPONENTS)
-#         install(
-#             ${TYPE} ${OBJECTS}
-#             DESTINATION ${DESTINATION}
-#             COMPONENT ${COMP} 
-#             ${PERMS_KEYWORD} ${ARGN}
-#             )
-#     endforeach()
-# endfunction()
-
-function(multicomp_install)
-    list(FIND ARGN "COMPONENTS" KEYWORD_INDEX)
-    list(SUBLIST ARGN 0 ${KEYWORD_INDEX} INSTALL_ARGN)
-    math(EXPR COMPS_INDEX "${KEYWORD_INDEX}+1")
-    list(SUBLIST ARGN ${COMPS_INDEX} ${ARGC} COMPONENTS)
-    foreach(COMP IN LISTS COMPONENTS)
-        install(${INSTALL_ARGN} COMPONENT ${COMP})
-    endforeach()
-endfunction()
+include(Utils)
 
 message("PROJECT_TARGET: ${PROJECT_TARGET}")
 message("TARGET_SOURCES: ${TARGET_SOURCES}")
