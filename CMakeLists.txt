@@ -15,6 +15,30 @@ include(module-lwip/lwip-includes.cmake)
 include(SerialPort)
 include(CopyGdbInit)
 
+# function(multicomp_install TYPE OBJECTS DESTINATION COMPONENTS)
+#     if(ARGN)
+#         set(PERMS_KEYWORD "PERMISSIONS")
+#     endif()
+#     foreach(COMP IN LISTS COMPONENTS)
+#         install(
+#             ${TYPE} ${OBJECTS}
+#             DESTINATION ${DESTINATION}
+#             COMPONENT ${COMP} 
+#             ${PERMS_KEYWORD} ${ARGN}
+#             )
+#     endforeach()
+# endfunction()
+
+function(multicomp_install)
+    list(FIND ARGN "COMPONENTS" KEYWORD_INDEX)
+    list(SUBLIST ARGN 0 ${KEYWORD_INDEX} INSTALL_ARGN)
+    math(EXPR COMPS_INDEX "${KEYWORD_INDEX}+1")
+    list(SUBLIST ARGN ${COMPS_INDEX} ${ARGC} COMPONENTS)
+    foreach(COMP IN LISTS COMPONENTS)
+        install(${INSTALL_ARGN} COMPONENT ${COMP})
+    endforeach()
+endfunction()
+
 message("PROJECT_TARGET: ${PROJECT_TARGET}")
 message("TARGET_SOURCES: ${TARGET_SOURCES}")
 message("TARGET_COMPILE_DEFINITIONS: ${TARGET_COMPILE_OPTIONS}")
@@ -218,7 +242,11 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
 		DEPENDS ${FAT_IMAGE}
 	)
 	add_dependencies(check ${FAT_IMAGE}-target)
-    install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION "./")
+    multicomp_install(
+        TARGETS ${CMAKE_PROJECT_NAME}
+        DESTINATION "./"
+        COMPONENTS Standalone Update
+        )
 endif()
 
 
@@ -255,7 +283,8 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
             OWNER_READ OWNER_WRITE OWNER_EXECUTE
             GROUP_READ GROUP_EXECUTE
             WORLD_READ WORLD_EXECUTE
-            )
+        COMPONENT standalone
+        )
     set(CPACK_SYSTEM_NAME "RT1051")
 endif()
 
@@ -265,8 +294,10 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
         )
 endif()
 
-install(FILES ${PROJECT_SOURCE_DIR}/changelog.md
+install(
+    FILES ${PROJECT_SOURCE_DIR}/changelog.md
     DESTINATION "./"
+    COMPONENT standalone
     )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
@@ -343,8 +374,13 @@ else()
     set(PACKAGE_EXTENSION ".tar.gz")
     set(PACKAGE_MIME "application/x-compressed-tar")
 endif()
+# set(CPACK_COMPONENTS_ALL standalone)
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_GROUPING IGNORE)
 
 include(CPack)
+
+message(STATUS "CPack components: ${CPACK_COMPONENTS_ALL}")
 
 if (NOT "$ENV{GITHUB_WORKSPACE}" STREQUAL "")
     set(PACKAGE_FILE ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}${PACKAGE_EXTENSION})
