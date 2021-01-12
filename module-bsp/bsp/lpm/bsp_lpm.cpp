@@ -40,4 +40,14 @@ namespace bsp{
     {
     	return currentPll2State;
     }
+
+    LowPowerMode::DCDCMode LowPowerMode::GetCurrentDCDCMode() const noexcept
+    {
+        return currentDCDCMode;
+    }
+
+    LowPowerMode::CoreVoltage LowPowerMode::GetCurrentCoreVoltage() const noexcept
+    {
+            return GetCurrentCoreVoltage;
+    }
 }

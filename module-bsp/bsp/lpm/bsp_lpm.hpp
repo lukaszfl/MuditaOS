@@ -28,6 +28,17 @@ namespace bsp {
             Enable,
             Disable
         };
+        enum class DCDCMode
+        {
+            CCM,
+            DCM
+        };
+        enum class CoreVoltage
+        {
+            CV_1V275,
+            CV_1V15,
+            CV_0V95
+        };
 
         LowPowerMode()          = default;
         virtual ~LowPowerMode() = default;
@@ -46,10 +57,18 @@ namespace bsp {
         virtual void SwitchPll2State(Pll2State state) = 0;
         [[nodiscard]] Pll2State GetCurrentPll2State() const noexcept;
 
+        virtual void SwitchDCDCMode(DCDCMode mode) = 0;
+        [[nodiscard]] DCDCMode GetCurrentDCDCMode() const noexcept;
+
+        virtual void SwitchCoreVoltage(CoreVoltage voltage) = 0;
+        [[nodiscard]] CoreVoltage GetCurrentCoreVoltage() const noexcept;
+
     protected:
         CpuFrequency currentFrequency = CpuFrequency::Level_6;
         OscillatorSource currentOscSource = OscillatorSource::External;
         Pll2State currentPll2State = Pll2State::Enable;
+        DCDCMode currentDCDCMode = DCDCMode::CCM;
+        CoreVoltage currentCoreVoltage = CoreVoltage::CV_1V275;
     };
 } // namespace bsp
 

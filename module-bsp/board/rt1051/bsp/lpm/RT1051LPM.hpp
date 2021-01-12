@@ -25,6 +25,8 @@ namespace bsp
         void SetCpuFrequency(CpuFrequency freq) final;
         void SwitchOscillatorSource(OscillatorSource source) final;
         void SwitchPll2State(Pll2State state) final;
+        void SwitchDCDCMode(DCDCMode mode) final;
+        void SwitchCoreVoltage(CoreVoltage voltage) final;
 
       private:
         [[nodiscard]] bool IsClockEnabled(clock_ip_name_t name) const noexcept;

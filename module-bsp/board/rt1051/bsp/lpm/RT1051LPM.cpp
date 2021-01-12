@@ -133,4 +133,42 @@ namespace bsp
         return ((*reinterpret_cast<volatile uint32_t *>(&CCM->CCGR0 + index)) & (ClockNeededRunWaitMode << shift));
     }
 
+    void RT1051LPM::SwitchDCDCMode(DCDCMode mode)
+    {
+        if (mode == LowPowerMode::DCDCMode::DCM)
+        {
+            DCDC_BootIntoDCM(DCDC);
+        }
+        else {
+            DCDC_BootIntoDCM(DCDC);
+        }
+        currentDCDCMode = mode;
+    }
+
+    void RT1051LPM::SwitchCoreVoltage(CoreVoltage voltage) 
+    {
+        //core: (step=0,025V)
+        //  0x0=0.8V
+        //  0xE=1,15V
+        //  0x1F=1,575V
+        //stby:
+        //  0x0=0,9V
+        //  0x1=0,925V
+        //  0x2=0,95V
+        //  0x3=0,975V
+        //  0x4=1,0V
+        switch(voltage) {
+            case CoreVoltage::CV_0V95:
+                DCDC_AdjustTargetVoltage(DCDC, 0x6, 0x2);   //core:0x6=0,95V; stby:0x2=0,95V
+            break;
+            case CoreVoltage::CV_1V15:
+                DCDC_AdjustTargetVoltage(DCDC, 0xE, 0x2);   //core:0xE=1,12V; stby:0x2=0,95V
+            break;
+            case CoreVoltage::CV_1V275:
+            default:
+                DCDC_AdjustTargetVoltage(DCDC, 0x13, 0x2);   //core:0x6=1,275V; stby:0x2=0,95V
+            break;
+        }
+    }
+
 } // namespace bsp
