@@ -277,13 +277,13 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
         ${HEX_FILE}-target ALL
         DEPENDS ${CMAKE_BINARY_DIR}/${HEX_FILE}
         )
-    install(FILES ${CMAKE_BINARY_DIR}/${BIN_FILE}
+    multicomp_install(FILES ${CMAKE_BINARY_DIR}/${BIN_FILE}
         DESTINATION "./"
         PERMISSIONS
             OWNER_READ OWNER_WRITE OWNER_EXECUTE
             GROUP_READ GROUP_EXECUTE
             WORLD_READ WORLD_EXECUTE
-        COMPONENT standalone
+        COMPONENTS Standalone Update
         )
     set(CPACK_SYSTEM_NAME "RT1051")
 endif()
@@ -294,10 +294,10 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
         )
 endif()
 
-install(
+multicomp_install(
     FILES ${PROJECT_SOURCE_DIR}/changelog.md
     DESTINATION "./"
-    COMPONENT standalone
+    COMPONENTS Standalone
     )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
