@@ -288,10 +288,11 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
         )
 endif()
 
-add_custom_target(ecoboot.bin 
+add_custom_target(ecoboot.bin
     COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py -w ${CMAKE_BINARY_DIR}/update ecoboot download
     BYPRODUCTS update/ecoboot.bin
     )
+install(FILES ${CMAKE_BINARY_DIR}/update/ecoboot.bin DESTINATION "./" COMPONENT Update)
 
 message_serial_status()
 
@@ -354,10 +355,16 @@ endif()
 # set(CPACK_COMPONENTS_ALL standalone)
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_GROUPING IGNORE)
+# prevent from additing the default 'package' CPack target
+set (CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/PackageConfig.cmake")
 
 include(CPack)
 
-message(STATUS "CPack components: ${CPACK_COMPONENTS_ALL}")
+add_custom_target(package
+    COMMAND "${CMAKE_CPACK_COMMAND}" 
+    "-C" "$<CONFIGURATION>"
+    "--config" "${CMAKE_BINARY_DIR}/PackageConfig.cmake"
+    DEPENDS ecoboot.bin)
 
 if (NOT "$ENV{GITHUB_WORKSPACE}" STREQUAL "")
     set(PACKAGE_FILE ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}${PACKAGE_EXTENSION})
