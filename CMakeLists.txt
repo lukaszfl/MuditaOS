@@ -271,10 +271,10 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
         )
 endif()
 
-multicomp_install(
+install(
     FILES ${PROJECT_SOURCE_DIR}/changelog.md
     DESTINATION "./"
-    COMPONENTS Standalone
+    COMPONENT Standalone
     )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
