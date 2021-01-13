@@ -290,9 +290,22 @@ endif()
 
 add_custom_target(ecoboot.bin
     COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py -w ${CMAKE_BINARY_DIR}/update ecoboot download
+    > ${CMAKE_BINARY_DIR}/update/download_info.txt
     BYPRODUCTS update/ecoboot.bin
+    COMMENT "Downloading bootloader"
+    )
+add_custom_target(version.json
+    COMMAND sed -i -e s/__BOOTLOADER_INCLUDED__/true/g ${CMAKE_BINARY_DIR}/update/version.json
+    COMMAND sed -i -e s/__BOOTLOADER_FILENAME__/ecoboot.bin/g ${CMAKE_BINARY_DIR}/update/version.json
+    COMMAND sh -c "sed -i -e \"s/__BOOTLOADER_VERSION__/$( \
+    grep release: ${CMAKE_BINARY_DIR}/update/download_info.txt | \
+    awk '{print $2}' )/g\" \
+    ${CMAKE_BINARY_DIR}/update/version.json"
+    VERBATIM
+    DEPENDS ecoboot.bin
     )
 install(FILES ${CMAKE_BINARY_DIR}/update/ecoboot.bin DESTINATION "./" COMPONENT Update)
+install(FILES ${CMAKE_BINARY_DIR}/update/version.json DESTINATION "./" COMPONENT Update)
 
 message_serial_status()
 
@@ -341,6 +354,53 @@ add_custom_target(
 
 add_dependencies(${PROJECT_NAME} version)
 
+execute_process(
+    COMMAND git describe --tags
+    COMMAND awk -F- "{print $2}"
+    OUTPUT_VARIABLE GIT_TAG_SHORT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+execute_process(
+    COMMAND uname -r
+    OUTPUT_VARIABLE BUILD_HOST
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+execute_process(
+    COMMAND whoami
+    OUTPUT_VARIABLE BUILD_USER
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+execute_process(
+    COMMAND date +%F-%T
+    OUTPUT_VARIABLE BUILD_DATE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+execute_process(
+    COMMAND grep tskKERNEL_VERSION_NUMBER ${CMAKE_SOURCE_DIR}/module-os/FreeRTOS/include/task.h
+    COMMAND awk "{print $3}"
+    COMMAND tr -d "\""
+    OUTPUT_VARIABLE KERNEL_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+message(STATUS "GIT_BRANCH: ${GIT_BRANCH}")
+message(STATUS "GIT_TAG: ${GIT_TAG_SHORT}")
+message(STATUS "GIT_REV: ${GIT_REV}")
+message(STATUS "VERSION_MAJOR: ${CMAKE_PROJECT_VERSION_MAJOR} ")
+message(STATUS "VERSION_MINOR: ${CMAKE_PROJECT_VERSION_MINOR}")
+message(STATUS "VERSION_PATCH: ${CMAKE_PROJECT_VERSION_PATCH}")
+message(STATUS "VERSION_STRING: ${CMAKE_PROJECT_VERSION}")
+message(STATUS "BUILD_HOST: ${BUILD_HOST}")
+message(STATUS "BUILD_USER: ${BUILD_USER}")
+message(STATUS "BUILD_DATE: ${BUILD_DATE}")
+message(STATUS "KERNEL_VERSION: ${KERNEL_VERSION}")
+
+configure_file(
+    ${CMAKE_SOURCE_DIR}/config/version.json.cmake_template
+    ${CMAKE_BINARY_DIR}/update/version.json
+    @ONLY
+    )
+
 set(CPACK_PACKAGE_VENDOR "Mudita")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://mudita.com/products/pure/")
 if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
@@ -364,7 +424,7 @@ add_custom_target(package
     COMMAND "${CMAKE_CPACK_COMMAND}" 
     "-C" "$<CONFIGURATION>"
     "--config" "${CMAKE_BINARY_DIR}/PackageConfig.cmake"
-    DEPENDS ecoboot.bin)
+    DEPENDS ecoboot.bin version.json)
 
 if (NOT "$ENV{GITHUB_WORKSPACE}" STREQUAL "")
     set(PACKAGE_FILE ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}${PACKAGE_EXTENSION})
