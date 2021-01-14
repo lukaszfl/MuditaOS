@@ -205,7 +205,6 @@ set_source_files_properties(source/main.cpp PROPERTIES COMPILE_DEFINITIONS "${EN
 target_link_options(${PROJECT_NAME} PUBLIC ${TARGET_LINK_OPTIONS})
 
 if (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
-
 	set(FAT_IMAGE ${CMAKE_PROJECT_NAME}.img)
 	add_custom_command(
 		OUTPUT ${FAT_IMAGE}
@@ -213,17 +212,18 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
 		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate_fatfs_image.sh ${FAT_IMAGE} ${CMAKE_BINARY_DIR}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 		COMMENT "Generate ${FAT_IMAGE}"
-	)
+	    )
 	add_custom_target(
 		${FAT_IMAGE}-target ALL
 		DEPENDS ${FAT_IMAGE}
-	)
+	    )
 	add_dependencies(check ${FAT_IMAGE}-target)
     multicomp_install(
         TARGETS ${CMAKE_PROJECT_NAME}
         DESTINATION "./"
         COMPONENTS Standalone Update
         )
+    set(CPACK_SYSTEM_NAME "Linux")
 endif()
 
 
@@ -288,12 +288,14 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
         )
 endif()
 
+# download the bootloader
 add_custom_target(ecoboot.bin
     COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py -w ${CMAKE_BINARY_DIR}/update ecoboot download
     > ${CMAKE_BINARY_DIR}/update/download_info.txt
     BYPRODUCTS update/ecoboot.bin
     COMMENT "Downloading ecoboot.bin"
     )
+# add bootloader information from the download script output to the version.json file
 add_custom_target(version.json
     COMMAND sed -i -e s/__BOOTLOADER_INCLUDED__/true/g ${CMAKE_BINARY_DIR}/update/version.json
     COMMAND sed -i -e s/__BOOTLOADER_FILENAME__/ecoboot.bin/g ${CMAKE_BINARY_DIR}/update/version.json
@@ -363,13 +365,12 @@ configure_file(
 set(CPACK_PACKAGE_VENDOR "Mudita")
 set(CPACK_PACKAGE_NAME "PurePhone")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://mudita.com/products/pure/")
-set(CPACK_TOPLEVEL_TAG "RT1051")
+set(CPACK_TOPLEVEL_TAG "${CPACK_SYSTEM_NAME}")
+# the CPACK_PACKAGE_FILE_NAME variable will be reset after include(CPack) hence a copy
 set(PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CMAKE_PROJECT_VERSION}-${CPACK_TOPLEVEL_TAG}")
 set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME}")
-
-# prevent from additing the default 'package' CPack target
+# setting this will CPack prevent from additing the default 'package' target
 set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/PackageConfig.cmake")
-
 set(CPACK_GENERATOR "External")
 set(CPACK_COMPONENTS_GROUPING IGNORE)
 set(CPACK_EXTERNAL_ENABLE_STAGING TRUE)
@@ -378,7 +379,7 @@ set(PACKAGE_STAGING_DIRECTORY "${CMAKE_BINARY_DIR}/_CPack_Packages/${CPACK_TOPLE
 
 include(CPack)
 
-add_custom_target(package
+add_custom_target(package-staged
     COMMAND "${CMAKE_CPACK_COMMAND}" 
     "-C" "$<CONFIGURATION>"
     "--config" "${CMAKE_BINARY_DIR}/PackageConfig.cmake"
@@ -386,31 +387,31 @@ add_custom_target(package
     )
 
 if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
-    add_custom_target(standalone
+    add_custom_target(package-standalone
         COMMAND "zip" "-rq" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Standalone.zip" "./*"
         WORKING_DIRECTORY "${PACKAGE_STAGING_DIRECTORY}/Standalone"
-        DEPENDS package
+        DEPENDS package-staged
         )
 else()
-    add_custom_target(standalone
+    add_custom_target(package-standalone
         COMMAND "tar"
         "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Standalone.tar.gz"
         "-C" "${PACKAGE_STAGING_DIRECTORY}/Standalone" "."
-        DEPENDS package
+        DEPENDS package-staged
         )
 endif()
 
-add_custom_target(update_package_checksums
+add_custom_target(package-update-checksums
     COMMAND "rhash"
     "-u" "${PACKAGE_STAGING_DIRECTORY}/Update/checksums.txt"
     "-r" "${PACKAGE_STAGING_DIRECTORY}/Update"
-    DEPENDS package
+    DEPENDS package-staged
     )
-add_custom_target(update
+add_custom_target(package-update
     COMMAND "tar"
     "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Update.tar.gz"
     "-C" "${PACKAGE_STAGING_DIRECTORY}/Update" "."
-    DEPENDS package update_package_checksums
+    DEPENDS package-staged package-update-checksums
     )
 
 if (NOT "$ENV{GITHUB_WORKSPACE}" STREQUAL "")
