@@ -374,8 +374,8 @@ set(CPACK_PACKAGE_NAME "PurePhone")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://mudita.com/products/pure/")
 set(CPACK_TOPLEVEL_TAG "${CPACK_SYSTEM_NAME}")
 # the CPACK_PACKAGE_FILE_NAME variable will be reset after include(CPack) hence a copy
-set(PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CMAKE_PROJECT_VERSION}-${CPACK_TOPLEVEL_TAG}")
-set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME}")
+set(PACKAGE_COMMON_NAME "${CPACK_PACKAGE_NAME}-${CMAKE_PROJECT_VERSION}-${CPACK_TOPLEVEL_TAG}")
+set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_COMMON_NAME}")
 # setting this will CPack prevent from additing the default 'package' target
 set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/PackageConfig.cmake")
 set(CPACK_GENERATOR "External")
@@ -391,20 +391,12 @@ add_custom_target(package-staged
     "--config" "${CMAKE_BINARY_DIR}/PackageConfig.cmake"
     DEPENDS ecoboot.bin version.json
     )
-
-# if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
-#     set(CPACK_GENERATOR "ZIP")
-#     set(PACKAGE_EXTENSION ".zip")
-#     set(PACKAGE_MIME "application/zip")
-# else()
-#     set(CPACK_GENERATOR "TGZ")
-#     set(PACKAGE_EXTENSION ".tar.gz")
-#     set(PACKAGE_MIME "application/x-compressed-tar")
-# endif()
-
+    
 if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
+    set(PACKAGE_STANDALONE_FILE_NAME "${PACKAGE_COMMON_NAME}-Standalone.zip")
+    set(PACKAGE_STANDALONE_MIME "application/zip")
     add_custom_target(package-standalone
-        COMMAND "zip" "-rq" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Standalone.zip" "./*"
+        COMMAND "zip" "-rq" "${CMAKE_BINARY_DIR}/${PACKAGE_STANDALONE_FILE_NAME}" "./*"
         WORKING_DIRECTORY "${PACKAGE_STAGING_DIRECTORY}/Standalone"
         DEPENDS package-staged
         )
@@ -416,25 +408,24 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
         )
     add_custom_target(package-update
         COMMAND "tar"
-        "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Update.tar.gz"
+        "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_COMMON_NAME}-Update.tar.gz"
         "-C" "${PACKAGE_STAGING_DIRECTORY}/Update" "."
         DEPENDS package-staged package-update-checksums
         )
 elseif (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
+    set(PACKAGE_STANDALONE_FILE_NAME "${PACKAGE_COMMON_NAME}-Standalone.tar.gz")
+    set(PACKAGE_STANDALONE_MIME "application/x-compressed-tar")
     add_custom_target(package-standalone
         COMMAND "tar"
-        "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Standalone.tar.gz"
+        "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_STANDALONE_FILE_NAME}"
         "-C" "${PACKAGE_STAGING_DIRECTORY}/Standalone" "."
         DEPENDS package-staged
         )
 endif()
 
 if (NOT "$ENV{GITHUB_WORKSPACE}" STREQUAL "")
-    set(PACKAGE_FILE ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}${PACKAGE_EXTENSION})
-
-    message("set-output name=package::${PACKAGE_FILE}")
-    message("::set-output name=package::${PACKAGE_FILE}")
-
-    message("set-output name=mime_type::${PACKAGE_MIME}")
-    message("::set-output name=mime_type::${PACKAGE_MIME}")
+    message("set-output name=package::${PACKAGE_STANDALONE_FILE_NAME}")
+    message("::set-output name=package::${PACKAGE_STANDALONE_FILE_NAME}")
+    message("set-output name=mime_type::${PACKAGE_STANDALONE_MIME}")
+    message("::set-output name=mime_type::${PACKAGE_STANDALONE_MIME}")
 endif()
