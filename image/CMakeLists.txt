@@ -15,6 +15,7 @@ foreach(ASSET ${ASSETS_LIST})
     set(asset_source "${ASSETS_SOURCE_DIR}/${ASSET}")
     get_filename_component(filename "${ASSET}" NAME)
     get_filename_component(dir "${ASSET}" DIRECTORY)
+    get_filename_component(extension "${ASSET}" EXT)
 
     if(dir)
         set(destdir "${ASSETS_DEST_DIR}/${dir}")
@@ -25,7 +26,14 @@ foreach(ASSET ${ASSETS_LIST})
             )
     else()
         set(destdir "${ASSETS_DEST_DIR}")
-        install(FILES ${ASSET}  DESTINATION "./" COMPONENT Standalone)
+        if(extension STREQUAL ".vpi")
+            install(FILES ${ASSET} DESTINATION "./" COMPONENT Standalone)
+        else()
+            multicomp_install(
+                FILES ${ASSET}
+                DESTINATION "./"
+                COMPONENTS Standalone Update)
+        endif()
     endif()
 
     set(outfile "${destdir}/${filename}")
