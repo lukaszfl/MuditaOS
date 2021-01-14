@@ -292,7 +292,7 @@ add_custom_target(ecoboot.bin
     COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py -w ${CMAKE_BINARY_DIR}/update ecoboot download
     > ${CMAKE_BINARY_DIR}/update/download_info.txt
     BYPRODUCTS update/ecoboot.bin
-    COMMENT "Downloading bootloader"
+    COMMENT "Downloading ecoboot.bin"
     )
 add_custom_target(version.json
     COMMAND sed -i -e s/__BOOTLOADER_INCLUDED__/true/g ${CMAKE_BINARY_DIR}/update/version.json
@@ -402,21 +402,20 @@ configure_file(
     )
 
 set(CPACK_PACKAGE_VENDOR "Mudita")
+set(CPACK_PACKAGE_NAME "PurePhone")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://mudita.com/products/pure/")
-if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
-    set(CPACK_GENERATOR "ZIP")
-    set(PACKAGE_EXTENSION ".zip")
-    set(PACKAGE_MIME "application/zip")
-else()
-    set(CPACK_GENERATOR "TGZ")
-    set(PACKAGE_EXTENSION ".tar.gz")
-    set(PACKAGE_MIME "application/x-compressed-tar")
-endif()
-# set(CPACK_COMPONENTS_ALL standalone)
-set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-set(CPACK_COMPONENTS_GROUPING IGNORE)
+set(CPACK_TOPLEVEL_TAG "RT1051")
+set(PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CMAKE_PROJECT_VERSION}-${CPACK_TOPLEVEL_TAG}")
+set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME}")
+
 # prevent from additing the default 'package' CPack target
-set (CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/PackageConfig.cmake")
+set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/PackageConfig.cmake")
+
+set(CPACK_GENERATOR "External")
+set(CPACK_COMPONENTS_GROUPING IGNORE)
+set(CPACK_EXTERNAL_ENABLE_STAGING TRUE)
+
+set(PACKAGE_STAGING_DIRECTORY "${CMAKE_BINARY_DIR}/_CPack_Packages/${CPACK_TOPLEVEL_TAG}/${CPACK_GENERATOR}/${CPACK_PACKAGE_FILE_NAME}")
 
 include(CPack)
 
@@ -424,7 +423,36 @@ add_custom_target(package
     COMMAND "${CMAKE_CPACK_COMMAND}" 
     "-C" "$<CONFIGURATION>"
     "--config" "${CMAKE_BINARY_DIR}/PackageConfig.cmake"
-    DEPENDS ecoboot.bin version.json)
+    DEPENDS ecoboot.bin version.json
+    )
+
+if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
+    add_custom_target(standalone
+        COMMAND "zip" "-rq" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Standalone.zip" "./*"
+        WORKING_DIRECTORY "${PACKAGE_STAGING_DIRECTORY}/Standalone"
+        DEPENDS package
+        )
+else()
+    add_custom_target(standalone
+        COMMAND "tar"
+        "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Standalone.tar.gz"
+        "-C" "${PACKAGE_STAGING_DIRECTORY}/Standalone" "."
+        DEPENDS package
+        )
+endif()
+
+add_custom_target(update_package_checksums
+    COMMAND "rhash"
+    "-u" "${PACKAGE_STAGING_DIRECTORY}/Update/checksums.txt"
+    "-r" "${PACKAGE_STAGING_DIRECTORY}/Update"
+    DEPENDS package
+    )
+add_custom_target(update
+    COMMAND "tar"
+    "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Update.tar.gz"
+    "-C" "${PACKAGE_STAGING_DIRECTORY}/Update" "."
+    DEPENDS package update_package_checksums
+    )
 
 if (NOT "$ENV{GITHUB_WORKSPACE}" STREQUAL "")
     set(PACKAGE_FILE ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}${PACKAGE_EXTENSION})
