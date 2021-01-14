@@ -37,6 +37,7 @@ namespace stm
 
     bool CalendarTimeEvents::sendNextEventQuery()
     {
+        ///TODO:
         TimePoint filterFrom = TimePointNow();
         TimePoint filterTill = filterFrom;
         if (startTP != TIME_POINT_INVALID) {
