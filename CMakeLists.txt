@@ -266,13 +266,6 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
         COMPONENTS Standalone Update
         )
 
-    # create version.json file and fill it with info (at configure time)
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/config/version.json.cmake_template
-        ${CMAKE_BINARY_DIR}/update/version.json
-        @ONLY
-        )
-
     # download the bootloader
     add_custom_target(ecoboot.bin
         COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py -w ${CMAKE_BINARY_DIR}/update ecoboot download
@@ -369,6 +362,13 @@ add_custom_target(
 
 add_dependencies(${PROJECT_NAME} version)
 
+# create version.json file and fill it with info (at configure time)
+configure_file(
+    ${CMAKE_SOURCE_DIR}/config/version.json.cmake_template
+    ${CMAKE_BINARY_DIR}/update/version.json
+    @ONLY
+    )
+
 set(CPACK_PACKAGE_VENDOR "Mudita")
 set(CPACK_PACKAGE_NAME "PurePhone")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://mudita.com/products/pure/")
@@ -391,7 +391,7 @@ add_custom_target(package-staged
     "--config" "${CMAKE_BINARY_DIR}/PackageConfig.cmake"
     DEPENDS ecoboot.bin version.json
     )
-    
+
 if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
     set(PACKAGE_STANDALONE_FILE_NAME "${PACKAGE_COMMON_NAME}-Standalone.zip")
     set(PACKAGE_STANDALONE_MIME "application/zip")
