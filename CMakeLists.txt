@@ -354,47 +354,6 @@ add_custom_target(
 
 add_dependencies(${PROJECT_NAME} version)
 
-execute_process(
-    COMMAND git describe --tags
-    COMMAND awk -F- "{print $2}"
-    OUTPUT_VARIABLE GIT_TAG_SHORT
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-execute_process(
-    COMMAND uname -r
-    OUTPUT_VARIABLE BUILD_HOST
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-execute_process(
-    COMMAND whoami
-    OUTPUT_VARIABLE BUILD_USER
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-execute_process(
-    COMMAND date +%F-%T
-    OUTPUT_VARIABLE BUILD_DATE
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-execute_process(
-    COMMAND grep tskKERNEL_VERSION_NUMBER ${CMAKE_SOURCE_DIR}/module-os/FreeRTOS/include/task.h
-    COMMAND awk "{print $3}"
-    COMMAND tr -d "\""
-    OUTPUT_VARIABLE KERNEL_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-message(STATUS "GIT_BRANCH: ${GIT_BRANCH}")
-message(STATUS "GIT_TAG: ${GIT_TAG_SHORT}")
-message(STATUS "GIT_REV: ${GIT_REV}")
-message(STATUS "VERSION_MAJOR: ${CMAKE_PROJECT_VERSION_MAJOR} ")
-message(STATUS "VERSION_MINOR: ${CMAKE_PROJECT_VERSION_MINOR}")
-message(STATUS "VERSION_PATCH: ${CMAKE_PROJECT_VERSION_PATCH}")
-message(STATUS "VERSION_STRING: ${CMAKE_PROJECT_VERSION}")
-message(STATUS "BUILD_HOST: ${BUILD_HOST}")
-message(STATUS "BUILD_USER: ${BUILD_USER}")
-message(STATUS "BUILD_DATE: ${BUILD_DATE}")
-message(STATUS "KERNEL_VERSION: ${KERNEL_VERSION}")
-
 configure_file(
     ${CMAKE_SOURCE_DIR}/config/version.json.cmake_template
     ${CMAKE_BINARY_DIR}/update/version.json

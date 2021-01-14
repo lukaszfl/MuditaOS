@@ -4,7 +4,9 @@ set(VERSION_HEADER "${CMAKE_BINARY_DIR}/source/version.hpp")
 
 execute_process(COMMAND git log --pretty=format:'%h' -n 1
                 OUTPUT_VARIABLE GIT_REV
+                OUTPUT_STRIP_TRAILING_WHITESPACE
                 ERROR_QUIET)
+string(SUBSTRING "${GIT_REV}" 1 7 GIT_REV)
 
 if ( NOT SRC_DIR )
     set(SRC_DIR ${CMAKE_SOURCE_DIR})
@@ -21,25 +23,47 @@ else()
     execute_process(
         COMMAND bash -c "git diff --quiet --exit-code || echo +"
         OUTPUT_VARIABLE GIT_DIFF
+        OUTPUT_STRIP_TRAILING_WHITESPACE
         WORKING_DIRECTORY ${SRC_DIR}
         )
     execute_process(
         COMMAND git describe --tags
-        OUTPUT_VARIABLE GIT_TAG ERROR_QUIET RESULT_VARIABLE ret
+        RESULT_VARIABLE ret
+        OUTPUT_VARIABLE GIT_TAG  
+        OUTPUT_STRIP_TRAILING_WHITESPACE
         WORKING_DIRECTORY ${SRC_DIR}
+        ERROR_QUIET
         )
         if(NOT ret EQUAL "0")
             set(GIT_TAG "none")
         endif()
     execute_process(
         COMMAND git rev-parse --abbrev-ref HEAD
-        OUTPUT_VARIABLE GIT_BRANCH)
-
-    string(STRIP "${GIT_REV}" GIT_REV)
-    string(SUBSTRING "${GIT_REV}" 1 7 GIT_REV)
-    string(STRIP "${GIT_DIFF}" GIT_DIFF)
-    string(STRIP "${GIT_TAG}" GIT_TAG)
-    string(STRIP "${GIT_BRANCH}" GIT_BRANCH)
+        OUTPUT_VARIABLE GIT_BRANCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    execute_process(
+        COMMAND uname -r
+        OUTPUT_VARIABLE BUILD_HOST
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    execute_process(
+        COMMAND whoami
+        OUTPUT_VARIABLE BUILD_USER
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    execute_process(
+        COMMAND date +%F-%T
+        OUTPUT_VARIABLE BUILD_DATE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    execute_process(
+        COMMAND grep tskKERNEL_VERSION_NUMBER ${CMAKE_SOURCE_DIR}/module-os/FreeRTOS/include/task.h
+        COMMAND awk "{print $3}"
+        COMMAND tr -d "\""
+        OUTPUT_VARIABLE KERNEL_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
 endif()
 message("GIT_REV: ${GIT_REV}")
 message("GIT_TAG: ${GIT_TAG}")
