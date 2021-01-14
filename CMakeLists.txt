@@ -392,6 +392,18 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
         WORKING_DIRECTORY "${PACKAGE_STAGING_DIRECTORY}/Standalone"
         DEPENDS package-staged
         )
+    add_custom_target(package-update-checksums
+        COMMAND "rhash"
+        "-u" "${PACKAGE_STAGING_DIRECTORY}/Update/checksums.txt"
+        "-r" "${PACKAGE_STAGING_DIRECTORY}/Update"
+        DEPENDS package-staged
+        )
+    add_custom_target(package-update
+        COMMAND "tar"
+        "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Update.tar.gz"
+        "-C" "${PACKAGE_STAGING_DIRECTORY}/Update" "."
+        DEPENDS package-staged package-update-checksums
+        )
 else()
     add_custom_target(package-standalone
         COMMAND "tar"
@@ -400,19 +412,6 @@ else()
         DEPENDS package-staged
         )
 endif()
-
-add_custom_target(package-update-checksums
-    COMMAND "rhash"
-    "-u" "${PACKAGE_STAGING_DIRECTORY}/Update/checksums.txt"
-    "-r" "${PACKAGE_STAGING_DIRECTORY}/Update"
-    DEPENDS package-staged
-    )
-add_custom_target(package-update
-    COMMAND "tar"
-    "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Update.tar.gz"
-    "-C" "${PACKAGE_STAGING_DIRECTORY}/Update" "."
-    DEPENDS package-staged package-update-checksums
-    )
 
 if (NOT "$ENV{GITHUB_WORKSPACE}" STREQUAL "")
     set(PACKAGE_FILE ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}${PACKAGE_EXTENSION})
@@ -423,5 +422,3 @@ if (NOT "$ENV{GITHUB_WORKSPACE}" STREQUAL "")
     message("set-output name=mime_type::${PACKAGE_MIME}")
     message("::set-output name=mime_type::${PACKAGE_MIME}")
 endif()
-
-
