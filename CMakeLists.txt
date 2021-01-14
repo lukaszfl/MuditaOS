@@ -224,6 +224,8 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
         COMPONENTS Standalone Update
         )
     set(CPACK_SYSTEM_NAME "Linux")
+    # only allow the standalone package in Linux config
+    set(CPACK_COMPONENTS_ALL Standalone)
 endif()
 
 
@@ -254,6 +256,7 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
         ${HEX_FILE}-target ALL
         DEPENDS ${CMAKE_BINARY_DIR}/${HEX_FILE}
         )
+
     multicomp_install(FILES ${CMAKE_BINARY_DIR}/${BIN_FILE}
         DESTINATION "./"
         PERMISSIONS
@@ -262,7 +265,38 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
             WORLD_READ WORLD_EXECUTE
         COMPONENTS Standalone Update
         )
+
+    # create version.json file and fill it with info (at configure time)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/config/version.json.cmake_template
+        ${CMAKE_BINARY_DIR}/update/version.json
+        @ONLY
+        )
+
+    # download the bootloader
+    add_custom_target(ecoboot.bin
+        COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py -w ${CMAKE_BINARY_DIR}/update ecoboot download
+        > ${CMAKE_BINARY_DIR}/update/download_info.txt
+        BYPRODUCTS update/ecoboot.bin
+        COMMENT "Downloading ecoboot.bin"
+        )
+    # add bootloader information from the download script output to the version.json file (at build time)
+    add_custom_target(version.json
+        COMMAND sed -i -e s/__BOOTLOADER_INCLUDED__/true/g ${CMAKE_BINARY_DIR}/update/version.json
+        COMMAND sed -i -e s/__BOOTLOADER_FILENAME__/ecoboot.bin/g ${CMAKE_BINARY_DIR}/update/version.json
+        COMMAND sh -c "sed -i -e \"s/__BOOTLOADER_VERSION__/$( \
+        grep release: ${CMAKE_BINARY_DIR}/update/download_info.txt | \
+        awk '{print $2}' )/g\" \
+        ${CMAKE_BINARY_DIR}/update/version.json"
+        VERBATIM
+        DEPENDS ecoboot.bin
+        )
+    install(FILES ${CMAKE_BINARY_DIR}/update/ecoboot.bin DESTINATION "./" COMPONENT Update)
+    install(FILES ${CMAKE_BINARY_DIR}/update/version.json DESTINATION "./" COMPONENT Update)
+
     set(CPACK_SYSTEM_NAME "RT1051")
+    # allow both standalone and update packages in RT1051 config
+    set(CPACK_COMPONENTS_ALL Standalone Update)
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
@@ -287,27 +321,6 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
                 $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
         )
 endif()
-
-# download the bootloader
-add_custom_target(ecoboot.bin
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py -w ${CMAKE_BINARY_DIR}/update ecoboot download
-    > ${CMAKE_BINARY_DIR}/update/download_info.txt
-    BYPRODUCTS update/ecoboot.bin
-    COMMENT "Downloading ecoboot.bin"
-    )
-# add bootloader information from the download script output to the version.json file
-add_custom_target(version.json
-    COMMAND sed -i -e s/__BOOTLOADER_INCLUDED__/true/g ${CMAKE_BINARY_DIR}/update/version.json
-    COMMAND sed -i -e s/__BOOTLOADER_FILENAME__/ecoboot.bin/g ${CMAKE_BINARY_DIR}/update/version.json
-    COMMAND sh -c "sed -i -e \"s/__BOOTLOADER_VERSION__/$( \
-    grep release: ${CMAKE_BINARY_DIR}/update/download_info.txt | \
-    awk '{print $2}' )/g\" \
-    ${CMAKE_BINARY_DIR}/update/version.json"
-    VERBATIM
-    DEPENDS ecoboot.bin
-    )
-install(FILES ${CMAKE_BINARY_DIR}/update/ecoboot.bin DESTINATION "./" COMPONENT Update)
-install(FILES ${CMAKE_BINARY_DIR}/update/version.json DESTINATION "./" COMPONENT Update)
 
 message_serial_status()
 
@@ -356,12 +369,6 @@ add_custom_target(
 
 add_dependencies(${PROJECT_NAME} version)
 
-configure_file(
-    ${CMAKE_SOURCE_DIR}/config/version.json.cmake_template
-    ${CMAKE_BINARY_DIR}/update/version.json
-    @ONLY
-    )
-
 set(CPACK_PACKAGE_VENDOR "Mudita")
 set(CPACK_PACKAGE_NAME "PurePhone")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://mudita.com/products/pure/")
@@ -374,7 +381,6 @@ set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/PackageConfig.cmake")
 set(CPACK_GENERATOR "External")
 set(CPACK_COMPONENTS_GROUPING IGNORE)
 set(CPACK_EXTERNAL_ENABLE_STAGING TRUE)
-
 set(PACKAGE_STAGING_DIRECTORY "${CMAKE_BINARY_DIR}/_CPack_Packages/${CPACK_TOPLEVEL_TAG}/${CPACK_GENERATOR}/${CPACK_PACKAGE_FILE_NAME}")
 
 include(CPack)
@@ -385,6 +391,16 @@ add_custom_target(package-staged
     "--config" "${CMAKE_BINARY_DIR}/PackageConfig.cmake"
     DEPENDS ecoboot.bin version.json
     )
+
+# if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
+#     set(CPACK_GENERATOR "ZIP")
+#     set(PACKAGE_EXTENSION ".zip")
+#     set(PACKAGE_MIME "application/zip")
+# else()
+#     set(CPACK_GENERATOR "TGZ")
+#     set(PACKAGE_EXTENSION ".tar.gz")
+#     set(PACKAGE_MIME "application/x-compressed-tar")
+# endif()
 
 if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
     add_custom_target(package-standalone
@@ -404,7 +420,7 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
         "-C" "${PACKAGE_STAGING_DIRECTORY}/Update" "."
         DEPENDS package-staged package-update-checksums
         )
-else()
+elseif (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
     add_custom_target(package-standalone
         COMMAND "tar"
         "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_FILE_NAME}-Standalone.tar.gz"
