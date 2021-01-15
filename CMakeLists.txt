@@ -387,32 +387,32 @@ add_custom_target(package-staged
     )
 
 if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
-    set(PACKAGE_STANDALONE_FILE_NAME "${PACKAGE_COMMON_NAME}-Standalone.zip")
+    set(PACKAGE_STANDALONE_FILE_NAME ${PACKAGE_COMMON_NAME}-Standalone.zip)
     set(PACKAGE_STANDALONE_MIME "application/zip")
     add_custom_target(package-standalone
-        COMMAND "zip" "-rq" "${CMAKE_BINARY_DIR}/${PACKAGE_STANDALONE_FILE_NAME}" "./*"
-        WORKING_DIRECTORY "${PACKAGE_STAGING_DIRECTORY}/Standalone"
+        COMMAND zip -rq ${CMAKE_BINARY_DIR}/${PACKAGE_STANDALONE_FILE_NAME} "./*"
+        WORKING_DIRECTORY ${PACKAGE_STAGING_DIRECTORY}/Standalone
         DEPENDS package-staged
         )
     add_custom_target(package-update-checksums
-        COMMAND "rhash"
-        "-u" "${PACKAGE_STAGING_DIRECTORY}/Update/checksums.txt"
-        "-r" "${PACKAGE_STAGING_DIRECTORY}/Update"
+        COMMAND rhash
+        -u ${PACKAGE_STAGING_DIRECTORY}/Update/checksums.txt
+        -r ${PACKAGE_STAGING_DIRECTORY}/Update
         DEPENDS package-staged
         )
     add_custom_target(package-update
-        COMMAND "tar"
-        "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_COMMON_NAME}-Update.tar.gz"
-        "-C" "${PACKAGE_STAGING_DIRECTORY}/Update" "."
+        COMMAND tar
+        -czf ${CMAKE_BINARY_DIR}/${PACKAGE_COMMON_NAME}-Update.tar.gz
+        -C ${PACKAGE_STAGING_DIRECTORY}/Update "."
         DEPENDS package-staged package-update-checksums
         )
 elseif (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
-    set(PACKAGE_STANDALONE_FILE_NAME "${PACKAGE_COMMON_NAME}-Standalone.tar.gz")
+    set(PACKAGE_STANDALONE_FILE_NAME ${PACKAGE_COMMON_NAME}-Standalone.tar.gz)
     set(PACKAGE_STANDALONE_MIME "application/x-compressed-tar")
     add_custom_target(package-standalone
-        COMMAND "tar"
-        "-czf" "${CMAKE_BINARY_DIR}/${PACKAGE_STANDALONE_FILE_NAME}"
-        "-C" "${PACKAGE_STAGING_DIRECTORY}/Standalone" "."
+        COMMAND tar
+        -czf ${CMAKE_BINARY_DIR}/${PACKAGE_STANDALONE_FILE_NAME}
+        -C ${PACKAGE_STAGING_DIRECTORY}/Standalone "."
         DEPENDS package-staged
         )
 endif()
