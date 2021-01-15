@@ -22,8 +22,8 @@
 	},
 	"bootloader":
 	{
-		"included": "__BOOTLOADER_INCLUDED__",
-		"version": "__BOOTLOADER_VERSION__",
-		"filename": "__BOOTLOADER_FILENAME__"
+		"included": "@BOOTLOADER_INCLUDED@",
+		"version": "@BOOTLOADER_VERSION@",
+		"filename": "@BOOTLOADER_FILENAME@"
 	}
 }

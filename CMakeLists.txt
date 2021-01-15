@@ -268,20 +268,19 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
 
     # download the bootloader
     add_custom_target(ecoboot.bin
-        COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py -w ${CMAKE_BINARY_DIR}/update ecoboot download
+        COMMAND ${CMAKE_SOURCE_DIR}/tools/download_asset.py
+        -w ${CMAKE_BINARY_DIR}/update ecoboot download
         > ${CMAKE_BINARY_DIR}/update/download_info.txt
         BYPRODUCTS update/ecoboot.bin
         COMMENT "Downloading ecoboot.bin"
         )
-    # add bootloader information from the download script output to the version.json file (at build time)
-    add_custom_target(version.json
-        COMMAND sed -i -e s/__BOOTLOADER_INCLUDED__/true/g ${CMAKE_BINARY_DIR}/update/version.json
-        COMMAND sed -i -e s/__BOOTLOADER_FILENAME__/ecoboot.bin/g ${CMAKE_BINARY_DIR}/update/version.json
-        COMMAND sh -c "sed -i -e \"s/__BOOTLOADER_VERSION__/$( \
-        grep release: ${CMAKE_BINARY_DIR}/update/download_info.txt | \
-        awk '{print $2}' )/g\" \
-        ${CMAKE_BINARY_DIR}/update/version.json"
-        VERBATIM
+    # generate version.json file (runs CMake script at build time)
+    add_custom_target(
+        version.json
+        COMMAND ${CMAKE_COMMAND}
+        -DSRC_DIR=${CMAKE_SOURCE_DIR}
+        -B ${CMAKE_BINARY_DIR}
+        -P ${CMAKE_SOURCE_DIR}/config/VersionJson.cmake
         DEPENDS ecoboot.bin
         )
     install(FILES ${CMAKE_BINARY_DIR}/update/ecoboot.bin DESTINATION "./" COMPONENT Update)
@@ -351,23 +350,18 @@ else ()
 endif ()
 
 message("SRC DIR: ${CMAKE_SOURCE_DIR}")
+
 include(Version)
 add_custom_target(
     version ALL
-    COMMAND
-        ${CMAKE_COMMAND} -DSRC_DIR=${CMAKE_SOURCE_DIR} -B ${CMAKE_BINARY_DIR}  -P ${CMAKE_SOURCE_DIR}/config/Version.cmake
+    COMMAND ${CMAKE_COMMAND}
+    -DSRC_DIR=${CMAKE_SOURCE_DIR}
+    -B ${CMAKE_BINARY_DIR}
+    -P ${CMAKE_SOURCE_DIR}/config/VersionHpp.cmake
     COMMENT
-        "Generationg version info"
+        "Generating version info"
     )
-
 add_dependencies(${PROJECT_NAME} version)
-
-# create version.json file and fill it with info (at configure time)
-configure_file(
-    ${CMAKE_SOURCE_DIR}/config/version.json.cmake_template
-    ${CMAKE_BINARY_DIR}/update/version.json
-    @ONLY
-    )
 
 set(CPACK_PACKAGE_VENDOR "Mudita")
 set(CPACK_PACKAGE_NAME "PurePhone")
