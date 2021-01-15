@@ -117,7 +117,7 @@ namespace audio
         AudioServiceMessage::Callback serviceCallback;
 
         // for efficiency multiple of 24 and 32 (max audio samples size)
-        static constexpr auto defaultAudioStreamBlockSize = 2048;
+        static constexpr auto defaultAudioStreamBlockSize = 128;
         StandardStreamAllocator allocatorOut;
         Stream dataStreamOut{allocatorOut, defaultAudioStreamBlockSize};
 
