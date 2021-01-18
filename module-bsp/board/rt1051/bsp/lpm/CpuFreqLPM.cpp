@@ -29,7 +29,7 @@ namespace bsp
             /* Set AHB_PODF. */
             CLOCK_SetDiv(kCLOCK_AhbDiv, 0); // CBCDR
 
-            DCDC_AdjustTargetVoltage(DCDC, VDDRun_1050_mV, VDDStandby_925_mV); // 1050
+            DCDC_AdjustTargetVoltage(DCDC, VDDRun_1050_mV, VDDStandby_925_mV);
             break;
         case CpuClock::CpuClock_Pll2_66_Mhz:
             /* Set AHB_PODF. */
