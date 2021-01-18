@@ -46,8 +46,8 @@ namespace bsp{
         return currentDCDCMode;
     }
 
-    LowPowerMode::CoreVoltage LowPowerMode::GetCurrentCoreVoltage() const noexcept
+    LowPowerMode::LoadResistorState LowPowerMode::GetCurrentLoadResistorState() const noexcept
     {
-            return GetCurrentCoreVoltage;
+        return currentLoadResistorState;
     }
 }

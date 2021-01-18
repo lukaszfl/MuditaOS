@@ -26,7 +26,7 @@ namespace bsp
         void SwitchOscillatorSource(OscillatorSource source) final;
         void SwitchPll2State(Pll2State state) final;
         void SwitchDCDCMode(DCDCMode mode) final;
-        void SwitchCoreVoltage(CoreVoltage voltage) final;
+        void SwitchLoadResistorState(LoadResistorState state) final;
 
       private:
         [[nodiscard]] bool IsClockEnabled(clock_ip_name_t name) const noexcept;

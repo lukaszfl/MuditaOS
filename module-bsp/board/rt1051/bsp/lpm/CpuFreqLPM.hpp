@@ -9,6 +9,7 @@
 namespace bsp
 {
     inline constexpr uint32_t VDDRun_900_mV  = 0x4;
+    inline constexpr uint32_t VDDRun_925_mV  = 0x5;
     inline constexpr uint32_t VDDRun_1050_mV = 0xa;
     inline constexpr uint32_t VDDRun_1075_mV = 0xb;
     inline constexpr uint32_t VDDRun_1100_mV = 0xc;
