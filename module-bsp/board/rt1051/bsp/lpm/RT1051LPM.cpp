@@ -50,21 +50,27 @@ namespace bsp
         switch (freq) {
         case bsp::LowPowerMode::CpuFrequency::Level_1:
             CpuFreq->SetCpuFrequency(CpuFreqLPM::CpuClock::CpuClock_Osc_12_Mhz);
+            SwitchLoadResistorState(LowPowerMode::LoadResistorState::Enable);
             break;
         case bsp::LowPowerMode::CpuFrequency::Level_2:
             CpuFreq->SetCpuFrequency(CpuFreqLPM::CpuClock::CpuClock_Osc_24_Mhz);
+            SwitchLoadResistorState(LowPowerMode::LoadResistorState::Enable);
             break;
         case bsp::LowPowerMode::CpuFrequency::Level_3:
             CpuFreq->SetCpuFrequency(CpuFreqLPM::CpuClock::CpuClock_Pll2_66_Mhz);
+            SwitchLoadResistorState(LowPowerMode::LoadResistorState::Disable);
             break;
         case bsp::LowPowerMode::CpuFrequency::Level_4:
             CpuFreq->SetCpuFrequency(CpuFreqLPM::CpuClock::CpuClock_Pll2_132_Mhz);
+            SwitchLoadResistorState(LowPowerMode::LoadResistorState::Disable);
             break;
         case bsp::LowPowerMode::CpuFrequency::Level_5:
             CpuFreq->SetCpuFrequency(CpuFreqLPM::CpuClock::CpuClock_Pll2_264_Mhz);
+            SwitchLoadResistorState(LowPowerMode::LoadResistorState::Disable);
             break;
         case bsp::LowPowerMode::CpuFrequency::Level_6:
             CpuFreq->SetCpuFrequency(CpuFreqLPM::CpuClock::CpuClock_Pll2_528_Mhz);
+            SwitchLoadResistorState(LowPowerMode::LoadResistorState::Disable);
             break;
         }
         LOG_INFO("CPU frequency changed to %lu", CLOCK_GetFreq(kCLOCK_CpuClk));
