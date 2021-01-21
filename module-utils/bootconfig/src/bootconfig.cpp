@@ -96,6 +96,50 @@ namespace boot
             return contents;
         }
 
+        bool verifyCRC(const std::filesystem::path &file, const unsigned long crc32)
+        {
+            auto fp = fopen(file.c_str(), "r");
+            if (!fp) {
+                LOG_ERROR("verifyCRC can't open %s", file.c_str());
+                return false;
+            }
+            auto fpCloseAct = gsl::finally([fp] { fclose(fp); });
+
+            unsigned long crc32Read = utils::filesystem::computeFileCRC32(fp);
+            LOG_INFO(
+                "verifyCRC computed crc32 for %s is %08" PRIX32, file.c_str(), static_cast<std::uint32_t>(crc32Read));
+
+            return crc32Read == crc32;
+        }
+
+        bool readAndVerifyCRC(const std::filesystem::path &file)
+        {
+            fs::path crcFilePath(file);
+            crcFilePath += purefs::extension::crc32;
+
+            auto fp = fopen(crcFilePath.c_str(), "r");
+            if (!fp) {
+                LOG_ERROR("verifyCRC can't open %s", crcFilePath.c_str());
+                return false;
+            }
+            auto fpCloseAct = gsl::finally([fp] { fclose(fp); });
+
+            std::array<char, purefs::buffer::crc_char_size> crcBuf;
+
+            if (size_t readSize = ::fread(crcBuf.data(), 1, purefs::buffer::crc_char_size, fp);
+                readSize != purefs::buffer::crc_char_size) {
+                LOG_ERROR("verifyCRC fread on %s returned different size then %d [%zu]",
+                          crcFilePath.c_str(),
+                          purefs::buffer::crc_char_size,
+                          readSize);
+                return false;
+            }
+
+            const unsigned long crc32Read = strtoull(crcBuf.data(), nullptr, purefs::buffer::crc_radix);
+
+            LOG_INFO("verifyCRC read %s string:\"%s\" hex:%08lX", crcFilePath.c_str(), crcBuf.data(), crc32Read);
+            return verifyCRC(file, crc32Read);
+        }
     } // namespace
 
     BootConfig::BootConfig() : m_os_root_path(purefs::dir::getRootDiskPath())
@@ -192,7 +236,7 @@ namespace boot
             return false;
         }
     }
-    const std::filesystem::path BootConfig::getCurrentBootJSON()
+    std::filesystem::path BootConfig::getCurrentBootJSON() const
     {
         if (readAndVerifyCRC(purefs::file::boot_json)) {
             return purefs::createPath(purefs::dir::getRootDiskPath(), purefs::file::boot_json);
@@ -201,49 +245,5 @@ namespace boot
         // replace broken .boot.json with a default one
         writeToFile(purefs::dir::getRootDiskPath() / purefs::file::boot_json, to_json().dump());
         return purefs::createPath(purefs::dir::getRootDiskPath(), purefs::file::boot_json);
-    }
-
-    bool BootConfig::verifyCRC(const std::filesystem::path &file, const unsigned long crc32)
-    {
-        auto fp = fopen(file.c_str(), "r");
-        if (!fp) {
-            LOG_ERROR("verifyCRC can't open %s", file.c_str());
-            return false;
-        }
-        auto fpCloseAct = gsl::finally([fp] { fclose(fp); });
-
-        unsigned long crc32Read = utils::filesystem::computeFileCRC32(fp);
-        LOG_INFO("verifyCRC computed crc32 for %s is %08" PRIX32, file.c_str(), static_cast<std::uint32_t>(crc32Read));
-
-        return crc32Read == crc32;
-    }
-
-    bool BootConfig::readAndVerifyCRC(const std::filesystem::path &file)
-    {
-        fs::path crcFilePath(file);
-        crcFilePath += purefs::extension::crc32;
-
-        auto fp = fopen(crcFilePath.c_str(), "r");
-        if (!fp) {
-            LOG_ERROR("verifyCRC can't open %s", crcFilePath.c_str());
-            return false;
-        }
-        auto fpCloseAct = gsl::finally([fp] { fclose(fp); });
-
-        std::array<char, purefs::buffer::crc_char_size> crcBuf;
-
-        if (size_t readSize = ::fread(crcBuf.data(), 1, purefs::buffer::crc_char_size, fp);
-            readSize != purefs::buffer::crc_char_size) {
-            LOG_ERROR("verifyCRC fread on %s returned different size then %d [%zu]",
-                      crcFilePath.c_str(),
-                      purefs::buffer::crc_char_size,
-                      readSize);
-            return false;
-        }
-
-        const unsigned long crc32Read = strtoull(crcBuf.data(), nullptr, purefs::buffer::crc_radix);
-
-        LOG_INFO("verifyCRC read %s string:\"%s\" hex:%08lX", crcFilePath.c_str(), crcBuf.data(), crc32Read);
-        return verifyCRC(file, crc32Read);
     }
 } // namespace boot

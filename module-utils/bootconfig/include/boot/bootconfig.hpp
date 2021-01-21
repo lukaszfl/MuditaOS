@@ -44,9 +44,7 @@ namespace boot
 
       private:
         bool loadBootConfig(const std::filesystem::path &bootJsonPath);
-        const std::filesystem::path getCurrentBootJSON();
-        bool verifyCRC(const std::filesystem::path &filePath, const unsigned long crc32);
-        bool readAndVerifyCRC(const std::filesystem::path &filePath);
+        std::filesystem::path getCurrentBootJSON() const;
 
       private:
         std::string m_os_image{"boot.bin"};
