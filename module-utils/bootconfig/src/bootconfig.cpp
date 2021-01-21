@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <log/log.hpp>
 #include <crc32/crc32.h>
+#include <array>
 #include <Utils.hpp>
 
 namespace boot
@@ -32,54 +33,51 @@ namespace boot
 
         bool updateFileCRC32(const fs::path &file)
         {
-            auto lamb               = [](::FILE *stream) { ::fclose(stream); };
-
-            std::unique_ptr<::FILE, decltype(lamb)> fp(fopen(file.c_str(), "r"), lamb);
-
-            if (fp.get() != nullptr) {
-                std::unique_ptr<char[]> crc32Buf(new char[purefs::buffer::crc_char_size]);
-                int written = 0;
-                unsigned long fileCRC32 = utils::filesystem::computeCRC32(fp.get());
-                LOG_INFO("updateFileCRC32 writing new crc32 %08" PRIX32 " for %s",
-                         static_cast<std::uint32_t>(fileCRC32),
-                         file.c_str());
-                if (fileCRC32 != 0) {
-                    if ((written = sprintf(crc32Buf.get(), "%08" PRIX32, fileCRC32)) !=
-                        (purefs::buffer::crc_char_size - 1)) {
-                        LOG_INFO("updateFileCRC32 can't prepare string for crc32, sprintf returned %d instead of %d",
-                                 written,
-                                 purefs::buffer::crc_char_size - 1);
-                        return false;
-                    }
-                    fs::path fileCRC32Path = file;
-                    fileCRC32Path += purefs::extension::crc32;
-
-                    std::unique_ptr<::FILE, decltype(lamb)> fpCRC32(fopen(fileCRC32Path.c_str(), "w"), lamb);
-
-                    if (fpCRC32.get() != nullptr) {
-                        if (fwrite(crc32Buf.get(), 1, purefs::buffer::crc_char_size, fpCRC32.get()) ==
-                            purefs::buffer::crc_char_size) {
-                            LOG_INFO("updateFileCRC32 wrote \"%s\" in %s", crc32Buf.get(), fileCRC32Path.c_str());
-                            return true;
-                        }
-                        else {
-                            LOG_WARN("updateFileCRC32 can't write new crc32");
-                            return false;
-                        }
-                    }
-                    else {
-                        LOG_WARN("updateFileCRC32 can't open crc32 file for write");
-                        return false;
-                    }
-                }
-            }
-            else {
+            auto fp = fopen(file.c_str(), "r");
+            if (!fp) {
                 LOG_WARN("updateFileCRC32 can't open file %s for write", file.c_str());
                 return false;
             }
+            auto fpCloseAct = gsl::finally([fp] { fclose(fp); });
 
-            return false;
+            unsigned long fileCRC32 = utils::filesystem::computeCRC32(fp);
+            LOG_INFO("updateFileCRC32 writing new crc32 %08" PRIX32 " for %s",
+                     static_cast<std::uint32_t>(fileCRC32),
+                     file.c_str());
+
+            if (fileCRC32 == 0) {
+                return false;
+            }
+
+            std::array<char, purefs::buffer::crc_char_size> crc32Buf;
+
+            if (int written = sprintf(crc32Buf.data(), "%08" PRIX32, fileCRC32);
+                written != purefs::buffer::crc_char_size - 1) {
+                LOG_INFO("updateFileCRC32 can't prepare string for crc32, sprintf returned %d instead of %d",
+                         written,
+                         purefs::buffer::crc_char_size - 1);
+                return false;
+            }
+
+            fs::path fileCRC32Path = file;
+            fileCRC32Path += purefs::extension::crc32;
+
+            auto fpCRC32 = fopen(fileCRC32Path.c_str(), "w");
+            if (!fpCRC32) {
+                LOG_WARN("updateFileCRC32 can't open crc32 file for write");
+                return false;
+            }
+            auto fpCRC32CloseAct = gsl::finally([fpCRC32] { fclose(fpCRC32); });
+
+            if (fwrite(crc32Buf.data(), 1, purefs::buffer::crc_char_size, fpCRC32) != purefs::buffer::crc_char_size) {
+                LOG_WARN("updateFileCRC32 can't write new crc32");
+                return false;
+            }
+
+            LOG_INFO("updateFileCRC32 wrote \"%s\" in %s", crc32Buf.data(), fileCRC32Path.c_str());
+            return true;
         }
+
         std::string loadFileAsString(const fs::path &fileToLoad)
         {
             auto lamb = [](::FILE *stream) { ::fclose(stream); };
