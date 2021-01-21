@@ -40,7 +40,7 @@ namespace boot
             }
             auto fpCloseAct = gsl::finally([fp] { fclose(fp); });
 
-            unsigned long fileCRC32 = utils::filesystem::computeCRC32(fp);
+            unsigned long fileCRC32 = utils::filesystem::computeFileCRC32(fp);
             LOG_INFO("updateFileCRC32 writing new crc32 %08" PRIX32 " for %s",
                      static_cast<std::uint32_t>(fileCRC32),
                      file.c_str());
@@ -210,7 +210,7 @@ namespace boot
         std::unique_ptr<::FILE, decltype(lamb)> fp(::fopen(filePath.c_str(), "r"), lamb);
 
         if (fp.get() != nullptr) {
-            unsigned long crc32Read = utils::filesystem::computeCRC32(fp.get());
+            unsigned long crc32Read = utils::filesystem::computeFileCRC32(fp.get());
             LOG_INFO("verifyCRC computed crc32 for %s is %08" PRIX32,
                      filePath.c_str(),
                      static_cast<std::uint32_t>(crc32Read));

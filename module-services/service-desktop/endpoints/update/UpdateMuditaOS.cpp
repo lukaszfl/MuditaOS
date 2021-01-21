@@ -380,7 +380,7 @@ updateos::UpdateError UpdateMuditaOS::updateBootJSON()
     auto *fp = std::fopen(bootJSONAbsoulte.c_str(), "r");
 
     if (fp != nullptr) {
-        unsigned long bootJSONAbsoulteCRC = utils::filesystem::computeCRC32(fp);
+        unsigned long bootJSONAbsoulteCRC = utils::filesystem::computeFileCRC32(fp);
         bootJSONAbsoulte += purefs::extension::crc32;
 
         auto *fpCRC = std::fopen(bootJSONAbsoulte.c_str(), "w");

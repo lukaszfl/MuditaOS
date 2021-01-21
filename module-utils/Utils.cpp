@@ -24,7 +24,7 @@ namespace utils::filesystem
         return endPosition;
     }
 
-    unsigned long computeCRC32(::FILE *file) noexcept
+    unsigned long computeFileCRC32(::FILE *file) noexcept
     {
         auto buf = std::make_unique<unsigned char[]>(purefs::buffer::crc_buf);
 
