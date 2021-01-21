@@ -2,6 +2,7 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 #include <boot/bootconfig.hpp>
 
+#include <module-utils/gsl/gsl_util>
 #include <purefs/filesystem_paths.hpp>
 #include <source/version.hpp>
 #include <time/time_conversion.hpp>
@@ -14,36 +15,39 @@ namespace boot
 {
     namespace
     {
-        bool replaceWithString(const fs::path &fileToModify, const std::string &stringToWrite)
-        {
-            auto lamb = [](::FILE *stream) { fclose(stream); };
-            std::unique_ptr<::FILE, decltype(lamb)> fp(fopen(fileToModify.c_str(), "w"), lamb);
+        // TODO: find functions that were removed from VFS class and replaced with methods of the same name
+        // declared in classes which use them; check if their usage still makes sense, if their is not misleading
+        // and whether they require a refactor
 
-            if (fp.get() != nullptr) {
-                size_t dataWritten = fwrite(stringToWrite.c_str(), stringToWrite.length(), 1, fp.get());
-                return dataWritten == 1;
-            }
-            else {
+        bool writeToFile(const fs::path &fileToModify, const std::string &stringToWrite)
+        {
+            auto fp = fopen(fileToModify.c_str(), "w");
+            if (!fp) {
                 return false;
             }
+
+            size_t dataWritten = fwrite(stringToWrite.c_str(), stringToWrite.length(), 1, fp);
+
+            fclose(fp);
+
+            return dataWritten == 1;
         }
-        void computeCRC32(::FILE *file, unsigned long *outCrc32)
+
+        unsigned long computeFileCRC32(::FILE *file)
         {
-            if (outCrc32 == nullptr)
-                return;
+            auto buf = std::make_unique<unsigned char[]>(purefs::buffer::crc_buf);
 
-            std::unique_ptr<unsigned char[]> buf(new unsigned char[purefs::buffer::crc_buf]);
-            size_t bufLen;
-
-            *outCrc32 = 0;
-
+            unsigned long crc32 = 0;
             while (!::feof(file)) {
-                bufLen = ::fread(buf.get(), 1, purefs::buffer::crc_buf, file);
-                if (bufLen <= 0)
-                    break;
+                size_t data_len = ::fread(buf.get(), 1, purefs::buffer::crc_buf, file);
+                if (data_len == 0) {
+                    return crc32;
+                }
 
-                *outCrc32 = Crc32_ComputeBuf(*outCrc32, buf.get(), bufLen);
+                crc32 = Crc32_ComputeBuf(crc32, buf.get(), data_len);
             }
+
+            return crc32;
         }
 
         bool updateFileCRC32(const fs::path &file)
@@ -56,7 +60,7 @@ namespace boot
             if (fp.get() != nullptr) {
                 std::unique_ptr<char[]> crc32Buf(new char[purefs::buffer::crc_char_size]);
                 int written = 0;
-                computeCRC32(fp.get(), &fileCRC32);
+                fileCRC32 = computeFileCRC32(fp.get());
                 LOG_INFO("updateFileCRC32 writing new crc32 %08" PRIX32 " for %s",
                          static_cast<std::uint32_t>(fileCRC32),
                          file.c_str());
@@ -173,7 +177,7 @@ namespace boot
         m_timestamp = utils::time::Timestamp().str("%c");
         LOG_INFO("vfs::updateTimestamp \"%s\"", to_json().dump().c_str());
 
-        if (replaceWithString(m_boot_json, to_json().dump())) {
+        if (writeToFile(m_boot_json, to_json().dump())) {
             updateFileCRC32(m_boot_json);
         }
     }
@@ -218,7 +222,7 @@ namespace boot
         }
         LOG_INFO("vfs::getCurrentBootJSON crc check failed on %s", purefs::file::boot_json);
         // replace broken .boot.json with a default one
-        replaceWithString(purefs::dir::getRootDiskPath() / purefs::file::boot_json, to_json().dump());
+        writeToFile(purefs::dir::getRootDiskPath() / purefs::file::boot_json, to_json().dump());
         return purefs::createPath(purefs::dir::getRootDiskPath(), purefs::file::boot_json);
     }
 
@@ -230,7 +234,7 @@ namespace boot
         std::unique_ptr<::FILE, decltype(lamb)> fp(::fopen(filePath.c_str(), "r"), lamb);
 
         if (fp.get() != nullptr) {
-            computeCRC32(fp.get(), &crc32Read);
+            crc32Read = computeFileCRC32(fp.get());
             LOG_INFO("verifyCRC computed crc32 for %s is %08" PRIX32,
                      filePath.c_str(),
                      static_cast<std::uint32_t>(crc32Read));
