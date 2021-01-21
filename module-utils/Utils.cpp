@@ -30,12 +30,12 @@ namespace utils::filesystem
 
         unsigned long crc32 = 0;
         while (!::feof(file)) {
-            size_t data_len = ::fread(buf.get(), 1, purefs::buffer::crc_buf, file);
-            if (data_len == 0) {
+            size_t dataLen = ::fread(buf.get(), 1, purefs::buffer::crc_buf, file);
+            if (dataLen == 0) {
                 return crc32;
             }
 
-            crc32 = Crc32_ComputeBuf(crc32, buf.get(), data_len);
+            crc32 = Crc32_ComputeBuf(crc32, buf.get(), dataLen);
         }
 
         return crc32;
