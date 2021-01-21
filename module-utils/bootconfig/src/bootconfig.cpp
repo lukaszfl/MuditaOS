@@ -10,15 +10,12 @@
 #include <stdio.h>
 #include <log/log.hpp>
 #include <crc32/crc32.h>
+#include <Utils.hpp>
 
 namespace boot
 {
     namespace
     {
-        // TODO: find functions that were removed from VFS class and replaced with methods of the same name
-        // declared in classes which use them; check if their usage still makes sense, if their is not misleading
-        // and whether they require a refactor
-
         bool writeToFile(const fs::path &fileToModify, const std::string &stringToWrite)
         {
             auto fp = fopen(fileToModify.c_str(), "w");
@@ -33,26 +30,8 @@ namespace boot
             return dataWritten == 1;
         }
 
-        unsigned long computeFileCRC32(::FILE *file)
-        {
-            auto buf = std::make_unique<unsigned char[]>(purefs::buffer::crc_buf);
-
-            unsigned long crc32 = 0;
-            while (!::feof(file)) {
-                size_t data_len = ::fread(buf.get(), 1, purefs::buffer::crc_buf, file);
-                if (data_len == 0) {
-                    return crc32;
-                }
-
-                crc32 = Crc32_ComputeBuf(crc32, buf.get(), data_len);
-            }
-
-            return crc32;
-        }
-
         bool updateFileCRC32(const fs::path &file)
         {
-            unsigned long fileCRC32 = 0;
             auto lamb               = [](::FILE *stream) { ::fclose(stream); };
 
             std::unique_ptr<::FILE, decltype(lamb)> fp(fopen(file.c_str(), "r"), lamb);
@@ -60,7 +39,7 @@ namespace boot
             if (fp.get() != nullptr) {
                 std::unique_ptr<char[]> crc32Buf(new char[purefs::buffer::crc_char_size]);
                 int written = 0;
-                fileCRC32 = computeFileCRC32(fp.get());
+                unsigned long fileCRC32 = utils::filesystem::computeCRC32(fp.get());
                 LOG_INFO("updateFileCRC32 writing new crc32 %08" PRIX32 " for %s",
                          static_cast<std::uint32_t>(fileCRC32),
                          file.c_str());
@@ -228,13 +207,12 @@ namespace boot
 
     bool BootConfig::verifyCRC(const std::string filePath, const unsigned long crc32)
     {
-        unsigned long crc32Read;
         auto lamb = [](::FILE *stream) { ::fclose(stream); };
 
         std::unique_ptr<::FILE, decltype(lamb)> fp(::fopen(filePath.c_str(), "r"), lamb);
 
         if (fp.get() != nullptr) {
-            crc32Read = computeFileCRC32(fp.get());
+            unsigned long crc32Read = utils::filesystem::computeCRC32(fp.get());
             LOG_INFO("verifyCRC computed crc32 for %s is %08" PRIX32,
                      filePath.c_str(),
                      static_cast<std::uint32_t>(crc32Read));
