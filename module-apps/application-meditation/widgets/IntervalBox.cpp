@@ -56,13 +56,13 @@ void IntervalBox::build()
                                      boxStyle::arrow::Y,
                                      boxStyle::arrow::Width,
                                      boxStyle::arrow::Height,
-                                     "left_label_arrow");
+                                     "left_label_arrow_W_M");
     rightSwitchArrow = new gui::Image(bottomLabel,
                                       boxStyle::arrow::RightX,
                                       boxStyle::arrow::Y,
                                       boxStyle::arrow::Width,
                                       boxStyle::arrow::Height,
-                                      "right_label_arrow");
+                                      "right_label_arrow_W_M");
 
 
     updateIntervals(ChimeIntervalList::Direction::Next);

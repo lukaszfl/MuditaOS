@@ -89,6 +89,6 @@ OptionItemPreparation::OptionItemPreparation()
                            listStyle::image::Y,
                            listStyle::image::Width,
                            listStyle::image::Height,
-                           "right_label_arrow_border");
+                           "right_label_arrow_border_W_M");
     image->setVisible(true);
 }

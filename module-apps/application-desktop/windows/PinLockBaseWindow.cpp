@@ -74,7 +74,7 @@ namespace gui
         iceBox->setEdges(RectangleEdge::None);
         iceBox->setVisible(false);
 
-        auto arrow        = new gui::Image("left_label_arrow");
+        auto arrow        = new gui::Image("left_label_arrow_W_M");
         arrow->activeItem = false;
         arrow->setAlignment(Alignment(Alignment::Horizontal::Left, Alignment::Vertical::Center));
         arrow->setMargins(Margins(0, 0, ice::margin, 0));
