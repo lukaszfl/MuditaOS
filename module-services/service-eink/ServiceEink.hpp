@@ -6,6 +6,7 @@
 #include <Service/Common.hpp>
 #include <Service/Message.hpp>
 #include <Service/Service.hpp>
+#include <Service/Timer.hpp>
 
 #include "EinkDisplay.hpp"
 
@@ -50,10 +51,11 @@ namespace service::eink
         sys::MessagePointer handleEinkModeChangedMessage(sys::Message *message);
         sys::MessagePointer handleImageMessage(sys::Message *message);
         sys::MessagePointer handlePrepareEarlyRequest(sys::Message *message);
+        sys::MessagePointer handlePowerOffRequest(sys::Message *message);
 
         EinkDisplay display;
         State currentState;
-
+        std::unique_ptr<sys::Timer> displayPowerOffTimer;
         /*
          * PowerOffTimer to be implemented when needed.
          * It should power off the display when not used for 3000ms.

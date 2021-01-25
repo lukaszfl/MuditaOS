@@ -19,6 +19,7 @@
 
 #include <gsl/gsl_util>
 #include <purefs/filesystem_paths.hpp>
+#include <EinkPowerOffRequest.hpp>
 
 namespace service::gui
 {
@@ -121,7 +122,7 @@ namespace service::gui
                 setState(State::Suspended);
             }
 
-            if (!contextPool->isAnyContextLocked()) {
+            if (!isNextFrameBeingPrepared()) {
                 prepareDisplayEarly(drawMsg->mode);
             }
             notifyRenderer(std::move(drawMsg->commands), drawMsg->mode);
@@ -188,7 +189,7 @@ namespace service::gui
         contextReleaseTimer->connect([this, contextId](sys::Timer &it) {
             eink::ImageDisplayedNotification notification{contextId};
             handleImageDisplayedNotification(&notification);
-            LOG_WARN("Context # %d released after timeout. Does ServiceEink respond properly?", contextId);
+            LOG_WARN("Context #%d released after timeout. Does ServiceEink respond properly?", contextId);
         });
         contextReleaseTimer->start();
     }
@@ -222,6 +223,11 @@ namespace service::gui
         if (isNextFrameReady()) {
             trySendNextFrame();
         }
+        else if (!isNextFrameBeingPrepared()) {
+            // eink is clear to power off
+            auto poweroffMessage = std::make_shared<service::eink::EinkPowerOffRequest>();
+            sys::Bus::SendUnicast(poweroffMessage, service::name::eink, this);
+        }
         return sys::MessageNone{};
     }
 
@@ -229,7 +235,12 @@ namespace service::gui
     {
         // Even if the next render is already cached, if any context in the pool is currently being processed, then we
         // better wait for it.
-        return cachedRender.has_value() && !contextPool->isAnyContextLocked();
+        return cachedRender.has_value() && !isNextFrameBeingPrepared();
+    }
+
+    bool ServiceGUI::isNextFrameBeingPrepared() const noexcept
+    {
+        return contextPool->isAnyContextLocked();
     }
 
     void ServiceGUI::trySendNextFrame()

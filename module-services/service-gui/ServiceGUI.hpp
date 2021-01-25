@@ -67,6 +67,7 @@ namespace service::gui
         void sendOnDisplay(::gui::Context *context, int contextId, ::gui::RefreshModes refreshMode);
         void scheduleContextRelease(int contextId);
         bool isNextFrameReady() const noexcept;
+        bool isNextFrameBeingPrepared() const noexcept;
         void trySendNextFrame();
 
         void setState(State state) noexcept;

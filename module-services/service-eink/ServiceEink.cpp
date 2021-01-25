@@ -3,9 +3,10 @@
 
 #include "ServiceEink.hpp"
 #include "messages/EinkModeMessage.hpp"
+#include "messages/EinkPowerOffRequest.hpp"
 #include "messages/PrepareDisplayEarlyRequest.hpp"
-#include <service-gui/Common.hpp>
 #include <service-gui/messages/EinkInitialized.hpp>
+#include <service-gui/Common.hpp>
 #include <time/ScopedTime.hpp>
 
 #include <log/log.hpp>
@@ -21,10 +22,13 @@ namespace service::eink
     namespace
     {
         constexpr auto ServceEinkStackDepth = 4096 + 1024;
+        constexpr std::chrono::milliseconds displayPowerOffTimeout{3800};
     } // namespace
 
     ServiceEink::ServiceEink(const std::string &name, std::string parent)
-        : sys::Service(name, parent, ServceEinkStackDepth), currentState{State::Running}
+        : sys::Service(name, parent, ServceEinkStackDepth), currentState{State::Running},
+          displayPowerOffTimer{
+              std::make_unique<sys::Timer>(this, displayPowerOffTimeout.count(), sys::Timer::Type::SingleShot)}
     {
         connect(typeid(EinkModeMessage),
                 [this](sys::Message *message) -> sys::MessagePointer { return handleEinkModeChangedMessage(message); });
@@ -34,6 +38,13 @@ namespace service::eink
 
         connect(typeid(PrepareDisplayEarlyRequest),
                 [this](sys::Message *request) -> sys::MessagePointer { return handlePrepareEarlyRequest(request); });
+
+        connect(typeid(EinkPowerOffRequest),
+                [this](sys::Message *request) -> sys::MessagePointer { return handlePowerOffRequest(request); });
+
+        displayPowerOffTimer->connect([this](sys::Timer &it) {
+            display.powerOff();
+        });
     }
 
     sys::MessagePointer ServiceEink::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *response)
@@ -142,6 +153,7 @@ namespace service::eink
     void ServiceEink::prepareDisplay(::gui::RefreshModes refreshMode, WaveformTemperature behaviour)
     {
         LOG_FATAL("display prepare: start");
+        displayPowerOffTimer->stop();
         display.powerOn();
         LOG_FATAL("display prepare: power on done");
         const auto temperature = behaviour == WaveformTemperature::KEEP_CURRENT ? display.getLastTemperature() : EinkGetTemperatureInternal();
@@ -161,6 +173,11 @@ namespace service::eink
         const auto waveformUpdateMsg = static_cast<service::eink::PrepareDisplayEarlyRequest *>(message);
         LOG_FATAL("display: prepare early start");
         prepareDisplay(waveformUpdateMsg->getRefreshMode(), WaveformTemperature::MEASURE_NEW);
+        return sys::MessageNone{};
+    }
+    sys::MessagePointer ServiceEink::handlePowerOffRequest(sys::Message *message)
+    {
+        displayPowerOffTimer->start();
         return sys::MessageNone{};
     }
 
