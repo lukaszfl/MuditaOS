@@ -115,7 +115,10 @@ namespace service::eink
         }
         utils::time::Scoped measurement("ImageMessage");
 
+        LOG_FATAL("display: update start");
         updateDisplay(message->getData(), message->getRefreshMode());
+        LOG_FATAL("display: update done");
+
         return std::make_shared<service::eink::ImageDisplayedNotification>(message->getContextId());
     }
 
@@ -126,6 +129,7 @@ namespace service::eink
         if (const auto status = display.update(frameBuffer); status != EinkOK) {
             LOG_FATAL("Failed to update frame");
         }
+        LOG_FATAL("display: update frame done");
 
         const auto isDeepRefresh = refreshMode == ::gui::RefreshModes::GUI_REFRESH_DEEP;
         if (const auto status =
@@ -137,9 +141,11 @@ namespace service::eink
 
     void ServiceEink::prepareDisplay(::gui::RefreshModes refreshMode)
     {
+        LOG_FATAL("display prepare: start");
         display.powerOn();
-
+        LOG_FATAL("display prepare: power on done");
         const auto temperature = EinkGetTemperatureInternal();
+        LOG_FATAL("display prepare: temp done");
         if (refreshMode == ::gui::RefreshModes::GUI_REFRESH_DEEP) {
             display.setWaveform(EinkWaveforms_e::EinkWaveformGC16, temperature);
             display.dither();
@@ -147,11 +153,13 @@ namespace service::eink
         else {
             display.setWaveform(EinkWaveforms_e::EinkWaveformDU2, temperature);
         }
+        LOG_FATAL("display prepare: done");
     }
 
     sys::MessagePointer ServiceEink::handlePrepareEarlyRequest(sys::Message *message)
     {
         const auto waveformUpdateMsg = static_cast<service::eink::PrepareDisplayEarlyRequest *>(message);
+        LOG_FATAL("display: prepare early start");
         prepareDisplay(waveformUpdateMsg->getRefreshMode());
         return sys::MessageNone{};
     }
