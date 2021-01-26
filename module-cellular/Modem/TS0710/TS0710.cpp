@@ -272,6 +272,9 @@ TS0710::ConfState TS0710::AudioConfProcedure()
         return ConfState ::Failure;
     }
     else if (ret.response[0].compare("+QDAI: 1,0,0,5,0,1,1,1") == 0) {
+        parser->cmd(at::AT::QRXGAIN);
+        parser->cmd(at::AT::CLVL);
+        parser->cmd(at::AT::QMIC);
         return ConfState ::Success;
     }
     else {

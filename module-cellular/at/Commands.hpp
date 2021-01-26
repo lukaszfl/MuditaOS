@@ -151,10 +151,13 @@ namespace at
         COLP_GET,
         COLP_ENABLE,
         COLP_DISABLE,
-        CSSN,   /// Supplementary Services - Supplementary Service Notifications
-        QICSGP, /// Configure Parameters of a TCP/IP Context
-        QIACT,  /// Activate a PDP Context
-        QIDEACT /// Deactivate a PDP Context
+        CSSN,    /// Supplementary Services - Supplementary Service Notifications
+        QICSGP,  /// Configure Parameters of a TCP/IP Context
+        QIACT,   /// Activate a PDP Context
+        QIDEACT, /// Deactivate a PDP Context
+        QRXGAIN,
+        CLVL,
+        QMIC
     };
 
     // below timeouts are defined in Quectel_EC25&EC21_AT_Commands_Manual_V1.3.pdf
@@ -184,7 +187,7 @@ namespace at
             {AT::SMS_GSM, {"AT+CSCS=\"GSM\""}},
             {AT::QSCLK_ON, {"AT+QSCLK=1", 3000}},
             {AT::QDAI, {"AT+QDAI?"}},
-            {AT::QDAI_INIT, {"AT+QDAI=1,0,0,5,0,1"}},
+            {AT::QDAI_INIT, {"AT+QDAI=1,0,0,5,0,1,1,1"}}, // 1,0,0,5,0,1
             {AT::SET_URC_CHANNEL, {"AT+QCFG=\"cmux/urcport\",2", default_doc_timeout}},
             {AT::CSQ, {"AT+CSQ", default_doc_timeout}},
             {AT::CLCC, {"AT+CLCC", default_doc_timeout}},
@@ -254,7 +257,10 @@ namespace at
             {AT::CSSN, {"AT+CSSN=\"", default_doc_timeout}},
             {AT::QICSGP, {"AT+QICSGP", default_timeout}},
             {AT::QIACT, {"AT+QIACT", 150000}},
-            {AT::QIDEACT, {"AT+QIDEACT", 40000}}};
+            {AT::QIDEACT, {"AT+QIDEACT", 40000}},
+            {AT::QRXGAIN, {"AT+QRXGAIN=65535", default_timeout}},
+            {AT::CLVL, {"AT+CLVL=5", default_timeout}},
+            {AT::QMIC, {"AT+QMIC=65535,65535", default_timeout}}};
 
         if (fact.count(at)) {
             return fact.at(at);
