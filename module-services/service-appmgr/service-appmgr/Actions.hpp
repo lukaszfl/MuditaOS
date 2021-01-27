@@ -29,6 +29,7 @@ namespace app::manager
             Dial,
             EmergencyDial,
             ShowCallLog,
+            ClosePopup,
             CreateSms,
             ShowSmsTemplates,
             ShowContacts,

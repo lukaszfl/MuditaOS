@@ -50,10 +50,10 @@ namespace app
         : Application(name, parent, startInBackground, stackDepth, priority)
     {
         busChannels.push_back(sys::BusChannels::ServiceDBNotifications);
-        addActionReceiver(manager::actions::ShowReminder, [this](auto &&data) {
-            switchWindow(style::window::calendar::name::event_reminder_window, std::move(data));
-            return msgHandled();
-        });
+//        addActionReceiver(manager::actions::ShowReminder, [this](auto &&data) {
+//            switchWindow(style::window::calendar::name::event_reminder_window, std::move(data));
+//            return msgHandled();
+//        });
     }
 
     sys::MessagePointer ApplicationCalendar::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
@@ -139,9 +139,9 @@ namespace app
         windowsFactory.attach(custom_repeat_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::CustomRepeatWindow>(app, custom_repeat_window);
         });
-        windowsFactory.attach(event_reminder_window, [](Application *app, const std::string &name) {
-            return std::make_unique<gui::EventReminderWindow>(app, event_reminder_window);
-        });
+//        windowsFactory.attach(event_reminder_window, [](Application *app, const std::string &name) {
+//            return std::make_unique<gui::EventReminderWindow>(app, event_reminder_window);
+//        });
     }
 
     void ApplicationCalendar::destroyUserInterface()

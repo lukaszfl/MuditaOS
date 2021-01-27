@@ -146,7 +146,7 @@ namespace gui
         }
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_ENTER) {
-            closeReminder();
+            onPressOK();
             return true;
         }
 
@@ -155,6 +155,7 @@ namespace gui
 
     void EventReminderWindow::reminderTimerCallback()
     {
+        ///TODO: Send Notification with counter incrementation message
         closeReminder();
     }
 
@@ -163,7 +164,13 @@ namespace gui
         LOG_DEBUG("Switch to previous window");
         destroyTimer();
 
-        app::manager::Controller::sendAction(application, app::manager::actions::Home);
+        app::manager::Controller::sendAction(application, app::manager::actions::ClosePopup);
+    }
+
+    void EventReminderWindow::onPressOK()
+    {
+        ///TODO: clear counter message (Database field)
+        closeReminder();
     }
 
 } /* namespace gui */

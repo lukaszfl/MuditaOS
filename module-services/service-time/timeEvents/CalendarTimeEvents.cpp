@@ -37,7 +37,6 @@ namespace stm
 
     bool CalendarTimeEvents::sendNextEventQuery()
     {
-        ///TODO:
         TimePoint filterFrom = TimePointNow();
         TimePoint filterTill = filterFrom;
         if (startTP != TIME_POINT_INVALID) {
@@ -90,6 +89,6 @@ namespace stm
         auto event = std::make_shared<EventsRecord>(eventRecord);
         eventData->setData(event);
 
-        app::manager::Controller::sendAction(service(), app::manager::actions::ShowReminder, std::move(eventData));
+        app::manager::Controller::sendAction(service(), app::manager::actions::ShowReminder, std::move(eventData), app::manager::OnSwitchBehaviour::RunInBackground);
     }
 } // namespace stm

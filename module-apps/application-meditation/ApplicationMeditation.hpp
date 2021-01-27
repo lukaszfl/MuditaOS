@@ -32,7 +32,15 @@ namespace app
     {
         static auto GetManifest() -> manager::ApplicationManifest
         {
-            return {{manager::actions::Launch}};
+            return {{manager::actions::Launch, manager::actions::ShowReminder}};
         }
     };
+
+//    template <> struct ManifestTraits<ApplicationMeditation>
+//    {
+//        static auto GetManifest() -> manager::ApplicationManifest
+//        {
+//            return {{manager::actions::Launch}};
+//        }
+//    };
 } // namespace app

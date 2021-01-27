@@ -32,6 +32,7 @@ namespace gui
         void destroyTimer();
         void reminderTimerCallback();
         void closeReminder();
+        void onPressOK();
 
       public:
         EventReminderWindow(app::Application *app, std::string name);
