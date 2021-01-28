@@ -9,6 +9,13 @@ namespace style
 {
     namespace window
     {
+        namespace popup
+        {
+            namespace name
+            {
+                inline constexpr auto event_reminder_window = "EventReminderWindow";
+            }
+        }
         namespace calendar
         {
             namespace imageCircleTop
@@ -34,7 +41,6 @@ namespace style
                 inline constexpr auto details_window        = "DetailsWindow";
                 inline constexpr auto new_edit_event        = "NewEditEvent";
                 inline constexpr auto custom_repeat_window  = "CustomRepeat";
-                inline constexpr auto event_reminder_window = "EventReminderWindow";
             } // namespace name
 
             inline constexpr auto new_event         = "New";

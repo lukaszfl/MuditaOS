@@ -6,16 +6,15 @@
 #include <string>
 
 #include <Application.hpp>
-#include "data/OptionsData.hpp"
 
 namespace app
 {
-    inline constexpr auto name_meditation = "ApplicationMeditation";
+    inline constexpr auto name_popup = "ApplicationPopup";
 
-    class ApplicationMeditation : public Application
+    class ApplicationPopup : public Application
     {
-      public:
-        explicit ApplicationMeditation(std::string name                    = name_meditation,
+    public:
+        explicit ApplicationPopup(std::string name                    = name_popup,
                                        std::string parent                  = {},
                                        StartInBackground startInBackground = {false});
 
@@ -25,14 +24,14 @@ namespace app
 
         void createUserInterface() override;
         void destroyUserInterface() override;
-        std::unique_ptr<gui::OptionsData> state;
     };
 
-    template <> struct ManifestTraits<ApplicationMeditation>
+    template <> struct ManifestTraits<ApplicationPopup>
     {
         static auto GetManifest() -> manager::ApplicationManifest
         {
-            return {{manager::actions::Launch}};
+            return {{manager::actions::Launch, manager::actions::ShowReminder}};
         }
     };
+
 } // namespace app

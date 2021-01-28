@@ -13,7 +13,7 @@ namespace gui
     constexpr static const int reminderLifeDuration = 20000;
 
     EventReminderWindow::EventReminderWindow(app::Application *app, std::string name)
-        : AppWindow(app, style::window::calendar::name::event_reminder_window)
+        : AppWindow(app, style::window::popup::name::event_reminder_window)
     {
         buildInterface();
 

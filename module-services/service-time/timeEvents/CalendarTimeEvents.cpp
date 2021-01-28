@@ -85,10 +85,10 @@ namespace stm
     void CalendarTimeEvents::invokeEvent()
     {
         std::unique_ptr<EventRecordData> eventData = std::make_unique<EventRecordData>();
-        eventData->setDescription(style::window::calendar::name::event_reminder_window);
+        eventData->setDescription(style::window::popup::name::event_reminder_window);
         auto event = std::make_shared<EventsRecord>(eventRecord);
         eventData->setData(event);
-
+        LOG_DEBUG("INVOKE EVENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         app::manager::Controller::sendAction(service(), app::manager::actions::ShowReminder, std::move(eventData), app::manager::OnSwitchBehaviour::RunInBackground);
     }
 } // namespace stm
