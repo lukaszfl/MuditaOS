@@ -9,15 +9,16 @@
 
 namespace Log
 {
-    std::map<std::string, logger_level> Logger::filtered = {{"ApplicationManager", logger_level::LOGINFO},
-                                                            {"TS0710Worker", logger_level::LOGINFO},
-                                                            {"ServiceCellular", logger_level::LOGINFO},
-                                                            {"ServiceAntenna", logger_level::LOGINFO},
-                                                            {"ServiceFota", logger_level::LOGINFO},
-                                                            {"ServiceEink", logger_level::LOGINFO},
-                                                            {"ServiceDB", logger_level::LOGINFO},
-                                                            {CRIT_STR, logger_level::LOGTRACE},
-                                                            {IRQ_STR, logger_level::LOGTRACE}};
+    std::map<std::string, logger_level> Logger::filtered = {
+        {"ApplicationManager", logger_level::LOGINFO},
+        //                                                            {"TS0710Worker", logger_level::LOGINFO},
+        //                                                            {"ServiceCellular", logger_level::LOGINFO},
+        {"ServiceAntenna", logger_level::LOGINFO},
+        {"ServiceFota", logger_level::LOGINFO},
+        {"ServiceEink", logger_level::LOGINFO},
+        {"ServiceDB", logger_level::LOGINFO},
+        {CRIT_STR, logger_level::LOGTRACE},
+        {IRQ_STR, logger_level::LOGTRACE}};
     const char *Logger::level_names[]                    = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 
     auto Logger::GetLogLevel(const std::string &name) -> logger_level

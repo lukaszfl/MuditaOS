@@ -1480,6 +1480,10 @@ bool ServiceCellular::receiveSMS(std::string messageNumber)
 
     std::string messageRawBody;
     UTF8 receivedNumber;
+    LOG_INFO("                  Receive sms response:");
+    for (auto el : ret.response) {
+        LOG_INFO("                  %s", el.c_str());
+    }
     if (ret) {
         for (std::size_t i = 0; i < ret.response.size(); i++) {
             if (ret.response[i].find("QCMGR") != std::string::npos) {
@@ -1560,6 +1564,7 @@ bool ServiceCellular::receiveSMS(std::string messageNumber)
             }
         }
     }
+
     channel->cmd(at::AT::SMS_GSM);
     // delete message from modem memory
     channel->cmd(at::factory(at::AT::CMGD) + messageNumber);
