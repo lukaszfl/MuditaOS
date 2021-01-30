@@ -24,7 +24,7 @@ namespace app
             return ret;
 
         createUserInterface();
-        //TODO: namespace
+        //TODO: namespace for Event Reminder Window
         //TODO: choose properly initial window
         setActiveWindow("EventReminderWindow");
         return ret;

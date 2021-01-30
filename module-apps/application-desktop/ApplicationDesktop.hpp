@@ -11,6 +11,7 @@
 #include <service-cellular/CellularMessage.hpp>
 #include <service-db/DBNotificationMessage.hpp>
 #include <module-db/queries/notifications/QueryNotificationsGetAll.hpp>
+#include <module-db/queries/notifications/QueryNotificationsIncrement.hpp>
 #include <endpoints/update/UpdateMuditaOS.hpp>
 #include <service-desktop/ServiceDesktop.hpp>
 #include <service-desktop/DesktopMessages.hpp>
@@ -34,6 +35,7 @@ namespace app
             {
                 unsigned int SMS   = 0;
                 unsigned int Calls = 0;
+                unsigned int CalendarEvents = 0;
 
                 auto areEmpty()
                 {
@@ -79,6 +81,8 @@ namespace app
         bool showCalls();
         bool clearCallsNotification();
         bool clearMessagesNotification();
+        bool showCalendarEvents();
+        bool clearCalendarEventsNotification();
         bool requestNotSeenNotifications();
         bool requestNotReadNotifications();
         unsigned int getLockPassHash() const noexcept

@@ -41,6 +41,7 @@ namespace app::manager
             SelectSimCard,
             ShowAlarm,
             ShowReminder,
+            ShowCalendarEvents,
             RequestPin,
             RequestPuk,
             RequestPinChange,

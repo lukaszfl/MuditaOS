@@ -7,6 +7,8 @@
 #include <gui/widgets/Window.hpp>
 #include <time/time_conversion.hpp>
 #include "service-appmgr/Controller.hpp"
+#include <module-db/queries/notifications/QueryNotificationsClear.hpp>
+#include <module-db/queries/notifications/QueryNotificationsIncrement.hpp>
 
 namespace gui
 {
@@ -155,7 +157,9 @@ namespace gui
 
     void EventReminderWindow::reminderTimerCallback()
     {
-        ///TODO: Send Notification with counter incrementation message
+        DBServiceAPI::GetQuery(application,
+                               db::Interface::Name::Notifications,
+                               std::make_unique<db::query::notifications::Increment>(NotificationsRecord::Key::CalendarEvents));
         closeReminder();
     }
 
@@ -169,7 +173,6 @@ namespace gui
 
     void EventReminderWindow::onPressOK()
     {
-        ///TODO: clear counter message (Database field)
         closeReminder();
     }
 

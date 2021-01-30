@@ -193,6 +193,10 @@ namespace app
                 rebuildMainWindow |= record.value != notifications.notSeen.SMS;
                 notifications.notSeen.SMS = record.value;
                 break;
+            case NotificationsRecord::Key::CalendarEvents:
+                rebuildMainWindow |= record.value != notifications.notSeen.CalendarEvents;
+                notifications.notSeen.CalendarEvents = record.value;
+                break;
 
             case NotificationsRecord::Key::NotValidKey:
             case NotificationsRecord::Key::NumberOfKeys:
@@ -274,6 +278,22 @@ namespace app
                                db::Interface::Name::Notifications,
                                std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::Sms));
         notifications.notSeen.SMS = 0;
+        return true;
+    }
+
+    bool ApplicationDesktop::showCalendarEvents()
+    {
+        LOG_DEBUG("show events!");
+        return manager::Controller::sendAction(this, manager::actions::ShowCalendarEvents);
+    }
+
+    bool ApplicationDesktop::clearCalendarEventsNotification()
+    {
+        LOG_DEBUG("Clear calendar events notifications");
+        DBServiceAPI::GetQuery(this,
+                               db::Interface::Name::Notifications,
+                               std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::CalendarEvents));
+        notifications.notSeen.CalendarEvents = 0;
         return true;
     }
 
