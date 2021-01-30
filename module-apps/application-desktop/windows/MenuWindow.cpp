@@ -131,6 +131,8 @@ namespace gui
 
     MenuWindow::MenuWindow(app::Application *app) : AppWindow(app, app::window::name::desktop_menu)
     {
+        auto application = dynamic_cast<app::ApplicationDesktop*>(app);
+        application->requestNotReadNotifications();
         buildInterface();
     }
 
@@ -183,8 +185,8 @@ namespace gui
                                       application,
                                       app::manager::actions::Launch,
                                       std::make_unique<app::ApplicationLaunchData>("ApplicationCalendar"));
-                              }),
-
+                              },
+                              [=]() { return app->notifications.notRead.CalendarEvents > 0; }),
                 new gui::Tile{"menu_phone_W_G",
                               "app_desktop_menu_phone",
                               [=](gui::Item &item) {

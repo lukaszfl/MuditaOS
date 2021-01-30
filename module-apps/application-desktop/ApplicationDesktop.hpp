@@ -39,7 +39,7 @@ namespace app
 
                 auto areEmpty()
                 {
-                    return Calls == 0 && SMS == 0;
+                    return Calls == 0 && SMS == 0 && CalendarEvents == 0;
                 }
             };
 

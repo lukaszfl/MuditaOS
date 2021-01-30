@@ -308,6 +308,9 @@ namespace app
     {
         notifications.notRead.Calls = DBServiceAPI::CalllogGetCount(this, EntryState::UNREAD);
         notifications.notRead.SMS   = DBServiceAPI::ThreadGetCount(this, EntryState::UNREAD);
+
+        ///Will be modified after providing requirements of calendar not readed events
+        notifications.notRead.CalendarEvents = notifications.notSeen.CalendarEvents;
         return true;
     }
 
