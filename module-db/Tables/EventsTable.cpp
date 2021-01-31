@@ -856,8 +856,7 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
                               "WHERE calc_dt >= '%q' "
                               "AND reminder_fired = '%q' "
                               "AND reminder <> -1 "
-                              "ORDER BY calc_dt "
-                              "LIMIT 1 ",
+                              "ORDER BY calc_dt ",
                               TimePointToString(filter_from).c_str(),
                               TimePointToString(TIME_POINT_INVALID).c_str());
 
@@ -867,7 +866,21 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
 
     std::vector<EventsTableRow> ret;
 
+    auto eventDateFrom = TimePointFromString((*retQuery)[4].getString().c_str());
+    auto reminderDuration = std::chrono::minutes{(*retQuery)[6].getUInt32()};
+
+    auto reminderDateBuffer = eventDateFrom - reminderDuration;
+
     do {
+        eventDateFrom = TimePointFromString((*retQuery)[4].getString().c_str());
+        reminderDuration = std::chrono::minutes{(*retQuery)[6].getUInt32()};
+
+        /// return only events with closest reminder date
+        if(reminderDateBuffer != (eventDateFrom - reminderDuration))
+        {
+            break;
+        }
+
         ret.push_back(EventsTableRow{
             (*retQuery)[1].getUInt32(),                              // ID
             (*retQuery)[2].getString(),                              // UID
@@ -881,6 +894,9 @@ std::vector<EventsTableRow> EventsTable::SelectFirstUpcoming(TimePoint filter_fr
             (*retQuery)[10].getString(),                             // provider id
             (*retQuery)[11].getString()                              // provider iCalUid
         });
+
+        reminderDateBuffer = eventDateFrom - reminderDuration;
+
     } while (retQuery->nextRow());
 
     return ret;

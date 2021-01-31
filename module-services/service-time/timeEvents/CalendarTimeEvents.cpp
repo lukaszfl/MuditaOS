@@ -59,12 +59,15 @@ namespace stm
             return 0;
         }
 
-        std::vector<EventsRecord> records = firstUpcomingQuery->getResult();
-        if (records.size() == 0) {
+        eventRecords = firstUpcomingQuery->getResult();
+        std::reverse(eventRecords.begin(),eventRecords.end());
+
+        if (eventRecords.size() == 0) {
             return 0;
         }
 
-        eventRecord   = records.at(0);
+
+        auto eventRecord   = eventRecords.at(0);
         startTP       = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder};
         auto duration = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder} - TimePointNow();
         if (duration.count() <= 0) {
@@ -76,19 +79,23 @@ namespace stm
 
     bool CalendarTimeEvents::sendEventFiredQuery()
     {
-        eventRecord.reminder_fired = TimePointNow();
-        const auto [succeed, _]    = DBServiceAPI::GetQuery(
-            service(), db::Interface::Name::Events, std::make_unique<db::query::events::Edit>(eventRecord));
-        return succeed;
+        bool result = true;
+        for(auto eventRecord : eventRecords)
+        {
+            eventRecord.reminder_fired = TimePointNow();
+            const auto [succeed, _]    = DBServiceAPI::GetQuery(
+                    service(), db::Interface::Name::Events, std::make_unique<db::query::events::Edit>(eventRecord));
+            result = result & succeed;
+        }
+        return result;
     }
 
     void CalendarTimeEvents::invokeEvent()
     {
-        std::unique_ptr<EventRecordData> eventData = std::make_unique<EventRecordData>();
-        eventData->setDescription(style::window::popup::name::event_reminder_window);
-        auto event = std::make_shared<EventsRecord>(eventRecord);
-        eventData->setData(event);
-        LOG_DEBUG("INVOKE EVENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        app::manager::Controller::sendAction(service(), app::manager::actions::ShowReminder, std::move(eventData), app::manager::OnSwitchBehaviour::RunInBackground);
+        std::unique_ptr<EventRecordsData> eventsData = std::make_unique<EventRecordsData>();
+        eventsData->setDescription(style::window::popup::name::event_reminder_window);
+        auto events = std::make_shared<std::vector<EventsRecord>>(eventRecords);
+        eventsData->setData(events);
+        app::manager::Controller::sendAction(service(), app::manager::actions::ShowReminder, std::move(eventsData), app::manager::OnSwitchBehaviour::RunInBackground);
     }
 } // namespace stm

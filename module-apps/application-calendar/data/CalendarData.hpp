@@ -31,6 +31,27 @@ class EventRecordData : public gui::SwitchData
     };
 };
 
+class EventRecordsData : public gui::SwitchData
+{
+protected:
+    std::shared_ptr<std::vector<EventsRecord>> records;
+
+public:
+    EventRecordsData() = default;
+    EventRecordsData(std::shared_ptr<std::vector<EventsRecord>> records) : records{std::move(records)} {};
+    virtual ~EventRecordsData() = default;
+
+    std::shared_ptr<std::vector<EventsRecord>> getData()
+    {
+        return records;
+    };
+
+    virtual void setData(std::shared_ptr<std::vector<EventsRecord>> rec)
+    {
+        records = std::move(rec);
+    };
+};
+
 class WeekDaysRepeatData : public gui::SwitchData
 {
   protected:
