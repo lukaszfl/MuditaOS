@@ -2,6 +2,9 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include <module-apps/application-popup/windows/EventReminderWindow.hpp>
+#include <module-apps/application-popup/windows/VolumeWindow.hpp>
+#include <module-apps/application-popup/windows/HomeModesWindow.hpp>
+#include <module-apps/application-popup/windows/BrightnessWindow.hpp>
 #include "ApplicationPopup.hpp"
 
 namespace app
@@ -12,6 +15,11 @@ namespace app
     {
         addActionReceiver(manager::actions::ShowReminder, [this](auto &&data) {
             switchWindow(style::window::name::event_reminder_window, std::move(data));
+            return msgHandled();
+        });
+
+        addActionReceiver(manager::actions::ShowVolume, [this](auto &&data) {
+            switchWindow(style::window::popup::name::volume_window, std::move(data));
             return msgHandled();
         });
     }
@@ -45,6 +53,15 @@ namespace app
             style::window::name::event_reminder_window, [](Application *app, const std::string &name) {
                 return std::make_unique<gui::EventReminderWindow>(app, style::window::name::event_reminder_window);
             });
+        windowsFactory.attach(style::window::popup::name::volume_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::VolumeWindow>(app, style::window::popup::name::volume_window);
+        });
+        windowsFactory.attach(style::window::popup::name::brightness_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::BrightnessWindow>(app, style::window::popup::name::brightness_window);
+        });
+        windowsFactory.attach(style::window::popup::name::home_modes_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::HomeModesWindow>(app, style::window::popup::name::home_modes_window);
+        });
     }
 
     void ApplicationPopup::destroyUserInterface()

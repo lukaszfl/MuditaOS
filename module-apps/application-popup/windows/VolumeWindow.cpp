@@ -3,6 +3,7 @@
 
 #include <module-gui/gui/input/InputEvent.hpp>
 #include <i18n/i18n.hpp>
+#include <module-services/service-appmgr/service-appmgr/Controller.hpp>
 #include "VolumeWindow.hpp"
 
 namespace gui
@@ -56,7 +57,16 @@ namespace gui
     }
 
     void VolumeWindow::onBeforeShow(ShowMode mode, SwitchData *data)
-    {}
+    {
+        audio::Volume volume;
+        const auto ret = application->getCurrentVolume(volume);
+        if (ret == audio::RetCode::Success) {
+            volumeBar->setValue(volume);
+        }
+        else {
+            LOG_ERROR("Current volume not recieved");
+        }
+    }
 
     bool VolumeWindow::onInput(const gui::InputEvent &inputEvent)
     {
@@ -71,6 +81,11 @@ namespace gui
         if (inputEvent.keyCode == gui::KeyCode::KEY_VOLDN) {
             volumeBar->update(-1);
         }
+
+        if (inputEvent.keyCode == gui::KeyCode::KEY_RF) {
+            return app::manager::Controller::sendAction(application, app::manager::actions::ClosePopup);
+        }
+
 
         return AppWindow::onInput(inputEvent);
     }

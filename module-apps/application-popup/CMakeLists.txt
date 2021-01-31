@@ -6,6 +6,9 @@ target_sources( ${PROJECT_NAME}
 	PRIVATE
 		"${CMAKE_CURRENT_LIST_DIR}/ApplicationPopup.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/windows/EventReminderWindow.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/windows/VolumeWindow.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/windows/BrightnessWindow.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/windows/HomeModesWindow.cpp"
 	PUBLIC
 		"${CMAKE_CURRENT_LIST_DIR}/ApplicationPopup.hpp"
 )

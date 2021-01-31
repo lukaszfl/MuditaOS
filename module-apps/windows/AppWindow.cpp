@@ -143,11 +143,13 @@ namespace gui
         if ((inputEvent.isShortPress())) {
             switch (inputEvent.keyCode) {
             case KeyCode::KEY_VOLUP: {
-                ///TODO:
+                ///TODO: if window is not currently displayed
+                app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, nullptr, app::manager::OnSwitchBehaviour::RunInBackground);
                 application->increaseCurrentVolume();
                 return true;
             }
             case KeyCode::KEY_VOLDN: {
+                app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, nullptr, app::manager::OnSwitchBehaviour::RunInBackground);
                 application->decreaseCurrentVolume();
                 return true;
             }
