@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "rt1051_cellular.hpp"
@@ -6,20 +6,20 @@
 #include "task.h"
 #include "stream_buffer.h"
 
-#include "../pit/pit.hpp"
 #include "dma_config.h"
 #include "fsl_cache.h"
-#include "../../common/chip.hpp"
 #include <common_data/EventStore.hpp>
-#include <map>
 
 namespace bsp::cellular
 {
-    void readline()
+    void notifyReceivedNew()
     {
+#if _RT1051_UART_DEBUG
+        LOG_DEBUG("[RX] notify to read");
+#endif
         BaseType_t hp = pdFALSE;
-        if (bsp::RT1051Cellular::blockedTaskHandle) {
-            vTaskNotifyGiveFromISR(bsp::RT1051Cellular::blockedTaskHandle, &hp);
+        if (bsp::RT1051Cellular::untilReceivedNewHandle) {
+            vTaskNotifyGiveFromISR(bsp::RT1051Cellular::untilReceivedNewHandle, &hp);
         }
         portEND_SWITCHING_ISR(hp);
     }
@@ -29,50 +29,57 @@ extern "C"
 {
     void LPUART1_IRQHandler(void)
     {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-        uint32_t isrReg               = LPUART_GetStatusFlags(CELLULAR_UART_BASE);
-        static char characterReceived = 0;
+        uint32_t isrReg = LPUART_GetStatusFlags(CELLULAR_UART_BASE);
 
         if (bsp::RT1051Cellular::uartRxStreamBuffer != NULL) {
-            if (isrReg & kLPUART_RxDataRegFullFlag) {
-                characterReceived = LPUART_ReadByte(CELLULAR_UART_BASE);
+            auto RxDmaStatus = LPUART_TransferGetReceiveCountEDMA(
+                CELLULAR_UART_BASE,
+                &bsp::RT1051Cellular::uartDmaHandle,
+                reinterpret_cast<uint32_t *>(&bsp::RT1051Cellular::RXdmaReceivedCount));
 
-                if (characterReceived != 0) {
-                    if (xStreamBufferSpacesAvailable(bsp::RT1051Cellular::uartRxStreamBuffer) < 8) {
-                        LOG_FATAL("...");
-                    }
-                    xStreamBufferSendFromISR(bsp::RT1051Cellular::uartRxStreamBuffer,
-                                             (void *)&characterReceived,
-                                             1,
-                                             &xHigherPriorityTaskWoken);
+            if (isrReg & kLPUART_RxActiveEdgeFlag) {
+                if (RxDmaStatus == kStatus_NoTransferInProgress) {
+                    // regular xfers don't need reg full irqs
+                    LPUART_DisableInterrupts(CELLULAR_UART_BASE, kLPUART_RxDataRegFullInterruptEnable);
+                    bsp::RT1051Cellular::RXdmaReceivedCount = -1;
+                    bsp::RT1051Cellular::InitDMAreceive(bsp::RT1051Cellular::RXdmaBuffer,
+                                                        sizeof(bsp::RT1051Cellular::RXdmaBuffer));
+#if _RT1051_UART_DEBUG
+                    LOG_WARN("[RX] on Start bit");
+#endif
                 }
             }
-
             if (isrReg & kLPUART_IdleLineFlag) {
-                bsp::cellular::readline();
+#if _RT1051_UART_DEBUG
+                LOG_DEBUG("[RX idle], received %d bytes", bsp::RT1051Cellular::RXdmaReceivedCount);
+#endif
+                // the only exit path:
+                if (bsp::RT1051Cellular::RXdmaReceivedCount > 0) {
+                    LPUART_TransferAbortReceiveEDMA(CELLULAR_UART_BASE, &bsp::RT1051Cellular::uartDmaHandle);
+                    bsp::RT1051Cellular::MoveRxDMAtoStreamBuf();
+                }
+                bsp::RT1051Cellular::DisableRx();
+                bsp::cellular::notifyReceivedNew();
             }
 
             LPUART_ClearStatusFlags(CELLULAR_UART_BASE, isrReg);
-
-            portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
         }
     }
 };
 
 namespace bsp
 {
+    uint8_t RT1051Cellular::RXdmaBuffer[RXdmaBufferSize] = {0};
+    ssize_t RT1051Cellular::RXdmaReceivedCount           = -1;
 
     using namespace drivers;
 
     lpuart_edma_handle_t RT1051Cellular::uartDmaHandle      = {};
-    TaskHandle_t RT1051Cellular::blockedTaskHandle          = nullptr;
+    TaskHandle_t RT1051Cellular::untilReceivedNewHandle     = nullptr;
     StreamBufferHandle_t RT1051Cellular::uartRxStreamBuffer = nullptr;
 
     RT1051Cellular::RT1051Cellular()
     {
-        bsp::pit::init(nullptr);
-
         MSPInit();
         /// to set Store::GSM sim state and to log debug
         Store::GSM::get()->tray =
@@ -94,11 +101,12 @@ namespace bsp
         s_cellularConfig.parityMode    = kLPUART_ParityDisabled;
         s_cellularConfig.isMsb         = false;
         s_cellularConfig.rxIdleType    = kLPUART_IdleTypeStartBit;
-        s_cellularConfig.rxIdleConfig  = kLPUART_IdleCharacter1;
-        s_cellularConfig.enableTx      = false;
-        s_cellularConfig.enableRx      = false;
-        s_cellularConfig.enableTxCTS   = true;
-        s_cellularConfig.enableRxRTS   = true;
+        s_cellularConfig.rxIdleConfig = kLPUART_IdleCharacter1; // increase to 8 to Rx echo commands, etc. in 1 run
+        s_cellularConfig.enableTx     = false;
+        s_cellularConfig.enableRx     = false;
+        s_cellularConfig.enableTxCTS  = true;
+        s_cellularConfig.txCtsConfig  = kLPUART_CtsSampleAtStart; // be nice, allow to stop mid txfer
+        s_cellularConfig.enableRxRTS  = true;
 
         if (LPUART_Init(CELLULAR_UART_BASE, &s_cellularConfig, GetPerphSourceClock(PerphClock_LPUART)) !=
             kStatus_Success) {
@@ -106,16 +114,14 @@ namespace bsp
             return;
         }
 
-        LPUART_EnableInterrupts(CELLULAR_UART_BASE, kLPUART_IdleLineInterruptEnable | kLPUART_RxDataRegFullFlag);
+        // CANNOT disable FIFO, dma *needs* it :o
+        // CELLULAR_UART_BASE->FIFO &= ~LPUART_FIFO_RXFE_MASK;
+
         LPUART_ClearStatusFlags(CELLULAR_UART_BASE, 0xFFFFFFFF);
         NVIC_ClearPendingIRQ(LPUART1_IRQn);
-        NVIC_ClearPendingIRQ(GPIO1_Combined_0_15_IRQn);
-        NVIC_SetPriority(GPIO1_Combined_0_15_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
         NVIC_SetPriority(LPUART1_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
-        NVIC_EnableIRQ(GPIO1_Combined_0_15_IRQn);
         NVIC_EnableIRQ(LPUART1_IRQn);
 
-        EnableRx();
         isInitialized = true;
     }
 
@@ -137,8 +143,8 @@ namespace bsp
         DisableTx();
 
         NVIC_DisableIRQ(LPUART1_IRQn);
-        NVIC_DisableIRQ(GPIO1_Combined_0_15_IRQn);
-        LPUART_DisableInterrupts(CELLULAR_UART_BASE, kLPUART_IdleLineInterruptEnable | kLPUART_RxDataRegFullFlag);
+        LPUART_DisableInterrupts(CELLULAR_UART_BASE,
+                                 kLPUART_IdleLineInterruptEnable | kLPUART_RxDataRegFullInterruptEnable);
         LPUART_ClearStatusFlags(CELLULAR_UART_BASE, 0xFFFFFFFF);
         NVIC_ClearPendingIRQ(LPUART1_IRQn);
 
@@ -148,7 +154,7 @@ namespace bsp
         DMADeinit();
 
         memset(&uartDmaHandle, 0, sizeof uartDmaHandle);
-        blockedTaskHandle = nullptr;
+        untilReceivedNewHandle = nullptr;
     }
 
     void RT1051Cellular::PowerUp()
@@ -211,21 +217,25 @@ namespace bsp
         uint8_t *ptr = (uint8_t *)buf;
         for (size_t i = 0; i < nbytes; i++)
             LOG_PRINTF("%02X ", (uint8_t)*ptr++);
+        ptr = (uint8_t *)buf;
+        for (size_t i = 0; i < nbytes; i++)
+            LOG_PRINTF("%c", (uint8_t)*ptr++);
         LOG_PRINTF("\n");
 #endif
         sendXfer.data     = static_cast<uint8_t *>(buf);
         sendXfer.dataSize = nbytes;
 
-        EnableTx();
-
         uartDmaHandle.userData = xTaskGetCurrentTaskHandle();
         SCB_CleanInvalidateDCache();
+
+        EnableTx();
         if (LPUART_SendEDMA(CELLULAR_UART_BASE, &uartDmaHandle, &sendXfer) != kStatus_Success) {
             LOG_ERROR("Cellular: TX Failed!");
             DisableTx();
             return -1;
         }
 
+        // wait for Tx to finish
         auto ulNotificationValue = ulTaskNotifyTake(pdFALSE, 100);
 
         if (ulNotificationValue == 0) {
@@ -235,7 +245,55 @@ namespace bsp
         }
 
         DisableTx();
+
         return nbytes;
+    }
+
+    void RT1051Cellular::MoveRxDMAtoStreamBuf()
+    {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+        assert(RXdmaReceivedCount > 0);
+
+        if (static_cast<ssize_t>(xStreamBufferSpacesAvailable(uartRxStreamBuffer)) < RXdmaReceivedCount) {
+            LOG_FATAL("...");
+        }
+
+#if _RT1051_UART_DEBUG
+        auto ret =
+#endif
+            xStreamBufferSendFromISR(
+                uartRxStreamBuffer, (void *)&RXdmaBuffer, RXdmaReceivedCount, &xHigherPriorityTaskWoken);
+
+#if _RT1051_UART_DEBUG
+        LOG_DEBUG("[RX] moved %d bytes to streambuf", ret);
+#endif
+        RXdmaReceivedCount = -1;
+
+        portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+    }
+
+    void RT1051Cellular::InitDMAreceive(uint8_t *buf, size_t nbytes)
+    {
+        // start RXfer if there is a byte incoming and no pending RXfer
+        lpuart_transfer_t receiveXfer;
+        receiveXfer.data     = buf;
+        receiveXfer.dataSize = nbytes;
+
+        // rx config
+        // SCB_CleanInvalidateDCache(); // seems to be not needed in Rx
+        //        EnableRx(); // should not be needed here
+        auto status = LPUART_ReceiveEDMA(CELLULAR_UART_BASE, &uartDmaHandle, &receiveXfer);
+        switch (status) {
+        case kStatus_Success:
+            break;
+        case kStatus_LPUART_RxBusy:
+            LOG_WARN("UART RX DMA already busy");
+            break;
+        case kStatus_InvalidArgument:
+            LOG_WARN("UART RX DMA invalid argument");
+            break;
+        }
     }
 
     ssize_t RT1051Cellular::Read(void *buf, size_t nbytes)
@@ -243,30 +301,43 @@ namespace bsp
         ssize_t ret = xStreamBufferReceive(uartRxStreamBuffer, buf, nbytes, 0);
 #if _RT1051_UART_DEBUG
         if (ret > 0) {
-            LOG_PRINTF("[RX] ");
+            LOG_PRINTF("[RX: %d]", ret);
             uint8_t *ptr = (uint8_t *)buf;
             for (size_t i = 0; i < ret; i++)
                 LOG_PRINTF("%02X ", (uint8_t)*ptr++);
-            LOG_PRINTF("\n");
+            ptr = (uint8_t *)buf;
+            for (size_t i = 0; i < ret; i++)
+                LOG_PRINTF("%c", (uint8_t)*ptr++);
         }
+        else {
+            LOG_PRINTF("[RX] GOT NOTHING (requested %d)", nbytes);
+        }
+        LOG_PRINTF("\n");
 #endif
         return ret;
     }
 
     uint32_t RT1051Cellular::Wait(uint32_t timeout)
     {
-        if (blockedTaskHandle != nullptr) {
+#if _RT1051_UART_DEBUG
+        LOG_DEBUG("[WAIT]");
+#endif
+        if (untilReceivedNewHandle != nullptr) {
             LOG_FATAL("Wait called simultaneously from more than one thread!");
             return 0;
         }
 
+        // no need to wait: buffer already contains something
         if (xStreamBufferBytesAvailable(uartRxStreamBuffer)) {
             return 1;
         }
 
-        blockedTaskHandle = xTaskGetCurrentTaskHandle();
-        auto ret          = ulTaskNotifyTake(pdTRUE, timeout);
-        blockedTaskHandle = nullptr;
+        EnableRx();
+
+        // …start waiting indefinitely until a new xfer from modem is received
+        untilReceivedNewHandle = xTaskGetCurrentTaskHandle();
+        auto ret               = ulTaskNotifyTake(pdTRUE, timeout);
+        untilReceivedNewHandle = nullptr;
         return ret;
     }
 
@@ -318,12 +389,6 @@ namespace bsp
                                  1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_2_ANTSEL_PIN));
 
         // INPUTS
-
-        gpio_1->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
-                                            .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingOrFallingEdge,
-                                            .defLogic = 0,
-                                            .pin = static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_1_CTS_PIN)});
-
         gpio_1->ConfPin(
             DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
                                 .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingOrFallingEdge,
@@ -342,12 +407,6 @@ namespace bsp
                                 .pin = static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_2_SIM_TRAY_INSERTED_PIN)});
 
         // OUTPUTS
-
-        gpio_1->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
-                                            .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingOrFallingEdge,
-                                            .defLogic = 1,
-                                            .pin = static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_1_RTS_PIN)});
-
         gpio_1->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
                                             .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
                                             .defLogic = 0,
@@ -405,8 +464,7 @@ namespace bsp
         ;
         // ENABLE INTERRUPTS
 
-        gpio_1->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_1_CTS_PIN) |
-                                1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_1_STATUS_PIN));
+        gpio_1->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_1_STATUS_PIN));
         gpio_2->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_2_SIM_TRAY_INSERTED_PIN) |
                                 1 << static_cast<uint32_t>(BoardDefinitions::CELLULAR_GPIO_2_RI_PIN));
     }
@@ -430,32 +488,57 @@ namespace bsp
         dma = DriverDMA::Create(static_cast<DMAInstances>(BoardDefinitions::CELLULAR_DMA), DriverDMAParams{});
 
         txDMAHandle = dma->CreateHandle(static_cast<uint32_t>(BoardDefinitions::CELLULAR_TX_DMA_CHANNEL));
-        dmamux->Enable(static_cast<uint32_t>(BoardDefinitions::CELLULAR_TX_DMA_CHANNEL),
-                       kDmaRequestMuxLPUART1Tx); // TODO: M.P fix BSP_CELLULAR_UART_TX_DMA_CH
+        rxDMAHandle = dma->CreateHandle(static_cast<uint32_t>(BoardDefinitions::CELLULAR_RX_DMA_CHANNEL));
+
+        dmamux->Enable(static_cast<uint32_t>(BoardDefinitions::CELLULAR_TX_DMA_CHANNEL), kDmaRequestMuxLPUART1Tx);
+        dmamux->Enable(static_cast<uint32_t>(BoardDefinitions::CELLULAR_RX_DMA_CHANNEL), kDmaRequestMuxLPUART1Rx);
 
         LPUART_TransferCreateHandleEDMA(CELLULAR_UART_BASE,
                                         &uartDmaHandle,
-                                        DMATxCompletedCb,
+                                        uartDMACallback,
                                         NULL,
                                         reinterpret_cast<edma_handle_t *>(txDMAHandle->GetHandle()),
-                                        NULL);
+                                        reinterpret_cast<edma_handle_t *>(rxDMAHandle->GetHandle()));
     }
 
     void RT1051Cellular::DMADeinit()
     {
         dmamux->Disable(static_cast<uint32_t>(BoardDefinitions::CELLULAR_TX_DMA_CHANNEL));
+        dmamux->Disable(static_cast<uint32_t>(BoardDefinitions::CELLULAR_RX_DMA_CHANNEL));
     }
 
-    void RT1051Cellular::DMATxCompletedCb(LPUART_Type *base,
-                                          lpuart_edma_handle_t *handle,
-                                          status_t status,
-                                          void *userData)
+    void RT1051Cellular::uartDMACallback(LPUART_Type *base,
+                                         lpuart_edma_handle_t *handle,
+                                         status_t status,
+                                         void *userData)
     {
+        BaseType_t higherPriorTaskWoken = pdFALSE;
 
-        BaseType_t higherPriorTaskWoken = 0;
-        vTaskNotifyGiveFromISR((TaskHandle_t)userData, &higherPriorTaskWoken);
+        switch (status) {
+        case kStatus_LPUART_TxIdle: {
+#if _RT1051_UART_DEBUG
+            LOG_DEBUG("[TX done]");
+#endif
+            // task handle to be released in userData
+            vTaskNotifyGiveFromISR((TaskHandle_t)userData, &higherPriorTaskWoken);
 
-        portEND_SWITCHING_ISR(higherPriorTaskWoken);
+            portEND_SWITCHING_ISR(higherPriorTaskWoken);
+
+            break;
+        }
+        case kStatus_LPUART_RxIdle:
+            RXdmaReceivedCount = RXdmaBufferSize;
+#if _RT1051_UART_DEBUG
+            LOG_WARN("[RX] cannot take any more data! Flow control must hold the gate from now on");
+#endif
+            MoveRxDMAtoStreamBuf();
+
+            bsp::RT1051Cellular::RXdmaReceivedCount = -1;
+            bsp::RT1051Cellular::InitDMAreceive(bsp::RT1051Cellular::RXdmaBuffer,
+                                                sizeof(bsp::RT1051Cellular::RXdmaBuffer));
+//            LPUART_EnableInterrupts(CELLULAR_UART_BASE, kLPUART_RxDataRegFullInterruptEnable);
+            break;
+        }
     }
 
     void RT1051Cellular::SetSendingAllowed(bool state)

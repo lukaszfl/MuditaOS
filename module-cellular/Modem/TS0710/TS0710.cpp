@@ -214,15 +214,6 @@ TS0710::ConfState TS0710::ConfProcedure()
         return ConfState::Failure;
     }
 
-    LOG_INFO("GSM modem info:");
-    auto ret = parser->cmd(at::AT::SW_INFO);
-    if (ret) {
-        for (uint32_t i = 0; i < ret.response.size() - 1; ++i) // skip final "OK"
-        {
-            LOG_INFO("%s", ret.response[i].c_str());
-        }
-    }
-
     at::AT flowCmd;
     if (hardwareControlFlowEnable) {
         flowCmd = (at::AT::FLOW_CTRL_ON);
@@ -232,6 +223,15 @@ TS0710::ConfState TS0710::ConfProcedure()
     }
     if (!parser->cmd(flowCmd)) {
         return ConfState::Failure;
+    }
+
+    LOG_INFO("GSM modem info:");
+    auto ret = parser->cmd(at::AT::SW_INFO);
+    if (ret) {
+        for (uint32_t i = 0; i < ret.response.size() - 1; ++i) // skip final "OK"
+        {
+            LOG_INFO("%s", ret.response[i].c_str());
+        }
     }
 
     auto commands = at::getCommadsSet(at::commadsSet::modemInit);

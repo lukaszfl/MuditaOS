@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #ifndef PUREPHONE_RT1501_CELLULAR_HPP
@@ -64,6 +64,16 @@ namespace bsp
         void SelectAntenna(bsp::cellular::antenna antenna) override final;
         bsp::cellular::antenna GetAntenna() override final;
 
+        static lpuart_edma_handle_t uartDmaHandle;
+
+        static inline void DisableRx()
+        {
+            LPUART_DisableInterrupts(CELLULAR_UART_BASE,
+                                     kLPUART_RxActiveEdgeInterruptEnable | kLPUART_IdleLineInterruptEnable);
+            LPUART_ClearStatusFlags(CELLULAR_UART_BASE,
+                                    kLPUART_RxActiveEdgeInterruptEnable | kLPUART_IdleLineInterruptEnable);
+            LPUART_EnableRx(CELLULAR_UART_BASE, false);
+        }
       private:
         void MSPInit();
 
@@ -73,18 +83,13 @@ namespace bsp
 
         void DMADeinit();
 
-        inline void EnableRx()
+        static inline void EnableRx()
         {
             LPUART_ClearStatusFlags(CELLULAR_UART_BASE, 0xFFFFFFFF);
-            LPUART_EnableInterrupts(CELLULAR_UART_BASE, kLPUART_RxDataRegFullInterruptEnable);
+            LPUART_EnableInterrupts(CELLULAR_UART_BASE,
+                                    kLPUART_RxActiveEdgeInterruptEnable |
+                                        kLPUART_IdleLineInterruptEnable);
             LPUART_EnableRx(CELLULAR_UART_BASE, true);
-        }
-
-        inline void DisableRx()
-        {
-            LPUART_DisableInterrupts(CELLULAR_UART_BASE, kLPUART_RxDataRegFullInterruptEnable);
-            LPUART_ClearStatusFlags(CELLULAR_UART_BASE, kLPUART_RxDataRegFullInterruptEnable);
-            LPUART_EnableRx(CELLULAR_UART_BASE, false);
         }
 
         inline void EnableTx()
@@ -105,13 +110,18 @@ namespace bsp
         std::shared_ptr<drivers::DriverDMAMux> dmamux;
         std::shared_ptr<drivers::DriverDMA> dma;
         std::unique_ptr<drivers::DriverDMAHandle> txDMAHandle;
+        std::unique_ptr<drivers::DriverDMAHandle> rxDMAHandle;
 
-        static lpuart_edma_handle_t uartDmaHandle;
-
-        static void DMATxCompletedCb(LPUART_Type *base, lpuart_edma_handle_t *handle, status_t status, void *userData);
+        static void uartDMACallback(LPUART_Type *base, lpuart_edma_handle_t *handle, status_t status, void *userData);
 
       public:
-        static TaskHandle_t blockedTaskHandle;
+        static constexpr auto RXdmaBufferSize = 1U;
+        static uint8_t RXdmaBuffer[RXdmaBufferSize];
+        static ssize_t RXdmaReceivedCount;
+        static void MoveRxDMAtoStreamBuf();
+        static void InitDMAreceive(uint8_t *buf, size_t nbytes);
+
+        static TaskHandle_t untilReceivedNewHandle;
 
       private:
         // Constants
