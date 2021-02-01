@@ -7,6 +7,7 @@
 #include "Item.hpp"
 #include "Navigation.hpp"
 #include "service-appmgr/Controller.hpp"
+#include <module-db/queries/calendar/QueryEventsGetFilteredByDay.hpp>
 
 #include <tools/Common.hpp>
 #include <Style.hpp>
@@ -129,10 +130,15 @@ namespace gui
         return visibleStateChanged;
     }
 
+    void MenuWindow::onBeforeShow(ShowMode mode, SwitchData *data)
+    {
+        auto app = dynamic_cast<app::ApplicationDesktop *>(application);
+        app->requestNotReadNotifications();
+    }
+
     MenuWindow::MenuWindow(app::Application *app) : AppWindow(app, app::window::name::desktop_menu)
     {
-        auto application = dynamic_cast<app::ApplicationDesktop*>(app);
-        application->requestNotReadNotifications();
+
         buildInterface();
     }
 

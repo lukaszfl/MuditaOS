@@ -15,6 +15,7 @@
 #include <endpoints/update/UpdateMuditaOS.hpp>
 #include <service-desktop/ServiceDesktop.hpp>
 #include <service-desktop/DesktopMessages.hpp>
+#include <module-db/queries/calendar/QueryEventsGetAll.hpp>
 
 namespace cellular
 {
@@ -46,6 +47,7 @@ namespace app
             Counters notSeen;
             Counters notRead;
 
+            bool thisDayCalendarEvents = false;
             bool batteryLowLevel = false;
 
         } notifications;
@@ -71,6 +73,7 @@ namespace app
         bool handle(db::NotificationMessage *msg);
         bool handle(cellular::StateChange *msg);
         auto handle(db::query::notifications::GetAllResult *msg) -> bool;
+        auto handle(db::query::events::GetFilteredByDayResult *msg) -> bool;
         auto handle(sdesktop::UpdateOsMessage *msg) -> bool;
         auto handle(sdesktop::developerMode::ScreenlockCheckEvent *event) -> bool;
         /**

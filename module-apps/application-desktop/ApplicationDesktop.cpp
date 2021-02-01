@@ -31,6 +31,7 @@
 #include <module-services/service-db/agents/settings/SystemSettings.hpp>
 #include <module-utils/magic_enum/include/magic_enum.hpp>
 #include <SystemManager/messages/SystemManagerMessage.hpp>
+#include <module-db/queries/calendar/QueryEventsGetFilteredByDay.hpp>
 
 #include <cassert>
 namespace app
@@ -141,6 +142,9 @@ namespace app
                 if (auto response = dynamic_cast<db::query::notifications::GetAllResult *>(result.get())) {
                     handled = handle(response);
                 }
+                if (auto response = dynamic_cast<db::query::events::GetFilteredByDayResult *>(result.get())) {
+                    handled = handle(response);
+                }
             }
         }
 
@@ -193,6 +197,7 @@ namespace app
                 rebuildMainWindow |= record.value != notifications.notSeen.SMS;
                 notifications.notSeen.SMS = record.value;
                 break;
+
             case NotificationsRecord::Key::CalendarEvents:
                 rebuildMainWindow |= record.value != notifications.notSeen.CalendarEvents;
                 notifications.notSeen.CalendarEvents = record.value;
@@ -212,6 +217,20 @@ namespace app
 
         return true;
     }
+
+    auto ApplicationDesktop::handle(db::query::events::GetFilteredByDayResult *msg) -> bool
+    {
+        auto recordsCount = msg->getCountResult();
+        notifications.notRead.CalendarEvents = recordsCount;
+
+        if (auto menuWindow = dynamic_cast<gui::MenuWindow *>(getWindow(app::window::name::desktop_menu));
+                menuWindow != nullptr) {
+            menuWindow->refresh();
+            return true;
+        }
+        return false;
+    }
+
 
     auto ApplicationDesktop::handle(db::NotificationMessage *msg) -> bool
     {
@@ -309,8 +328,11 @@ namespace app
         notifications.notRead.Calls = DBServiceAPI::CalllogGetCount(this, EntryState::UNREAD);
         notifications.notRead.SMS   = DBServiceAPI::ThreadGetCount(this, EntryState::UNREAD);
 
-        ///Will be modified after providing requirements of calendar not readed events
-        notifications.notRead.CalendarEvents = notifications.notSeen.CalendarEvents;
+        ///request calendar events
+        auto actualDate = TimePointNow();
+        DBServiceAPI::GetQuery(this,
+                               db::Interface::Name::Events,
+                               std::make_unique<db::query::events::GetFilteredByDay>(actualDate));
         return true;
     }
 
@@ -321,9 +343,6 @@ namespace app
         if (ret != sys::ReturnCodes::Success) {
             return ret;
         }
-
-        requestNotReadNotifications();
-        requestNotSeenNotifications();
 
         createUserInterface();
         setActiveWindow(gui::name::window::main_window);
