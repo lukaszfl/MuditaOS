@@ -266,8 +266,8 @@ class TS0710
     PortSpeed_e pv_portSpeed;
     ATParser *parser;
 
-    int CloseMultiplexer();
-    const static bool hardwareControlFlowEnable = false;
+    int CloseMultiplexer(); // ??
+    const static bool hardwareControlFlowEnable = true;
 
     bool searchForString(const std::vector<std::string> &response, std::string str)
     {
