@@ -17,7 +17,7 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-class DLC_channel : public at::Channel
+class DLC_channel : public at::Chanel
 {
   public:
     using Callback_t = std::function<void(std::string &data)>;

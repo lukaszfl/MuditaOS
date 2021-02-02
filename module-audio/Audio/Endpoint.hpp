@@ -36,6 +36,9 @@ namespace audio
     class Sink : public Endpoint
     {
       public:
+        Sink() = default;
+        explicit Sink(const Capabilities &caps);
+
         virtual void onDataSend()    = 0;
         virtual void enableOutput()  = 0;
         virtual void disableOutput() = 0;
@@ -44,6 +47,9 @@ namespace audio
     class Source : public Endpoint
     {
       public:
+        Source() = default;
+        explicit Source(const Capabilities &caps);
+
         virtual void onDataReceive() = 0;
         virtual void enableInput()   = 0;
         virtual void disableInput()  = 0;

@@ -2,7 +2,12 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 /*
+ * @file pin_names.h
+ * @author Lukasz Skrzypczak (lukasz.skrzypczak@mudita.com)
+ * @date Oct 3, 2018
  * @brief Insert brief information about this file purpose.
+ * @copyright Copyright (C) 2018 mudita.com.
+ * @details More detailed information related to this code.
  */
 
 #ifndef BSP_BOARD_PIN_NAMES_H_

@@ -2,7 +2,11 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 /**
+ * @file ED028TC1.c
+ * @author Lukasz Skrzypczak (l.skrzypczak@mudita.com)
+ * @date Sep 6, 2017
  * @brief EInk ED028TC1 electronic paper display driver
+ * @copyright Copyright (C) 2017 mudita.com.
  * @details This is hardware specific electronic paper display ED028TC1 driver.
  *
  * @note All the commands implemented in here are based on the datasheets:
