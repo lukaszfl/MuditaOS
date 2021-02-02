@@ -263,6 +263,8 @@
   "app_call_bluetooth": "BLUETOOTH",
   "app_call_no_sim": "No SIM.\n\nTo make a call,\nplease insert a SIM card.",
   "app_call_offline": "You're offline.\n\nTo make a call\n switch to the Connected mode.",
+  "app_call_emergency_text": "Emergency call",
+  "app_call_wrong_emergency": "Can't make a call.\n$NUMBER is not an emergency number.",
   "app_messages_title_main": "Messages",
   "app_messages_new_message": "New Message",
   "app_messages_no_messages": "<text align='center' color='9'>No messages yet.<p>Press <b>left arrow</b> to add new.</p></text>",

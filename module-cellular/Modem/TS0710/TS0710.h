@@ -1,6 +1,5 @@
-/**
- * Project Untitled
- */
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
+// For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #ifndef _TS0710_H
 #define _TS0710_H
@@ -390,33 +389,6 @@ class TS0710
                        static_cast<unsigned int>(numberOfExpectedTokens));
             return false;
         }
-    }
-
-    /// @brief It is serching the resposne for "OK "string
-    ///
-    /// @note Invalid responses are logged by defult as LOG_ERRORs
-    ///
-    /// @param response - tokenized resposne
-    /// @param numberOfExpectedTokens - number of expected tokens, 0 means do not validate number of tokens
-    /// @param level - determine how the errors are logged
-    /// @return true - str string is found, false - otherwise
-    bool CheckATCommandResponse(const std::vector<std::string> &response,
-                                size_t numberOfExpectedTokens,
-                                logger_level level = LOGERROR)
-    {
-        return SearchATCommandResponse(response, "OK", numberOfExpectedTokens, level);
-    }
-
-    /// @brief It is serching the resposne for "OK "string
-    ///
-    /// @note Invalid responses are logged by defult as LOG_ERRORs
-    ///
-    /// @param response - tokenized resposne
-    /// @param level - determine how the errors are logged
-    /// @return true - str string is found, false - otherwise
-    bool CheckATCommandResponse(const std::vector<std::string> &response, logger_level level = LOGERROR)
-    {
-        return SearchATCommandResponse(response, "OK", 0, level);
     }
 
     /// @brief It is serching the resposne for ">" string

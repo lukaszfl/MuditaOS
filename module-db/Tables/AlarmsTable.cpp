@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "AlarmsTable.hpp"
@@ -9,7 +9,7 @@ AlarmsTableRow::AlarmsTableRow(const AlarmsRecord &rec)
 {}
 
 AlarmsTableRow::AlarmsTableRow(
-    uint32_t id, calendar::TimePoint time, uint32_t snooze, AlarmStatus status, uint32_t repeat, UTF8 path)
+    uint32_t id, TimePoint time, uint32_t snooze, AlarmStatus status, uint32_t repeat, UTF8 path)
     : Record{id}, time{time}, snooze{snooze}, status{status}, repeat{repeat}, path{std::move(path)}
 {}
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 /*
@@ -21,8 +21,10 @@ struct tm *gmtime_r( const time_t *pxTime, struct tm *tmStruct )
 }
 #endif
 /*-----------------------------------------------------------*/
-
-time_t FreeRTOS_time(time_t *pxTime)
+extern "C"
 {
-    return utils::time::Time().getTime();
+    time_t FreeRTOS_time(time_t *pxTime)
+    {
+        return utils::time::Time().getTime();
+    }
 }

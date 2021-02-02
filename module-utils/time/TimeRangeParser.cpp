@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "TimeRangeParser.hpp"
@@ -19,8 +19,8 @@ namespace utils::time
         return utils::localize.get(utils::time::Locale::getPM());
     }
 
-    std::string TimeRangeParser::getCalendarTimeString(calendar::TimePoint startDate,
-                                                       calendar::TimePoint endDate,
+    std::string TimeRangeParser::getCalendarTimeString(TimePoint startDate,
+                                                       TimePoint endDate,
                                                        Version version,
                                                        bool isMode24H)
     {

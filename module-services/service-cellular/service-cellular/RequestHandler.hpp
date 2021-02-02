@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -16,6 +16,8 @@ namespace cellular
     class ClipRequest;
     class ClirRequest;
     class CallForwardingRequest;
+    class CallBarringRequest;
+    class CallWaitingRequest;
 
     class RequestHandler
     {
@@ -27,6 +29,9 @@ namespace cellular
         virtual void handle(PinChangeRequest &request, at::Result &result)             = 0;
         virtual void handle(SupplementaryServicesRequest &request, at::Result &result) = 0;
         virtual void handle(ClirRequest &request, at::Result &result)                  = 0;
+        virtual void handle(ClipRequest &request, at::Result &result)                  = 0;
         virtual void handle(CallForwardingRequest &request, at::Result &result)        = 0;
+        virtual void handle(CallBarringRequest &request, at::Result &result)           = 0;
+        virtual void handle(CallWaitingRequest &request, at::Result &result)           = 0;
     };
 } // namespace cellular

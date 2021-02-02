@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "BoxLayout.hpp"
@@ -98,6 +98,11 @@ namespace gui
     void BoxLayout::erase()
     {
         Item::erase();
+    }
+
+    bool BoxLayout::empty() const noexcept
+    {
+        return children.empty();
     }
 
     void BoxLayout::setVisible(bool value, bool previous)

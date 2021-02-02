@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "PhonebookNewContact.hpp"
@@ -40,7 +40,8 @@ namespace gui
                                  phonebookStyle::newContactWindow::newContactsList::y,
                                  phonebookStyle::newContactWindow::newContactsList::w,
                                  phonebookStyle::newContactWindow::newContactsList::h,
-                                 newContactModel);
+                                 newContactModel,
+                                 style::listview::ScrollBarType::PreRendered);
         setFocusItem(list);
     }
 

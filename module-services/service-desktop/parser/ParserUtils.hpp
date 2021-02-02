@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -130,6 +130,7 @@ namespace parserFSM
         inline constexpr auto errorCode        = "errorCode";
         inline constexpr auto statusCode       = "statusCode";
         inline constexpr auto updateHistory    = "updateHistory";
+
         namespace filesystem
         {
             inline constexpr auto command = "command";
@@ -140,6 +141,16 @@ namespace parserFSM
                 inline constexpr auto download = "download";
             } // namespace commands
         }     // namespace filesystem
+
+        namespace updateprocess
+        {
+            inline constexpr auto command       = "command";
+            inline constexpr auto updateAborted = "updateAborted";
+            namespace commands
+            {
+                inline constexpr auto abort = "abort";
+            } // namespace commands
+        }     // namespace updateprocess
 
         namespace messages
         {

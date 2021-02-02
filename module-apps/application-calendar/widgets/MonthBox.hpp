@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -19,7 +19,7 @@ namespace gui
                  const uint32_t &dayWidth,
                  const uint32_t &dayHeight,
                  const std::unique_ptr<MonthModel> &model,
-                 bool *isDayEmpty);
+                 std::array<bool, 31> &isDayEmpty);
 
         ~MonthBox() override = default;
         std::string month;

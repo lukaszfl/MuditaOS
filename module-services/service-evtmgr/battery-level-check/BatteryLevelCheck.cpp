@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "BatteryLevelCheck.hpp"
@@ -76,6 +76,12 @@ namespace battery_level_check
             }
             break;
         }
+    }
+
+    void checkBatteryLevelCriticalWithConfirmation()
+    {
+        state = CheckState::InitialCheck;
+        checkBatteryLevelCritical();
     }
 
     void setBatteryCriticalLevel(unsigned int level)

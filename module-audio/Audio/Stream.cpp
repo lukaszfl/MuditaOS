@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "Stream.hpp"
@@ -136,6 +136,15 @@ bool Stream::reserve(Span &span)
         _reserveCount++;
         return true;
     }
+
+    // reset data to peek end
+    _blocksUsed = 0;
+    _dataEnd    = _peekPosition;
+
+    // reserve at peek end
+    _reserveCount             = 1;
+    _writeReservationPosition = _peekPosition;
+    span                      = *++_writeReservationPosition;
 
     broadcastEvent(Event::StreamOverflow);
     return false;

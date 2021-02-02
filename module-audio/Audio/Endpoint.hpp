@@ -1,9 +1,11 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
 
 #include "Stream.hpp"
+
+#include <cstdint>
 
 namespace audio
 {
@@ -13,7 +15,8 @@ namespace audio
         struct Capabilities
         {
             bool usesDMA             = false;
-            std::size_t maxBlockSize = 0;
+            std::size_t minBlockSize = 1;
+            std::size_t maxBlockSize = SIZE_MAX;
         };
 
         Endpoint() = default;
@@ -46,9 +49,12 @@ namespace audio
         virtual void disableInput()  = 0;
     };
 
-    class IOProxy : public Sink, public Source
+    class IOProxy : public Source, public Sink
     {
       public:
+        IOProxy() = default;
+        IOProxy(const Capabilities &sourceCaps, const Capabilities &sinkCaps);
+
         inline bool isSinkConnected() const noexcept
         {
             return Sink::isConnected();

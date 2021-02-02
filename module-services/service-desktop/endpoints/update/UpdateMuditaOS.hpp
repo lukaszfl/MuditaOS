@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -66,7 +66,8 @@ namespace updateos
         NoBootloaderFile,
         CantOpenBootloaderFile,
         CantAllocateBuffer,
-        CantLoadBootloaderFile
+        CantLoadBootloaderFile,
+        UpdateAborted
     };
 
     enum class UpdateState
@@ -171,10 +172,19 @@ class UpdateMuditaOS : public updateos::UpdateStats
     {
         return updateHistory;
     }
+    void setUpdateAbortFlag(bool flag)
+    {
+        updateAbort = flag;
+    }
+    bool isUpdateToBeAborted() const noexcept
+    {
+        return updateAbort;
+    }
 
   private:
     std::vector<FileInfo> filesInUpdatePackage;
     mtar_t updateTar      = {};
+    std::atomic_bool updateAbort = false;
     ServiceDesktop *owner = nullptr;
 
     void storeRunStatusInDB();

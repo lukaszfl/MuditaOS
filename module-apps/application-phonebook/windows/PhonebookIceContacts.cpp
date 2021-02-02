@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "PhonebookIceContacts.hpp"
@@ -32,7 +32,8 @@ namespace gui
                                             phonebookStyle::iceContactsWindow::contactsListIce::y,
                                             phonebookStyle::iceContactsWindow::contactsListIce::w,
                                             phonebookStyle::iceContactsWindow::contactsListIce::h,
-                                            phonebookModel);
+                                            phonebookModel,
+                                            style::listview::ScrollBarType::Fixed);
 
         setFocusItem(contactsListIce);
 

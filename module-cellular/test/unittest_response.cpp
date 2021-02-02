@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #define CATCH_CONFIG_MAIN
@@ -150,5 +150,402 @@ TEST_CASE("Response COPS")
         resp.response.push_back("OK");
         REQUIRE(resp.code == at::Result::Code::OK);
         REQUIRE(at::response::parseCOPS(resp, ret) == false);
+    }
+}
+TEST_CASE("Response CLIR")
+{
+    SECTION("OK CLIR? - according to subscription, not provisioned")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIR: 0,0");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clir::parse(resp.response[0]);
+        REQUIRE(response != std::nullopt);
+        REQUIRE(response->serviceState == at::response::clir::ServiceState::AccordingToSubscription);
+        REQUIRE(response->serviceStatus == at::response::clir::ServiceStatus::NotProvisioned);
+    }
+
+    SECTION("OK CLIR? - disabled, temporary allowed")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIR: 2,4");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clir::parse(resp.response[0]);
+        REQUIRE(response != std::nullopt);
+        REQUIRE(response->serviceState == at::response::clir::ServiceState::ServiceDisabled);
+        REQUIRE(response->serviceStatus == at::response::clir::ServiceStatus::TemporaryAllowed);
+    }
+
+    SECTION("WRONG CLIR? - invalid service state")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIR: 6,4");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clir::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+
+    SECTION("WRONG CLIR? - invalid service status")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIR: 1,99");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clir::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+
+    SECTION("WRONG CLIR? - to many toknes")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIR: 1,4,6");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clir::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+
+    SECTION("WRONG CLIR? - to little tokens")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIR: 1");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clir::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+
+    SECTION("WRONG CLIR? - invalid token")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLI: 1,1");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clir::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+}
+
+TEST_CASE("Response CLIP")
+{
+    SECTION("OK CLIP? - clip provisioned, display urc")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIP: 1,1");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clip::parse(resp.response[0]);
+        REQUIRE(response != std::nullopt);
+        REQUIRE(response->clipState == at::response::clip::ClipState::Provisioned);
+        REQUIRE(response->urcState == at::response::clip::UrcState::DisplayUrc);
+    }
+
+    SECTION("OK CLIP? - clip not provisioned, supress urc")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIP: 0,0");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clip::parse(resp.response[0]);
+        REQUIRE(response != std::nullopt);
+        REQUIRE(response->clipState == at::response::clip::ClipState::NotProvisioned);
+        REQUIRE(response->urcState == at::response::clip::UrcState::SupressUrc);
+    }
+
+    SECTION("WRONG CLIP? - clip invalid clip state")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIP: 1,99");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clip::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+
+    SECTION("WRONG CLIP? - clip urc state")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIP: 77,1");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clip::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+
+    SECTION("WRONG CLIP? - to many tokens")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIP: 1,1,3");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clip::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+
+    SECTION("WRONG CLIP? - to little tokens")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLIP: 0");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clip::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+    SECTION("WRONG CLIP? - invalid token")
+    {
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        resp.response.push_back("+CLI: 1,1");
+        resp.response.push_back("OK");
+        REQUIRE(resp.code == at::Result::Code::OK);
+        auto response = at::response::clip::parse(resp.response[0]);
+        REQUIRE(response == std::nullopt);
+    }
+}
+
+TEST_CASE("Response CLCK")
+{
+    SECTION("OK CLCK QUERY - all disabled")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::clck::ClckParsed> ret;
+        resp.response.push_back("+CLCK: 0,255");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::clck::parseQueryResponse(resp.response, ret) == true);
+        REQUIRE(ret.size() == 1);
+        REQUIRE(ret[0].status == at::response::clck::Status::Disable);
+        REQUIRE(ret[0].serviceClass == at::response::mmi::ServiceClass::AllDisabled);
+    }
+
+    SECTION("OK CLCK QUERY - voice enabled")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::clck::ClckParsed> ret;
+        resp.response.push_back("+CLCK: 1,1");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::clck::parseQueryResponse(resp.response, ret) == true);
+        REQUIRE(ret.size() == 1);
+        REQUIRE(ret[0].status == at::response::clck::Status::Enable);
+        REQUIRE(ret[0].serviceClass == at::response::mmi::ServiceClass::Voice);
+    }
+
+    SECTION("OK CLCK QUERY - voice, fax enabled")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::clck::ClckParsed> ret;
+        resp.response.push_back("+CLCK: 1,1");
+        resp.response.push_back("+CLCK: 1,4");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::clck::parseQueryResponse(resp.response, ret) == true);
+        REQUIRE(ret.size() == 2);
+
+        REQUIRE(ret[0].status == at::response::clck::Status::Enable);
+        REQUIRE(ret[0].serviceClass == at::response::mmi::ServiceClass::Voice);
+
+        REQUIRE(ret[1].status == at::response::clck::Status::Enable);
+        REQUIRE(ret[1].serviceClass == at::response::mmi::ServiceClass::Fax);
+    }
+
+    SECTION("WRONG CLCK QUERY - invalid status")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::clck::ClckParsed> ret;
+        resp.response.push_back("+CLCK: 8,1");
+        resp.response.push_back("+CLCK: 1,4");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::clck::parseQueryResponse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
+    }
+
+    SECTION("WRONG CLCK QUERY - invalid class")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::clck::ClckParsed> ret;
+        resp.response.push_back("+CLCK: 1,1");
+        resp.response.push_back("+CLCK: 1,99");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::clck::parseQueryResponse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
+    }
+
+    SECTION("WRONG CLCK QUERY - too short")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::clck::ClckParsed> ret;
+        resp.response.push_back("+CLCK: 1");
+        resp.response.push_back("+CLCK: 1,4");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::clck::parseQueryResponse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
+    }
+
+    SECTION("WRONG CLCK QUERY - invalid response token")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::clck::ClckParsed> ret;
+        resp.response.push_back("+CLC: 1,1");
+        resp.response.push_back("+CLCK: 1,4");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::clck::parseQueryResponse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
+    }
+}
+
+TEST_CASE("Response CCWA?")
+{
+    SECTION("OK CCWA?  - all disabled")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::ccwa::CcwaParsed> ret;
+        resp.response.push_back("+CCWA: 0,255");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::ccwa::parse(resp.response, ret) == true);
+        REQUIRE(ret.size() == 1);
+        REQUIRE(ret[0].status == at::response::ccwa::Status::Disable);
+        REQUIRE(ret[0].serviceClass == at::response::ccwa::ServiceClass::AllDisabled);
+    }
+
+    SECTION("OK CCWA?  - voice, fax enabled")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::ccwa::CcwaParsed> ret;
+        resp.response.push_back("+CCWA: 1,1");
+        resp.response.push_back("+CCWA: 1,4");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::ccwa::parse(resp.response, ret) == true);
+        REQUIRE(ret.size() == 2);
+
+        REQUIRE(ret[0].status == at::response::ccwa::Status::Enable);
+        REQUIRE(ret[0].serviceClass == at::response::ccwa::ServiceClass::Voice);
+
+        REQUIRE(ret[1].status == at::response::ccwa::Status::Enable);
+        REQUIRE(ret[1].serviceClass == at::response::ccwa::ServiceClass::Fax);
+    }
+
+    SECTION("WRONG CCWA?  - invalid status")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::ccwa::CcwaParsed> ret;
+        resp.response.push_back("+CCWA: 9,1");
+        resp.response.push_back("+CCWA: 1,4");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::ccwa::parse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
+    }
+
+    SECTION("WRONG CCWA?  - invalid class")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::ccwa::CcwaParsed> ret;
+        resp.response.push_back("+CCWA: 1,1");
+        resp.response.push_back("+CCWA: 1,66");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::ccwa::parse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
+    }
+
+    SECTION("WRONG CCWA?  - invalid token")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::ccwa::CcwaParsed> ret;
+        resp.response.push_back("+CCW: 1,1");
+        resp.response.push_back("+CCWA: 1,66");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::ccwa::parse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
+    }
+
+    SECTION("WRONG CCWA?  - to little tokens")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::ccwa::CcwaParsed> ret;
+        resp.response.push_back("+CCWA: 1,1");
+        resp.response.push_back("+CCWA: 1");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::ccwa::parse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
+    }
+
+    SECTION("WRONG CCWA?  - to many tokens")
+    {
+
+        at::Result resp;
+        resp.code = at::Result::Code::OK;
+        std::vector<at::response::ccwa::CcwaParsed> ret;
+        resp.response.push_back("+CCWA: 1,1,9");
+        resp.response.push_back("+CCWA: 1,4");
+        resp.response.push_back("OK");
+
+        REQUIRE(resp.code == at::Result::Code::OK);
+        REQUIRE(at::response::ccwa::parse(resp.response, ret) == false);
+        REQUIRE(ret.size() == 0);
     }
 }

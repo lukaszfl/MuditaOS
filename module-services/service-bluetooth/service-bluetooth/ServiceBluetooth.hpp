@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -29,9 +29,9 @@ class ServiceBluetooth : public sys::Service
     sys::ReturnCodes InitHandler() override;
     sys::ReturnCodes DeinitHandler() override;
     virtual sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override;
-    void sendWorkerCommand(Bt::Command command);
+    void sendWorkerCommand(bluetooth::Command command);
     QueueHandle_t workerQueue = nullptr;
-    std::shared_ptr<Bluetooth::SettingsHolder> settingsHolder;
+    std::shared_ptr<bluetooth::SettingsHolder> settingsHolder;
 
   private:
     std::unique_ptr<BluetoothWorker> worker;

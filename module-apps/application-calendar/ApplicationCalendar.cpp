@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "ApplicationCalendar.hpp"
@@ -147,7 +147,7 @@ namespace app
     void ApplicationCalendar::destroyUserInterface()
     {}
 
-    void ApplicationCalendar::switchToNoEventsWindow(const std::string &title, const calendar::TimePoint &dateFilter)
+    void ApplicationCalendar::switchToNoEventsWindow(const std::string &title, const TimePoint &dateFilter)
     {
         if (equivalentWindow == EquivalentWindow::DayEventsWindow) {
             popToWindow(gui::name::window::main_window);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "Application.hpp"
@@ -150,7 +150,7 @@ namespace app
             else if (suspendInProgress) {
                 message->setCommandType(service::gui::DrawMessage::Type::SUSPEND);
             }
-            sys::Bus::SendUnicast(message, service::name::gui, this);
+            sys::Bus::SendUnicast(std::move(message), service::name::gui, this);
         }
 
         if (suspendInProgress)
@@ -501,7 +501,7 @@ namespace app
 
         settings->registerValueChange(
             settings::SystemProperties::lockScreenPasscodeIsOn,
-            [this](const std::string &value) { setLockScreenPasscodeOn(utils::getNumericValue<bool>(value)); },
+            [this](const std::string &value) { lockScreenPasscodeIsOn = utils::getNumericValue<bool>(value); },
             settings::SettingsScope::Global);
         return sys::ReturnCodes::Success;
     }
@@ -727,7 +727,9 @@ namespace app
     void Application::setLockScreenPasscodeOn(bool screenPasscodeOn) noexcept
     {
         lockScreenPasscodeIsOn = screenPasscodeOn;
-        settings->setValue(settings::SystemProperties::lockScreenPasscodeIsOn, std::to_string(lockScreenPasscodeIsOn));
+        settings->setValue(settings::SystemProperties::lockScreenPasscodeIsOn,
+                           std::to_string(lockScreenPasscodeIsOn),
+                           settings::SettingsScope::Global);
     }
 
     bool Application::isLockScreenPasscodeOn() const noexcept

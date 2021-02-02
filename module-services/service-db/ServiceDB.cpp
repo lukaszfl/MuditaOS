@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "ServiceDB.hpp"
@@ -334,7 +334,7 @@ sys::MessagePointer ServiceDB::DataReceivedHandler(sys::DataMessage *msgl, sys::
 
         if (ret.has_value()) {
             responseMsg = std::make_shared<DBContactNumberResponseMessage>(
-                sys::ReturnCodes::Success, std::make_unique<ContactRecord>(ret->contact));
+                sys::ReturnCodes::Success, std::make_unique<ContactRecord>(std::move(ret->contact)));
         }
         else {
             responseMsg = std::make_shared<DBContactNumberResponseMessage>(sys::ReturnCodes::Failure,

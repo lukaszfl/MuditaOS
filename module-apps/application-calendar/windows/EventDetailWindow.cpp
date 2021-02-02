@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "EventDetailWindow.hpp"
@@ -38,7 +38,8 @@ namespace gui
                                      style::window::calendar::listView_y,
                                      style::window::calendar::listView_w,
                                      style::window::calendar::listView_h,
-                                     eventDetailModel);
+                                     eventDetailModel,
+                                     style::listview::ScrollBarType::PreRendered);
 
         setFocusItem(bodyList);
     }

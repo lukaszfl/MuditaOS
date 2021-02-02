@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "NoteMainWindow.hpp"
@@ -82,8 +82,13 @@ namespace app::notes
                                      windowStyle::search_image::ImageSource);
 
         namespace listStyle = app::notes::style::list;
-        list                = new gui::ListView(
-            this, listStyle::X, listStyle::Y, listStyle::Width, listStyle::Height, presenter->getNotesItemProvider());
+        list                = new gui::ListView(this,
+                                 listStyle::X,
+                                 listStyle::Y,
+                                 listStyle::Width,
+                                 listStyle::Height,
+                                 presenter->getNotesItemProvider(),
+                                 ::style::listview::ScrollBarType::Fixed);
         list->setPenWidth(listStyle::PenWidth);
         list->setPenFocusWidth(listStyle::FocusedPenWidth);
         list->focusChangedCallback = [this]([[maybe_unused]] gui::Item &item) {

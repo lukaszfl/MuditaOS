@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include <gtest/gtest.h>
@@ -203,7 +203,7 @@ TEST(Stream, Reserve)
     EXPECT_FALSE(s.reserve(span));
 
     s.commit();
-    EXPECT_EQ(s.getUsedBlockCount(), s.getBlockCount());
+    EXPECT_EQ(s.getUsedBlockCount(), 1);
 }
 
 int main(int argc, char **argv)

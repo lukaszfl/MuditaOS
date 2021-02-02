@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -125,19 +125,19 @@ namespace sevm
         bool success = false;
     };
 
-    class KeypadBacklightMessage : public Message
+    class KeypadBacklightMessage : public sys::Message
     {
       public:
-        KeypadBacklightMessage() : Message(MessageType::EVMKeypadBacklightMessage)
+        explicit KeypadBacklightMessage(bsp::keypad_backlight::Action action) : action(action)
         {}
 
         bsp::keypad_backlight::Action action;
     };
 
-    class KeypadBacklightResponseMessage : public KeypadBacklightMessage
+    class KeypadBacklightResponseMessage : public sys::Message
     {
       public:
-        KeypadBacklightResponseMessage() : KeypadBacklightMessage()
+        KeypadBacklightResponseMessage()
         {}
         bool success;
     };

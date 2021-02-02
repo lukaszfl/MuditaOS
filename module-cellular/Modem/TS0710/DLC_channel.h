@@ -1,3 +1,6 @@
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
+// For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
+
 /**
  * Project Untitled
  */
@@ -14,7 +17,7 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-class DLC_channel : public at::Chanel
+class DLC_channel : public at::Channel
 {
   public:
     using Callback_t = std::function<void(std::string &data)>;

@@ -1,5 +1,93 @@
 # MuditaOS changelog
 
+## [0.55.1 2020-01-28]
+
+### Added
+
+* Add brownout information window.
+* Add language select settings window.
+* Add emergency call window.
+
+### Changed
+
+* Add several improvements to the USB handling.
+* Improve e-ink display speed.
+
+### Fixed
+
+* Fix crash on USB deinitialization.
+* Fix USB Full Speed.
+* Fix selecting contact for edit by phone number from speed dial window.
+* Fix VoLTE settings editing.
+* Fix sim indicator displaying on the top bar.
+* Fix returning from ICE contacts window.
+
+### Other
+
+* Improvements to the harness tests.
+* Improve downloading assets for selected releases.
+* Add backend for multi-day events in the calendar application.
+* Add call forwarding and MMI status parsers.
+
+## [0.54.3 2020-01-22]
+
+### Added
+
+* Add options to create, edit and remove quotes.
+* Add main system settings window.
+* Add APN settings window.
+
+### Changed
+
+* Improve e-ink responsiveness.
+* Change time format on home screen and status bar.
+* Add application-wide top bar manager.
+* Improved screen light control.
+
+### Fixed
+
+* Fix changing passcode windows.
+* Fix the possibility to write illogical operations in the calculator.
+* Fix the possibility to write multiple zeroes in the calculator when it is not needed.
+* Change the display format of a calculation result to scientific notation when it does not fit the screen.
+* Fix freezes and resets due to invalid assertions.
+* Fix grid layout navigation.
+* Fix Linux simulator crashes.
+
+### Other
+
+* Add build target to generate a package with version information.
+* Update licensing information.
+* Add option to change VID/PID via build system.
+* Add several filesystem improvements.
+* Update development workflow documentation and scripts.
+* Add integration with `clang-tidy`.
+* Add assets uploading to Github on release.
+
+## [0.54.2 2020-01-19]
+
+### Added
+
+* Add passcode changing.
+
+### Fixed
+
+* Fix the persistent answer and reject labels in the call window.
+* Fix the wrong call duration issue in both Call and Calls apps.
+* Fix call ignoring.
+
+### Other
+
+* Enable modem's debug output.
+* Enable timers enhanced debug.
+* Fix licensing information.
+
+## [0.54.1 2020-01-18]
+
+### Fixed
+
+* Fix settings broken by the accidentally removed script.
+
 ## [0.53.2 2020-01-15]
 
 ### Added

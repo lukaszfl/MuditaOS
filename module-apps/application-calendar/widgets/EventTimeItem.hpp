@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -21,8 +21,8 @@ namespace gui
         gui::HBox *hBox                = nullptr;
         gui::Label *colonLabel         = nullptr;
         gui::Label *descriptionLabel   = nullptr;
-        gui::Text *hourInput           = nullptr;
-        gui::Text *minuteInput         = nullptr;
+        gui::Label *hourInput          = nullptr;
+        gui::Label *minuteInput        = nullptr;
         gui::Label *mode12hInput       = nullptr;
         bool mode24H                   = false;
         gui::EventTimeItem *secondItem = nullptr;
@@ -33,6 +33,9 @@ namespace gui
 
         void applyInputCallbacks();
         void prepareForTimeMode();
+        void setTime(int keyValue, gui::Label &item);
+        void onInputCallback(gui::Label &timeInput);
+        void clearInput(gui::Label &timeInput);
         bool isPm(const std::string &text);
         void validateHour();
         void validateHourFor12hMode(std::chrono::hours start_hour,
@@ -43,9 +46,9 @@ namespace gui
                                     std::chrono::minutes end_hour,
                                     uint32_t start_minutes,
                                     uint32_t end_minutes);
-        calendar::TimePoint calculateEventTime(calendar::YearMonthDay date,
-                                               std::chrono::hours hours,
-                                               std::chrono::minutes minutes);
+        TimePoint calculateEventTime(calendar::YearMonthDay date,
+                                     std::chrono::hours hours,
+                                     std::chrono::minutes minutes);
 
       public:
         EventTimeItem(const std::string &description,

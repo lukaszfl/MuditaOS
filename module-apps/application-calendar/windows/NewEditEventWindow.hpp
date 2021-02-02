@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -21,16 +21,10 @@ namespace gui
     class NewEditEventWindow : public gui::AppWindow
     {
       private:
-        enum class EventAction
-        {
-            None,
-            Add,
-            Edit
-        };
         std::shared_ptr<EventsRecord> eventRecord            = nullptr;
         gui::ListView *list                                  = nullptr;
         std::shared_ptr<NewEditEventModel> newEditEventModel = nullptr;
-        EventAction eventAction                              = EventAction::None;
+        EventAction eventAction                              = EventAction::Add;
 
       public:
         NewEditEventWindow(app::Application *app, std::string name);

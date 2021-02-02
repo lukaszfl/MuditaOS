@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "service-fota/FotaMessages.hpp"
@@ -516,7 +516,7 @@ namespace FotaService
 
     at::Result Service::sendAndLogError(const std::string &msg, uint32_t timeout) const
     {
-        at::Result result = dataChannel->cmd(msg, timeout);
+        at::Result result = dataChannel->cmd(msg, std::chrono::milliseconds(timeout));
         logIfError(result, msg);
         return result;
     }

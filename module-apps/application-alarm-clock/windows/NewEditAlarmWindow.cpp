@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "NewEditAlarmWindow.hpp"
@@ -31,7 +31,8 @@ namespace app::alarmClock
                                  style::alarmClock::window::listView_y,
                                  style::alarmClock::window::listView_w,
                                  style::alarmClock::window::listView_h,
-                                 presenter->getAlarmsItemProvider());
+                                 presenter->getAlarmsItemProvider(),
+                                 style::listview::ScrollBarType::None);
         setFocusItem(list);
     }
 

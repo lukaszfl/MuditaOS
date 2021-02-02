@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "vfs.hpp"
@@ -184,7 +184,7 @@ TEST_CASE("Alarms Record tests")
     }
 
     auto getQuery = [&](uint32_t id,
-                        calendar::TimePoint alarmTime,
+                        TimePoint alarmTime,
                         uint32_t snooze,
                         AlarmStatus status,
                         uint32_t repeat,

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -35,6 +35,7 @@ namespace settings
     namespace Cellular
     {
         constexpr inline auto volte_on = "cl_volte_on";
+        constexpr inline auto apn_list = "cl_apn_list";
     } // namespace Cellular
 
 }; // namespace settings

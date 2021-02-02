@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -20,8 +20,8 @@ namespace utils::time
         std::string AMPMtoString(bool isAm);
 
       public:
-        std::string getCalendarTimeString(calendar::TimePoint startDate,
-                                          calendar::TimePoint endDate,
+        std::string getCalendarTimeString(TimePoint startDate,
+                                          TimePoint endDate,
                                           Version version = Version::normal,
                                           bool isMode24H  = false);
     };

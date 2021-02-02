@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -25,15 +25,14 @@ enum class AlarmStatus
 
 struct AlarmsTableRow : public Record
 {
-    calendar::TimePoint time = TIME_POINT_INVALID;
+    TimePoint time     = TIME_POINT_INVALID;
     uint32_t snooze    = 0;
     AlarmStatus status = AlarmStatus::On;
     uint32_t repeat    = 0;
     UTF8 path;
 
     AlarmsTableRow() = default;
-    AlarmsTableRow(
-        uint32_t id, calendar::TimePoint time, uint32_t snooze, AlarmStatus status, uint32_t repeat, UTF8 path);
+    AlarmsTableRow(uint32_t id, TimePoint time, uint32_t snooze, AlarmStatus status, uint32_t repeat, UTF8 path);
     explicit AlarmsTableRow(const AlarmsRecord &rec);
     explicit AlarmsTableRow(const QueryResult &result);
 };

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "SMSTemplatesWindow.hpp"
@@ -46,7 +46,8 @@ namespace gui
 
         namespace style = style::messages::templates::list;
 
-        list = new gui::ListView(this, style::x, style::y, style::w, style::h, smsTemplateModel);
+        list = new gui::ListView(
+            this, style::x, style::y, style::w, style::h, smsTemplateModel, ::style::listview::ScrollBarType::Fixed);
 
         setFocusItem(list);
     }

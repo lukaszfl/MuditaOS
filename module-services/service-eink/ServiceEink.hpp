@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -31,13 +31,21 @@ namespace service::eink
             Running,
             Suspended
         };
+
+        /// It takes 25ms to get a new measurement
+        enum class WaveformTemperature
+        {
+            KEEP_CURRENT,
+            MEASURE_NEW,
+        };
+
         void setState(State state) noexcept;
         bool isInState(State state) const noexcept;
 
         void enterActiveMode();
         void suspend();
         void updateDisplay(std::uint8_t *frameBuffer, ::gui::RefreshModes refreshMode);
-        void prepareDisplay(::gui::RefreshModes refreshMode);
+        void prepareDisplay(::gui::RefreshModes refreshMode, WaveformTemperature behaviour);
 
         sys::MessagePointer handleEinkModeChangedMessage(sys::Message *message);
         sys::MessagePointer handleImageMessage(sys::Message *message);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "service-evtmgr/BatteryMessages.hpp"
@@ -262,5 +262,5 @@ void WorkerEvent::processKeyEvent(bsp::KeyEvents event, bsp::KeyCodes code)
 
 void WorkerEvent::checkBatteryLevelCritical()
 {
-    battery_level_check::checkBatteryLevelCritical();
+    battery_level_check::checkBatteryLevelCriticalWithConfirmation();
 }

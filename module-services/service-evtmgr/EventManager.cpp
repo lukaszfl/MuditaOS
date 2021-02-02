@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "service-evtmgr/BatteryMessages.hpp"
@@ -151,7 +151,7 @@ sys::MessagePointer EventManager::DataReceivedHandler(sys::DataMessage *msgl, sy
     }
     else if (msgl->messageType == MessageType::EVMMinuteUpdated && msgl->sender == this->GetName()) {
 
-        // HandleAlarmTrigger(msgl);
+        HandleAlarmTrigger(msgl);
 
         handled = true;
     }
@@ -257,7 +257,7 @@ sys::ReturnCodes EventManager::InitHandler()
         return std::make_shared<sys::ResponseMessage>();
     });
 
-    connect(sevm::KeypadBacklightMessage(), [&](sys::Message *msgl) {
+    connect(sevm::KeypadBacklightMessage(bsp::keypad_backlight::Action::turnOff), [&](sys::Message *msgl) {
         auto request      = static_cast<sevm::KeypadBacklightMessage *>(msgl);
         auto response     = std::make_shared<sevm::KeypadBacklightResponseMessage>();
         response->success = processKeypadBacklightRequest(request->action);
@@ -372,3 +372,6 @@ bool EventManager::processKeypadBacklightRequest(bsp::keypad_backlight::Action a
     }
     return response;
 }
+
+void EventManager::GetNextAlarmTimestamp(time_t timestamp)
+{}

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -7,7 +7,7 @@
 #include "SCO.hpp"
 #include <Audio/AudioCommon.hpp>
 
-namespace Bt
+namespace bluetooth
 {
     static constexpr int serviceBufferLength = 150;
     static constexpr int commandBufferLength = 150;

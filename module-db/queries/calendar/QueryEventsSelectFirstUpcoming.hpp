@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -14,11 +14,11 @@ namespace db::query::events
     class SelectFirstUpcoming : public Query
     {
       public:
-        SelectFirstUpcoming(calendar::TimePoint filter_from, calendar::TimePoint filter_till);
+        SelectFirstUpcoming(TimePoint filter_from, TimePoint filter_till);
         [[nodiscard]] auto debugInfo() const -> std::string override;
 
-        calendar::TimePoint filter_from;
-        calendar::TimePoint filter_till;
+        TimePoint filter_from;
+        TimePoint filter_till;
     };
 
     /// Result of SelectFirstUpcoming query

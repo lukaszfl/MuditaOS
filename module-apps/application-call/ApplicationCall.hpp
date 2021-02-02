@@ -24,6 +24,7 @@ namespace app
         inline constexpr auto name_emergencyCall     = "EmergencyCallWindow";
         inline constexpr auto name_duplicatedContact = "DuplicatedContactWindow";
         inline constexpr auto name_dialogConfirm     = "DialogConfirm";
+        inline constexpr auto name_number            = "NumberWindow";
     } // namespace window
 
     inline constexpr auto ringtone_path = "assets/audio/Ringtone-drum2.mp3"; // Should bo moved to database
@@ -45,9 +46,10 @@ namespace app
     class EnterNumberWindowInterface
     {
       public:
-        virtual ~EnterNumberWindowInterface() noexcept                = default;
-        virtual void handleCallEvent(const std::string &number)       = 0;
-        virtual void handleAddContactEvent(const std::string &number) = 0;
+        virtual ~EnterNumberWindowInterface() noexcept                   = default;
+        virtual void handleCallEvent(const std::string &number)          = 0;
+        virtual void handleEmergencyCallEvent(const std::string &number) = 0;
+        virtual void handleAddContactEvent(const std::string &number)    = 0;
     };
 
     class ApplicationCall : public Application, public CallWindowInterface, public EnterNumberWindowInterface
@@ -77,10 +79,11 @@ namespace app
         void createUserInterface() override;
         void destroyUserInterface() override;
 
+        void handleEmergencyCallEvent(const std::string &number) override;
         void handleCallEvent(const std::string &number) override;
         void handleAddContactEvent(const std::string &number) override;
 
-        auto showNotification(std::function<bool()> action) -> bool;
+        auto showNotification(std::function<bool()> action, const std::string &icon, const std::string &text) -> bool;
 
         [[nodiscard]] auto getState() const noexcept -> call::State override
         {
@@ -100,7 +103,10 @@ namespace app
     {
         static auto GetManifest() -> manager::ApplicationManifest
         {
-            return {{manager::actions::Launch, manager::actions::Call, manager::actions::Dial}};
+            return {{manager::actions::Launch,
+                     manager::actions::Call,
+                     manager::actions::Dial,
+                     manager::actions::EmergencyDial}};
         }
     };
 } /* namespace app */

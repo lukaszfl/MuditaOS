@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include <service-appmgr/model/ApplicationManager.hpp>
@@ -34,9 +34,12 @@ namespace app::manager
 {
     namespace
     {
-        static constexpr auto default_application_locktime_ms = 30000;
-        static constexpr auto shutdown_delay_ms               = 500;
-    }; // namespace
+        constexpr auto default_application_locktime_ms = 30000;
+        constexpr auto shutdown_delay_ms               = 500;
+
+        constexpr auto timerBlock         = "BlockTimer";
+        constexpr auto timerShutdownDelay = "ShutdownDelay";
+    } // namespace
 
     ApplicationManagerBase::ApplicationManagerBase(std::vector<std::unique_ptr<app::ApplicationLauncher>> &&launchers)
         : applications{std::move(launchers)}
@@ -102,8 +105,8 @@ namespace app::manager
                                            const ApplicationName &_rootApplicationName)
         : Service{serviceName}, ApplicationManagerBase(std::move(launchers)), rootApplicationName{_rootApplicationName},
           blockingTimer{std::make_unique<sys::Timer>(
-              "BlockTimer", this, std::numeric_limits<sys::ms>::max(), sys::Timer::Type::SingleShot)},
-          shutdownDelay{std::make_unique<sys::Timer>("ShutdownDelay", this, shutdown_delay_ms)},
+              timerBlock, this, std::numeric_limits<sys::ms>::max(), sys::Timer::Type::SingleShot)},
+          shutdownDelay{std::make_unique<sys::Timer>(timerShutdownDelay, this, shutdown_delay_ms)},
           settings(std::make_unique<settings::Settings>(this))
     {
         registerMessageHandlers();
@@ -245,6 +248,9 @@ namespace app::manager
             auto actionMsg = static_cast<ActionRequest *>(request);
             handleAction(actionMsg);
             return std::make_shared<sys::ResponseMessage>();
+        });
+        connect(typeid(GetCurrentDisplayLanguageRequest), [&](sys::Message *request) {
+            return std::make_shared<GetCurrentDisplayLanguageResponse>(displayLanguage);
         });
 
         auto convertibleToActionHandler = [this](sys::Message *request) { return handleMessageAsAction(request); };

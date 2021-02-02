@@ -1,10 +1,16 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
 #include "module-db/Interface/EventsRecord.hpp"
 #include <module-gui/gui/SwitchData.hpp>
 #include "application-calendar/widgets/CalendarStyle.hpp"
+
+enum class EventAction
+{
+    Add,
+    Edit
+};
 
 class EventRecordData : public gui::SwitchData
 {
@@ -42,7 +48,7 @@ class DayMonthData : public gui::SwitchData
 {
   protected:
     std::string dayMonth;
-    calendar::TimePoint dateFilter;
+    TimePoint dateFilter;
 
   public:
     DayMonthData()          = default;
@@ -52,12 +58,12 @@ class DayMonthData : public gui::SwitchData
         return dayMonth;
     };
 
-    calendar::TimePoint getDateFilter()
+    TimePoint getDateFilter()
     {
         return dateFilter;
     };
 
-    virtual void setData(std::string dayMonthText, const calendar::TimePoint &dateNumb)
+    virtual void setData(std::string dayMonthText, const TimePoint &dateNumb)
     {
         dayMonth   = dayMonthText;
         dateFilter = dateNumb;

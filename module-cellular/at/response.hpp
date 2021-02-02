@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -273,11 +273,41 @@ namespace at
                 {}
             };
 
-            auto parseClir(const std::string &response) -> std::optional<ClirResponse>;
+            auto parse(const std::string &response) -> std::optional<ClirResponse>;
             auto getState(const ServiceState &state) -> app::manager::actions::IMMICustomResultParams::MMIResultMessage;
             auto getStatus(const ServiceStatus &status)
                 -> app::manager::actions::IMMICustomResultParams::MMIResultMessage;
         } // namespace clir
+
+        namespace clip
+        {
+            auto constexpr clipTokens = 2;
+
+            enum class UrcState
+            {
+                SupressUrc,
+                DisplayUrc
+            };
+
+            enum class ClipState
+            {
+                NotProvisioned,
+                Provisioned,
+                Unknown
+            };
+
+            struct ClipParsed
+            {
+                UrcState urcState;
+                ClipState clipState;
+                explicit ClipParsed(UrcState urc, ClipState clip) : urcState(urc), clipState(clip)
+                {}
+            };
+
+            auto parse(std::string response) -> std::optional<ClipParsed>;
+            auto getClipState(const ClipState &state)
+                -> app::manager::actions::IMMICustomResultParams::MMIResultMessage;
+        } // namespace clip
 
         namespace ccfc
         {
@@ -334,5 +364,77 @@ namespace at
             auto getNumbers(std::vector<ParsedCcfc> &parsed) -> CcfcNumbers;
             auto isAnyActive(std::vector<ParsedCcfc> &parsed) -> bool;
         } // namespace ccfc
+
+        namespace mmi
+        {
+
+            enum class ServiceClass
+            {
+                Voice       = 1,
+                Data        = 2,
+                Fax         = 4,
+                DataSync    = 16,
+                DataAsync   = 32,
+                AllDisabled = 255
+            };
+
+            auto getClass(const ServiceClass &serviceClass) noexcept
+                -> app::manager::actions::IMMICustomResultParams::MMIResultMessage;
+        } // namespace mmi
+
+        namespace clck
+        {
+            enum class Status
+            {
+                Disable,
+                Enable,
+                Query
+            };
+
+            struct ClckParsed
+            {
+                Status status;
+                mmi::ServiceClass serviceClass;
+                explicit ClckParsed(Status status, mmi::ServiceClass serviceClass)
+                    : status(status), serviceClass(serviceClass){};
+            };
+
+            auto parseQueryResponse(const std::vector<std::string> &data, std::vector<ClckParsed> &parsed) -> bool;
+            auto iterLessIter(ClckParsed a, ClckParsed b) -> bool;
+            auto getStatus(const Status &status) noexcept
+                -> app::manager::actions::IMMICustomResultParams::MMIResultMessage;
+        } // namespace clck
+
+        namespace ccwa
+        {
+            enum class Status
+            {
+                Disable,
+                Enable
+            };
+            enum class ServiceClass
+            {
+                Voice       = 1,
+                Data        = 2,
+                Fax         = 4,
+                DataSync    = 16,
+                DataAsync   = 32,
+                AllDisabled = 255
+            };
+
+            struct CcwaParsed
+            {
+                Status status;
+                ServiceClass serviceClass;
+                explicit CcwaParsed(const Status status, const ServiceClass serviceClass)
+                    : status(status), serviceClass(serviceClass){};
+            };
+
+            auto parse(const std::vector<std::string> &data, std::vector<CcwaParsed> &parsed) noexcept -> bool;
+            auto getStatus(const Status &status) noexcept
+                -> app::manager::actions::IMMICustomResultParams::MMIResultMessage;
+            auto getClass(const ServiceClass &serviceClass) noexcept
+                -> app::manager::actions::IMMICustomResultParams::MMIResultMessage;
+        } // namespace ccwa
     }     // namespace response
 } // namespace at

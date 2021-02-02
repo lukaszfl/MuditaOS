@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 //
@@ -23,7 +23,7 @@ extern "C"
 #include <btstack_defines.h>
 }
 
-namespace Bt
+namespace bluetooth
 {
     A2DP::A2DP() : pimpl(std::make_unique<A2DPImpl>(A2DPImpl()))
     {}
@@ -120,7 +120,7 @@ namespace Bt
                                                AVDTP::sbcCodecConfiguration.size());
         if (local_stream_endpoint == nullptr) {
             LOG_INFO("A2DP Source: not enough memory to create local stream endpoint\n");
-            return Bt::Error::SystemError;
+            return bluetooth::Error::SystemError;
         }
         AVRCP::mediaTracker.local_seid = avdtp_local_seid(local_stream_endpoint);
         avdtp_source_register_delay_reporting_category(AVRCP::mediaTracker.local_seid);
@@ -165,7 +165,7 @@ namespace Bt
 
         LOG_INFO("Init done!");
 
-        return Bt::Error::Success;
+        return bluetooth::Error::Success;
     }
 
     void A2DP::A2DPImpl::sendMediaPacket()

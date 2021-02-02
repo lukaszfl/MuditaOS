@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 /*
@@ -21,7 +21,7 @@ namespace utils
             if (day < 1 || day > 31) {
                 return false;
             }
-            if ((day == 31) && (month = 2 || month == 4 || month == 6 || month == 9 || month == 11)) {
+            if ((day == 31) && (month == 2 || month == 4 || month == 6 || month == 9 || month == 11)) {
                 return false;
             }
             if (day == 30 && month == 2) {

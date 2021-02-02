@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "CalendarMainWindow.hpp"
@@ -29,12 +29,12 @@ namespace gui
         buildInterface();
     }
 
-    void CalendarMainWindow::refresh()
+    void CalendarMainWindow::refresh(const std::vector<EventsRecord> &records)
     {
         erase(dateLabel);
         monthBox->erase();
-
         monthModel           = std::make_unique<MonthModel>(actualDate);
+        monthModel->markEventsInDays(records, isDayEmpty);
         std::string dateText = monthModel->getMonthYearText();
         this->buildMonth(monthModel);
         this->buildDateLabel(dateText);
@@ -213,12 +213,7 @@ namespace gui
         std::fill(std::begin(isDayEmpty), std::end(isDayEmpty), true);
         if (auto response = dynamic_cast<db::query::events::GetFilteredResult *>(queryResult)) {
             const auto records = response->getResult();
-            for (auto &rec : records) {
-                date::year_month_day recordDate = TimePointToYearMonthDay(rec.date_from);
-                uint32_t dayNumb                = static_cast<unsigned>(recordDate.day());
-                isDayEmpty[dayNumb - 1]         = false;
-            }
-            refresh();
+            refresh(records);
             return true;
         }
         if (auto response = dynamic_cast<db::query::events::GetAllResult *>(queryResult)) {
