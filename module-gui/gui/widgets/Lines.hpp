@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -27,6 +27,7 @@ namespace gui
 
         bool underLine            = false;
         Position underLinePadding = 0;
+        double lineSpacingMultiplier = 1;
 
         void addToInvisibleLines(TextLine line);
 
@@ -108,8 +109,8 @@ namespace gui
 
         [[nodiscard]] auto linesHeight() const noexcept
         {
-            return std::accumulate(lines.begin(), lines.end(), 0U, [](const auto sum, const auto &line) {
-                return line.isVisible() ? sum + line.height() : sum;
+            return std::accumulate(lines.begin(), lines.end(), 0U, [&](const auto sum, const auto &line) {
+                return line.isVisible() ? sum + line.height() * lineSpacingMultiplier : sum;
             });
         }
 
@@ -138,6 +139,16 @@ namespace gui
         [[nodiscard]] auto getUnderLinePadding() const noexcept
         {
             return underLinePadding;
+        }
+
+        auto setLineSpacingMultiplier(double val) -> void
+        {
+            lineSpacingMultiplier = val;
+        }
+
+        [[nodiscard]] auto getLineSpacingMultiplier() const noexcept
+        {
+            return lineSpacingMultiplier;
         }
 
         auto draw(BlockCursor &drawCursor, Length w, Length h, Position lineYPosition, Position lineXPosition) -> void;

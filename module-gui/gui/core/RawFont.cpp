@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "RawFont.hpp"
@@ -214,6 +214,11 @@ namespace gui
     {
         FontGlyph *glyph = getGlyph(charCode);
         return glyph->height;
+    }
+
+    uint32_t RawFont::getPixelHeight()
+    {
+        return info.line_height;
     }
 
     UTF8 RawFont::getTextWithElipsis(const UTF8 &text, uint32_t width, Ellipsis ellipsis) const

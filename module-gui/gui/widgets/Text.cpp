@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include <iterator>
@@ -117,6 +117,14 @@ namespace gui
     {
         if (lines->getUnderLine() != val) {
             lines->setUnderLine(val);
+            drawLines();
+        }
+    }
+
+    void Text::setLineSpacingMultiplier(const double val)
+    {
+        if (val >= 1.0 && lines->getLineSpacingMultiplier() != val) {
+            lines->setLineSpacingMultiplier(val);
             drawLines();
         }
     }
@@ -372,8 +380,8 @@ namespace gui
             if (lines->size() == 0) {
                 debug_text("No lines to show, try to at least fit in cursor");
                 if (format.getFont() != nullptr &&
-                    padding.top + lines->linesHeight() < format.getFont()->info.line_height) {
-                    hUsed = format.getFont()->info.line_height;
+                    padding.top + lines->linesHeight() < format.getFont()->getPixelHeight()) {
+                    hUsed = format.getFont()->getPixelHeight();
                     wUsed = TextCursor::defaultWidth;
                     debug_text("empty line height: %d", hUsed);
                 }

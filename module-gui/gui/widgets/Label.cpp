@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "log/log.hpp"
@@ -57,19 +57,19 @@ namespace gui
         }
         textDisplayed    = font->getTextWithElipsis(textDisplayed, availableSpace, ellipsis);
         stringPixelWidth = font->getPixelWidth(textDisplayed, 0, textDisplayed.length());
-        textArea.h       = font->info.line_height;
+        textArea.h       = font->getPixelHeight();
 
         // calculate vertical position of text
 
         switch (alignment.vertical) {
         case (Alignment::Vertical::Center):
-            textArea.y = (widgetArea.h - font->info.line_height) / 2 + font->info.base;
+            textArea.y = (widgetArea.h - font->getPixelHeight()) / 2 + font->info.base;
             break;
         case Alignment::Vertical::Top:
             textArea.y = font->info.base + padding.top;
             break;
         case Alignment::Vertical::Bottom:
-            textArea.y = widgetArea.h - font->info.line_height + font->info.base - padding.bottom;
+            textArea.y = widgetArea.h - font->getPixelHeight() + font->info.base - padding.bottom;
             break;
         default:
             break;
@@ -286,7 +286,7 @@ namespace gui
         if (font == nullptr) {
             return 0;
         }
-        return font->info.line_height;
+        return font->getPixelHeight();
     }
 
     uint32_t Label::getTextWidth() const noexcept

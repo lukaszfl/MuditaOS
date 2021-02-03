@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "Lines.hpp"
@@ -63,7 +63,7 @@ namespace gui
             line.setParent(text);
             line.setPosition(lineXPosition, lineYPosition);
 
-            lineYPosition += line.height();
+            lineYPosition += line.height() * lineSpacingMultiplier;
         }
     }
 
@@ -74,7 +74,7 @@ namespace gui
                      Position lineXPosition,
                      unsigned int linesCount) -> void
     {
-        Length initHeight = text->getTextFormat().getFont()->info.line_height;
+        Length initHeight = text->getTextFormat().getFont()->getPixelHeight();
 
         while (true) {
             auto textLine =
@@ -102,7 +102,7 @@ namespace gui
             line.setParent(text);
             line.setPosition(lineXPosition, lineYPosition);
 
-            lineYPosition += line.height();
+            lineYPosition += line.height() * lineSpacingMultiplier;
         }
     }
 

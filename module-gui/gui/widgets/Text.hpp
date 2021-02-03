@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -133,6 +133,7 @@ namespace gui
         void setTextLimitType(TextLimitType limitType, unsigned int val = 0);
         void clearTextLimits();
         void setUnderline(bool val);
+        void setLineSpacingMultiplier(double val);
         virtual void setText(const UTF8 &text);
         void setText(std::unique_ptr<TextDocument> &&document);
 
