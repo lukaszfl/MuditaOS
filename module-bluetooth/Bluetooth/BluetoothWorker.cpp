@@ -4,6 +4,7 @@
 #include <service-bluetooth/ServiceBluetooth.hpp>
 #include "BluetoothWorker.hpp"
 #include "BtCommand.hpp"
+#include "interface/profiles/GAP/GAP.hpp"
 #include "log/log.hpp"
 #include "interface/profiles/A2DP/A2DP.hpp"
 #include "interface/profiles/HSP/HSP.hpp"
@@ -48,7 +49,7 @@ namespace
         [[nodiscard]] auto operator()()
         {
             bluetooth::KeyStorage::settings = settings;
-            bluetooth::GAP::register_scan();
+            bluetooth::GAP::registerScan();
 
             auto settingsName = std::get<std::string>(settings->getValue(bluetooth::Settings::DeviceName));
             if (settingsName.empty()) {
@@ -58,7 +59,7 @@ namespace
                 settingsName = name;
             }
             bluetooth::set_name(settingsName);
-            bluetooth::GAP::set_visibility(
+            bluetooth::GAP::setVisibility(
                 std::visit(bluetooth::BoolVisitor{}, settings->getValue(bluetooth::Settings::Visibility)));
 
             settings->onLinkKeyAdded = onLinkKeyAdded;
@@ -249,7 +250,7 @@ auto BluetoothWorker::handleMessage(uint32_t queueID) -> bool
 
 void BluetoothWorker::setDeviceAddress(bd_addr_t addr)
 {
-    bluetooth::GAP::do_pairing(addr);
+    bluetooth::GAP::pair(addr);
     currentProfile->setDeviceAddress(addr);
 }
 

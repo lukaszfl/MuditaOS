@@ -3,8 +3,9 @@
 
 #include "CommandHandler.hpp"
 
-#include "BtCommand.hpp"
+#include "interface/profiles/GAP/GAP.hpp"
 #include "Device.hpp"
+#include "BtCommand.hpp"
 
 namespace bluetooth
 {
@@ -62,7 +63,7 @@ namespace bluetooth
 
     Error::Code CommandHandler::stopScan()
     {
-        bluetooth::GAP::stop_scan();
+        bluetooth::GAP::stopScan();
         return Error::Success;
     }
 
@@ -78,9 +79,9 @@ namespace bluetooth
 
     Error::Code CommandHandler::setVisibility(bool visibility)
     {
-        const auto status = bluetooth::GAP::set_visibility(visibility);
+        bluetooth::GAP::setVisibility(visibility);
         settings->setValue(bluetooth::Settings::Visibility, static_cast<int>(visibility));
-        return status.err;
+        return Error::Success;
     }
 
     Error::Code CommandHandler::establishAudioConnection()
