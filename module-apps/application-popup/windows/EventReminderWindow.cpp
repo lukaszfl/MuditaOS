@@ -2,7 +2,7 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "EventReminderWindow.hpp"
-#include "application-calendar/widgets/CalendarStyle.hpp"
+#include "application-popup/ApplicationPopup.hpp"
 #include "module-apps/application-calendar/data/CalendarData.hpp"
 #include <gui/widgets/Window.hpp>
 #include <time/time_conversion.hpp>
@@ -15,7 +15,7 @@ namespace gui
     constexpr static const int reminderLifeDuration = 10000;
 
     EventReminderWindow::EventReminderWindow(app::Application *app, std::string name)
-        : AppWindow(app, style::window::popup::name::event_reminder_window)
+        : AppWindow(app, style::window::name::event_reminder_window)
     {
 
         buildInterface();
@@ -33,8 +33,7 @@ namespace gui
     void EventReminderWindow::onClose()
     {
         destroyTimer();
-        if(!eventRecords.empty())
-        {
+        if (!eventRecords.empty()) {
             rebuild();
         }
     }
@@ -43,7 +42,7 @@ namespace gui
     {
         erase();
         buildInterface();
-        fillWithEventsData();
+        provideEventData();
         startTimer();
     }
 
@@ -105,18 +104,16 @@ namespace gui
         setFocusItem(body);
     }
 
-    void EventReminderWindow::fillWithEventsData()
+    void EventReminderWindow::provideEventData()
     {
-        if(!eventRecords.empty())
-        {
+        if (!eventRecords.empty()) {
             auto eventRecord = eventRecords.back();
             eventRecords.pop_back();
             dateLabel->setText(TimePointToLocalizedDateString(eventRecord.date_from));
             timeLabel->setText(TimePointToLocalizedTimeString(eventRecord.date_from));
             descriptionLabel->setText(eventRecord.title);
         }
-        else
-        {
+        else {
             LOG_ERROR("Events vector is empty!");
         }
     }
@@ -150,7 +147,7 @@ namespace gui
         }
 
         eventRecords = *item->getData();
-        fillWithEventsData();
+        provideEventData();
         startTimer();
 
         return true;
@@ -174,11 +171,13 @@ namespace gui
         return false;
     }
 
-    void EventReminderWindow::reminderTimerCallback() {
+    void EventReminderWindow::reminderTimerCallback()
+    {
 
-        DBServiceAPI::GetQuery(application,
-                                   db::Interface::Name::Notifications,
-                                   std::make_unique<db::query::notifications::Increment>(NotificationsRecord::Key::CalendarEvents));
+        DBServiceAPI::GetQuery(
+            application,
+            db::Interface::Name::Notifications,
+            std::make_unique<db::query::notifications::Increment>(NotificationsRecord::Key::CalendarEvents));
 
         closeReminder();
     }
@@ -187,8 +186,7 @@ namespace gui
     {
         LOG_DEBUG("Switch to previous window");
         destroyTimer();
-        if(!eventRecords.empty())
-        {
+        if (!eventRecords.empty()) {
             rebuild();
             return;
         }

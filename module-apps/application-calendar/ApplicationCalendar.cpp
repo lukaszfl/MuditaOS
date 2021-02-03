@@ -56,9 +56,10 @@ namespace app
         });
 
         LOG_DEBUG("Clear calendar events notifications");
-        DBServiceAPI::GetQuery(this,
-                               db::Interface::Name::Notifications,
-                               std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::CalendarEvents));
+        DBServiceAPI::GetQuery(
+            this,
+            db::Interface::Name::Notifications,
+            std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::CalendarEvents));
     }
 
     sys::MessagePointer ApplicationCalendar::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)

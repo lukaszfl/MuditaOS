@@ -314,12 +314,12 @@ namespace gui
         }
         if (app->notifications.notSeen.CalendarEvents > 0) {
             notifications->addNotification(
-                    "menu_calendar_W_G",
-                    utils::localize.get("app_calendar_events"),
-                    std::to_string(app->notifications.notSeen.CalendarEvents),
-                    [app]() -> bool { return app->showCalendarEvents(); },
-                    [app]() -> bool { return app->clearCalendarEventsNotification(); },
-                    onNotificationFocus);
+                "menu_calendar_W_G",
+                utils::localize.get("app_calendar_events"),
+                std::to_string(app->notifications.notSeen.CalendarEvents),
+                [app]() -> bool { return app->showCalendarEvents(); },
+                [app]() -> bool { return app->clearCalendarEventsNotification(); },
+                onNotificationFocus);
         }
 
         notifications->focusChangedCallback = [this, app](Item &) -> bool {

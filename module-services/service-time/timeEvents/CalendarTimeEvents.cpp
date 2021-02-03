@@ -7,10 +7,11 @@
 #include <BaseInterface.hpp>
 #include <Common/Query.hpp>
 #include <application-calendar/widgets/CalendarStyle.hpp>
-#include <module-apps/application-calendar/ApplicationCalendar.hpp>
+#include <module-apps/application-popup/ApplicationPopup.hpp>
 #include <module-apps/application-calendar/data/CalendarData.hpp>
 #include <module-apps/application-calendar/data/dateCommon.hpp>
 #include <module-db/queries/calendar/QueryEventsSelectFirstUpcoming.hpp>
+
 #include <module-gui/gui/SwitchData.hpp>
 #include <queries/calendar/QueryEventsEdit.hpp>
 #include <service-appmgr/Controller.hpp>
@@ -60,16 +61,15 @@ namespace stm
         }
 
         eventRecords = firstUpcomingQuery->getResult();
-        std::reverse(eventRecords.begin(),eventRecords.end());
+        std::reverse(eventRecords.begin(), eventRecords.end());
 
         if (eventRecords.size() == 0) {
             return 0;
         }
 
-
-        auto eventRecord   = eventRecords.at(0);
-        startTP       = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder};
-        auto duration = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder} - TimePointNow();
+        auto eventRecord = eventRecords.at(0);
+        startTP          = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder};
+        auto duration    = eventRecord.date_from - std::chrono::minutes{eventRecord.reminder} - TimePointNow();
         if (duration.count() <= 0) {
             duration = std::chrono::milliseconds(eventTimerMinSkipInterval);
         }
@@ -80,11 +80,10 @@ namespace stm
     bool CalendarTimeEvents::sendEventFiredQuery()
     {
         bool result = true;
-        for(auto eventRecord : eventRecords)
-        {
+        for (auto eventRecord : eventRecords) {
             eventRecord.reminder_fired = TimePointNow();
             const auto [succeed, _]    = DBServiceAPI::GetQuery(
-                    service(), db::Interface::Name::Events, std::make_unique<db::query::events::Edit>(eventRecord));
+                service(), db::Interface::Name::Events, std::make_unique<db::query::events::Edit>(eventRecord));
             result = result & succeed;
         }
         return result;
@@ -93,9 +92,12 @@ namespace stm
     void CalendarTimeEvents::invokeEvent()
     {
         std::unique_ptr<EventRecordsData> eventsData = std::make_unique<EventRecordsData>();
-        eventsData->setDescription(style::window::popup::name::event_reminder_window);
+        eventsData->setDescription(style::window::name::event_reminder_window);
         auto events = std::make_shared<std::vector<EventsRecord>>(eventRecords);
         eventsData->setData(events);
-        app::manager::Controller::sendAction(service(), app::manager::actions::ShowReminder, std::move(eventsData), app::manager::OnSwitchBehaviour::RunInBackground);
+        app::manager::Controller::sendAction(service(),
+                                             app::manager::actions::ShowReminder,
+                                             std::move(eventsData),
+                                             app::manager::OnSwitchBehaviour::RunInBackground);
     }
 } // namespace stm

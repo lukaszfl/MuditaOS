@@ -220,17 +220,16 @@ namespace app
 
     auto ApplicationDesktop::handle(db::query::events::GetFilteredByDayResult *msg) -> bool
     {
-        auto recordsCount = msg->getCountResult();
+        auto recordsCount                    = msg->getCountResult();
         notifications.notRead.CalendarEvents = recordsCount;
 
         if (auto menuWindow = dynamic_cast<gui::MenuWindow *>(getWindow(app::window::name::desktop_menu));
-                menuWindow != nullptr) {
+            menuWindow != nullptr) {
             menuWindow->refresh();
             return true;
         }
         return false;
     }
-
 
     auto ApplicationDesktop::handle(db::NotificationMessage *msg) -> bool
     {
@@ -309,9 +308,10 @@ namespace app
     bool ApplicationDesktop::clearCalendarEventsNotification()
     {
         LOG_DEBUG("Clear calendar events notifications");
-        DBServiceAPI::GetQuery(this,
-                               db::Interface::Name::Notifications,
-                               std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::CalendarEvents));
+        DBServiceAPI::GetQuery(
+            this,
+            db::Interface::Name::Notifications,
+            std::make_unique<db::query::notifications::Clear>(NotificationsRecord::Key::CalendarEvents));
         notifications.notSeen.CalendarEvents = 0;
         return true;
     }
@@ -328,11 +328,10 @@ namespace app
         notifications.notRead.Calls = DBServiceAPI::CalllogGetCount(this, EntryState::UNREAD);
         notifications.notRead.SMS   = DBServiceAPI::ThreadGetCount(this, EntryState::UNREAD);
 
-        ///request calendar events
+        /// request calendar events
         auto actualDate = TimePointNow();
-        DBServiceAPI::GetQuery(this,
-                               db::Interface::Name::Events,
-                               std::make_unique<db::query::events::GetFilteredByDay>(actualDate));
+        DBServiceAPI::GetQuery(
+            this, db::Interface::Name::Events, std::make_unique<db::query::events::GetFilteredByDay>(actualDate));
         return true;
     }
 

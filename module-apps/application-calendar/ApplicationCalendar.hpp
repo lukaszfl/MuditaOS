@@ -65,7 +65,7 @@ namespace app
     {
         static auto GetManifest() -> manager::ApplicationManifest
         {
-            return{{manager::actions::Launch, manager::actions::ShowCalendarEvents}};
+            return {{manager::actions::Launch, manager::actions::ShowCalendarEvents}};
         }
     };
 } /* namespace app */

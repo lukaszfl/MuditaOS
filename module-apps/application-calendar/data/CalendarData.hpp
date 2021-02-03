@@ -33,10 +33,10 @@ class EventRecordData : public gui::SwitchData
 
 class EventRecordsData : public gui::SwitchData
 {
-protected:
+  protected:
     std::shared_ptr<std::vector<EventsRecord>> records;
 
-public:
+  public:
     EventRecordsData() = default;
     EventRecordsData(std::shared_ptr<std::vector<EventsRecord>> records) : records{std::move(records)} {};
     virtual ~EventRecordsData() = default;

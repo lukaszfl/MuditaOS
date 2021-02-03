@@ -18,7 +18,7 @@ namespace gui
       private:
         std::unique_ptr<sys::Timer> reminderTimer;
 
-        void fillWithEventsData();
+        void provideEventData();
 
       protected:
         std::vector<EventsRecord> eventRecords;

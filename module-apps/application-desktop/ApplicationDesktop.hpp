@@ -34,8 +34,8 @@ namespace app
         {
             struct Counters
             {
-                unsigned int SMS   = 0;
-                unsigned int Calls = 0;
+                unsigned int SMS            = 0;
+                unsigned int Calls          = 0;
                 unsigned int CalendarEvents = 0;
 
                 auto areEmpty()
@@ -48,7 +48,7 @@ namespace app
             Counters notRead;
 
             bool thisDayCalendarEvents = false;
-            bool batteryLowLevel = false;
+            bool batteryLowLevel       = false;
 
         } notifications;
 

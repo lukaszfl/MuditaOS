@@ -52,7 +52,6 @@
 #include <memory>
 #include <vector>
 
-
 class vfs vfs;
 
 int main()

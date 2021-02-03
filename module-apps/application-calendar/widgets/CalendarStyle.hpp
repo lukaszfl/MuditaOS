@@ -9,13 +9,6 @@ namespace style
 {
     namespace window
     {
-        namespace popup
-        {
-            namespace name
-            {
-                inline constexpr auto event_reminder_window = "EventReminderWindow";
-            }
-        }
         namespace calendar
         {
             namespace imageCircleTop

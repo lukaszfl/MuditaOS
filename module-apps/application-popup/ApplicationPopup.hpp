@@ -7,16 +7,27 @@
 
 #include <Application.hpp>
 
+namespace style
+{
+    namespace window
+    {
+        namespace name
+        {
+            inline constexpr auto event_reminder_window = "EventReminderWindow";
+        }
+    } // namespace window
+} // namespace style
+
 namespace app
 {
     inline constexpr auto name_popup = "ApplicationPopup";
 
     class ApplicationPopup : public Application
     {
-    public:
+      public:
         explicit ApplicationPopup(std::string name                    = name_popup,
-                                       std::string parent                  = {},
-                                       StartInBackground startInBackground = {false});
+                                  std::string parent                  = {},
+                                  StartInBackground startInBackground = {false});
 
         auto InitHandler() -> sys::ReturnCodes override;
         auto DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp) -> sys::MessagePointer override;

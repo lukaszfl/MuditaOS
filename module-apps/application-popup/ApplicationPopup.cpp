@@ -6,13 +6,12 @@
 
 namespace app
 {
-    ApplicationPopup::ApplicationPopup(std::string name,
-                                                 std::string parent,
-                                                 StartInBackground startInBackground)
-            : Application{name, parent, startInBackground}
+
+    ApplicationPopup::ApplicationPopup(std::string name, std::string parent, StartInBackground startInBackground)
+        : Application{name, parent, startInBackground}
     {
         addActionReceiver(manager::actions::ShowReminder, [this](auto &&data) {
-            switchWindow(style::window::popup::name::event_reminder_window, std::move(data));
+            switchWindow(style::window::name::event_reminder_window, std::move(data));
             return msgHandled();
         });
     }
@@ -24,14 +23,13 @@ namespace app
             return ret;
 
         createUserInterface();
-        //TODO: namespace for Event Reminder Window
-        //TODO: choose properly initial window
-        setActiveWindow("EventReminderWindow");
+
+        setActiveWindow(style::window::name::event_reminder_window);
         return ret;
     }
 
     auto ApplicationPopup::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
-    -> sys::MessagePointer
+        -> sys::MessagePointer
     {
         return Application::DataReceivedHandler(msgl);
     }
@@ -43,10 +41,10 @@ namespace app
 
     void ApplicationPopup::createUserInterface()
     {
-        //TODO: namespace
-        windowsFactory.attach("EventReminderWindow", [](Application *app, const std::string &name) {
-            return std::make_unique<gui::EventReminderWindow>(app, "EventReminderWindow");
-        });
+        windowsFactory.attach(
+            style::window::name::event_reminder_window, [](Application *app, const std::string &name) {
+                return std::make_unique<gui::EventReminderWindow>(app, style::window::name::event_reminder_window);
+            });
     }
 
     void ApplicationPopup::destroyUserInterface()
