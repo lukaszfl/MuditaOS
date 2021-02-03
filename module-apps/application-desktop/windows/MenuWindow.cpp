@@ -77,6 +77,7 @@ namespace gui
                 else if (!hasNotifications() && notificationThumbnail != nullptr) {
                     it->erase(notificationThumbnail);
                     notificationThumbnail = nullptr;
+                    return true;
                 }
                 return false;
             };
