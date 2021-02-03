@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -16,6 +16,7 @@ namespace gui
     {
         constexpr uint32_t w = style::window::default_body_width;
         constexpr uint32_t h = style::window::label::big_h;
+
         namespace img
         {
             constexpr uint32_t x = 11; // TODO: alek:: change to good values

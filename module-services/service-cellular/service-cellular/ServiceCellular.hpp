@@ -186,6 +186,7 @@ class ServiceCellular : public sys::Service
         PowerCycle, //<! PWRKEY pin toggle
         HardReset   //<! RESET_N pin
     };
+
     bool resetCellularModule(ResetType type);
     bool isAfterForceReboot = false;
     bool nextPowerStateChangeAwaiting          = false;

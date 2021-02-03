@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "CalllogItem.hpp"
@@ -58,7 +58,12 @@ namespace gui
     void CalllogItem::setCall(std::shared_ptr<CalllogRecord> &call)
     {
         this->call = call;
-        text->setText(call->name);
+        if (call->presentation == PresentationType::PR_UNKNOWN) {
+            text->setText(utils::localize.get(callLogStyle::strings::privateNumber));
+        }
+        else {
+            text->setText(call->name);
+        }
 
         auto callType = calllog::toCallLogCallType(call->type);
         if (callType == calllog::CallLogCallType::MISSED)
