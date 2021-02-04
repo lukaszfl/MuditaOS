@@ -3,7 +3,8 @@
 
 #include "CommandHandler.hpp"
 
-#include "interface/profiles/GAP/GAP.hpp"
+#include <utility>
+
 #include "Device.hpp"
 #include "BtCommand.hpp"
 
@@ -19,8 +20,10 @@ namespace bluetooth
 
     CommandHandler::CommandHandler(sys::Service *service,
                                    std::shared_ptr<bluetooth::SettingsHolder> settings,
-                                   std::shared_ptr<bluetooth::Profile> currentProfile)
-        : service{service}, settings{std::move(settings)}, currentProfile{std::move(currentProfile)}
+                                   std::shared_ptr<bluetooth::Profile> currentProfile,
+                                   std::shared_ptr<bluetooth::Driver> driver)
+        : service{service}, settings{std::move(settings)}, currentProfile{std::move(currentProfile)}, driver{std::move(
+                                                                                                          driver)}
     {}
 
     Error::Code CommandHandler::handle(Command command)
@@ -50,8 +53,8 @@ namespace bluetooth
 
     Error::Code CommandHandler::scan()
     {
-        bluetooth::GAP::setOwnerService(service);
-        if (const auto ret = bluetooth::GAP::scan(); ret.err != bluetooth::Error::Success) {
+
+        if (const auto ret = driver->scan(); ret.err != bluetooth::Error::Success) {
             LOG_ERROR("Cant start scan!: %s %" PRIu32 "", toString(ret.err).c_str(), ret.lib_code);
             return ret.err;
         }
@@ -63,7 +66,7 @@ namespace bluetooth
 
     Error::Code CommandHandler::stopScan()
     {
-        bluetooth::GAP::stopScan();
+        driver->stopScan();
         return Error::Success;
     }
 
@@ -79,7 +82,7 @@ namespace bluetooth
 
     Error::Code CommandHandler::setVisibility(bool visibility)
     {
-        bluetooth::GAP::setVisibility(visibility);
+        driver->setVisibility(visibility);
         settings->setValue(bluetooth::Settings::Visibility, static_cast<int>(visibility));
         return Error::Success;
     }

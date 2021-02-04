@@ -4,7 +4,6 @@
 #include <service-bluetooth/ServiceBluetooth.hpp>
 #include "BluetoothWorker.hpp"
 #include "BtCommand.hpp"
-#include "interface/profiles/GAP/GAP.hpp"
 #include "log/log.hpp"
 #include "interface/profiles/A2DP/A2DP.hpp"
 #include "interface/profiles/HSP/HSP.hpp"
@@ -59,8 +58,6 @@ namespace
                 settingsName = name;
             }
             bluetooth::set_name(settingsName);
-            bluetooth::GAP::setVisibility(
-                std::visit(bluetooth::BoolVisitor{}, settings->getValue(bluetooth::Settings::Visibility)));
 
             settings->onLinkKeyAdded = onLinkKeyAdded;
             return bluetooth::Error::Success;
@@ -77,8 +74,9 @@ namespace
                                   std::shared_ptr<bluetooth::Profile> currentProfile,
                                   DeviceRegistration::OnLinkKeyAddedCallback &&onLinkKeyAddedCallback)
     {
-        auto driver         = std::make_unique<bluetooth::Driver>(loop->getRunLoopInstance());
-        auto commandHandler = std::make_unique<bluetooth::CommandHandler>(service, settings, std::move(currentProfile));
+        auto driver = std::make_shared<bluetooth::Driver>(loop->getRunLoopInstance(), service);
+        auto commandHandler =
+            std::make_unique<bluetooth::CommandHandler>(service, settings, std::move(currentProfile), driver);
         return std::make_unique<bluetooth::StatefulController>(
             std::move(driver),
             std::move(commandHandler),
@@ -110,7 +108,8 @@ void BluetoothWorker::registerQueues()
 
 void BluetoothWorker::onLinkKeyAdded(const std::string &deviceAddress)
 {
-    for (auto &device : bluetooth::GAP::devices) {
+    auto devices = bluetooth::GAP::getDevicesList();
+    for (auto &device : devices) {
         if (bd_addr_to_str(device.address) == deviceAddress) {
             pairedDevices.emplace_back(device);
             settings->setValue(bluetooth::Settings::BondedDevices, SettingsSerializer::toString(pairedDevices));
@@ -250,7 +249,7 @@ auto BluetoothWorker::handleMessage(uint32_t queueID) -> bool
 
 void BluetoothWorker::setDeviceAddress(bd_addr_t addr)
 {
-    bluetooth::GAP::pair(addr);
+
     currentProfile->setDeviceAddress(addr);
 }
 

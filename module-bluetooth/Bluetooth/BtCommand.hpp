@@ -5,10 +5,10 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-#include "BluetoothWorker.hpp"
 #include "Error.hpp"
 #include <functional>
 #include <btstack_run_loop.h>
+#include <string>
 
 namespace bluetooth
 {
