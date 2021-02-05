@@ -160,8 +160,11 @@ namespace bluetooth
         }
         if (gap_event_inquiry_result_get_name_available(packet) != 0u) {
             auto name   = gap_event_inquiry_result_get_name(packet);
-            device.name = std::string{reinterpret_cast<const char *>(name)};
-            LOG_INFO(", name '%s'", device.name.c_str());
+            //            device.name = std::string{reinterpret_cast<const char *>(name)};
+            device.name = std::string{};
+
+            //            LOG_INFO(", name '%s'", device.name.c_str());
+            LOG_INFO(", name '%s'", name);
             device.state = REMOTE_NAME_FETCHED;
         }
         else {
