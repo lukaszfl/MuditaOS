@@ -1,10 +1,10 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
 
-#include <json/json11.hpp>
 #include <module-services/service-desktop/parser/ParserUtils.hpp>
+#include "ResponseContext.hpp"
 
 namespace parserFSM
 {
@@ -18,12 +18,6 @@ namespace parserFSM
         inline constexpr auto body     = "body";
     } // namespace json
 
-    struct endpointResponseContext
-    {
-        http::Code status = http::Code::OK;
-        json11::Json body = json11::Json();
-    };
-
     constexpr int invalidUuid = 0;
 
     class Context
@@ -33,7 +27,7 @@ namespace parserFSM
         EndpointType endpoint;
         uint32_t uuid;
         http::Method method;
-        endpointResponseContext responseContext;
+        endpoint::ResponseContext responseContext;
 
         auto validate() -> void
         {
@@ -93,6 +87,12 @@ namespace parserFSM
                                                              {json::body, responseContext.body}};
             return buildResponseStr(responseJson.dump().size(), responseJson.dump());
         }
+
+        auto setResponse(endpoint::ResponseContext r)
+        {
+            r = responseContext;
+        }
+
         auto setResponseStatus(http::Code status)
         {
             responseContext.status = status;

@@ -10,6 +10,8 @@ set(SOURCES
     endpoints/contacts/ContactsEndpoint.cpp
     endpoints/developerMode/DeveloperModeEndpoint.cpp
     endpoints/developerMode/DeveloperModeHelper.cpp
+    endpoints/developerMode/Mode/BaseHelper.cpp
+    endpoints/developerMode/Mode/UI_Helper.cpp
     endpoints/deviceInfo/DeviceInfoEndpoint.cpp
     endpoints/factoryReset/FactoryReset.cpp
     endpoints/factoryReset/FactoryResetEndpoint.cpp
@@ -22,7 +24,7 @@ set(SOURCES
     endpoints/calendarEvents/CalendarEventsHelper.cpp
     endpoints/calendarEvents/CalendarEventsEndpoint.cpp
 
-    parser/ParserUtils.cpp
+    parser/HttpEnums.cpp
     parser/ParserFSM.cpp
     parser/MessageHandler.cpp
 
