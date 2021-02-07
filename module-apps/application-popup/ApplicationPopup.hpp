@@ -14,9 +14,37 @@ namespace style
         namespace name
         {
             inline constexpr auto event_reminder_window = "EventReminderWindow";
+            inline constexpr auto volume_window = "VolumeWindow";
+            inline constexpr auto music_volume_window = "MusicVolumeWindow";
+            inline constexpr auto call_volume_window = "CallVolumeWindow";
+            inline constexpr auto brightness_window = "BrightnessWindow";
+            inline constexpr auto home_modes_window = "HomeModesWindow";
         }
-    } // namespace window
+    }
+    // namespace window
 } // namespace style
+
+namespace timer
+{
+    namespace duration
+    {
+        constexpr static const int calendar_reminder = 10000;
+        constexpr static const int volume_window = 1000;
+        inline constexpr auto music_volume_window = 1000;
+        inline constexpr auto call_volume_window = 1000;
+    }
+
+    namespace name
+    {
+        inline constexpr auto calendar_reminder = "CalendarReminderTimer";
+        inline constexpr auto volume_window = "VolumeWindowTimer";
+        inline constexpr auto music_volume_window = "MusicVolumeWindowTimer";
+        inline constexpr auto call_volume_window = "CallVolumeWindowTimer";
+        inline constexpr auto brightness_window = "BrightnessWindowTimer";
+        inline constexpr auto home_modes_window = "HomeModesWindowTimer";
+    }
+
+}
 
 namespace app
 {

@@ -12,8 +12,6 @@
 
 namespace gui
 {
-    constexpr static const int reminderLifeDuration = 10000;
-
     EventReminderWindow::EventReminderWindow(app::Application *app, std::string name)
         : AppWindow(app, style::window::name::event_reminder_window)
     {
@@ -21,7 +19,8 @@ namespace gui
         buildInterface();
 
         reminderTimer = std::make_unique<sys::Timer>(
-            "CalendarReminderTimer", app, reminderLifeDuration, sys::Timer::Type::SingleShot);
+                timer::name::calendar_reminder, app, timer::duration::calendar_reminder, sys::Timer::Type::SingleShot);
+
         reminderTimer->connect([=](sys::Timer &) { reminderTimerCallback(); });
     }
 

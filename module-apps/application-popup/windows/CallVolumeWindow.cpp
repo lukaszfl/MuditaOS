@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
-#include "VolumeWindow.hpp"
+#include "CallVolumeWindow.hpp"
 #include "application-popup/ApplicationPopup.hpp"
 #include <module-gui/gui/input/InputEvent.hpp>
 #include <module-services/service-appmgr/service-appmgr/Controller.hpp>
@@ -10,18 +10,18 @@
 
 namespace gui
 {
-    VolumeWindow::VolumeWindow(app::Application *app, const std::string &name) : AppWindow(app, name)
+    CallVolumeWindow::CallVolumeWindow(app::Application *app, const std::string &name) : AppWindow(app, name)
     {
 
         buildInterface();
 
         volumeWindowTimer = std::make_unique<sys::Timer>(
-                timer::name::volume_window, app, timer::duration::volume_window, sys::Timer::Type::SingleShot);
+                timer::name::music_volume_window, app, timer::duration::music_volume_window, sys::Timer::Type::SingleShot);
         volumeWindowTimer->connect([=](sys::Timer &) { windowTimerCallback(); });
 
     }
 
-    void VolumeWindow::addVolumeText()
+    void CallVolumeWindow::addVolumeText()
     {
         volumeText = new Label(this,
                                style::window::default_left_margin,
@@ -36,7 +36,7 @@ namespace gui
         addWidget(volumeText);
     }
 
-    void VolumeWindow::addVolumeBar()
+    void CallVolumeWindow::addVolumeBar()
     {
         volumeBar = new VBarGraph(this,
                                   style::window::default_left_margin,
@@ -44,28 +44,28 @@ namespace gui
                                   style::window::volume::bar::volume_levels);
     }
 
-    void VolumeWindow::buildInterface()
+    void CallVolumeWindow::buildInterface()
     {
         AppWindow::buildInterface();
         addVolumeText();
         addVolumeBar();
     }
 
-    void VolumeWindow::rebuild()
+    void CallVolumeWindow::rebuild()
     {}
 
-    void VolumeWindow::destroyInterface()
+    void CallVolumeWindow::destroyInterface()
     {
         destroyTimer();
         erase();
     }
 
-    VolumeWindow::~VolumeWindow()
+    CallVolumeWindow::~CallVolumeWindow()
     {
         destroyInterface();
     }
 
-    void VolumeWindow::onBeforeShow(ShowMode mode, SwitchData *data)
+    void CallVolumeWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
         audio::Volume volume;
         const auto ret = application->getCurrentVolume(volume);
@@ -84,12 +84,12 @@ namespace gui
         startTimer();
     }
 
-    auto VolumeWindow::isMuted() -> bool
+    auto CallVolumeWindow::isMuted() -> bool
     {
         return !volumeBar->getValue();
     }
 
-    auto VolumeWindow::onInput(const gui::InputEvent &inputEvent) -> bool
+    auto CallVolumeWindow::onInput(const gui::InputEvent &inputEvent) -> bool
     {
         if (!inputEvent.isShortPress()) {
             return false;
@@ -121,28 +121,28 @@ namespace gui
         return AppWindow::onInput(inputEvent);
     }
 
-    void VolumeWindow::onClose()
+    void CallVolumeWindow::onClose()
     {
         destroyTimer();
     }
 
-    void VolumeWindow::windowTimerCallback()
+    void CallVolumeWindow::windowTimerCallback()
     {
         closeWindow();
     }
 
-    void VolumeWindow::startTimer()
+    void CallVolumeWindow::startTimer()
     {
         volumeWindowTimer->connect([=](sys::Timer &) { windowTimerCallback(); });
         volumeWindowTimer->reload();
     }
 
-    void VolumeWindow::destroyTimer()
+    void CallVolumeWindow::destroyTimer()
     {
         volumeWindowTimer->stop();
     }
 
-    auto VolumeWindow::closeWindow() -> bool
+    auto CallVolumeWindow::closeWindow() -> bool
     {
         LOG_DEBUG("Switch to previous window");
         destroyTimer();

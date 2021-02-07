@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -11,7 +11,7 @@
 namespace style::window::volume
 {
     constexpr inline auto title_height = 33;
-    constexpr inline auto title_key          = "app_popup_volume_text";
+    constexpr inline auto title_key          = "app_popup_music_volume_text";
     constexpr inline auto muted_title_key    = "app_popup_muted_text";
 
     namespace bar
@@ -23,12 +23,12 @@ namespace style::window::volume
 } // namespace style::window::volume
 namespace gui
 {
-    class VolumeWindow : public AppWindow
+    class MusicVolumeWindow : public AppWindow
     {
         std::unique_ptr<sys::Timer> volumeWindowTimer;
         auto isMuted() -> bool;
 
-      protected:
+    protected:
         Label *volumeText    = nullptr;
         VBarGraph *volumeBar = nullptr;
 
@@ -36,10 +36,10 @@ namespace gui
         void startTimer();
         void destroyTimer();
 
-      public:
-        VolumeWindow(app::Application *app, const std::string &name);
+    public:
+        MusicVolumeWindow(app::Application *app, const std::string &name);
 
-        ~VolumeWindow() override;
+        ~MusicVolumeWindow() override;
 
         void addVolumeText();
         void addVolumeBar();

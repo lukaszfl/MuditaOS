@@ -6,15 +6,16 @@
 #include "InputEvent.hpp"
 #include <Style.hpp>
 #include <application-desktop/ApplicationDesktop.hpp>
+#include <module-apps/application-popup/ApplicationPopup.hpp>
 #include <i18n/i18n.hpp>
 #include <service-appmgr/Controller.hpp>
 #include <service-audio/AudioServiceAPI.hpp>
+
 
 using namespace style::header;
 
 namespace gui
 {
-
     AppWindow::AppWindow(app::Application *app, std::string name) : Window(name), application{app}
     {
         setSize(style::window_width, style::window_height);
@@ -143,13 +144,23 @@ namespace gui
         if ((inputEvent.isShortPress())) {
             switch (inputEvent.keyCode) {
             case KeyCode::KEY_VOLUP: {
-                ///TODO: if window is not currently displayed
-                app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, nullptr, app::manager::OnSwitchBehaviour::RunInBackground);
-                application->increaseCurrentVolume();
+                auto currentApplication = getApplication();
+                if(!currentApplication->isCurrentWindow(style::window::name::volume_window))
+                {
+                    auto data = std::make_unique<SwitchData>();
+                    app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
+
+                }
+                currentApplication->increaseCurrentVolume();
                 return true;
             }
             case KeyCode::KEY_VOLDN: {
-                app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, nullptr, app::manager::OnSwitchBehaviour::RunInBackground);
+                auto currentApplication = getApplication();
+                if(!currentApplication->isCurrentWindow(style::window::name::volume_window))
+                {
+                    auto data = std::make_unique<SwitchData>();
+                    app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
+                }
                 application->decreaseCurrentVolume();
                 return true;
             }

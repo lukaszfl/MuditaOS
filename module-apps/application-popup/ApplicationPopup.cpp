@@ -19,7 +19,7 @@ namespace app
         });
 
         addActionReceiver(manager::actions::ShowVolume, [this](auto &&data) {
-            switchWindow(style::window::popup::name::volume_window, std::move(data));
+            switchWindow(style::window::name::volume_window, std::move(data));
             return msgHandled();
         });
     }
@@ -32,7 +32,7 @@ namespace app
 
         createUserInterface();
 
-        setActiveWindow(style::window::name::event_reminder_window);
+        setActiveWindow(style::window::name::volume_window);
         return ret;
     }
 
@@ -53,14 +53,14 @@ namespace app
             style::window::name::event_reminder_window, [](Application *app, const std::string &name) {
                 return std::make_unique<gui::EventReminderWindow>(app, style::window::name::event_reminder_window);
             });
-        windowsFactory.attach(style::window::popup::name::volume_window, [](Application *app, const std::string &name) {
-            return std::make_unique<gui::VolumeWindow>(app, style::window::popup::name::volume_window);
+        windowsFactory.attach(style::window::name::volume_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::VolumeWindow>(app, style::window::name::volume_window);
         });
-        windowsFactory.attach(style::window::popup::name::brightness_window, [](Application *app, const std::string &name) {
-            return std::make_unique<gui::BrightnessWindow>(app, style::window::popup::name::brightness_window);
+        windowsFactory.attach(style::window::name::brightness_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::BrightnessWindow>(app, style::window::name::brightness_window);
         });
-        windowsFactory.attach(style::window::popup::name::home_modes_window, [](Application *app, const std::string &name) {
-            return std::make_unique<gui::HomeModesWindow>(app, style::window::popup::name::home_modes_window);
+        windowsFactory.attach(style::window::name::home_modes_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::HomeModesWindow>(app, style::window::name::home_modes_window);
         });
     }
 

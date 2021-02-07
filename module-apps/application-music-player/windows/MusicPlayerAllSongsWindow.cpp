@@ -9,6 +9,8 @@
 #include <i18n/i18n.hpp>
 #include <log/log.hpp>
 #include <service-audio/AudioServiceAPI.hpp>
+#include <module-services/service-appmgr/service-appmgr/Controller.hpp>
+#include <module-apps/application-popup/ApplicationPopup.hpp>
 
 namespace gui
 {
@@ -114,16 +116,41 @@ namespace gui
 
     bool MusicPlayerAllSongsWindow::onInput(const InputEvent &inputEvent)
     {
-        auto ret           = AppWindow::onInput(inputEvent);
-        const auto keyCode = inputEvent.keyCode;
-        if (keyCode == KeyCode::KEY_VOLUP || keyCode == KeyCode::KEY_VOLDN || keyCode == KeyCode::KEY_ENTER) {
-            auto successCallback = [this](const audio::Volume &volume) {
-                auto volumeText = audio::GetVolumeText(volume);
-                soundLabel->setText(volumeText);
-            };
-            return setCurrentVolume(successCallback, nullptr);
+
+
+        if (!inputEvent.isShortPress()) {
+            return false;
         }
+
+        if (inputEvent.keyCode == gui::KeyCode::KEY_VOLUP) {
+            ///TODO: ShowMusicVolume action (different type of sound with fifferent level)
+            auto data = std::make_unique<SwitchData>();
+            app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
+            LOG_DEBUG("MUSIC VOL UP CHANGE WINDOW!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            //application->increaseCurrentVolume();
+            return true;
+        }
+
+        if (inputEvent.keyCode == gui::KeyCode::KEY_VOLDN) {
+            auto data = std::make_unique<SwitchData>();
+            app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
+            LOG_DEBUG("MUSIC VOL DOWN CHANGE WINDOW!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            //application->decreaseCurrentVolume();
+            return true;
+        }
+
+        auto ret           = AppWindow::onInput(inputEvent);
+
         return ret;
+
+//        if (keyCode == KeyCode::KEY_VOLUP || keyCode == KeyCode::KEY_VOLDN || keyCode == KeyCode::KEY_ENTER) {
+//            auto successCallback = [this](const audio::Volume &volume) {
+//                auto volumeText = audio::GetVolumeText(volume);
+//                soundLabel->setText(volumeText);
+//            };
+//            return setCurrentVolume(successCallback, nullptr);
+//        }
+
     }
 
 } /* namespace gui */
