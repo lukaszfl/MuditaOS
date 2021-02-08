@@ -24,12 +24,13 @@
 
 TEST_CASE("Alarms Record tests")
 {
+    vfs.Init();
     Database::initialize();
 
-    const auto alarmsPath = (purefs::dir::getUserDiskPath() / "alarms.db").c_str();
+    const auto alarmsPath = purefs::dir::getUserDiskPath() / "alarms.db";
     std::filesystem::remove(alarmsPath);
 
-    auto alarmsDB = AlarmsDB(alarmsPath);
+    AlarmsDB alarmsDB(alarmsPath.c_str());
     REQUIRE(alarmsDB.isInitialized());
 
     SECTION("Default Constructor")

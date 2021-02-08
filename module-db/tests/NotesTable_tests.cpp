@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include <catch2/catch.hpp>
@@ -7,15 +7,18 @@
 #include "Database/Database.hpp"
 #include "Databases/NotesDB.hpp"
 #include <purefs/filesystem_paths.hpp>
+#include <vfs.hpp>
 
 TEST_CASE("Notes Table tests")
 {
+    vfs.Init();
     Database::initialize();
 
-    auto notesDb = std::make_unique<NotesDB>((purefs::dir::getUserDiskPath() / "notes.db").c_str());
-    REQUIRE(notesDb->isInitialized());
+    const auto notesDbPath = purefs::dir::getUserDiskPath() / "notes.db";
+    NotesDB notesDb{notesDbPath.c_str()};
+    REQUIRE(notesDb.isInitialized());
 
-    NotesTable table{notesDb.get()};
+    NotesTable table{&notesDb};
     table.removeAll();
     REQUIRE(table.count() == 0);
 

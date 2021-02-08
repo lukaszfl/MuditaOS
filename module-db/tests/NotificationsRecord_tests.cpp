@@ -23,12 +23,13 @@
 
 TEST_CASE("Notifications Record tests")
 {
+    vfs.Init();
     Database::initialize();
 
-    const auto notificationsPath = (purefs::dir::getUserDiskPath() / "notifications.db").c_str();
+    const auto notificationsPath = purefs::dir::getUserDiskPath() / "notifications.db";
     std::filesystem::remove(notificationsPath);
 
-    NotificationsDB notificationsDb{notificationsPath};
+    NotificationsDB notificationsDb{notificationsPath.c_str()};
 
     REQUIRE(notificationsDb.isInitialized());
 

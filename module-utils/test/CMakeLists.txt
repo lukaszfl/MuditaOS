@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+﻿cmake_minimum_required(VERSION 3.12)
 
 # Phone number tests
 add_catch2_executable(
@@ -53,18 +53,23 @@ add_catch2_executable(
         unittest_duration.cpp
     LIBS
         module-utils
+        iosyscalls
+    DEPS
+        PurePhone.img-target
 )
 
-message(WARNING "Unit tests for module-utils are disabled until they're fixed (EGD-5583).")
 # utils tests
-# add_catch2_executable(
-#    NAME
-#        utils
-#    SRCS
-#        unittest_utils.cpp
-#    LIBS
-#        module-utils
-#)
+add_catch2_executable(
+    NAME
+        utils
+    SRCS
+        unittest_utils.cpp
+    LIBS
+        module-utils
+        iosyscalls
+    DEPS
+        PurePhone.img-target
+)
 
 # Math tests
 add_catch2_executable(
@@ -97,15 +102,15 @@ add_catch2_executable(
 #)
 
 #  time display tests
-#add_catch2_executable(
-#    NAME
-#        utils-time_display
-#    SRCS
-#        unittest_TimeRangeParser.cpp
-#    LIBS
-#        module-utils
-#        module-db
-#)
+add_catch2_executable(
+    NAME
+        utils-time_display
+    SRCS
+        unittest_TimeRangeParser.cpp
+    LIBS
+        module-utils
+        module-db
+)
 
 ###########################################
 # Log functional tests project

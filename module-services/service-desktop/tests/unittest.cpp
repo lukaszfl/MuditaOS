@@ -29,16 +29,10 @@
 
 class vfs vfs;
 
-struct vfs_initializer
-{
-    vfs_initializer()
-    {
-        vfs.Init();
-    }
-} vfs_initializer;
-
 TEST_CASE("System Update Tests")
 {
+    vfs.Init();
+
     UpdateMuditaOS updateOS(nullptr);
 
     updateos::UpdateError err = updateOS.prepareTempDirForUpdate();
@@ -53,20 +47,12 @@ TEST_CASE("System Update Tests")
     REQUIRE(err == updateos::UpdateError::NoError);
 }
 
-TEST_CASE("Factory Reset Test")
-{
-
-    std::string sysdir = purefs::dir::getRootDiskPath();
-    sysdir += "/factory-test/sys";
-    std::string factorydir = sysdir + "/factory";
-    REQUIRE(FactoryReset::DeleteDirContent(sysdir) == true);
-    REQUIRE(FactoryReset::CopyDirContent(factorydir, sysdir) == true);
-}
-
 using namespace parserFSM;
 
 TEST_CASE("Parser Test")
 {
+    vfs.Init();
+
     StateMachine parser(nullptr);
 
     SECTION("Parse message with divided header and payload")
@@ -148,6 +134,8 @@ TEST_CASE("Parser Test")
 
 TEST_CASE("DB Helpers test - json decoding")
 {
+    vfs.Init();
+
     std::string err;
 
     SECTION("correct json")
@@ -187,6 +175,8 @@ TEST_CASE("DB Helpers test - json decoding")
 
 TEST_CASE("DB Helpers test - json encoding (contacts)")
 {
+    vfs.Init();
+
     auto helper = std::make_unique<ContactHelper>(nullptr);
 
     auto contact             = std::make_unique<ContactRecord>();
@@ -213,6 +203,8 @@ TEST_CASE("DB Helpers test - json encoding (contacts)")
 
 TEST_CASE("DB Helpers test - json encoding (messages)")
 {
+    vfs.Init();
+
     auto helper  = std::make_unique<MessageHelper>(nullptr);
     auto message = std::make_unique<SMSRecord>();
 
@@ -251,9 +243,11 @@ TEST_CASE("DB Helpers test - json encoding (messages)")
 
 TEST_CASE("Context class test")
 {
+    vfs.Init();
+
     SECTION("Correct message")
     {
-        auto testMessage = R"({"endpoint":6, "method":1, "uuid":12345, "body":{"test":"test"}})";
+        auto testMessage = R"({"endpoint":7, "method":1, "uuid":12345, "body":{"test":"test"}})";
         std::string err;
         auto msgJson = json11::Json::parse(testMessage, err);
         REQUIRE(err.empty());
@@ -264,11 +258,11 @@ TEST_CASE("Context class test")
         REQUIRE(context.getUuid() == 12345);
         REQUIRE(context.getEndpoint() == EndpointType::contacts);
         REQUIRE(context.createSimpleResponse() ==
-                R"(#000000061{"body": null, "endpoint": 6, "status": 200, "uuid": "12345"})");
+                R"(#000000061{"body": null, "endpoint": 7, "status": 200, "uuid": "12345"})");
 
         context.setResponseBody(context.getBody());
         REQUIRE(context.createSimpleResponse() ==
-                R"(#000000073{"body": {"test": "test"}, "endpoint": 6, "status": 200, "uuid": "12345"})");
+                R"(#000000073{"body": {"test": "test"}, "endpoint": 7, "status": 200, "uuid": "12345"})");
     }
     SECTION("Invalid message")
     {
@@ -287,9 +281,11 @@ TEST_CASE("Context class test")
 
 TEST_CASE("Endpoint Factory test")
 {
+    vfs.Init();
+
     SECTION("Proper endpoint")
     {
-        auto testMessage = R"({"endpoint":6, "method":1, "uuid":12345, "body":{"test":"test"}})";
+        auto testMessage = R"({"endpoint":7, "method":1, "uuid":12345, "body":{"test":"test"}})";
         std::string err;
         auto msgJson = json11::Json::parse(testMessage, err);
         REQUIRE(err.empty());

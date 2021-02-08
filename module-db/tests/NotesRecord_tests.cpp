@@ -1,6 +1,7 @@
 // Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
+#include "vfs.hpp"
 #include <catch2/catch.hpp>
 
 #include <Interface/NotesRecord.hpp>
@@ -12,15 +13,18 @@
 
 #include "Database/Database.hpp"
 #include "Databases/NotesDB.hpp"
+#include <vfs.hpp>
 
 TEST_CASE("Notes Record tests")
 {
+    vfs.Init();
     Database::initialize();
 
-    auto notesDb = std::make_unique<NotesDB>((purefs::dir::getUserDiskPath() / "notes.db").c_str());
-    REQUIRE(notesDb->isInitialized());
+    const auto notesDbPath = purefs::dir::getUserDiskPath() / "notes.db";
+    NotesDB notesDb{notesDbPath.c_str()};
+    REQUIRE(notesDb.isInitialized());
 
-    NotesRecordInterface notesRecordInterface{notesDb.get()};
+    NotesRecordInterface notesRecordInterface{&notesDb};
     notesRecordInterface.RemoveAll(); // Empty the notes database.
 
     constexpr auto testSnippet = "TEST SNIPPET";

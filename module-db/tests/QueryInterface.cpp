@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include <catch2/catch.hpp>
@@ -19,6 +19,8 @@
 #include <module-utils/json/json11.hpp>
 #include <purefs/filesystem_paths.hpp>
 
+#include <vfs.hpp>
+
 namespace db
 {
 
@@ -37,6 +39,7 @@ namespace db
 
 TEST_CASE("Query interface")
 {
+    vfs.Init();
     Database::initialize();
 
     auto contactsDB      = std::make_unique<ContactsDB>((purefs::dir::getUserDiskPath() / "contacts.db").c_str());
