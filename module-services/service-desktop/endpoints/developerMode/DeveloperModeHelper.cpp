@@ -35,30 +35,35 @@ auto DeveloperModeHelper::processPut(Context &context) -> ProcessResult
     if (body[json::developerMode::keyPressed].is_number()) {
         auto keyValue = body[json::developerMode::keyPressed].int_value();
         auto state    = body[json::developerMode::state].int_value();
-        code          = toCode(sendKeypress(getKeyCode(keyValue), static_cast<gui::InputEvent::State>(state)));
+        sendKeypress(getKeyCode(keyValue), static_cast<gui::InputEvent::State>(state));
+        return {sent::delayed, std::nullopt};
     }
     else if (body[json::developerMode::AT].is_string()) {
 
         auto msg     = std::make_shared<cellular::RawCommand>();
         msg->command = body[json::developerMode::AT].string_value();
         msg->timeout = 3000;
-        code         = toCode(sys::Bus::SendUnicast(std::move(msg), ServiceCellular::serviceName, owner));
+        sys::Bus::SendUnicast(std::move(msg), ServiceCellular::serviceName, owner);
+        return {sent::delayed, std::nullopt};
     }
     else if (body[json::developerMode::focus].bool_value()) {
         auto event = std::make_unique<sdesktop::developerMode::AppFocusChangeEvent>();
         auto msg   = std::make_shared<sdesktop::developerMode::DeveloperModeRequest>(std::move(event));
-        code       = toCode(sys::Bus::SendUnicast(std::move(msg), service::name::evt_manager, owner));
+        sys::Bus::SendUnicast(std::move(msg), service::name::evt_manager, owner);
+        return {sent::delayed, std::nullopt};
     }
     else if (body[json::developerMode::isLocked].bool_value()) {
         auto event = std::make_unique<sdesktop::developerMode::ScreenlockCheckEvent>();
         auto msg   = std::make_shared<sdesktop::developerMode::DeveloperModeRequest>(std::move(event));
-        code       = toCode(sys::Bus::SendUnicast(std::move(msg), "ApplicationDesktop", owner));
+        sys::Bus::SendUnicast(std::move(msg), "ApplicationDesktop", owner);
+        return {sent::delayed, std::nullopt};
     }
     else if (body[json::developerMode::btState].bool_value()) {
 
         auto event = std::make_unique<sdesktop::developerMode::BluetoothStatusRequestEvent>();
         auto msg   = std::make_shared<sdesktop::developerMode::DeveloperModeRequest>(std::move(event));
-        code       = toCode(sys::Bus::SendUnicast(std::move(msg), "ServiceBluetooth", owner));
+        sys::Bus::SendUnicast(std::move(msg), "ServiceBluetooth", owner);
+        return {sent::delayed, std::nullopt};
     }
     else if (auto state = body[json::developerMode::btCommand].string_value(); !state.empty()) {
         BluetoothMessage::Request request;
@@ -71,7 +76,8 @@ auto DeveloperModeHelper::processPut(Context &context) -> ProcessResult
             LOG_INFO("turning off BT from harness!");
         }
         std::shared_ptr<BluetoothMessage> msg = std::make_shared<BluetoothMessage>(request);
-        code = toCode(sys::Bus::SendUnicast(std::move(msg), "ServiceBluetooth", owner));
+        sys::Bus::SendUnicast(std::move(msg), "ServiceBluetooth", owner);
+        return {sent::delayed, std::nullopt};
     }
     else if (body[json::developerMode::changeSim].is_number()) {
         int simSelected = body[json::developerMode::changeSim].int_value();

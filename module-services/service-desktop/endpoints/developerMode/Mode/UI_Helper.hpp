@@ -16,5 +16,8 @@ namespace parserFSM
       public:
         explicit UI_Helper(sys::Service *p) : BaseHelper(p)
         {}
+
+        /// returns DOM async
+        auto processGet(Context &context) -> ProcessResult final;
     };
 } // namespace parserFSM

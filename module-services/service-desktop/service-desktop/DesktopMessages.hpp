@@ -1,14 +1,14 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
 
-#include <endpoints/update/UpdateMuditaOS.hpp>
 #include <endpoints/developerMode/DeveloperModeEndpoint.hpp>
+#include <endpoints/update/UpdateMuditaOS.hpp>
 
 #include <Service/Message.hpp>
 #include <MessageType.hpp>
-
+#include <service-desktop/DeveloperModeMessage.hpp>
 
 namespace sdesktop
 {
@@ -68,16 +68,6 @@ namespace sdesktop
     namespace developerMode
     {
 
-        class Event
-        {
-          protected:
-            parserFSM::Context context;
-
-          public:
-            void send();
-            virtual ~Event() = default;
-        };
-
         class ATResponseEvent : public Event
         {
           public:
@@ -105,14 +95,6 @@ namespace sdesktop
             explicit BluetoothStatusRequestEvent(int state);
         };
 
-        class DeveloperModeRequest : public sys::DataMessage
-        {
-          public:
-            std::unique_ptr<Event> event;
-            DeveloperModeRequest(std::unique_ptr<Event> event);
-            DeveloperModeRequest();
-            ~DeveloperModeRequest() override = default;
-        };
     } // namespace developerMode
 
 } // namespace sdesktop

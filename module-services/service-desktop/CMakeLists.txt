@@ -28,6 +28,7 @@ set(SOURCES
     parser/ParserFSM.cpp
     parser/MessageHandler.cpp
 
+    DeveloperModeMessage.cpp
     DesktopMessages.cpp
     ServiceDesktop.cpp
     WorkerDesktop.cpp

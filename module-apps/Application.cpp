@@ -20,9 +20,11 @@
 #include <service-evtmgr/BatteryMessages.hpp>
 #include <service-evtmgr/Constants.hpp>
 #include <service-evtmgr/EVMessages.hpp>
+#include <service-appmgr/service-appmgr/messages/DOMRequest.hpp>
 #include "service-gui/messages/DrawMessage.hpp" // for DrawMessage
 #include "task.h"                               // for xTaskGetTic...
 #include "windows/AppWindow.hpp"                // for AppWindow
+#include "DOMResponder.hpp"
 #include <Text.hpp>                             // for Text
 #include <algorithm>                            // for find
 #include <iterator>                             // for distance, next
@@ -84,6 +86,8 @@ namespace app
 
         connect(typeid(AppRefreshMessage),
                 [this](sys::Message *msg) -> sys::MessagePointer { return handleAppRefresh(msg); });
+        connect(typeid(app::manager::DOMRequest),
+                [&](sys::Message *msg) -> sys::MessagePointer { return handleGetDOM(msg); });
     }
 
     Application::~Application() noexcept
@@ -466,6 +470,24 @@ namespace app
             return msgNotHandled();
         }
         render(msg->getMode());
+        return msgHandled();
+    }
+
+    sys::MessagePointer Application::handleGetDOM(sys::Message *msgl)
+    {
+        if (windowsStack.isEmpty()) {
+            LOG_ERROR("Current window is not defined - cant dump DOM");
+            return msgNotHandled();
+        }
+        auto window = getCurrentWindow();
+        if (window == nullptr) {
+            LOG_ERROR("No window - cant dump DOM");
+            return msgNotHandled();
+        }
+
+        auto request = static_cast<app::manager::DOMRequest *>(msgl);
+        sys::Bus::SendUnicast(DOMResponder(GetName(), *window).build(), request->getSenderName(), this);
+
         return msgHandled();
     }
 

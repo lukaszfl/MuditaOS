@@ -28,6 +28,8 @@
 #include <module-utils/Utils.hpp>
 #include <module-utils/time/DateAndTimeSettings.hpp>
 #include <module-services/service-db/agents/settings/SystemSettings.hpp>
+#include <service-appmgr/messages/DOMRequest.hpp>
+
 // Auto phone lock disabled for now till the times when it's debugged
 // #define AUTO_PHONE_LOCK_ENABLED
 namespace app::manager
@@ -298,6 +300,8 @@ namespace app::manager
         connect(typeid(GetCurrentDisplayLanguageRequest), [&](sys::Message *request) {
             return std::make_shared<GetCurrentDisplayLanguageResponse>(displayLanguage);
         });
+
+        connect(typeid(app::manager::DOMRequest), [&](sys::Message *request) { return handleDOMRequest(request); });
 
         auto convertibleToActionHandler = [this](sys::Message *request) { return handleMessageAsAction(request); };
         connect(typeid(CellularSimRequestPinMessage), convertibleToActionHandler);
@@ -830,5 +834,15 @@ namespace app::manager
         }
         inputLanguage = value;
         utils::localize.setInputLanguage(value);
+    }
+
+    auto ApplicationManager::handleDOMRequest(sys::Message *request) -> std::shared_ptr<sys::ResponseMessage>
+    {
+        auto app = getFocusedApplication();
+        if (app == nullptr) {
+            auto mess = static_cast<app::manager::DOMRequest>(*request);
+            sys::Bus::SendUnicast(std::make_unique<app::manager::DOMRequest>(mess), app->name(), this);
+        }
+        return std::make_shared<sys::ResponseMessage>();
     }
 } // namespace app::manager

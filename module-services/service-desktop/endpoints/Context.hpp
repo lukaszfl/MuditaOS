@@ -105,7 +105,7 @@ namespace parserFSM
         {
             responseContext.body = respBody;
         }
-        auto getBody() -> json11::Json
+        auto getBody() -> const json11::Json &
         {
             return body;
         }

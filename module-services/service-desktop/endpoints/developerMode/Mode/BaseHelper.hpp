@@ -17,7 +17,8 @@ namespace parserFSM
     enum class sent
     {
         yes,
-        no
+        no,
+        delayed, /// works on global context - deal with it.
     };
 
     /// base helper class to avoid copies

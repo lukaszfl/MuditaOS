@@ -13,7 +13,10 @@ auto DeveloperModeEndpoint::handle(Context &context) -> void
 {
     auto &p               = helperSwitcher(context);
     auto [sent, response] = p.process(context.getMethod(), context);
-    if (sent != sent::yes) {
+    if (sent == sent::delayed) {
+        LOG_DEBUG("There is no proper delayed serving mechanism - depend on invisible context caching");
+    }
+    if (sent == sent::no) {
         if (not response) {
             LOG_ERROR("Response not sent & response not created : respond with error");
             context.setResponseStatus(http::Code::NotAcceptable);

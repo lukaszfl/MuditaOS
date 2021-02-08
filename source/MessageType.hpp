@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #ifndef SOURCE_MESSAGETYPE_HPP_
@@ -124,6 +124,7 @@ enum class MessageType
     AudioMessage,
 
     // application manager
+    APMGeneric,
     APMAction,          ///< Used to send an action request to application manager.
     APMCheckAppRunning, ///< check if application is running in application manager
     APMSwitch,          ///< request to switch to given application, optionally also to specified window
