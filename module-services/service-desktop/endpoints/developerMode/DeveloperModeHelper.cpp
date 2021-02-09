@@ -7,7 +7,6 @@
 
 #include <service-desktop/parser/MessageHandler.hpp>
 #include <service-evtmgr/Constants.hpp>
-#include <Service/Bus.hpp>
 #include <service-cellular/CellularMessage.hpp>
 #include <service-cellular/ServiceCellular.hpp>
 #include <service-bluetooth/messages/Status.hpp>
@@ -16,6 +15,9 @@
 #include <gui/Common.hpp>
 #include <service-appmgr/Actions.hpp>
 #include <messages/AppMessage.hpp>
+
+#include <service-db/DBServiceAPI.hpp>
+#include <time/time_conversion.hpp>
 
 namespace parserFSM
 {
@@ -37,23 +39,23 @@ auto DeveloperModeHelper::processPutRequest(Context &context) -> sys::ReturnCode
         auto msg     = std::make_shared<cellular::RawCommand>();
         msg->command = body[json::developerMode::AT].string_value();
         msg->timeout = 3000;
-        sys::Bus::SendUnicast(std::move(msg), ServiceCellular::serviceName, ownerServicePtr);
+        ownerServicePtr->bus.sendUnicast(std::move(msg), ServiceCellular::serviceName);
     }
     else if (body[json::developerMode::focus].bool_value()) {
         auto event = std::make_unique<sdesktop::developerMode::AppFocusChangeEvent>();
         auto msg   = std::make_shared<sdesktop::developerMode::DeveloperModeRequest>(std::move(event));
-        sys::Bus::SendUnicast(std::move(msg), service::name::evt_manager, ownerServicePtr);
+        ownerServicePtr->bus.sendUnicast(std::move(msg), service::name::evt_manager);
     }
     else if (body[json::developerMode::isLocked].bool_value()) {
         auto event = std::make_unique<sdesktop::developerMode::ScreenlockCheckEvent>();
         auto msg   = std::make_shared<sdesktop::developerMode::DeveloperModeRequest>(std::move(event));
-        sys::Bus::SendUnicast(std::move(msg), "ApplicationDesktop", ownerServicePtr);
+        ownerServicePtr->bus.sendUnicast(std::move(msg), "ApplicationDesktop");
     }
     else if (body[json::developerMode::btState].bool_value()) {
 
         auto event = std::make_unique<sdesktop::developerMode::BluetoothStatusRequestEvent>();
         auto msg   = std::make_shared<sdesktop::developerMode::DeveloperModeRequest>(std::move(event));
-        sys::Bus::SendUnicast(std::move(msg), "ServiceBluetooth", ownerServicePtr);
+        ownerServicePtr->bus.sendUnicast(std::move(msg), "ServiceBluetooth");
     }
     else if (auto state = body[json::developerMode::btCommand].string_value(); !state.empty()) {
         BluetoothMessage::Request request;
@@ -66,7 +68,7 @@ auto DeveloperModeHelper::processPutRequest(Context &context) -> sys::ReturnCode
             LOG_INFO("turning off BT from harness!");
         }
         std::shared_ptr<BluetoothMessage> msg = std::make_shared<BluetoothMessage>(request);
-        sys::Bus::SendUnicast(std::move(msg), "ServiceBluetooth", ownerServicePtr);
+        ownerServicePtr->bus.sendUnicast(std::move(msg), "ServiceBluetooth");
 
         MessageHandler::putToSendQueue(context.createSimpleResponse());
     }
@@ -74,6 +76,18 @@ auto DeveloperModeHelper::processPutRequest(Context &context) -> sys::ReturnCode
         int simSelected = body[json::developerMode::changeSim].int_value();
         requestSimChange(simSelected);
         MessageHandler::putToSendQueue(context.createSimpleResponse());
+    }
+    else if (body[json::developerMode::smsCommand].is_string()) {
+        if (body[json::developerMode::smsCommand].string_value() == json::developerMode::smsAdd) {
+            SMSType smsType = static_cast<SMSType>(context.getBody()[json::messages::type].int_value());
+            if (smsType == SMSType::DRAFT || smsType == SMSType::QUEUED || smsType == SMSType::FAILED) {
+                return prepareSMS(context);
+            }
+            else {
+                context.setResponseStatus(http::Code::NotAcceptable);
+                MessageHandler::putToSendQueue(context.createSimpleResponse());
+            }
+        }
     }
     else {
         context.setResponseStatus(http::Code::BadRequest);
@@ -171,7 +185,7 @@ void DeveloperModeHelper::sendKeypress(bsp::KeyCodes keyCode, gui::InputEvent::S
     LOG_INFO("Sending %s", event.str().c_str());
     auto message = std::make_shared<app::AppInputEventMessage>(std::move(event));
 
-    sys::Bus::SendUnicast(std::move(message), service::name::evt_manager, ownerServicePtr);
+    ownerServicePtr->bus.sendUnicast(std::move(message), service::name::evt_manager);
 }
 
 void DeveloperModeHelper::requestSimChange(const int simSelected)
@@ -181,4 +195,44 @@ void DeveloperModeHelper::requestSimChange(const int simSelected)
         sim = Store::GSM::SIM::SIM2;
     }
     CellularServiceAPI::SetSimCard(ownerServicePtr, sim);
+}
+
+auto DeveloperModeHelper::smsRecordFromJson(json11::Json msgJson) -> SMSRecord
+{
+    auto record = SMSRecord();
+
+    record.type = static_cast<SMSType>(msgJson[json::messages::type].int_value());
+    record.date = utils::time::getCurrentTimestamp().getTime();
+    utils::PhoneNumber phoneNumber(msgJson[json::messages::phoneNumber].string_value());
+    record.number = phoneNumber.getView();
+    record.body   = UTF8(msgJson[json::messages::messageBody].string_value());
+    return record;
+}
+
+auto DeveloperModeHelper::prepareSMS(Context &context) -> sys::ReturnCodes
+{
+    SMSRecord record = smsRecordFromJson(context.getBody());
+
+    LOG_INFO("Adding sms of type %d to database", static_cast<int>(record.type));
+    auto listener = std::make_unique<db::EndpointListener>(
+        [=](db::QueryResult *result, Context context) {
+            bool res = false;
+            if (auto SMSAddResult = dynamic_cast<db::query::SMSAddResult *>(result)) {
+                context.setResponseStatus(SMSAddResult->result ? http::Code::OK : http::Code::InternalServerError);
+                MessageHandler::putToSendQueue(context.createSimpleResponse());
+                LOG_INFO("Adding sms of type %d to database - %s",
+                         static_cast<int>(record.type),
+                         SMSAddResult->result ? "OK" : "NOK");
+                res = true;
+            }
+            else {
+                context.setResponseStatus(http::Code::InternalServerError);
+                MessageHandler::putToSendQueue(context.createSimpleResponse());
+            }
+            return res;
+        },
+        context);
+
+    DBServiceAPI::AddSMS(ownerServicePtr, record, std::move(listener));
+    return sys::ReturnCodes::Success;
 }

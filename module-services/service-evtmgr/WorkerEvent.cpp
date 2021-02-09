@@ -10,7 +10,6 @@
 
 #include <Audio/AudioCommon.hpp>
 #include <MessageType.hpp>
-#include <Service/Bus.hpp>
 #include <Service/Worker.hpp>
 #include <bsp/battery-charger/battery_charger.hpp>
 #include <bsp/cellular/bsp_cellular.hpp>
@@ -82,7 +81,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
             auto message = std::make_shared<AudioEventRequest>(audio::EventType::JackState,
                                                                state ? audio::Event::DeviceState::Connected
                                                                      : audio::Event::DeviceState::Disconnected);
-            sys::Bus::SendUnicast(message, service::name::evt_manager, this->service);
+            service->bus.sendUnicast(message, service::name::evt_manager);
         }
     }
 
@@ -95,12 +94,12 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
             const auto status = bsp::battery_charger::getStatusRegister();
             if (status & static_cast<std::uint16_t>(bsp::battery_charger::batteryINTBSource::minVAlert)) {
                 auto messageBrownout = std::make_shared<sevm::BatteryBrownoutMessage>();
-                sys::Bus::SendUnicast(messageBrownout, service::name::system_manager, this->service);
+                service->bus.sendUnicast(messageBrownout, service::name::system_manager);
             }
             if (status & static_cast<std::uint16_t>(bsp::battery_charger::batteryINTBSource::SOCOnePercentChange)) {
                 bsp::battery_charger::StateOfCharge battLevel = bsp::battery_charger::getBatteryLevel();
                 auto message = std::make_shared<sevm::BatteryLevelMessage>(battLevel, false);
-                sys::Bus::SendUnicast(message, service::name::evt_manager, this->service);
+                service->bus.sendUnicast(message, service::name::evt_manager);
                 battery_level_check::checkBatteryLevelCritical();
             }
             bsp::battery_charger::clearAllIRQs();
@@ -109,7 +108,10 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
             bsp::battery_charger::clearAllIRQs();
             auto message     = std::make_shared<sevm::BatteryPlugMessage>();
             message->plugged = bsp::battery_charger::getChargeStatus();
-            sys::Bus::SendUnicast(message, service::name::evt_manager, this->service);
+            if (!message->plugged) {
+                bsp::battery_charger::chargingFinishedAction();
+            }
+            service->bus.sendUnicast(message, service::name::evt_manager);
         }
     }
 
@@ -129,7 +131,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
         auto message       = std::make_shared<sevm::RtcMinuteAlarmMessage>(MessageType::EVMMinuteUpdated);
         message->timestamp = timestamp;
-        sys::Bus::SendUnicast(message, service::name::evt_manager, this->service);
+        service->bus.sendUnicast(message, service::name::evt_manager);
     }
 
     if (queueID == static_cast<uint32_t>(WorkerEventQueues::queueCellular)) {
@@ -145,7 +147,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
             auto message   = std::make_shared<sevm::StatusStateMessage>(MessageType::EVMModemStatus);
             message->state = GSMstatus;
-            sys::Bus::SendUnicast(message, "EventManager", this->service);
+            service->bus.sendUnicast(message, "EventManager");
         }
 
         if (notification == bsp::cellular::trayPin) {
@@ -156,7 +158,7 @@ bool WorkerEvent::handleMessage(uint32_t queueID)
 
         if (notification == bsp::cellular::ringIndicatorPin) {
             auto message = std::make_shared<sevm::StatusStateMessage>(MessageType::EVMRingIndicator);
-            sys::Bus::SendUnicast(message, "EventManager", this->service);
+            service->bus.sendUnicast(message, "EventManager");
         }
     }
 
@@ -266,7 +268,7 @@ void WorkerEvent::processKeyEvent(bsp::KeyEvents event, bsp::KeyCodes code)
             message->key.time_release = xTaskGetTickCount();
         }
     }
-    sys::Bus::SendUnicast(message, service::name::evt_manager, this->service);
+    service->bus.sendUnicast(message, service::name::evt_manager);
 }
 
 void WorkerEvent::checkBatteryLevelCritical()
