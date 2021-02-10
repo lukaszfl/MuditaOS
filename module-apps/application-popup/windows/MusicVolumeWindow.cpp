@@ -1,6 +1,7 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
+#include "AppWindow.hpp"
 #include "MusicVolumeWindow.hpp"
 #include "application-popup/ApplicationPopup.hpp"
 #include <module-gui/gui/input/InputEvent.hpp>
@@ -10,54 +11,10 @@
 
 namespace gui
 {
-    MusicVolumeWindow::MusicVolumeWindow(app::Application *app, const std::string &name) : AppWindow(app, name)
+    MusicVolumeWindow::MusicVolumeWindow(app::Application *app, const std::string &name) : VolumeWindow(app, name)
     {
 
-        buildInterface();
-
-        volumeWindowTimer = std::make_unique<sys::Timer>(
-                timer::name::volume_window, app, timer::duration::volume_window, sys::Timer::Type::SingleShot);
-        volumeWindowTimer->connect([=](sys::Timer &) { windowTimerCallback(); });
-
-    }
-
-    void MusicVolumeWindow::addVolumeText()
-    {
-        volumeText = new Label(this,
-                               style::window::default_left_margin,
-                               title->offset_h(),
-                               style::window::default_body_width,
-                               style::window::volume::title_height,
-                               utils::localize.get(style::window::volume::title_key));
-
-        volumeText->setPenWidth(style::window::default_border_no_focus_w);
-        volumeText->setFont(style::window::font::mediumbold);
-        volumeText->setAlignment(gui::Alignment(gui::Alignment::Vertical::Center));
-        addWidget(volumeText);
-    }
-
-    void MusicVolumeWindow::addVolumeBar()
-    {
-        volumeBar = new VBarGraph(this,
-                                  style::window::default_left_margin,
-                                  style::window::volume::bar::top_offset,
-                                  style::window::volume::bar::volume_levels);
-    }
-
-    void MusicVolumeWindow::buildInterface()
-    {
-        AppWindow::buildInterface();
-        addVolumeText();
-        addVolumeBar();
-    }
-
-    void MusicVolumeWindow::rebuild()
-    {}
-
-    void MusicVolumeWindow::destroyInterface()
-    {
-        destroyTimer();
-        erase();
+        volumeText->setText(utils::localize.get(style::window::volume::music::title_key));
     }
 
     MusicVolumeWindow::~MusicVolumeWindow()
@@ -84,11 +41,6 @@ namespace gui
         startTimer();
     }
 
-    auto MusicVolumeWindow::isMuted() -> bool
-    {
-        return !volumeBar->getValue();
-    }
-
     auto MusicVolumeWindow::onInput(const gui::InputEvent &inputEvent) -> bool
     {
         if (!inputEvent.isShortPress()) {
@@ -98,9 +50,9 @@ namespace gui
         if (inputEvent.keyCode == gui::KeyCode::KEY_VOLUP) {
             volumeBar->update(1);
             volumeWindowTimer->reload();
-            if(!isMuted() && volumeText->getText() != utils::localize.get(style::window::volume::title_key))
+            if(!isMuted() && volumeText->getText() != utils::localize.get(style::window::volume::music::title_key))
             {
-                volumeText->setText(utils::localize.get(style::window::volume::title_key));
+                volumeText->setText(utils::localize.get(style::window::volume::music::title_key));
             }
         }
 
@@ -113,39 +65,7 @@ namespace gui
             }
         }
 
-        if (inputEvent.keyCode == gui::KeyCode::KEY_RF) {
-            return app::manager::Controller::sendAction(application, app::manager::actions::ClosePopup);
-        }
-
-
         return AppWindow::onInput(inputEvent);
     }
 
-    void MusicVolumeWindow::onClose()
-    {
-        destroyTimer();
-    }
-
-    void MusicVolumeWindow::windowTimerCallback()
-    {
-        closeWindow();
-    }
-
-    void MusicVolumeWindow::startTimer()
-    {
-        volumeWindowTimer->connect([=](sys::Timer &) { windowTimerCallback(); });
-        volumeWindowTimer->reload();
-    }
-
-    void MusicVolumeWindow::destroyTimer()
-    {
-        volumeWindowTimer->stop();
-    }
-
-    auto MusicVolumeWindow::closeWindow() -> bool
-    {
-        LOG_DEBUG("Switch to previous window");
-        destroyTimer();
-        return app::manager::Controller::sendAction(application, app::manager::actions::ClosePopup);
-    }
 } // namespace gui

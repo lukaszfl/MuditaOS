@@ -22,6 +22,7 @@ namespace gui
         std::vector<gui::Rect *> rectangles;
         uint32_t numberOfRectangles;
         uint32_t currentLevel = 0;
+        Color outlinePositive = ColorFullBlack, fillingPositive = ColorFullBlack, outlineNegative = ColorFullBlack, fillingNegative = ColorFullWhite;
 
         [[nodiscard]] auto createRectangle(uint32_t width, uint32_t height) const -> Rect *;
         [[nodiscard]] auto createSpace(uint32_t width, uint32_t height) const -> Rect *;
@@ -39,6 +40,11 @@ namespace gui
         auto update(int value = 1) -> bool final;
 
         auto setValue(unsigned int value) -> bool override;
+
+        void setColors( Color outlinePositive = ColorFullBlack,
+                        Color fillingPositive = ColorFullBlack,
+                        Color outlineNegative = ColorFullBlack,
+                        Color fillingNegative = ColorFullWhite);
     };
 
     class VBarGraph : public VBox, public BarGraph

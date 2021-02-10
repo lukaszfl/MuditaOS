@@ -345,6 +345,14 @@ namespace gui
             inputEvent.state == InputEvent::State::keyReleasedLong) {
             auto code = translator.handle(inputEvent.key, InputMode({InputMode::phone}).get());
             switch (inputEvent.keyCode) {
+            case KeyCode::KEY_VOLUP: {
+                auto data = std::make_unique<SwitchData>();
+                return app::manager::Controller::sendAction(application, app::manager::actions::ShowCallVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
+            }
+            case KeyCode::KEY_VOLDN: {
+                auto data = std::make_unique<SwitchData>();
+                return app::manager::Controller::sendAction(application, app::manager::actions::ShowCallVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
+            }
             case KeyCode::KEY_LF:
                 handled = handleLeftButton();
                 break;

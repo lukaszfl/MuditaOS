@@ -129,6 +129,15 @@ namespace gui
         return false;
     }
 
+    auto AppWindow::isVolumeWindowType() -> bool
+    {
+        auto currentApplication = getApplication();
+
+        return currentApplication->isCurrentWindow(style::window::name::volume_window) ||
+               currentApplication->isCurrentWindow(style::window::name::call_volume_window) ||
+               currentApplication->isCurrentWindow(style::window::name::music_volume_window);
+    }
+
     bool AppWindow::onInput(const InputEvent &inputEvent)
     {
         // check if any of the lower inheritance onInput methods catch the event
@@ -144,19 +153,17 @@ namespace gui
         if ((inputEvent.isShortPress())) {
             switch (inputEvent.keyCode) {
             case KeyCode::KEY_VOLUP: {
-                auto currentApplication = getApplication();
-                if(!currentApplication->isCurrentWindow(style::window::name::volume_window))
+                if(!isVolumeWindowType())
                 {
                     auto data = std::make_unique<SwitchData>();
                     app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
 
                 }
-                currentApplication->increaseCurrentVolume();
+                application->increaseCurrentVolume();
                 return true;
             }
             case KeyCode::KEY_VOLDN: {
-                auto currentApplication = getApplication();
-                if(!currentApplication->isCurrentWindow(style::window::name::volume_window))
+                if(!isVolumeWindowType())
                 {
                     auto data = std::make_unique<SwitchData>();
                     app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);

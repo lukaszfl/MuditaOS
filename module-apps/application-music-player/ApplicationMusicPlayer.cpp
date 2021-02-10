@@ -92,6 +92,7 @@ namespace app
     bool ApplicationMusicPlayer::play(const std::string &fileName)
     {
         AudioServiceAPI::PlaybackStart(this, audio::PlaybackType::Multimedia, fileName);
+        isPlaybackStarted = true;
         return true;
     }
 

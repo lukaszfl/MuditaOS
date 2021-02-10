@@ -29,9 +29,7 @@ namespace timer
     namespace duration
     {
         constexpr static const int calendar_reminder = 10000;
-        constexpr static const int volume_window = 1000;
-        inline constexpr auto music_volume_window = 1000;
-        inline constexpr auto call_volume_window = 1000;
+        constexpr static const int volume_window = 2000;
     }
 
     namespace name
@@ -72,7 +70,9 @@ namespace app
             return {{
                      manager::actions::Launch,
                      manager::actions::ShowReminder,
-                     manager::actions::ShowVolume
+                     manager::actions::ShowVolume,
+                     manager::actions::ShowMusicVolume,
+                     manager::actions::ShowCallVolume,
             }};
         }
     };

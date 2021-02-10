@@ -107,6 +107,15 @@ namespace gui
 
         songsModel->createData(app->getMusicFilesList(),
                                [app](const std::string &fileName) { return app->play(fileName); });
+
+        if(mode == ShowMode::GUI_SHOW_RETURN)
+        {
+            application->refreshWindow(RefreshModes::GUI_REFRESH_FAST);
+        }
+        else if(mode == ShowMode::GUI_SHOW_INIT)
+        {
+            app->isPlaybackStarted = false;
+        }
     }
 
     bool MusicPlayerAllSongsWindow::onDatabaseMessage(sys::Message *msgl)
@@ -116,41 +125,47 @@ namespace gui
 
     bool MusicPlayerAllSongsWindow::onInput(const InputEvent &inputEvent)
     {
-
+        auto handled = true;
 
         if (!inputEvent.isShortPress()) {
             return false;
         }
 
+        auto app = dynamic_cast<app::ApplicationMusicPlayer *>(application);
+        assert(app);
+
         if (inputEvent.keyCode == gui::KeyCode::KEY_VOLUP) {
-            ///TODO: ShowMusicVolume action (different type of sound with fifferent level)
-            auto data = std::make_unique<SwitchData>();
-            app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
-            LOG_DEBUG("MUSIC VOL UP CHANGE WINDOW!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            //application->increaseCurrentVolume();
-            return true;
+            if(app->isPlaybackStarted)
+            {
+                auto data = std::make_unique<SwitchData>();
+                return app::manager::Controller::sendAction(application, app::manager::actions::ShowMusicVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
+            }
+
         }
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_VOLDN) {
-            auto data = std::make_unique<SwitchData>();
-            app::manager::Controller::sendAction(application, app::manager::actions::ShowVolume, std::move(data), app::manager::OnSwitchBehaviour::RunInBackground);
-            LOG_DEBUG("MUSIC VOL DOWN CHANGE WINDOW!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            //application->decreaseCurrentVolume();
-            return true;
+            if(app->isPlaybackStarted)
+            {
+                auto data = std::make_unique<SwitchData>();
+                return app::manager::Controller::sendAction(application, app::manager::actions::ShowMusicVolume,
+                                                            std::move(data),
+                                                            app::manager::OnSwitchBehaviour::RunInBackground);
+            }
         }
 
-        auto ret           = AppWindow::onInput(inputEvent);
+        if (inputEvent.keyCode == KeyCode::KEY_VOLUP || inputEvent.keyCode == KeyCode::KEY_VOLDN || inputEvent.keyCode == KeyCode::KEY_ENTER) {
+            auto successCallback = [this](const audio::Volume &volume) {
+                auto volumeText = audio::GetVolumeText(volume);
+                soundLabel->setText(volumeText);
+            };
+            handled = setCurrentVolume(successCallback, nullptr);
+            if(handled)
+            {
+                application->refreshWindow(RefreshModes::GUI_REFRESH_FAST);
+            }
+        }
 
-        return ret;
-
-//        if (keyCode == KeyCode::KEY_VOLUP || keyCode == KeyCode::KEY_VOLDN || keyCode == KeyCode::KEY_ENTER) {
-//            auto successCallback = [this](const audio::Volume &volume) {
-//                auto volumeText = audio::GetVolumeText(volume);
-//                soundLabel->setText(volumeText);
-//            };
-//            return setCurrentVolume(successCallback, nullptr);
-//        }
-
+        return AppWindow::onInput(inputEvent);
     }
 
 } /* namespace gui */

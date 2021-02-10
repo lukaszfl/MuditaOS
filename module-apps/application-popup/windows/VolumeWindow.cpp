@@ -42,6 +42,8 @@ namespace gui
                                   style::window::default_left_margin,
                                   style::window::volume::bar::top_offset,
                                   style::window::volume::bar::volume_levels);
+
+        volumeBar->setColors(ColorFullBlack,ColorFullBlack,ColorFullBlack,ColorFullWhite);
     }
 
     void VolumeWindow::buildInterface()
@@ -112,11 +114,6 @@ namespace gui
                 volumeText->setText(utils::localize.get(style::window::volume::muted_title_key));
             }
         }
-
-        if (inputEvent.keyCode == gui::KeyCode::KEY_RF) {
-            return app::manager::Controller::sendAction(application, app::manager::actions::ClosePopup);
-        }
-
 
         return AppWindow::onInput(inputEvent);
     }

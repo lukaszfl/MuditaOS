@@ -3,6 +3,8 @@
 
 #include <module-apps/application-popup/windows/EventReminderWindow.hpp>
 #include <module-apps/application-popup/windows/VolumeWindow.hpp>
+#include <module-apps/application-popup/windows/MusicVolumeWindow.hpp>
+#include <module-apps/application-popup/windows/CallVolumeWindow.hpp>
 #include <module-apps/application-popup/windows/HomeModesWindow.hpp>
 #include <module-apps/application-popup/windows/BrightnessWindow.hpp>
 #include "ApplicationPopup.hpp"
@@ -22,6 +24,16 @@ namespace app
             switchWindow(style::window::name::volume_window, std::move(data));
             return msgHandled();
         });
+
+        addActionReceiver(manager::actions::ShowMusicVolume, [this](auto &&data) {
+            switchWindow(style::window::name::music_volume_window, std::move(data));
+            return msgHandled();
+        });
+
+        addActionReceiver(manager::actions::ShowCallVolume, [this](auto &&data) {
+            switchWindow(style::window::name::call_volume_window, std::move(data));
+            return msgHandled();
+        });
     }
 
     auto ApplicationPopup::InitHandler() -> sys::ReturnCodes
@@ -32,7 +44,7 @@ namespace app
 
         createUserInterface();
 
-        setActiveWindow(style::window::name::volume_window);
+        setActiveWindow(style::window::name::call_volume_window);
         return ret;
     }
 
@@ -55,6 +67,12 @@ namespace app
             });
         windowsFactory.attach(style::window::name::volume_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::VolumeWindow>(app, style::window::name::volume_window);
+        });
+        windowsFactory.attach(style::window::name::music_volume_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::MusicVolumeWindow>(app, style::window::name::music_volume_window);
+        });
+        windowsFactory.attach(style::window::name::call_volume_window, [](Application *app, const std::string &name) {
+            return std::make_unique<gui::CallVolumeWindow>(app, style::window::name::call_volume_window);
         });
         windowsFactory.attach(style::window::name::brightness_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::BrightnessWindow>(app, style::window::name::brightness_window);

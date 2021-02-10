@@ -1,6 +1,7 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
+#include "AppWindow.hpp"
 #include "CallVolumeWindow.hpp"
 #include "application-popup/ApplicationPopup.hpp"
 #include <module-gui/gui/input/InputEvent.hpp>
@@ -10,54 +11,10 @@
 
 namespace gui
 {
-    CallVolumeWindow::CallVolumeWindow(app::Application *app, const std::string &name) : AppWindow(app, name)
+    CallVolumeWindow::CallVolumeWindow(app::Application *app, const std::string &name) : VolumeWindow(app, name)
     {
 
-        buildInterface();
-
-        volumeWindowTimer = std::make_unique<sys::Timer>(
-                timer::name::music_volume_window, app, timer::duration::music_volume_window, sys::Timer::Type::SingleShot);
-        volumeWindowTimer->connect([=](sys::Timer &) { windowTimerCallback(); });
-
-    }
-
-    void CallVolumeWindow::addVolumeText()
-    {
-        volumeText = new Label(this,
-                               style::window::default_left_margin,
-                               title->offset_h(),
-                               style::window::default_body_width,
-                               style::window::volume::title_height,
-                               utils::localize.get(style::window::volume::title_key));
-
-        volumeText->setPenWidth(style::window::default_border_no_focus_w);
-        volumeText->setFont(style::window::font::mediumbold);
-        volumeText->setAlignment(gui::Alignment(gui::Alignment::Vertical::Center));
-        addWidget(volumeText);
-    }
-
-    void CallVolumeWindow::addVolumeBar()
-    {
-        volumeBar = new VBarGraph(this,
-                                  style::window::default_left_margin,
-                                  style::window::volume::bar::top_offset,
-                                  style::window::volume::bar::volume_levels);
-    }
-
-    void CallVolumeWindow::buildInterface()
-    {
-        AppWindow::buildInterface();
-        addVolumeText();
-        addVolumeBar();
-    }
-
-    void CallVolumeWindow::rebuild()
-    {}
-
-    void CallVolumeWindow::destroyInterface()
-    {
-        destroyTimer();
-        erase();
+        volumeText->setText(utils::localize.get(style::window::volume::call::title_key));
     }
 
     CallVolumeWindow::~CallVolumeWindow()
@@ -84,11 +41,6 @@ namespace gui
         startTimer();
     }
 
-    auto CallVolumeWindow::isMuted() -> bool
-    {
-        return !volumeBar->getValue();
-    }
-
     auto CallVolumeWindow::onInput(const gui::InputEvent &inputEvent) -> bool
     {
         if (!inputEvent.isShortPress()) {
@@ -98,9 +50,9 @@ namespace gui
         if (inputEvent.keyCode == gui::KeyCode::KEY_VOLUP) {
             volumeBar->update(1);
             volumeWindowTimer->reload();
-            if(!isMuted() && volumeText->getText() != utils::localize.get(style::window::volume::title_key))
+            if(!isMuted() && volumeText->getText() != utils::localize.get(style::window::volume::call::title_key))
             {
-                volumeText->setText(utils::localize.get(style::window::volume::title_key));
+                volumeText->setText(utils::localize.get(style::window::volume::call::title_key));
             }
         }
 
@@ -113,39 +65,7 @@ namespace gui
             }
         }
 
-        if (inputEvent.keyCode == gui::KeyCode::KEY_RF) {
-            return app::manager::Controller::sendAction(application, app::manager::actions::ClosePopup);
-        }
-
-
         return AppWindow::onInput(inputEvent);
     }
 
-    void CallVolumeWindow::onClose()
-    {
-        destroyTimer();
-    }
-
-    void CallVolumeWindow::windowTimerCallback()
-    {
-        closeWindow();
-    }
-
-    void CallVolumeWindow::startTimer()
-    {
-        volumeWindowTimer->connect([=](sys::Timer &) { windowTimerCallback(); });
-        volumeWindowTimer->reload();
-    }
-
-    void CallVolumeWindow::destroyTimer()
-    {
-        volumeWindowTimer->stop();
-    }
-
-    auto CallVolumeWindow::closeWindow() -> bool
-    {
-        LOG_DEBUG("Switch to previous window");
-        destroyTimer();
-        return app::manager::Controller::sendAction(application, app::manager::actions::ClosePopup);
-    }
 } // namespace gui

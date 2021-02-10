@@ -28,6 +28,8 @@ namespace app::manager
             Call,
             Dial,
             ShowVolume,
+            ShowMusicVolume,
+            ShowCallVolume,
             EmergencyDial,
             ShowCallLog,
             ClosePopup,

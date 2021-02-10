@@ -25,10 +25,12 @@ namespace gui
 {
     class VolumeWindow : public AppWindow
     {
+
+    protected:
+
         std::unique_ptr<sys::Timer> volumeWindowTimer;
         auto isMuted() -> bool;
 
-      protected:
         Label *volumeText    = nullptr;
         VBarGraph *volumeBar = nullptr;
 
@@ -37,6 +39,7 @@ namespace gui
         void destroyTimer();
 
       public:
+
         VolumeWindow(app::Application *app, const std::string &name);
 
         ~VolumeWindow() override;

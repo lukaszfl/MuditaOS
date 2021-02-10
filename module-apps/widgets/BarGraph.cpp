@@ -21,8 +21,8 @@ namespace gui
     auto BarGraph::createRectangle(uint32_t width, uint32_t height) const -> Rect *
     {
         auto rectangle = new Rect(nullptr, 0, 0, width, height);
-        rectangle->setFillColor(ColorFullBlack);
-        rectangle->setBorderColor(ColorFullBlack);
+        rectangle->setFillColor(fillingPositive);
+        rectangle->setBorderColor(outlinePositive);
         rectangle->setFilled(false);
         rectangle->setRadius(style::bargraph::radius);
         rectangle->setPenWidth(style::window::default_border_focus_w);
@@ -40,8 +40,8 @@ namespace gui
     {
         if ((currentLevel + levels) <= numberOfRectangles) {
             for (uint32_t i = 0; i < levels; ++i) {
-                rectangles[currentLevel]->setFillColor(ColorFullBlack);
-                rectangles[currentLevel]->setBorderColor(ColorFullBlack);
+                rectangles[currentLevel]->setFillColor(fillingPositive);
+                rectangles[currentLevel]->setBorderColor(outlinePositive);
                 ++currentLevel;
             }
             return true;
@@ -57,8 +57,8 @@ namespace gui
         if (currentLevel >= levels) {
             for (uint32_t i = levels; i > 0; --i) {
                 --currentLevel;
-                rectangles[currentLevel]->setFillColor(ColorFullWhite);
-                rectangles[currentLevel]->setBorderColor(ColorFullBlack);
+                rectangles[currentLevel]->setFillColor(fillingNegative);
+                rectangles[currentLevel]->setBorderColor(outlineNegative);
             }
             return true;
         }
@@ -89,6 +89,17 @@ namespace gui
             return decrementWith(-levels);
         }
         return false;
+    }
+
+    void BarGraph::setColors(Color outlinePositive,Color fillingPositive,Color outlineNegative,Color fillingNegative)
+    {
+        this->outlinePositive = outlinePositive;
+        this->fillingPositive = fillingPositive;
+        this->outlineNegative = outlineNegative;
+        this->fillingNegative = fillingNegative;
+
+        setValue(numberOfRectangles);
+        setValue(currentLevel);
     }
 
     VBarGraph::VBarGraph(Item *parent, Position x, Position y, uint32_t numberOfRectangles)

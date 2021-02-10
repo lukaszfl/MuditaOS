@@ -252,8 +252,7 @@ namespace app
         }
         else if (auto msg = dynamic_cast<AudioKeyPressedResponse *>(msgl)) {
             if (!msg->muted) {
-                // Popup should show up
-                LOG_ERROR("Popup with volume level %s", std::to_string(msg->volume).c_str());
+                LOG_DEBUG("Popup with volume level %s", std::to_string(msg->volume).c_str());
             }
         }
         return msgNotHandled();

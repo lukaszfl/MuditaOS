@@ -284,6 +284,8 @@ namespace app
         }
         audio::RetCode getCurrentVolume(audio::Volume &volume);
 
+        bool isPlaybackStarted = false;
+
         void toggleTorch(bsp::torch::ColourTemperature temperature);
 
         void cancelCallbacks(AsyncCallbackReceiver::Ptr receiver) override;

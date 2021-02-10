@@ -30,6 +30,7 @@ namespace gui
      */
     class AppWindow : public Window
     {
+        auto isVolumeWindowType() -> bool;
       protected:
         /// actual built window title
         gui::Label *title = nullptr;
