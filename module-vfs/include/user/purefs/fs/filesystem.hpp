@@ -17,6 +17,8 @@
 #include <purefs/fs/mount_flags.hpp>
 #include <type_traits>
 
+#include <purefs/events/event.hpp>
+
 struct statvfs;
 struct stat;
 
@@ -53,12 +55,22 @@ namespace purefs::fs
         static constexpr auto first_file_descriptor = 3;
 
       public:
-        using fsdir                    = std::shared_ptr<internal::directory_handle>;
-        using fsfile                         = std::shared_ptr<internal::file_handle>;
+        using fsdir  = std::shared_ptr<internal::directory_handle>;
+        using fsfile = std::shared_ptr<internal::file_handle>;
         explicit filesystem(std::shared_ptr<blkdev::disk_manager> diskmm);
         ~filesystem();
         filesystem(const filesystem &) = delete;
         auto operator=(const filesystem &) = delete;
+
+        /** Event notifiers */
+        struct
+        {
+            Event<const std::string_view & /*path*/, int /*flags*/, int /*fd*/> open;
+            Event<int /*fd*/> close;
+            Event<const std::string_view & /*from*/, const std::string_view & /*to*/> move;
+            Event<const std::string_view & /*path*/> remove;
+        } notifier;
+
         /** Utility API */
         /** Register filesystem driver
          * @param[in] fsname Unique filesystem name for example fat

@@ -7,35 +7,32 @@
 
 #include "Constants.hpp"
 #include "StartupIndexer.hpp"
+#include "EventMapper.hpp"
 
-namespace service
+class ServiceFileIndexer final : public sys::Service
 {
+  public:
+    ServiceFileIndexer(const std::string_view name = service::name::file_indexer);
+    virtual ~ServiceFileIndexer()                  = default;
+    ServiceFileIndexer(const ServiceFileIndexer &) = delete;
+    ServiceFileIndexer &operator=(const ServiceFileIndexer &) = delete;
+    sys::MessagePointer DataReceivedHandler(sys::DataMessage *msg, sys::ResponseMessage *resp) override;
+    sys::ReturnCodes InitHandler() override;
+    sys::ReturnCodes DeinitHandler() override;
+    sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override;
 
-    class ServiceFileIndexer final : public sys::Service
-    {
-      public:
-        ServiceFileIndexer(const std::string_view name = service::name::file_indexer);
-        virtual ~ServiceFileIndexer()                  = default;
-        ServiceFileIndexer(const ServiceFileIndexer &) = delete;
-        ServiceFileIndexer &operator=(const ServiceFileIndexer &) = delete;
-        sys::MessagePointer DataReceivedHandler(sys::DataMessage *msg, sys::ResponseMessage *resp) override;
-        sys::ReturnCodes InitHandler() override;
-        sys::ReturnCodes DeinitHandler() override;
-        sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override;
-
-      private:
-        auto onDeleteFile(std::string_view path) -> void;
-        auto onRenameFile(std::string_view oldPath, std::string_view newPath) -> void;
-        auto onAudioContentChanged(std::string_view path) -> void;
-        auto onTextContentChanged(std::string_view path) -> void;
-        detail::StartupIndexer mStartupIndexer;
-    };
-
-}; // namespace service
+  private:
+    auto onDeleteFile(std::string_view path) -> void;
+    auto onRenameFile(std::string_view oldPath, std::string_view newPath) -> void;
+    auto onAudioContentChanged(std::string_view path) -> void;
+    auto onTextContentChanged(std::string_view path) -> void;
+    std::unique_ptr<service::file_indexer::EventMapper> mEventMapper;
+    service::file_indexer::StartupIndexer mStartupIndexer;
+};
 
 namespace sys
 {
-    template <> struct ManifestTraits<service::ServiceFileIndexer>
+    template <> struct ManifestTraits<ServiceFileIndexer>
     {
         static auto GetManifest() -> ServiceManifest
         {

@@ -129,7 +129,9 @@ namespace purefs::fs
             if (err) {
                 return err;
             }
-            return add_filehandle(fh);
+            auto fd = add_filehandle(fh);
+            notifier.open(path, flags, fd);
+            return fd;
         }
         else {
             LOG_ERROR("VFS: Unable to lock fops");
@@ -143,6 +145,7 @@ namespace purefs::fs
         if (!ret) {
             ret = (remove_filehandle(fd)) ? (0) : (-EBADF);
         }
+        notifier.close(fd);
         return ret;
     }
 

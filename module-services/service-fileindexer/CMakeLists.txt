@@ -21,6 +21,7 @@ target_sources( ${PROJECT_NAME}
 	PRIVATE
 	"ServiceFileIndexer.cpp"
 	"messages/FileChangeMessage.cpp"
+	"EventMapper.cpp"
 	"StartupIndexer.cpp"
 	"notesIndexer.cpp"
 )

@@ -9,7 +9,7 @@
 #include <purefs/filesystem_paths.hpp>
 #include "Constants.hpp"
 
-namespace service::detail
+namespace service::file_indexer
 {
 
     namespace fs = std::filesystem;
@@ -37,33 +37,26 @@ namespace service::detail
     // Collect startup files when service starts
     auto StartupIndexer::collectStartupFiles() -> void
     {
-        /*
-        using namespace std::string_literals;
-        auto searcher_cb = [](void *ctx, const char *path, bool isDir) {
-            auto _this = reinterpret_cast<StartupIndexer *>(ctx);
-            if (!isDir) {
-                for (const auto &ext : allowed_exts) {
-                    if (fs::path(path).extension() == ext.first) {
-                        _this->mMsgs.emplace_back(std::make_shared<msg::FileChangeMessage>(
-                            path, msg::FileChangeMessage::evt_t::modified, ""s));
-                        LOG_DEBUG("Initial indexing file added %s", path);
+        for (const auto &path : start_dirs)
+            for (auto &p : fs::recursive_directory_iterator(path))
+                if (!fs::is_directory(p)) {
+                    for (const auto &ext : allowed_exts) {
+                        if (fs::path(p).extension() == ext.first) {
+                            mMsgs.emplace_back(std::make_shared<FileChangeMessage>(
+                                FileChange::Event::modified, p.path().string(), ""s));
+                            LOG_DEBUG("Initial indexing file added %s", p.path().c_str());
+                        }
                     }
                 }
-            }
-        };
-        for (const auto &path : start_dirs) {
-            ff_stdio_listdir_recursive(path.c_str(), searcher_cb, this);
-        }
-        */
     }
     // Setup timers for notification
-    auto StartupIndexer::setupTimers(std::shared_ptr<sys::Service> svc, std::string_view svc_name) -> void
+    auto StartupIndexer::setupTimers(std::shared_ptr<sys::Service> svc) -> void
     {
         if (!mIdxTimer.isValid()) {
             mIdxTimer = sys::TimerFactory::createPeriodicTimer(
                 svc.get(), "file_indexing", std::chrono::milliseconds{timer_indexing_time}, [this, svc](sys::Timer &) {
                     if (!mMsgs.empty()) {
-                        svc->bus.sendUnicast(mMsgs.front(), std::string(service::name::file_indexer));
+                        svc->bus.sendUnicast(mMsgs.front(), svc->GetName());
                         mMsgs.pop_front();
                     }
                     else {
@@ -73,4 +66,4 @@ namespace service::detail
             mIdxTimer.start();
         }
     }
-} // namespace service::detail
+} // namespace service::file_indexer

@@ -3,9 +3,9 @@
 
 #include "FileChangeMessage.hpp"
 
-namespace service::msg
+namespace service::file_indexer
 {
-    FileChangeMessage::FileChangeMessage(std::string_view new_path, evt_t ev, std::string_view old_path)
-        : DataMessage(MessageType::FileContentModified), mNewPath(new_path), mEvent(ev), mOldPath(old_path)
+    FileChangeMessage::FileChangeMessage(FileChange::Event ev, std::string_view path, std::string_view old_path)
+        : DataMessage(MessageType::FileContentModified), mPath(path), mEvent(ev), mOldPath(old_path)
     {}
 } // namespace service::msg

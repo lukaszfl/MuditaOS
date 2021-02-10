@@ -83,9 +83,7 @@ int main()
 
     std::vector<std::unique_ptr<sys::BaseServiceCreator>> systemServices;
     systemServices.emplace_back(sys::CreatorFor<EventManager>());
-#if ENABLE_FILEINDEXER_SERVICE
-    systemServices.emplace_back(sys::CreatorFor<service::ServiceFileIndexer>());
-#endif
+    systemServices.emplace_back(sys::CreatorFor<ServiceFileIndexer>());
     systemServices.emplace_back(sys::CreatorFor<ServiceDB>());
 #if ENABLE_GSM == 0
     // For now disable permanently Service cellular when there is no GSM configured

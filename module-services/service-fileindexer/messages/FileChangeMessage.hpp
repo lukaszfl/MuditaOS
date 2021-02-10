@@ -1,23 +1,32 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
 
 #include <Service/Message.hpp>
-#include <vfsNotifier.hpp>
-namespace service::msg
+
+namespace service::file_indexer
 {
+    namespace FileChange
+    {
+        enum class Event
+        {
+            modified, //! File is modified
+            deleted,  //! File is deleted
+            renamed
+        };
+    }
+
     class FileChangeMessage final : public sys::DataMessage
     {
       public:
-        using evt_t = vfsn::utility::vfsNotifier::FsEvent;
-        FileChangeMessage(std::string_view new_path, evt_t ev, std::string_view old_path);
+        FileChangeMessage(FileChange::Event ev, std::string_view path, std::string_view old_path);
         virtual ~FileChangeMessage()           = default;
         FileChangeMessage(FileChangeMessage &) = delete;
         FileChangeMessage &operator=(FileChangeMessage &) = delete;
         [[nodiscard]] auto newPath() const noexcept
         {
-            return mNewPath;
+            return mPath;
         }
         [[nodiscard]] auto oldPath() const noexcept
         {
@@ -29,8 +38,8 @@ namespace service::msg
         }
 
       private:
-        const std::string mNewPath;
-        const evt_t mEvent;
+        const std::string mPath;
+        const FileChange::Event mEvent;
         const std::string mOldPath;
     };
-} // namespace service::msg
+} // namespace service::file_indexer

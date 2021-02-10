@@ -8,12 +8,10 @@
 
 #include <list>
 
-namespace service::msg
+namespace service::file_indexer
 {
     class FileChangeMessage;
-}
-namespace service::detail
-{
+
     // RFC6838 IANA MIME types
     enum class mimeType
     {
@@ -35,21 +33,21 @@ namespace service::detail
         ~StartupIndexer()                      = default;
         StartupIndexer(const StartupIndexer &) = delete;
         StartupIndexer &operator=(StartupIndexer) = delete;
-        auto start(std::shared_ptr<sys::Service> svc, std::string_view svc_name) -> void
+        auto start(std::shared_ptr<sys::Service> svc) -> void
         {
             collectStartupFiles();
-            setupTimers(svc, svc_name);
+            setupTimers(svc);
         }
         static auto getFileType(std::string_view path) -> mimeType;
 
       private:
         // Collect startup files when service starts
-        auto collectStartupFiles() -> void;
+        void collectStartupFiles();
         // Setup timers for notification
-        auto setupTimers(std::shared_ptr<sys::Service> svc, std::string_view svc_name) -> void;
+        void setupTimers(std::shared_ptr<sys::Service> svc);
 
       private:
-        std::list<std::shared_ptr<msg::FileChangeMessage>> mMsgs;
+        std::list<std::shared_ptr<FileChangeMessage>> mMsgs;
         sys::TimerHandle mIdxTimer;
     };
 } // namespace service::detail
