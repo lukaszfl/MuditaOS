@@ -77,13 +77,15 @@ namespace purefs::fs
          * @param[in] fops Filesystem operation structure
          * @return zero on sucess otherwise error
          */
-        template <typename T> auto register_filesystem(std::string_view fsname, std::shared_ptr<T> fops) -> int
-        {
-            if (!fops || !std::is_convertible_v<T *, filesystem_operations *>) {
-                return -EINVAL;
-            }
-            return register_filesystem(fsname, std::shared_ptr<filesystem_operations>(fops));
-        }
+        /*
+                template <typename T> auto register_filesystem(std::string_view fsname, std::shared_ptr<T> fops) -> int
+                {
+                    if (!fops || !std::is_convertible_v<T *, filesystem_operations *>) {
+                        return -EINVAL;
+                    }
+                    return register_filesystem(fsname, std::shared_ptr<filesystem_operations>(fops));
+                }
+        */
         auto register_filesystem(std::string_view fsname, std::shared_ptr<filesystem_operations> fops) -> int;
         /** Unregister filesystem driver
          * @param[in] fsname Unique filesystem name for example fat

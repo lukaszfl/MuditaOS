@@ -39,6 +39,9 @@ namespace service::file_indexer
     {
         for (const auto &path : start_dirs)
             for (auto &p : fs::recursive_directory_iterator(path))
+                //        using namespace std::string_literals;
+                //        auto searcher_cb = [](void *ctx, const char *path, bool isDir) {
+                //            auto _this = reinterpret_cast<StartupIndexer *>(ctx);
                 if (!fs::is_directory(p)) {
                     for (const auto &ext : allowed_exts) {
                         if (fs::path(p).extension() == ext.first) {
@@ -48,6 +51,11 @@ namespace service::file_indexer
                         }
                     }
                 }
+        //        };
+        //        (void)searcher_cb;
+        //        for (const auto &path : start_dirs) {
+        //            ff_stdio_listdir_recursive(path.c_str(), searcher_cb, this);
+        //        }
     }
     // Setup timers for notification
     auto StartupIndexer::setupTimers(std::shared_ptr<sys::Service> svc) -> void
