@@ -108,21 +108,18 @@ sys::MessagePointer ServiceAntenna::DataReceivedHandler(sys::DataMessage *msgl, 
         handled = true;
         break;
     }
-    case MessageType::CellularNotification: {
-
-        auto msg = dynamic_cast<CellularNotificationMessage *>(msgl);
-        if (msg != nullptr) {
-            if (msg->type == CellularNotificationMessage::Type::CallAborted) {
-                AntennaServiceAPI::LockRequest(this, antenna::lockState::unlocked);
-            }
-        }
-        handled = true;
-        break;
-    }
     case MessageType::CellularCall: {
         auto msg = dynamic_cast<CellularCallMessage *>(msgl);
         if (msg != nullptr) {
-            AntennaServiceAPI::LockRequest(this, antenna::lockState::locked);
+            if (msg->type == CellularCallMessage::Type::OutgoingCall ||
+                msg->type == CellularCallMessage::Type::IncomingCall) {
+                AntennaServiceAPI::LockRequest(this, antenna::lockState::locked);
+                handled = true;
+            }
+            else if (msg->type == CellularCallMessage::Type::CallAborted) {
+                AntennaServiceAPI::LockRequest(this, antenna::lockState::unlocked);
+                handled = true;
+            }
         }
     } break;
     case MessageType::CellularStateRequest: {

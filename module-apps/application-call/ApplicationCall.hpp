@@ -56,12 +56,6 @@ namespace app
     class ApplicationCall : public Application, public CallWindowInterface, public EnterNumberWindowInterface
     {
       private:
-        void CallAbortHandler();
-        void CallActiveHandler();
-        void IncomingCallHandler(const CellularCallMessage *const msg);
-        void CallerIdHandler(const CellularCallMessage *const msg);
-        void RingingHandler(const CellularCallMessage *const msg);
-
         std::unique_ptr<sys::Timer> callerIdTimer;
 
       protected:
@@ -107,12 +101,18 @@ namespace app
     {
         static auto GetManifest() -> manager::ApplicationManifest
         {
-            return {{manager::actions::Launch,
-                     manager::actions::Call,
-                     manager::actions::Dial,
-                     manager::actions::EmergencyDial,
-                     manager::actions::CallRejectNotEmergency,
-                     manager::actions::CallRejectNoSim}};
+            return {{
+                manager::actions::Launch,
+                manager::actions::Dial,
+                manager::actions::EmergencyDial,
+                manager::actions::CallRejectNotEmergency,
+                manager::actions::CallRejectNoSim,
+                manager::actions::OutgoingCall,
+                manager::actions::CallActive,
+                manager::actions::CallAborted,
+                manager::actions::IncomingCall,
+                manager::actions::CallerId,
+            }};
         }
     };
 } /* namespace app */

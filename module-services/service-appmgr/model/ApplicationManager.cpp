@@ -307,7 +307,9 @@ namespace app::manager
         connect(typeid(CellularMMIResultMessage), convertibleToActionHandler);
         connect(typeid(CellularMMIResponseMessage), convertibleToActionHandler);
         connect(typeid(CellularMMIPushMessage), convertibleToActionHandler);
-        connect(typeid(CellularCallReject), convertibleToActionHandler);
+        connect(typeid(CellularCallMessage), convertibleToActionHandler);
+        connect(typeid(CellularNoSimNotification), convertibleToActionHandler);
+        connect(typeid(CellularNotAnEmergencyNotification), convertibleToActionHandler);
         connect(typeid(sys::CriticalBatteryLevelNotification), convertibleToActionHandler);
         connect(typeid(sys::SystemBrownoutMesssage), convertibleToActionHandler);
     }
@@ -507,6 +509,7 @@ namespace app::manager
 
             SwitchRequest switchRequest(
                 ServiceName, targetApp->name(), targetApp->switchWindow, std::move(targetApp->switchData));
+            LOG_ERROR("Switched due to %d", action);
             return handleSwitchApplication(&switchRequest, focusedAppClose);
         }
 

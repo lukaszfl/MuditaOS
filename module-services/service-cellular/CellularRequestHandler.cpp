@@ -76,11 +76,11 @@ void CellularRequestHandler::handle(cellular::CallRequest &request, at::Result &
 void CellularRequestHandler::handle(cellular::RejectRequest &request, at::Result &result)
 {
     if (request.getRejectReason() == cellular::RejectRequest::RejectReason::NoSim) {
-        auto message = std::make_shared<cellular::CellularNoSimNotification>(request.getNumber());
+        auto message = std::make_shared<CellularNoSimNotification>(request.getNumber());
         cellular.bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
     }
     else if (request.getRejectReason() == cellular::RejectRequest::RejectReason::NotAnEmergencyNumber) {
-        auto message = std::make_shared<cellular::CellularNotAnEmergencyNotification>(request.getNumber());
+        auto message = std::make_shared<CellularNotAnEmergencyNotification>(request.getNumber());
         cellular.bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
     }
     request.setHandled(true);

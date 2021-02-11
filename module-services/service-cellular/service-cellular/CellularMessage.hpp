@@ -23,6 +23,7 @@
 #include <service-appmgr/service-appmgr/Actions.hpp>
 #include <service-appmgr/service-appmgr/data/SimActionsParams.hpp>
 #include <service-appmgr/service-appmgr/data/MmiActionsParams.hpp>
+#include <service-appmgr/service-appmgr/data/CallParams.hpp>
 
 class CellularMessage : public sys::DataMessage
 {
@@ -44,6 +45,9 @@ class CellularCallMessage : public CellularMessage, public app::manager::actions
     };
 
     CellularCallMessage() = delete;
+    CellularCallMessage(Type type)
+        : CellularMessage(MessageType::CellularCall), type(type), number(utils::PhoneNumber().getView())
+    {}
     CellularCallMessage(Type type, const utils::PhoneNumber::View &number)
         : CellularMessage(MessageType::CellularCall), type(type), number(number)
     {}
@@ -61,27 +65,23 @@ class CellularCallMessage : public CellularMessage, public app::manager::actions
             return std::make_unique<app::manager::ActionRequest>(
                 sender,
                 app::manager::actions::OutgoingCall,
-                std::make_unique<app::manager::actions::ActionParams>(number.getFormatted()));
+                std::make_unique<app::manager::actions::CallParams>(number));
         case Type::IncomingCall:
             return std::make_unique<app::manager::ActionRequest>(
                 sender,
                 app::manager::actions::IncomingCall,
-                std::make_unique<app::manager::actions::ActionParams>(number.getFormatted()));
+                std::make_unique<app::manager::actions::CallParams>(number));
         case Type::CallerId:
             return std::make_unique<app::manager::ActionRequest>(
-                sender,
-                app::manager::actions::CallerId,
-                std::make_unique<app::manager::actions::ActionParams>(number.getFormatted()));
+                sender, app::manager::actions::CallerId, std::make_unique<app::manager::actions::CallParams>(number));
         case Type::CallAborted:
             return std::make_unique<app::manager::ActionRequest>(
                 sender,
                 app::manager::actions::CallAborted,
-                std::make_unique<app::manager::actions::ActionParams>(number.getFormatted()));
+                std::make_unique<app::manager::actions::CallParams>(number));
         case Type::CallActive:
             return std::make_unique<app::manager::ActionRequest>(
-                sender,
-                app::manager::actions::CallActive,
-                std::make_unique<app::manager::actions::ActionParams>(number.getFormatted()));
+                sender, app::manager::actions::CallActive, std::make_unique<app::manager::actions::CallParams>(number));
         }
         return nullptr;
     }
@@ -782,6 +782,42 @@ class CellularCheckIfStartAllowedMessage : public sys::Message
     CellularCheckIfStartAllowedMessage() : sys::Message()
     {}
 };
+
+class CellularNoSimNotification : public CellularResponseMessage, public app::manager::actions::ConvertibleToAction
+{
+  public:
+    CellularNoSimNotification(std::string data)
+        : CellularResponseMessage(false, data), actionId(app::manager::actions::CallRejectNoSim)
+    {}
+
+    [[nodiscard]] auto toAction() const -> std::unique_ptr<app::manager::ActionRequest>
+    {
+        return std::make_unique<app::manager::ActionRequest>(
+            sender, actionId, std::make_unique<app::manager::actions::ActionParams>(data));
+    }
+
+  private:
+    const app::manager::actions::ActionId actionId;
+};
+
+class CellularNotAnEmergencyNotification : public CellularResponseMessage,
+                                           public app::manager::actions::ConvertibleToAction
+{
+  public:
+    CellularNotAnEmergencyNotification(std::string data)
+        : CellularResponseMessage(false, data), actionId(app::manager::actions::CallRejectNotEmergency)
+    {}
+
+    [[nodiscard]] auto toAction() const -> std::unique_ptr<app::manager::ActionRequest>
+    {
+        return std::make_unique<app::manager::ActionRequest>(
+            sender, actionId, std::make_unique<app::manager::actions::ActionParams>(data));
+    }
+
+  private:
+    const app::manager::actions::ActionId actionId;
+};
+
 namespace cellular
 {
 
@@ -817,41 +853,6 @@ namespace cellular
         RawCommandRespAsync(MessageType messageType) : CellularMessage(messageType){};
         virtual ~RawCommandRespAsync() = default;
         std::vector<std::string> data;
-    };
-
-    class CellularNoSimNotification : public CellularResponseMessage, public app::manager::actions::ConvertibleToAction
-    {
-      public:
-        CellularNoSimNotification(std::string data)
-            : CellularResponseMessage(false, data), actionId(app::manager::actions::NoSimNotification)
-        {}
-
-        [[nodiscard]] auto toAction() const -> std::unique_ptr<app::manager::ActionRequest>
-        {
-            return std::make_unique<app::manager::ActionRequest>(
-                sender, actionId, std::make_unique<app::manager::actions::ActionParams>(data));
-        }
-
-      private:
-        const app::manager::actions::ActionId actionId;
-    };
-
-    class CellularNotAnEmergencyNotification : public CellularResponseMessage,
-                                               public app::manager::actions::ConvertibleToAction
-    {
-      public:
-        CellularNotAnEmergencyNotification(std::string data)
-            : CellularResponseMessage(false, data), actionId(app::manager::actions::NotAnEmergencyNotification)
-        {}
-
-        [[nodiscard]] auto toAction() const -> std::unique_ptr<app::manager::ActionRequest>
-        {
-            return std::make_unique<app::manager::ActionRequest>(
-                sender, actionId, std::make_unique<app::manager::actions::ActionParams>(data));
-        }
-
-      private:
-        const app::manager::actions::ActionId actionId;
     };
 
 } // namespace cellular

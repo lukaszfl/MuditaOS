@@ -712,12 +712,13 @@ sys::MessagePointer ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl,
         assert(msg != nullptr);
 
         switch (msg->type) {
-        case CellularCallMessage::Type::Ringing: {
+        case CellularCallMessage::Type::OutgoingCall: {
             auto ret    = ongoingCall.startCall(msg->number, CallType::CT_OUTGOING);
             responseMsg = std::make_shared<CellularResponseMessage>(ret);
             break;
         } break;
         case CellularCallMessage::Type::IncomingCall: {
+            LOG_ERROR("cellular ------------------- Send incoming call");
             auto ret = true;
             if (!ongoingCall.isValid()) {
                 ret = ongoingCall.startCall(msg->number, CallType::CT_INCOMING);
@@ -725,27 +726,29 @@ sys::MessagePointer ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl,
             responseMsg = std::make_shared<CellularResponseMessage>(ret);
             break;
         }
-        case CellularCallMessage::Type::CallerID: {
+        case CellularCallMessage::Type::CallerId: {
+            LOG_ERROR("cellular ------------------- Send caller ID");
             ongoingCall.setNumber(msg->number);
             break;
         }
-        }
-    } break;
-    // Incoming notifications from Notification Virtual Channel
-    case MessageType::CellularNotification: {
-        CellularNotificationMessage *msg = static_cast<CellularNotificationMessage *>(msgl);
-        switch (msg->type) {
-        case CellularNotificationMessage::Type::CallActive: {
+        case CellularCallMessage::Type::CallActive: {
             auto ret    = ongoingCall.setActive();
             responseMsg = std::make_shared<CellularResponseMessage>(ret);
             break;
         }
-        case CellularNotificationMessage::Type::CallAborted: {
+        case CellularCallMessage::Type::CallAborted: {
             callStateTimer->stop();
             auto ret    = ongoingCall.endCall();
             responseMsg = std::make_shared<CellularResponseMessage>(ret);
             break;
         }
+        }
+        bus.sendUnicast(std::make_shared<CellularCallMessage>(*msg), app::manager::ApplicationManager::ServiceName);
+    } break;
+    // Incoming notifications from Notification Virtual Channel
+    case MessageType::CellularNotification: {
+        CellularNotificationMessage *msg = static_cast<CellularNotificationMessage *>(msgl);
+        switch (msg->type) {
         case CellularNotificationMessage::Type::PowerUpProcedureComplete: {
             if (board == bsp::Board::T3 || board == bsp::Board::Linux) {
                 state.set(this, State::ST::CellularConfProcedure);
@@ -829,8 +832,7 @@ sys::MessagePointer ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl,
                 LOG_DEBUG("%s", utils::to_string(call).c_str());
                 // If call changed to "Active" state stop callStateTimer(used for polling for call state)
                 if (call.state == ModemCall::CallState::Active) {
-                    auto msg =
-                        std::make_shared<CellularNotificationMessage>(CellularNotificationMessage::Type::CallActive);
+                    auto msg = std::make_shared<CellularCallMessage>(CellularCallMessage::Type::CallActive);
                     bus.sendMulticast(msg, sys::BusChannel::ServiceCellularNotifications);
                     callStateTimer->stop();
                 }
@@ -876,9 +878,8 @@ sys::MessagePointer ServiceCellular::DataReceivedHandler(sys::DataMessage *msgl,
             auto response = channel->cmd(at::AT::ATA);
             if (response) {
                 // Propagate "CallActive" notification into system
-                bus.sendMulticast(
-                    std::make_shared<CellularNotificationMessage>(CellularNotificationMessage::Type::CallActive),
-                    sys::BusChannel::ServiceCellularNotifications);
+                bus.sendMulticast(std::make_shared<CellularCallMessage>(CellularCallMessage::Type::CallActive),
+                                  sys::BusChannel::ServiceCellularNotifications);
                 ret = true;
             }
         }

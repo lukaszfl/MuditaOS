@@ -25,7 +25,7 @@ void CellularUrcHandler::Handle(Clip &urc)
     if (urc.isValid()) {
         phoneNumber = urc.getNumber();
     }
-    response = std::make_unique<CellularCallMessage>(CellularCallMessage::Type::CallerID, phoneNumber);
+    response = std::make_unique<CellularCallMessage>(CellularCallMessage::Type::CallerId, phoneNumber);
     urc.setHandled(true);
 }
 
@@ -199,7 +199,7 @@ void CellularUrcHandler::Handle(UrcResponse &urc)
     for (auto &t : typesToHandle) {
         if (t == urc.getURCResponseType()) {
             LOG_TRACE("call aborted");
-            response = std::make_unique<CellularNotificationMessage>(CellularNotificationMessage::Type::CallAborted);
+            response = std::make_unique<CellularCallMessage>(CellularCallMessage::Type::CallAborted);
             urc.setHandled(true);
         }
     }

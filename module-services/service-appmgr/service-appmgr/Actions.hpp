@@ -25,17 +25,13 @@ namespace app::manager
             Home,
             Launch,
             CloseSystem,
-
-            Call,
-            NotAnEmergencyNotification,
-            NoSimNotification,
-
+            CallRejectNotEmergency,
+            CallRejectNoSim,
             OutgoingCall,
             IncomingCall,
             CallerId,
             CallAborted,
             CallActive,
-
             Dial,
             EmergencyDial,
             ShowCallLog,
