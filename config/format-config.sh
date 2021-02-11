@@ -54,4 +54,5 @@ declare ignore_paths=(
     'module-vfs/board/free_rtos_custom/include/FreeRTOSFATConfig.h'
     'module-vfs/drivers/include/thirdparty/fatfs/ffconf.h'
     'module-vfs/thirdparty/*'
+    'image/assets/tzdb/'
 )

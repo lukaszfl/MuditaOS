@@ -101,3 +101,6 @@ if (${ENABLE_TESTS})
 endif()
 
 add_subdirectory(bootconfig)
+add_subdirectory(date)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC date)
