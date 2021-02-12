@@ -425,8 +425,7 @@ auto DeveloperModeHelper::setClipboardCache(Context &context) -> sys::ReturnCode
     auto data = context.getBody()[json::messages::messageBody].string_value();
     Clipboard::getInstance().copy(data);
 
-    if (Clipboard::getInstance().gotData()
-        && (Clipboard::getInstance().paste() == data)) {
+    if (Clipboard::getInstance().gotData() && (Clipboard::getInstance().paste() == data)) {
         context.setResponseStatus(http::Code::OK);
     }
 

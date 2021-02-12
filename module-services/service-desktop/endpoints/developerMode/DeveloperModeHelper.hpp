@@ -53,33 +53,33 @@ namespace parserFSM
 
     namespace json::developerMode
     {
-        inline constexpr auto keyPressed    = "keyPressed";
-        inline constexpr auto state         = "state";
-        inline constexpr auto systemStarted = "systemStarted";
-        inline constexpr auto ATResponse    = "ATResponse";
-        inline constexpr auto AT            = "AT";
-        inline constexpr auto focus         = "focus";
-        inline constexpr auto isLocked      = "isLocked";
-        inline constexpr auto btState       = "btState";
-        inline constexpr auto btOn          = "on";
-        inline constexpr auto btCommand     = "btCommand";
-        inline constexpr auto changeSim     = "changeSim";
-        inline constexpr auto smsCommand    = "smsCommand";
-        inline constexpr auto notesCommand  = "notesCommand";
+        inline constexpr auto keyPressed       = "keyPressed";
+        inline constexpr auto state            = "state";
+        inline constexpr auto systemStarted    = "systemStarted";
+        inline constexpr auto ATResponse       = "ATResponse";
+        inline constexpr auto AT               = "AT";
+        inline constexpr auto focus            = "focus";
+        inline constexpr auto isLocked         = "isLocked";
+        inline constexpr auto btState          = "btState";
+        inline constexpr auto btOn             = "on";
+        inline constexpr auto btCommand        = "btCommand";
+        inline constexpr auto changeSim        = "changeSim";
+        inline constexpr auto smsCommand       = "smsCommand";
+        inline constexpr auto notesCommand     = "notesCommand";
         inline constexpr auto clipboardCommand = "clipboardCommand";
-        inline constexpr auto getInfo       = "getInfo";
+        inline constexpr auto getInfo          = "getInfo";
         /// values for getInfo cmd
         inline constexpr auto simStateInfo = "simState";
         /// values for smsCommand
         inline constexpr auto smsAdd = "smsAdd";
         /// values for notesCommand
-        inline constexpr auto addNote  = "addNote";
-        inline constexpr auto removeNote  = "removeNote";
-        inline constexpr auto editNote  = "editNote";
-        inline constexpr auto searchNote  = "searchNote";
-        inline constexpr auto getNote  = "getNote";
+        inline constexpr auto addNote       = "addNote";
+        inline constexpr auto removeNote    = "removeNote";
+        inline constexpr auto editNote      = "editNote";
+        inline constexpr auto searchNote    = "searchNote";
+        inline constexpr auto getNote       = "getNote";
         inline constexpr auto getNoteByText = "getNoteByText";
         /// values for clipboardCommand
-        inline constexpr auto copyClipboard  = "copy";
-    }
+        inline constexpr auto copyClipboard = "copy";
+    } // namespace json::developerMode
 } // namespace parserFSM
