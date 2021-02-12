@@ -119,202 +119,203 @@ def back_to_home(harness):
         harness.connection.send_key_code(key_codes["fnRight"])
 
 
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
-def test_add_note(harness):
-    back_to_home(harness)
-    # test note body
-    note_body = generate_random_string(3)
-
-    remove_note_if_exists(note_body, harness, exact_match=False)
-
-    open_notes_app(harness)
-
-    # adds new note by ui
-    add_note_ui(note_body, harness)
-
-    # gets added note
-    result = get_note(note_body, harness)
-
-    back_to_home(harness)
-
-    assert (len(result["body"]) == 1)
-    assert (result["body"][0]["messageBody"] == note_body)
-
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
-def test_add_empty_note(harness):
-    # test note body
-    note_body = ""
-
-    remove_note_if_exists(note_body, harness)
-
-    open_notes_app(harness)
-
-    # adds new note by ui
-    add_note_ui(note_body, harness)
-
-    # gets added note
-    result = get_note(note_body, harness)
-    empty_notes = []
-
-    for note in result["body"]:
-        if note["messageBody"] == note_body:
-            empty_notes.append(note)
-
-    back_to_home(harness)
-    assert (len(empty_notes) == 1)
-    assert (empty_notes[0]["messageBody"] == note_body)
-
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
-def test_add_4k_note(harness):
-    # test note body
-    note_body = generate_random_string(4000)
-
-    remove_note_if_exists(note_body, harness)
-
-    open_notes_app(harness)
-
-    # adds new note by ui
-    add_note(note_body, harness)
-
-    # gets added note
-    result = get_note(note_body, harness)
-
-    back_to_home(harness)
-    assert (len(result["body"]) == 1)
-    assert (result["body"][0]["messageBody"] == note_body)
-
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
-def test_add_too_big_note(harness):
-    # test note body
-    note_body = generate_random_string(4001)
-    remove_note_if_exists(note_body, harness)
-    open_notes_app(harness)
-
-    # adds new note
-    add_note(note_body, harness)
-
-    # gets added note
-    result = get_note(note_body, harness)
-
-    back_to_home(harness)
-    assert (len(result["body"]) == 1)
-    assert (result["body"][0]["messageBody"] == note_body)
-
-
 # @pytest.mark.rt1051
 # @pytest.mark.usefixtures("phone_unlocked")
-# def test_add_too_big_note_by_ui(harness):
+# def test_add_note(harness):
+#     back_to_home(harness)
 #     # test note body
-#     msg = generate_random_string(4001)
+#     note_body = generate_random_string(3)
 #
-#     remove_note_if_exists(msg, harness)
+#     remove_note_if_exists(note_body, harness, exact_match=False)
 #
 #     open_notes_app(harness)
 #
 #     # adds new note by ui
-#     add_note_ui(msg, harness)
+#     add_note_ui(note_body, harness)
 #
 #     # gets added note
-#     result = get_note(msg, harness)
-#
-#     print(len(result["body"][0]["messageBody"]))
-#
-#     assert (len(result["body"]) == 0)
-#     assert (result["body"][0]["messageBody"] != msg)
+#     result = get_note(note_body, harness)
 #
 #     back_to_home(harness)
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
-def test_get_notes(harness):
-    notes_count = 20
-    remove_all_notes(harness)
-
-    # adding notes
-    for i in range(3):
-        add_note("", harness)
-    for i in range(notes_count - 6):
-        add_note(generate_random_string(random.randint(1, 3999)), harness)
-    for i in range(3):
-        add_note(generate_random_string(4000), harness)
-
-    result = get_all_notes(harness)
-
-    back_to_home(harness)
-    assert (len(result["body"]) == notes_count)
-
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
-def test_edit_note(harness):
-    base_note_body = "before append"
-    append_note_body = "new"
-
-    remove_all_notes(harness)
-    add_note(base_note_body, harness)
-    open_notes_app(harness)
-    append_note_ui(append_note_body, harness)
-
-    result = get_all_notes(harness)
-
-    back_to_home(harness)
-    assert (len(result["body"]) == 1)
-    assert (result["body"][0]["messageBody"] == (base_note_body + append_note_body))
-
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
-def test_edit_4k_note_remove_chars(harness):
-    base_note_body_length = 4000
-    num_of_chars_removed = 10
-
-    remove_all_notes(harness)
-    add_note(generate_random_string(base_note_body_length), harness)
-    open_notes_app(harness)
-    remove_characters_in_note(num_of_chars_removed, harness)
-
-    result = get_all_notes(harness)
-
-    back_to_home(harness)
-    assert (len(result["body"]) == 1)
-    assert (len(result["body"][0]["messageBody"]) == (base_note_body_length - num_of_chars_removed))
-
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
-def test_edit_4k_note_add_chars(harness):
-    base_note_body_length = 4000
-    num_of_chars_added = 5
-    num_of_chars_removed = 1
-    last_char_before_edit = "0"
-    last_char_after_edit = "1"
-
-    # base note body, filled to 4k chars by 0 to be 100% certain it gets modified
-    base_note_body = generate_random_string(base_note_body_length - 1) + last_char_before_edit
-    append_note_body = last_char_after_edit + generate_random_string(num_of_chars_added - 1)
-
-    remove_all_notes(harness)
-    add_note(base_note_body, harness)
-    open_notes_app(harness)
-
-    # remove chars before appending to check if note got modified
-    remove_characters_in_note(num_of_chars_removed, harness)
-    append_note_ui(append_note_body, harness)
-
-    result = get_all_notes(harness)
-
-    back_to_home(harness)
-    assert (len(result["body"]) == 1)
-    assert (len(result["body"][0]["messageBody"]) == base_note_body_length)
-    assert (result["body"][0]["messageBody"][base_note_body_length - num_of_chars_removed] == last_char_after_edit)
-
+#
+#     assert (len(result["body"]) == 1)
+#     assert (result["body"][0]["messageBody"] == note_body)
+#
+#
+# @pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+# def test_add_empty_note(harness):
+#     # test note body
+#     note_body = ""
+#
+#     remove_note_if_exists(note_body, harness)
+#
+#     open_notes_app(harness)
+#
+#     # adds new note by ui
+#     add_note_ui(note_body, harness)
+#
+#     # gets added note
+#     result = get_note(note_body, harness)
+#     empty_notes = []
+#
+#     for note in result["body"]:
+#         if note["messageBody"] == note_body:
+#             empty_notes.append(note)
+#
+#     back_to_home(harness)
+#     assert (len(empty_notes) == 1)
+#     assert (empty_notes[0]["messageBody"] == note_body)
+#
+#
+# @pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+# def test_add_4k_note(harness):
+#     # test note body
+#     note_body = generate_random_string(4000)
+#
+#     remove_note_if_exists(note_body, harness)
+#
+#     open_notes_app(harness)
+#
+#     # adds new note by ui
+#     add_note(note_body, harness)
+#
+#     # gets added note
+#     result = get_note(note_body, harness)
+#
+#     back_to_home(harness)
+#     assert (len(result["body"]) == 1)
+#     assert (result["body"][0]["messageBody"] == note_body)
+#
+#
+# @pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+# def test_add_too_big_note(harness):
+#     # test note body
+#     note_body = generate_random_string(4001)
+#     remove_note_if_exists(note_body, harness)
+#     open_notes_app(harness)
+#
+#     # adds new note
+#     add_note(note_body, harness)
+#
+#     # gets added note
+#     result = get_note(note_body, harness)
+#
+#     back_to_home(harness)
+#     assert (len(result["body"]) == 1)
+#     assert (result["body"][0]["messageBody"] == note_body)
+#
+#
+# # @pytest.mark.rt1051
+# # @pytest.mark.usefixtures("phone_unlocked")
+# # def test_add_too_big_note_by_ui(harness):
+# #     # test note body
+# #     base_note_body = generate_random_string(3999)
+# #     append_note_body = generate_random_string(2)
+# #
+# #     remove_all_notes(harness)
+# #
+# #     open_notes_app(harness)
+# #     add_note(base_note_body, harness)
+# #
+# #     append_note_ui(append_note_body, harness)
+# #
+# #     # gets added note
+# #     result = get_note(base_note_body, harness)
+# #
+# #     print(len(result["body"][0]["messageBody"]))
+# #
+# #     assert (len(result["body"]) == 0)
+# #     assert (result["body"][0]["messageBody"] != base_note_body)
+# #
+# #     back_to_home(harness)
+#
+# @pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+# def test_get_notes(harness):
+#     notes_count = 20
+#     remove_all_notes(harness)
+#
+#     # adding notes
+#     for i in range(3):
+#         add_note("", harness)
+#     for i in range(notes_count - 6):
+#         add_note(generate_random_string(random.randint(1, 3999)), harness)
+#     for i in range(3):
+#         add_note(generate_random_string(4000), harness)
+#
+#     result = get_all_notes(harness)
+#
+#     back_to_home(harness)
+#     assert (len(result["body"]) == notes_count)
+#
+#
+# @pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+# def test_edit_note(harness):
+#     base_note_body = "before append"
+#     append_note_body = "new"
+#
+#     remove_all_notes(harness)
+#     add_note(base_note_body, harness)
+#     open_notes_app(harness)
+#     append_note_ui(append_note_body, harness)
+#
+#     result = get_all_notes(harness)
+#
+#     back_to_home(harness)
+#     assert (len(result["body"]) == 1)
+#     assert (result["body"][0]["messageBody"] == (base_note_body + append_note_body))
+#
+#
+# @pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+# def test_edit_4k_note_remove_chars(harness):
+#     base_note_body_length = 4000
+#     num_of_chars_removed = 10
+#
+#     remove_all_notes(harness)
+#     add_note(generate_random_string(base_note_body_length), harness)
+#     open_notes_app(harness)
+#     remove_characters_in_note(num_of_chars_removed, harness)
+#
+#     result = get_all_notes(harness)
+#
+#     back_to_home(harness)
+#     assert (len(result["body"]) == 1)
+#     assert (len(result["body"][0]["messageBody"]) == (base_note_body_length - num_of_chars_removed))
+#
+#
+# @pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+# def test_edit_4k_note_add_chars(harness):
+#     base_note_body_length = 4000
+#     num_of_chars_added = 5
+#     num_of_chars_removed = 1
+#     last_char_before_edit = "0"
+#     last_char_after_edit = "1"
+#
+#     # base note body, filled to 4k chars by 0 to be 100% certain it gets modified
+#     base_note_body = generate_random_string(base_note_body_length - 1) + last_char_before_edit
+#     append_note_body = last_char_after_edit + generate_random_string(num_of_chars_added - 1)
+#
+#     remove_all_notes(harness)
+#     add_note(base_note_body, harness)
+#     open_notes_app(harness)
+#
+#     # remove chars before appending to check if note got modified
+#     remove_characters_in_note(num_of_chars_removed, harness)
+#     append_note_ui(append_note_body, harness)
+#
+#     result = get_all_notes(harness)
+#
+#     back_to_home(harness)
+#     assert (len(result["body"]) == 1)
+#     assert (len(result["body"][0]["messageBody"]) == base_note_body_length)
+#     assert (result["body"][0]["messageBody"][base_note_body_length - num_of_chars_removed] == last_char_after_edit)
+#
 #
 # @pytest.mark.rt1051
 # @pytest.mark.usefixtures("phone_unlocked")
@@ -333,25 +334,25 @@ def test_edit_4k_note_add_chars(harness):
 #     back_to_home(harness)
 #     assert (len(result["body"]) == 1)
 #     assert (len(result["body"][0]["messageBody"]) == 0)
-#
-#
-# @pytest.mark.rt1051
-# @pytest.mark.usefixtures("phone_unlocked")
-# def test_edit_remove_all_chars(harness):
-#     base_note_body_length = 5
-#     base_note_body = generate_random_string(base_note_body_length)
-#     append_note_body = generate_random_string(base_note_body_length)
-#
-#     remove_all_notes(harness)
-#     add_note(base_note_body, harness)
-#
-#     set_clipboard_cache(append_note_body, harness)
-#     open_notes_app(harness)
-#
-#     paste_clipboard(harness)
-#
-#     result = get_all_notes(harness)
-#
-#     back_to_home(harness)
-#     assert (len(result["body"]) == 1)
-#     assert (result["body"][0]["messageBody"] == base_note_body + append_note_body)
+
+
+@pytest.mark.rt1051
+@pytest.mark.usefixtures("phone_unlocked")
+def test_edit_paste(harness):
+    base_note_body_length = 5
+    base_note_body = generate_random_string(base_note_body_length)
+    append_note_body = generate_random_string(base_note_body_length)
+
+    remove_all_notes(harness)
+    add_note(base_note_body, harness)
+
+    set_clipboard_cache(append_note_body, harness)
+    open_notes_app(harness)
+
+    paste_clipboard(harness)
+
+    result = get_all_notes(harness)
+
+    back_to_home(harness)
+    assert (len(result["body"]) == 1)
+    assert (result["body"][0]["messageBody"] == base_note_body + append_note_body)

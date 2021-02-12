@@ -350,7 +350,7 @@ auto DeveloperModeHelper::searchNote(Context &context) -> sys::ReturnCodes
 
 auto DeveloperModeHelper::getNoteByText(Context &context) -> sys::ReturnCodes
 {
-    LOG_INFO("Get note from database");
+    LOG_INFO("Get note from database by text");
 
     auto query =
         std::make_unique<db::query::QueryNotesGetByText>(context.getBody()[json::messages::messageBody].string_value());
