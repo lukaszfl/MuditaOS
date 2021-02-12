@@ -12,6 +12,13 @@
 #include <service-bluetooth/messages/Status.hpp>
 #include <service-cellular/CellularServiceAPI.hpp>
 
+// notes
+#include <module-db/queries/notes/QueryNoteRemove.hpp>
+#include <module-db/queries/notes/QueryNotesGet.hpp>
+#include <module-db/queries/notes/QueryNotesGetByText.hpp>
+#include <module-services/service-db/service-db/DBNotesMessage.hpp>
+#include <common_data/Clipboard.hpp>
+
 #include <gui/Common.hpp>
 #include <service-appmgr/Actions.hpp>
 #include <messages/AppMessage.hpp>
@@ -35,7 +42,6 @@ auto DeveloperModeHelper::processPutRequest(Context &context) -> sys::ReturnCode
         MessageHandler::putToSendQueue(context.createSimpleResponse());
     }
     else if (body[json::developerMode::AT].is_string()) {
-
         auto msg     = std::make_shared<cellular::RawCommand>();
         msg->command = body[json::developerMode::AT].string_value();
         msg->timeout = 3000;
@@ -89,6 +95,22 @@ auto DeveloperModeHelper::processPutRequest(Context &context) -> sys::ReturnCode
             }
         }
     }
+    else if (body[json::developerMode::notesCommand].is_string()) {
+        if (body[json::developerMode::notesCommand].string_value() == json::developerMode::addNote) {
+            return addNote(context);
+        }
+        else if (body[json::developerMode::notesCommand].string_value() == json::developerMode::removeNote) {
+            return removeNote(context);
+        }
+        else if (body[json::developerMode::notesCommand].string_value() == json::developerMode::editNote) {
+            return editNote(context);
+        }
+    }
+    else if (body[json::developerMode::clipboardCommand].is_string()) {
+        if (body[json::developerMode::notesCommand].string_value() == json::developerMode::copyClipboard) {
+            return setClipboardCache(context);
+        }
+    }
     else {
         context.setResponseStatus(http::Code::BadRequest);
         MessageHandler::putToSendQueue(context.createSimpleResponse());
@@ -109,6 +131,15 @@ auto DeveloperModeHelper::processGetRequest(Context &context) -> sys::ReturnCode
         }
         else {
             context.setResponseStatus(http::Code::BadRequest);
+        }
+    }
+    else if (body[json::developerMode::notesCommand].is_string()) {
+        if (body[json::developerMode::notesCommand].string_value() == json::developerMode::searchNote) {}
+        else if (body[json::developerMode::notesCommand].string_value() == json::developerMode::getNote) {
+            return getNote(context);
+        }
+        else if (body[json::developerMode::notesCommand].string_value() == json::developerMode::getNoteByText) {
+            return getNoteByText(context);
         }
     }
     else {
@@ -214,6 +245,7 @@ auto DeveloperModeHelper::prepareSMS(Context &context) -> sys::ReturnCodes
     SMSRecord record = smsRecordFromJson(context.getBody());
 
     LOG_INFO("Adding sms of type %d to database", static_cast<int>(record.type));
+
     auto listener = std::make_unique<db::EndpointListener>(
         [=](db::QueryResult *result, Context context) {
             bool res = false;
@@ -235,4 +267,176 @@ auto DeveloperModeHelper::prepareSMS(Context &context) -> sys::ReturnCodes
 
     DBServiceAPI::AddSMS(ownerServicePtr, record, std::move(listener));
     return sys::ReturnCodes::Success;
+}
+
+auto DeveloperModeHelper::getNoteFromJson(json11::Json msgJson) -> NotesRecord
+{
+    auto record    = NotesRecord();
+    record.ID      = msgJson[json::messages::id].int_value();
+    record.date    = utils::time::getCurrentTimestamp().getTime();
+    record.snippet = UTF8(msgJson[json::messages::messageBody].string_value());
+
+    return record;
+}
+
+auto DeveloperModeHelper::addNote(Context &context) -> sys::ReturnCodes
+{
+    LOG_INFO("Adding note to database");
+
+    auto query = std::make_unique<db::query::QueryNoteStore>(getNoteFromJson(context.getBody()));
+
+    query->setQueryListener(std::make_unique<db::EndpointListener>(
+        [=](db::QueryResult *result, Context context) {
+            bool res = false;
+            context.setResponseStatus(http::Code::InternalServerError);
+
+            if (auto noteStoreResult = dynamic_cast<db::query::NoteStoreResult *>(result)) {
+                if (noteStoreResult->succeed()) {
+                    context.setResponseStatus(http::Code::OK);
+                }
+
+                res = true;
+            }
+
+            LOG_INFO("Getting note from database - %s", res ? "OK" : "NOK");
+            MessageHandler::putToSendQueue(context.createSimpleResponse());
+            return res;
+        },
+        context));
+
+    const auto [succeed, _] = DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::Notes, std::move(query));
+    return succeed ? sys::ReturnCodes::Success : sys::ReturnCodes::Failure;
+}
+
+auto DeveloperModeHelper::editNote(Context &context) -> sys::ReturnCodes
+{
+    LOG_INFO("Editing note");
+    return sys::ReturnCodes::Timeout;
+}
+
+auto DeveloperModeHelper::removeNote(Context &context) -> sys::ReturnCodes
+{
+    LOG_INFO("Remove note from database");
+
+    auto query = std::make_unique<db::query::QueryNoteRemove>(context.getBody()[json::messages::id].int_value());
+
+    query->setQueryListener(std::make_unique<db::EndpointListener>(
+        [=](db::QueryResult *result, Context context) {
+            bool res = false;
+            context.setResponseStatus(http::Code::InternalServerError);
+
+            if (auto noteRemoveResult = dynamic_cast<db::query::NoteRemoveResult *>(result)) {
+                if (noteRemoveResult->succeed()) {
+                    context.setResponseStatus(http::Code::OK);
+                }
+
+                res = true;
+            }
+
+            LOG_INFO("Removing note from database - %s", res ? "OK" : "NOK");
+            MessageHandler::putToSendQueue(context.createSimpleResponse());
+            return res;
+        },
+        context));
+
+    const auto [succeed, _] = DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::Notes, std::move(query));
+    return succeed ? sys::ReturnCodes::Success : sys::ReturnCodes::Failure;
+}
+
+auto DeveloperModeHelper::searchNote(Context &context) -> sys::ReturnCodes
+{
+    return sys::ReturnCodes::Timeout;
+}
+
+auto DeveloperModeHelper::getNoteByText(Context &context) -> sys::ReturnCodes
+{
+    LOG_INFO("Get note from database");
+
+    auto query =
+        std::make_unique<db::query::QueryNotesGetByText>(context.getBody()[json::messages::messageBody].string_value());
+
+    query->setQueryListener(std::make_unique<db::EndpointListener>(
+        [=](db::QueryResult *result, Context context) {
+            bool res = false;
+            context.setResponseStatus(http::Code::InternalServerError);
+
+            if (auto noteGetByTextResult = dynamic_cast<db::query::NotesGetByTextResult *>(result)) {
+                if (!noteGetByTextResult->getRecords().empty()) {
+                    json11::Json::array results;
+                    for (auto note : noteGetByTextResult->getRecords()) {
+                        results.emplace_back(noteToJson(note));
+                    }
+
+                    context.setResponseBody(results);
+                    context.setResponseStatus(http::Code::OK);
+                    res = true;
+                }
+            }
+
+            LOG_INFO("Getting note from database - %s", res ? "OK" : "NOK");
+            MessageHandler::putToSendQueue(context.createSimpleResponse());
+            return res;
+        },
+        context));
+
+    const auto [succeed, _] = DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::Notes, std::move(query));
+    return succeed ? sys::ReturnCodes::Success : sys::ReturnCodes::Failure;
+}
+
+auto DeveloperModeHelper::getNote(Context &context) -> sys::ReturnCodes
+{
+    LOG_INFO("Get note from database");
+
+    auto query = std::make_unique<db::query::QueryNotesGet>(context.getBody()[json::messages::id].int_value());
+
+    query->setQueryListener(std::make_unique<db::EndpointListener>(
+        [=](db::QueryResult *result, Context context) {
+            bool res = false;
+            context.setResponseStatus(http::Code::InternalServerError);
+
+            if (auto noteGetByTextResult = dynamic_cast<db::query::NotesGetResult *>(result)) {
+                if (!noteGetByTextResult->getRecords().empty()) {
+                    json11::Json::array results;
+                    for (auto note : noteGetByTextResult->getRecords()) {
+                        results.emplace_back(noteToJson(note));
+                    }
+
+                    context.setResponseBody(results);
+                    context.setResponseStatus(http::Code::OK);
+                    res = true;
+                }
+            }
+
+            LOG_INFO("Getting note from database - %s", res ? "OK" : "NOK");
+            MessageHandler::putToSendQueue(context.createSimpleResponse());
+            return res;
+        },
+        context));
+
+    const auto [succeed, _] = DBServiceAPI::GetQuery(ownerServicePtr, db::Interface::Name::Notes, std::move(query));
+
+    return succeed ? sys::ReturnCodes::Success : sys::ReturnCodes::Failure;
+}
+
+auto DeveloperModeHelper::setClipboardCache(Context &context) -> sys::ReturnCodes
+{
+    context.setResponseStatus(http::Code::InternalServerError);
+
+    auto data = context.getBody()[json::messages::messageBody].string_value();
+    Clipboard::getInstance().copy(data);
+
+    if (Clipboard::getInstance().gotData()
+        && (Clipboard::getInstance().paste() == data)) {
+        context.setResponseStatus(http::Code::OK);
+    }
+
+    MessageHandler::putToSendQueue(context.createSimpleResponse());
+    return sys::ReturnCodes::Success;
+}
+
+auto DeveloperModeHelper::noteToJson(NotesRecord &record) -> json11::Json
+{
+    return json11::Json::object{{json::messages::id, static_cast<int>(record.ID)},
+                                {json::messages::date, static_cast<int>(record.date)},
+                                {json::messages::messageBody, record.snippet.c_str()}};
 }

@@ -51,7 +51,12 @@ application_keypath = {
         "left",
         "left",
         "enter"
-    ]
+    ],
+    "notes": [
+        "up",
+        "enter",
+        "enter",
+    ],
 }
 
 keymap = {

@@ -12,6 +12,10 @@
 #include <input/InputEvent.hpp>
 #include <module-db/Interface/SMSRecord.hpp>
 
+// notes
+#include <module-db/Interface/NotesRecord.hpp>
+#include <module-db/queries/notes/QueryNoteStore.hpp>
+
 namespace sys
 {
     class Service;
@@ -29,6 +33,17 @@ namespace parserFSM
         void requestSimChange(const int simSelected);
         auto smsRecordFromJson(json11::Json msgJson) -> SMSRecord;
         auto prepareSMS(Context &context) -> sys::ReturnCodes;
+
+        auto getNoteFromJson(json11::Json msgJson) -> NotesRecord;
+        auto addNote(Context &context) -> sys::ReturnCodes;
+        auto editNote(Context &context) -> sys::ReturnCodes;
+        auto removeNote(Context &context) -> sys::ReturnCodes;
+        auto searchNote(Context &context) -> sys::ReturnCodes;
+        auto getNote(Context &context) -> sys::ReturnCodes;
+        auto getNoteByText(Context &context) -> sys::ReturnCodes;
+        auto noteToJson(NotesRecord &record) -> json11::Json;
+
+        auto setClipboardCache(Context &context) -> sys::ReturnCodes;
 
       public:
         DeveloperModeHelper(sys::Service *_ownerServicePtr) : ownerServicePtr(_ownerServicePtr){};
@@ -50,10 +65,21 @@ namespace parserFSM
         inline constexpr auto btCommand     = "btCommand";
         inline constexpr auto changeSim     = "changeSim";
         inline constexpr auto smsCommand    = "smsCommand";
+        inline constexpr auto notesCommand  = "notesCommand";
+        inline constexpr auto clipboardCommand = "clipboardCommand";
         inline constexpr auto getInfo       = "getInfo";
         /// values for getInfo cmd
         inline constexpr auto simStateInfo = "simState";
         /// values for smsCommand
         inline constexpr auto smsAdd = "smsAdd";
+        /// values for notesCommand
+        inline constexpr auto addNote  = "addNote";
+        inline constexpr auto removeNote  = "removeNote";
+        inline constexpr auto editNote  = "editNote";
+        inline constexpr auto searchNote  = "searchNote";
+        inline constexpr auto getNote  = "getNote";
+        inline constexpr auto getNoteByText = "getNoteByText";
+        /// values for clipboardCommand
+        inline constexpr auto copyClipboard  = "copy";
     }
 } // namespace parserFSM
