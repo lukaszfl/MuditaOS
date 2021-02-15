@@ -56,3 +56,9 @@ update/
 # build in docker files
 .ccache/
 .bash_history
+
+# Pycharm project files
+.idea/misc.xml
+
+#Common virtualenv folder
+venv/

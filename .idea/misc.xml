@@ -4,6 +4,7 @@
   <component name="MacroExpansionManager">
     <option name="directoryName" value="yxNliAcP" />
   </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.8 (MuditaOS)" project-jdk-type="Python SDK" />
   <component name="RustProjectSettings">
     <option name="toolchainHomeDirectory" value="/usr/bin" />
     <option name="version" value="2" />
