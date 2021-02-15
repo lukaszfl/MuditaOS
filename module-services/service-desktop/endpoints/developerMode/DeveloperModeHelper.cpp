@@ -107,7 +107,7 @@ auto DeveloperModeHelper::processPutRequest(Context &context) -> sys::ReturnCode
         }
     }
     else if (body[json::developerMode::clipboardCommand].is_string()) {
-        if (body[json::developerMode::notesCommand].string_value() == json::developerMode::copyClipboard) {
+        if (body[json::developerMode::clipboardCommand].string_value() == json::developerMode::copyClipboard) {
             return setClipboardCache(context);
         }
     }
@@ -281,7 +281,7 @@ auto DeveloperModeHelper::getNoteFromJson(json11::Json msgJson) -> NotesRecord
 
 auto DeveloperModeHelper::addNote(Context &context) -> sys::ReturnCodes
 {
-    LOG_INFO("Adding note to database");
+    LOG_INFO("Add note to database");
 
     auto query = std::make_unique<db::query::QueryNoteStore>(getNoteFromJson(context.getBody()));
 
@@ -298,7 +298,7 @@ auto DeveloperModeHelper::addNote(Context &context) -> sys::ReturnCodes
                 res = true;
             }
 
-            LOG_INFO("Getting note from database - %s", res ? "OK" : "NOK");
+            LOG_INFO("Adding note to database - %s", res ? "OK" : "NOK");
             MessageHandler::putToSendQueue(context.createSimpleResponse());
             return res;
         },
@@ -373,7 +373,7 @@ auto DeveloperModeHelper::getNoteByText(Context &context) -> sys::ReturnCodes
                 }
             }
 
-            LOG_INFO("Getting note from database - %s", res ? "OK" : "NOK");
+            LOG_INFO("Getting note from database by text - %s", res ? "OK" : "NOK");
             MessageHandler::putToSendQueue(context.createSimpleResponse());
             return res;
         },
@@ -420,6 +420,9 @@ auto DeveloperModeHelper::getNote(Context &context) -> sys::ReturnCodes
 
 auto DeveloperModeHelper::setClipboardCache(Context &context) -> sys::ReturnCodes
 {
+    LOG_INFO("Set clipboard cache (copy)");
+
+    auto result = false;
     context.setResponseStatus(http::Code::InternalServerError);
 
     auto data = context.getBody()[json::messages::messageBody].string_value();
@@ -427,10 +430,12 @@ auto DeveloperModeHelper::setClipboardCache(Context &context) -> sys::ReturnCode
 
     if (Clipboard::getInstance().gotData() && (Clipboard::getInstance().paste() == data)) {
         context.setResponseStatus(http::Code::OK);
+        result = true;
     }
 
+    LOG_INFO("Set clipboard cache (copy) - %s", result ? "OK" : "NOK");
     MessageHandler::putToSendQueue(context.createSimpleResponse());
-    return sys::ReturnCodes::Success;
+    return result ? sys::ReturnCodes::Success : sys::ReturnCodes::Failure;
 }
 
 auto DeveloperModeHelper::noteToJson(NotesRecord &record) -> json11::Json
