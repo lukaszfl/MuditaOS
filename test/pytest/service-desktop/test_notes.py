@@ -43,9 +43,11 @@ def add_note(note_body, harness):
 def search_note_ui(note_body, harness):
     assert harness.get_application_name() == "ApplicationNotes"
     harness.connection.send_key_code(key_codes["right"])
+    time.sleep(1)
     harness.send_text(note_body)
     time.sleep(3)
     harness.connection.send_key_code(key_codes["enter"])
+    time.sleep(1)
 
 
 def get_note(note_body, harness):
@@ -94,7 +96,7 @@ def remove_characters_in_note(number_of_chars, harness):
     time.sleep(3)
     for i in range(number_of_chars):
         harness.connection.send_key_code(key_codes["#"])
-        time.sleep(1)
+        time.sleep(0.2)
     harness.connection.send_key_code(key_codes["enter"])
     time.sleep(1)
     harness.connection.send_key_code(key_codes["fnRight"])
@@ -145,13 +147,6 @@ def set_clipboard_cache(clipboard_string, harness):
 def phone_in_desktop(harness):
     for i in range(5):
         harness.connection.send_key_code(key_codes["fnRight"], Keytype.short_press)
-    # go to desktop
-    # if harness.get_application_name() != "ApplicationDesktop":
-    #     harness.connection.send_key_code(key_codes["fnRight"], Keytype.long_press)
-    #     # in some cases we have to do it twice
-    #     if harness.get_application_name() != "ApplicationDesktop":
-    #         harness.connection.send_key_code(key_codes["fnRight"], Keytype.long_press)
-    # assert that we are in ApplicationDesktop
     assert harness.get_application_name() == "ApplicationDesktop"
 
 
@@ -162,7 +157,7 @@ def test_add_note(harness):
     # test note body
     note_body = generate_random_string(3)
 
-    remove_note_if_exists(note_body, harness, exact_match=False)
+    remove_all_notes(harness)
 
     open_notes_app(harness)
 
@@ -183,7 +178,7 @@ def test_add_empty_note(harness):
     # test note body
     note_body = ""
 
-    remove_note_if_exists(note_body, harness)
+    remove_all_notes(harness)
 
     open_notes_app(harness)
 
@@ -209,7 +204,7 @@ def test_add_4k_note(harness):
     # test note body
     note_body = generate_random_string(4000)
 
-    remove_note_if_exists(note_body, harness)
+    remove_all_notes(harness)
 
     open_notes_app(harness)
 
@@ -229,7 +224,8 @@ def test_add_4k_note(harness):
 def test_add_too_big_note(harness):
     # test note body
     note_body = generate_random_string(4001)
-    remove_note_if_exists(note_body, harness)
+
+    remove_all_notes(harness)
     open_notes_app(harness)
 
     # adds new note
@@ -242,28 +238,26 @@ def test_add_too_big_note(harness):
     assert (result["body"][0]["messageBody"] == note_body)
 
 
-# @pytest.mark.rt1051
-# @pytest.mark.usefixtures("phone_unlocked")
-# def test_add_too_big_note_by_ui(harness):
-#     # test note body
-#     base_note_body = generate_random_string(3999)
-#     append_note_body = generate_random_string(2)
-#
-#     remove_all_notes(harness)
-#
-#     open_notes_app(harness)
-#     add_note(base_note_body, harness)
-#
-#     append_note_ui(append_note_body, harness)
-#
-#     # gets added note
-#     result = get_note(base_note_body, harness)
-#
-#     print(len(result["body"][0]["messageBody"]))
-#
-#     assert (len(result["body"]) == 0)
-#     assert (result["body"][0]["messageBody"] != base_note_body)
-#
+@pytest.mark.rt1051
+@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_in_desktop")
+def test_add_too_big_note_by_ui(harness):
+    # test note body
+    base_note_body = generate_random_string(4001)
+
+    remove_all_notes(harness)
+
+    open_notes_app(harness)
+    add_note(base_note_body, harness)
+
+    # gets added note
+    result = get_note(base_note_body, harness)
+
+    print(len(result["body"][0]["messageBody"]))
+
+    assert (len(result["body"]) == 0)
+    assert (result["body"][0]["messageBody"] != base_note_body)
+
 
 @pytest.mark.rt1051
 @pytest.mark.usefixtures("phone_unlocked")
@@ -493,7 +487,7 @@ def test_search_note_multi_match(harness):
     add_note(note_body_no_match, harness)
 
     result = get_all_notes(harness)
-    assert(len(result["body"]) == 4)
+    assert (len(result["body"]) == 4)
 
     open_notes_app(harness)
 
@@ -504,3 +498,21 @@ def test_search_note_multi_match(harness):
 
     result = get_all_notes(harness)
     assert (len(result["body"]) == 1)
+
+# @pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+# @pytest.mark.usefixtures("phone_in_desktop")
+# def test_add_multiple_notes(harness):
+#     number_of_notes_added = 100000
+#
+#     remove_all_notes(harness)
+#
+#     for i in range(number_of_notes_added):
+#         add_note(generate_random_string(3), harness)
+#
+#     open_notes_app(harness)
+#
+#     add_note_ui(generate_random_string(3), harness)
+#
+#     result = get_all_notes(harness)
+#     assert (len(result["body"]) == number_of_notes_added + 1)
