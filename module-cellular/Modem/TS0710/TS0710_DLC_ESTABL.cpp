@@ -81,10 +81,9 @@ bool TS0710_DLC_ESTABL::request(DLCI_t DLCI, DLC_ESTABL_SystemParameters_t syste
     frame.Address = static_cast<uint8_t>(DLCI << 2) | (1 << 1); // set C/R = 1 - command
     frame.Control = static_cast<uint8_t>(system_parameters.TypeOfFrame);
     TS0710_Frame frame_c(frame);
-    pv_cellular->Write(static_cast<void *>(frame_c.getSerData().data()), frame_c.getSerData().size());
     // return true;
     int retries = system_parameters.MaxNumOfRetransmissions;
-    while (retries--) {
+    do {
         // UartSend(frame_c.getSerData().data(), frame_c.getSerData().size());
         pv_cellular->Write(static_cast<void *>(frame_c.getSerData().data()), frame_c.getSerData().size());
         vTaskDelay(system_parameters.AckTime);
@@ -92,7 +91,7 @@ bool TS0710_DLC_ESTABL::request(DLCI_t DLCI, DLC_ESTABL_SystemParameters_t syste
             LOG_DEBUG("Got response");
             return true;
         }
-    }
+    } while (retries--);
 
     LOG_ERROR("Sending frame failed");
     return false;
