@@ -193,7 +193,6 @@ class ServiceCellular : public sys::Service
         HardReset   //<! RESET_N pin
     };
 
-    bool resetCellularModule(ResetType type);
     bool isAfterForceReboot = false;
     bool nextPowerStateChangeAwaiting          = false;
     cellular::State::PowerState nextPowerState = cellular::State::PowerState::Off;

@@ -179,13 +179,8 @@ namespace at
             {AT::ATD, {"ATD"}},
             {AT::IPR, {"AT+IPR="}},
             {AT::CMUX, {"AT+CMUX="}},
-            {AT::CFUN, {"AT+CFUN=", default_long_doc_timeout}},
-            {AT::CFUN_RESET, {"AT+CFUN=1,1", default_long_doc_timeout}},
-            {AT::CFUN_MIN_FUNCTIONALITY, {"AT+CFUN=0", default_long_doc_timeout}},
-            {AT::CFUN_FULL_FUNCTIONALITY, {"AT+CFUN=1", default_long_doc_timeout}},
-            {AT::CFUN_DISABLE_TRANSMITTING, {"AT+CFUN=4", default_long_doc_timeout}},
-            {AT::CMGS, {"AT+CMGS=\"", 120s}},   // verified in docs
-            {AT::QCMGS, {"AT+QCMGS=\"", 120s}}, // verified in docs
+            {AT::CMGS, {"AT+CMGS=\""}},
+            {AT::QCMGS, {"AT+QCMGS=\""}},
             {AT::CREG, {"AT+CREG?", default_doc_timeout}},
             {AT::QNWINFO, {"AT+QNWINFO"}},
             {AT::COPS, {"AT+COPS", 180000ms}},
