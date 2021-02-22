@@ -66,10 +66,16 @@ namespace gui
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_VOLUP) {
             volumeBar->update(1);
+            application->increaseCurrentVolume();
+
+            return true;
         }
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_VOLDN) {
             volumeBar->update(-1);
+            application->decreaseCurrentVolume();
+
+            return true;
         }
 
         return AppWindow::onInput(inputEvent);

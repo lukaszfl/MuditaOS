@@ -32,11 +32,15 @@ namespace gui
 
     auto BarGraph::incrementWith(uint32_t levels) -> bool
     {
+
+        LOG_ERROR("Kurwa dlaczego to jest zjebane no %d, %d, %d", currentLevel, levels, numberOfRectangles);
+        LOG_ERROR("Prosze niech to ktoś przeora bo po prostu...");
+
         if ((currentLevel + levels) <= numberOfRectangles) {
             for (uint32_t i = 0; i < levels; ++i) {
+                ++currentLevel;
                 rectangles[currentLevel]->setFillColor(ColorFullBlack);
                 rectangles[currentLevel]->setBorderColor(ColorFullBlack);
-                ++currentLevel;
             }
             return true;
         }
@@ -50,9 +54,9 @@ namespace gui
     {
         if (currentLevel >= levels) {
             for (uint32_t i = levels; i > 0; --i) {
-                --currentLevel;
                 rectangles[currentLevel]->setFillColor(ColorFullWhite);
                 rectangles[currentLevel]->setBorderColor(ColorFullBlack);
+                --currentLevel;
             }
             return true;
         }

@@ -122,11 +122,15 @@ namespace gui
         if ((inputEvent.isShortPress())) {
             switch (inputEvent.keyCode) {
             case KeyCode::KEY_VOLUP: {
-                application->increaseCurrentVolume();
+                application->switchWindow(gui::popups::window::VolumePopup);
                 return true;
             }
             case KeyCode::KEY_VOLDN: {
-                application->decreaseCurrentVolume();
+
+                application->bus.sendUnicast(std::make_shared<popups::PopupMessage>(),
+                                             app::manager::ApplicationManager::ServiceName);
+
+                //                application->switchWindow(gui::popups::window::VolumePopup);
                 return true;
             }
             case KeyCode::KEY_RF: {

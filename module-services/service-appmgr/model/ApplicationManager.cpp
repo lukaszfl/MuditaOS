@@ -295,6 +295,12 @@ namespace app::manager
             closeApplicationsOnUpdate();
             return msgHandled();
         });
+        connect(typeid(gui::popups::PopupMessage), [this](sys::Message *) {
+            app::Application::messageSwitchApplication(
+                this, getFocusedApplication()->name(), gui::popups::window::VolumePopup, nullptr);
+
+            return msgHandled();
+        });
 
         connect(typeid(app::manager::DOMRequest), [&](sys::Message *request) { return handleDOMRequest(request); });
 

@@ -25,10 +25,10 @@
 #include "task.h"                               // for xTaskGetTic...
 #include "windows/AppWindow.hpp"                // for AppWindow
 #include "DOMResponder.hpp"
-#include <Text.hpp>                             // for Text
-#include <algorithm>                            // for find
-#include <iterator>                             // for distance, next
-#include <type_traits>                          // for add_const<>...
+#include <Text.hpp>    // for Text
+#include <algorithm>   // for find
+#include <iterator>    // for distance, next
+#include <type_traits> // for add_const<>...
 #include <WindowsFactory.hpp>
 #include <service-gui/Common.hpp>
 #include <module-utils/Utils.hpp>
@@ -613,6 +613,23 @@ namespace app
     {
         auto msg = std::make_shared<AppInputEventMessage>(event);
         sender->bus.sendUnicast(msg, application);
+    }
+
+    void Application::attachPopupsWindows(const std::list<gui::popups::Popup> &popupsList)
+    {
+        using namespace gui::popups::window;
+
+        for (auto popupWindow : popupsList) {
+            switch (popupWindow) {
+            case gui::popups::Volume:
+                windowsFactory.attach(VolumePopup, [](Application *app, const std::string &name) {
+                    return std::make_unique<gui::VolumeWindow>(app, VolumePopup);
+                });
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     bool Application::popToWindow(const std::string &window)

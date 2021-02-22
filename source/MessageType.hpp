@@ -248,6 +248,9 @@ enum class MessageType
 
     // Vibra messages
     VibraPulseMessage,
+
+    // Popups
+    TestPopupMessage
 };
 
 #endif /* SOURCE_MESSAGETYPE_HPP_ */
