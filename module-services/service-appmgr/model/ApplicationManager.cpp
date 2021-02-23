@@ -480,6 +480,16 @@ namespace app::manager
         }
         case actions::CloseSystem:
             return handleCloseSystem();
+        case actions::RequestPin:
+        case actions::RequestPuk:
+        case actions::RequestPinChange:
+        case actions::BlockSim:
+        case actions::UnlockSim: {
+            auto &actionParams = actionMsg->getData();
+            app::Application::messageApplicationPopup(
+                this, getFocusedApplication()->name(), action, std::move(actionParams));
+            return true;
+        }
         default: {
             auto &actionParams = actionMsg->getData();
             return handleCustomAction(action, std::move(actionParams));

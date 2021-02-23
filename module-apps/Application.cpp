@@ -36,6 +36,7 @@
 #include <module-utils/time/DateAndTimeSettings.hpp>
 
 #include <service-audio/AudioServiceAPI.hpp> // for GetOutputVolume
+#include <module-apps/application-desktop/windows/PinLockWindow.hpp>
 
 namespace gui
 {
@@ -73,7 +74,7 @@ namespace app
                              uint32_t stackDepth,
                              sys::ServicePriority priority)
         : Service(std::move(name), std::move(parent), stackDepth, priority),
-          default_window(gui::name::window::main_window), windowsStack(this),
+          default_window(gui::name::window::main_window), windowsStack(this), lockHandler(this),
           keyTranslator{std::make_unique<gui::KeyInputSimpleTranslation>()}, startInBackground{startInBackground},
           callbackStorage{std::make_unique<CallbackStorage>()}, topBarManager{std::make_unique<TopBarManager>()},
           settings(std::make_unique<settings::Settings>(this))
@@ -227,6 +228,9 @@ namespace app
         else if (msgl->messageType == MessageType::AppAction) {
             return handleAction(msgl);
         }
+        else if (msgl->messageType == MessageType::TestPopupMessage) {
+            return handlePopup(msgl);
+        }
         else if (msgl->messageType == MessageType::AppSwitch) {
             return handleApplicationSwitch(msgl);
         }
@@ -327,6 +331,39 @@ namespace app
             LOG_ERROR("Application %s is not able to handle action #%d", GetName().c_str(), action);
         }
         return msgNotHandled();
+    }
+
+    sys::MessagePointer Application::handlePopup(sys::Message *msgl)
+    {
+        auto *msg         = static_cast<gui::popups::PopupRequest *>(msgl);
+        const auto action = msg->getAction();
+        auto &data        = msg->getData();
+
+        switch (action) {
+        case manager::actions::RequestPin: {
+            lockHandler.handlePasscodeRequest(gui::PinLock::LockType::SimPin, std::move(data));
+            return msgHandled();
+        }
+        case manager::actions::RequestPuk: {
+            lockHandler.handlePasscodeRequest(gui::PinLock::LockType::SimPuk, std::move(data));
+            return msgHandled();
+        }
+        case manager::actions::RequestPinChange: {
+            lockHandler.handlePinChangeRequest(std::move(data));
+            return msgHandled();
+        }
+        case manager::actions::BlockSim: {
+            lockHandler.handleSimBlocked(std::move(data));
+            return msgHandled();
+        }
+        case manager::actions::UnlockSim: {
+            lockHandler.handleUnlockSim(std::move(data));
+            return msgHandled();
+        }
+        default: {
+            return msgNotHandled();
+        }
+        }
     }
 
     sys::MessagePointer Application::handleApplicationSwitch(sys::Message *msgl)
@@ -590,7 +627,6 @@ namespace app
 
     void Application::messageCloseApplication(sys::Service *sender, std::string application)
     {
-
         auto msg = std::make_shared<AppMessage>(MessageType::AppClose);
         sender->bus.sendUnicast(msg, application);
     }
@@ -615,6 +651,15 @@ namespace app
         sender->bus.sendUnicast(msg, application);
     }
 
+    void Application::messageApplicationPopup(sys::Service *sender,
+                                              std::string application,
+                                              manager::actions::ActionId actionId,
+                                              manager::actions::ActionParamsPtr &&data)
+    {
+        auto msg = std::make_shared<gui::popups::PopupRequest>(actionId, std::move(data));
+        sender->bus.sendUnicast(msg, application);
+    }
+
     void Application::attachPopupsWindows(const std::list<gui::popups::Popup> &popupsList)
     {
         using namespace gui::popups::window;
@@ -630,6 +675,10 @@ namespace app
                 break;
             }
         }
+
+        windowsFactory.attach(desktop_pin_lock, [&](Application *app, const std::string newname) {
+            return std::make_unique<gui::PinLockWindow>(app, desktop_pin_lock);
+        });
     }
 
     bool Application::popToWindow(const std::string &window)

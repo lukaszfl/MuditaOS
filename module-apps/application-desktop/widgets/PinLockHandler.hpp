@@ -5,19 +5,19 @@
 
 #include "PinLock.hpp"
 
-#include <module-services/service-appmgr/service-appmgr/messages/ActionRequest.hpp>
+//#include <module-services/service-appmgr/service-appmgr/messages/ActionRequest.hpp>
 #include <module-services/service-appmgr/service-appmgr/Actions.hpp>
 
 namespace app
 {
-    class ApplicationDesktop;
+    class Application;
 }
 
 namespace gui
 {
     class PinLockHandler
     {
-        app::ApplicationDesktop *app = nullptr;
+        app::Application *app = nullptr;
         gui::PinLock screenLock;
         gui::PinLock simLock;
         bool promptSimLockWindow = true;
@@ -45,7 +45,7 @@ namespace gui
         void setSimLockHandled() noexcept;
 
       public:
-        PinLockHandler(app::ApplicationDesktop *app);
+        PinLockHandler(app::Application *app);
 
         void handlePasscodeRequest(PinLock::LockType type, app::manager::actions::ActionParamsPtr &&data);
         void handlePinChangeRequest(app::manager::actions::ActionParamsPtr &&data);

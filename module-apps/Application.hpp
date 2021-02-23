@@ -4,26 +4,27 @@
 #pragma once
 
 #include "AsyncTask.hpp"
-#include "Audio/AudioCommon.hpp"                        // for Volume, Play...
-#include "Audio/Profiles/Profile.hpp"                   // for Profile, Pro...
+#include "Audio/AudioCommon.hpp"      // for Volume, Play...
+#include "Audio/Profiles/Profile.hpp" // for Profile, Pro...
 #include "CallbackStorage.hpp"
-#include "Service/Common.hpp"                           // for ReturnCodes
-#include "Service/Message.hpp"                          // for MessagePointer
-#include "Service/Service.hpp"                          // for Service
-#include "SwitchData.hpp"                               // for SwitchData
-#include "SystemManager/SystemManager.hpp"              // for SystemManager
-#include "bsp/keyboard/key_codes.hpp"                   // for bsp
-#include "gui/Common.hpp"                               // for ShowMode
-#include "projdefs.h"                                   // for pdMS_TO_TICKS
+#include "Service/Common.hpp"              // for ReturnCodes
+#include "Service/Message.hpp"             // for MessagePointer
+#include "Service/Service.hpp"             // for Service
+#include "SwitchData.hpp"                  // for SwitchData
+#include "SystemManager/SystemManager.hpp" // for SystemManager
+#include "bsp/keyboard/key_codes.hpp"      // for bsp
+#include "gui/Common.hpp"                  // for ShowMode
+#include "projdefs.h"                      // for pdMS_TO_TICKS
 #include <service-appmgr/ApplicationManifest.hpp>
-#include <list>                                         // for list
-#include <map>                                          // for allocator, map
-#include <memory>                                       // for make_shared
-#include <module-bsp/bsp/torch/torch.hpp>               // for State, State...
-#include <stdint.h>                                     // for uint32_t
-#include <string>                                       // for string
-#include <utility>                                      // for move, pair
-#include <vector>                                       // for vector
+#include <list>                           // for list
+#include <map>                            // for allocator, map
+#include <memory>                         // for make_shared
+#include <module-bsp/bsp/torch/torch.hpp> // for State, State...
+#include <stdint.h>                       // for uint32_t
+#include <string>                         // for string
+#include <utility>                        // for move, pair
+#include <vector>                         // for vector
+#include <module-apps/application-desktop/widgets/PinLockHandler.hpp>
 #include "TopBarManager.hpp"
 #include "popups/Popups.hpp"
 #include "WindowsFactory.hpp"
@@ -171,6 +172,7 @@ namespace app
         sys::MessagePointer handleBatteryStatusChange();
         sys::MessagePointer handleMinuteUpdated(sys::Message *msgl);
         sys::MessagePointer handleAction(sys::Message *msgl);
+        sys::MessagePointer handlePopup(sys::Message *msgl);
         sys::MessagePointer handleApplicationSwitch(sys::Message *msgl);
         sys::MessagePointer handleSwitchWindow(sys::Message *msgl);
         sys::MessagePointer handleAppClose(sys::Message *msgl);
@@ -306,6 +308,10 @@ namespace app
         static void messageCloseApplication(sys::Service *sender, std::string application);
         static void messageRebuildApplication(sys::Service *sender, std::string application);
         static void messageApplicationLostFocus(sys::Service *sender, std::string application);
+        static void messageApplicationPopup(sys::Service *sender,
+                                            std::string application,
+                                            manager::actions::ActionId actionId,
+                                            manager::actions::ActionParamsPtr &&data);
         /// @}
 
       protected:
@@ -321,6 +327,16 @@ namespace app
 
         /// Method used to attach generic windows (i.e. popups) to application
         void attachPopupsWindows(const std::list<gui::popups::Popup> &popupsList);
+
+        unsigned int lockPassHash = 0;
+
+      public:
+        gui::PinLockHandler lockHandler;
+
+        unsigned int getLockPassHash() const noexcept
+        {
+            return lockPassHash;
+        }
 
       public:
         /// @ingrup AppWindowStack

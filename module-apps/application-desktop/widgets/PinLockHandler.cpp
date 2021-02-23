@@ -25,7 +25,7 @@ namespace gui
         constexpr inline auto serviceCellular = "ServiceCellular";
     } // namespace
 
-    PinLockHandler::PinLockHandler(app::ApplicationDesktop *app)
+    PinLockHandler::PinLockHandler(app::Application *app)
         : app(app),
           screenLock(
               Store::GSM::SIM::NONE, PinLock::LockState::PasscodeRequired, PinLock::LockType::Screen, default_attempts),

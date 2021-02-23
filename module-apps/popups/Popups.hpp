@@ -5,6 +5,7 @@
 
 #include <module-gui/gui/SwitchData.hpp>
 #include "VolumeWindow.hpp"
+#include "BaseAppMessage.hpp"
 
 #include <memory>
 #include <string>
@@ -30,9 +31,32 @@ namespace gui
             {}
         };
 
+        class PopupRequest : public app::AppMessage
+        {
+          public:
+            PopupRequest(app::manager::actions::ActionId _actionId, app::manager::actions::ActionParamsPtr _data)
+                : AppMessage(MessageType::TestPopupMessage), actionId{_actionId}, data{std::move(_data)}
+            {}
+
+            app::manager::actions::ActionId getAction() const noexcept
+            {
+                return actionId;
+            }
+
+            app::manager::actions::ActionParamsPtr &getData() noexcept
+            {
+                return data;
+            }
+
+          private:
+            app::manager::actions::ActionId actionId;
+            app::manager::actions::ActionParamsPtr data;
+        };
+
         namespace window
         {
-            inline constexpr auto VolumePopup = "VolumePopup";
+            inline constexpr auto VolumePopup      = "VolumePopup";
+            inline constexpr auto desktop_pin_lock = "PinLockWindow";
 
         }; // namespace window
 

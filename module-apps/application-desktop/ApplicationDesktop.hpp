@@ -4,7 +4,6 @@
 #pragma once
 
 #include "windows/Names.hpp"
-#include "widgets/PinLockHandler.hpp"
 
 #include <Application.hpp>
 #include <Service/Message.hpp>
@@ -48,8 +47,6 @@ namespace app
 
         } notifications;
 
-        gui::PinLockHandler lockHandler;
-
         ApplicationDesktop(std::string name                    = name_desktop,
                            std::string parent                  = {},
                            StartInBackground startInBackground = {false});
@@ -81,16 +78,11 @@ namespace app
         bool clearMessagesNotification();
         bool requestNotSeenNotifications();
         bool requestNotReadNotifications();
-        unsigned int getLockPassHash() const noexcept
-        {
-            return lockPassHash;
-        }
 
       private:
         void activeSimChanged(std::string value);
         void lockPassHashChanged(std::string value);
         void handleLowBatteryNotification(manager::actions::ActionParamsPtr &&data);
-        unsigned int lockPassHash = 0;
     };
 
     template <> struct ManifestTraits<ApplicationDesktop>
@@ -98,11 +90,6 @@ namespace app
         static auto GetManifest() -> manager::ApplicationManifest
         {
             return {{manager::actions::Launch,
-                     manager::actions::RequestPin,
-                     manager::actions::RequestPuk,
-                     manager::actions::RequestPinChange,
-                     manager::actions::UnlockSim,
-                     manager::actions::BlockSim,
                      manager::actions::ShowMMIResponse,
                      manager::actions::ShowMMIPush,
                      manager::actions::ShowMMIResult,

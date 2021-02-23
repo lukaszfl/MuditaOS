@@ -130,7 +130,6 @@ namespace gui
                 application->bus.sendUnicast(std::make_shared<popups::PopupMessage>(),
                                              app::manager::ApplicationManager::ServiceName);
 
-                //                application->switchWindow(gui::popups::window::VolumePopup);
                 return true;
             }
             case KeyCode::KEY_RF: {

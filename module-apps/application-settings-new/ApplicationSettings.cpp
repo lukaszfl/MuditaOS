@@ -322,6 +322,8 @@ namespace app
         windowsFactory.attach(gui::window::name::change_date_and_time, [](Application *app, const std::string &name) {
             return std::make_unique<gui::ChangeDateAndTimeWindow>(app);
         });
+
+        attachPopupsWindows({gui::popups::Volume});
     }
 
     void ApplicationSettingsNew::destroyUserInterface()

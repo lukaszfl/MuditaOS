@@ -36,7 +36,7 @@
 namespace app
 {
     ApplicationDesktop::ApplicationDesktop(std::string name, std::string parent, StartInBackground startInBackground)
-        : Application(name, parent, startInBackground), lockHandler(this)
+        : Application(name, parent, startInBackground)
     {
         using namespace gui::top_bar;
         topBarManager->enableIndicators({Indicator::Signal,
@@ -45,31 +45,6 @@ namespace app
                                          Indicator::SimCard,
                                          Indicator::NetworkAccessTechnology});
         bus.channels.push_back(sys::BusChannel::ServiceDBNotifications);
-
-        addActionReceiver(app::manager::actions::RequestPin, [this](auto &&data) {
-            lockHandler.handlePasscodeRequest(gui::PinLock::LockType::SimPin, std::move(data));
-            return msgHandled();
-        });
-
-        addActionReceiver(app::manager::actions::RequestPuk, [this](auto &&data) {
-            lockHandler.handlePasscodeRequest(gui::PinLock::LockType::SimPuk, std::move(data));
-            return msgHandled();
-        });
-
-        addActionReceiver(app::manager::actions::RequestPinChange, [this](auto &&data) {
-            lockHandler.handlePinChangeRequest(std::move(data));
-            return msgHandled();
-        });
-
-        addActionReceiver(app::manager::actions::BlockSim, [this](auto &&data) {
-            lockHandler.handleSimBlocked(std::move(data));
-            return msgHandled();
-        });
-
-        addActionReceiver(app::manager::actions::UnlockSim, [this](auto &&data) {
-            lockHandler.handleUnlockSim(std::move(data));
-            return msgHandled();
-        });
 
         addActionReceiver(app::manager::actions::DisplayCMEError, [this](auto &&data) {
             lockHandler.handleCMEError(std::move(data));
@@ -353,9 +328,6 @@ namespace app
         using namespace app::window::name;
         windowsFactory.attach(desktop_main_window, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DesktopMainWindow>(app);
-        });
-        windowsFactory.attach(desktop_pin_lock, [&](Application *app, const std::string newname) {
-            return std::make_unique<gui::PinLockWindow>(app, desktop_pin_lock);
         });
         windowsFactory.attach(desktop_menu, [](Application *app, const std::string newname) {
             return std::make_unique<gui::MenuWindow>(app);
