@@ -277,10 +277,10 @@ namespace bsp
             return false;
         }
 
+        bsp::cellular::CellularDMAResult result{std::vector<uint8_t>(RXdmaBuffer, nbytes)};
 #if _RT1051_UART_DEBUG
         auto ret =
 #endif
-        bsp::cellular::CellularDMAResult result{std::vector<uint8_t>(RXdmaBuffer, nbytes)};
         xMessageBufferSendFromISR(uartRxBuffer, (void *)&result, sizeof(result), &xHigherPriorityTaskWoken);
 
 #if _RT1051_UART_DEBUG
