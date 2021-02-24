@@ -1,0 +1,50 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+ApplicationMessages -[hidden]- ApplicationOnBoarding
+PopupWindows -[hidden]- ApplicationOnBoarding
+PopupWindows -[hidden]- ApplicationMessages
+
+Application <|- ApplicationOnBoarding
+Application <|- ApplicationMessages
+
+class ApplicationOnBoarding {
++createUserInterface() override -> attachPopupsWindows({Volume, Brightness})
+-handleVolumePopup()
+}
+
+class ApplicationMessages {
++createUserInterface() override -> attachPopupsWindows({Volume, PhoneModes})
+}
+
+class Application {
+# virtual createUserInterface() = 0
+- attachPopupsWindows(const std::list<PopupWindows> &popupsList)
++ DataReceivedHandler(sys::DataMessage *msgl) -> handlePopup(msgl)
+#handleVolumePopup()
+}
+
+enum PopupWindows {
+Volume
+Brightness
+PhoneModes
+Pin/Puk/Passcode
+...
+}
+
+@enduml
+
+@startuml
+'https://plantuml.com/class-diagram
+
+
+class Application {
+gui::PinLockHandler lockHandle
+
+# virtual createUserInterface() = 0
+- attachPopupsWindows(const std::list<PopupWindows> &popupsList)
++ DataReceivedHandler(sys::DataMessage *msgl) -> handlePopup(msgl)
+#handleVolumePopup()
+}
+
+@enduml

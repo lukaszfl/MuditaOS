@@ -38,6 +38,9 @@
 #include <service-audio/AudioServiceAPI.hpp> // for GetOutputVolume
 #include <module-apps/application-desktop/windows/PinLockWindow.hpp>
 
+#include <service-cellular/ServiceCellular.hpp>
+#include <service-cellular/CellularMessage.hpp>
+
 namespace gui
 {
     class DrawCommand;
@@ -231,6 +234,9 @@ namespace app
         else if (msgl->messageType == MessageType::TestPopupMessage) {
             return handlePopup(msgl);
         }
+        else if (msgl->messageType == MessageType::CellularStateRequest) {
+            return handleCellularState(msgl);
+        }
         else if (msgl->messageType == MessageType::AppSwitch) {
             return handleApplicationSwitch(msgl);
         }
@@ -256,6 +262,40 @@ namespace app
             }
         }
         return msgNotHandled();
+    }
+
+    sys::MessagePointer Application::handleCellularState(sys::Message *msgl)
+    {
+        auto msg = dynamic_cast<cellular::StateChange *>(msgl);
+        if (msg->request == cellular::State::ST::URCReady) {
+            if (need_sim_select && !lockHandler.isScreenLocked()) {
+                //                manager::Controller::sendAction(this, manager::actions::SelectSimCard);
+                return msgHandled();
+            }
+            else if (need_sim_select == false) {
+                bus.sendUnicast(std::make_shared<CellularRequestMessage>(MessageType::CellularSimProcedure),
+                                ServiceCellular::serviceName);
+            }
+        }
+        //        if (msg->request == cellular::State::ST::ModemFatalFailure) {
+        //            switchWindow(app::window::name::desktop_reboot);
+        //        }
+        return msgNotHandled();
+    }
+
+    void Application::activeSimChanged(std::string value)
+    {
+        auto sim = magic_enum::enum_cast<Store::GSM::SIM>(value);
+        if (sim.has_value()) {
+            Store::GSM::get()->selected = sim.value();
+        }
+        else {
+            Store::GSM::get()->selected = Store::GSM::SIM::NONE;
+        }
+
+        if (Store::GSM::SIM::NONE == sim) {
+            need_sim_select = true;
+        }
     }
 
     sys::MessagePointer Application::handleSignalStrengthUpdate(sys::Message *msgl)
@@ -535,6 +575,13 @@ namespace app
             settings::SystemProperties::lockScreenPasscodeIsOn,
             [this](const std::string &value) { lockScreenPasscodeIsOn = utils::getNumericValue<bool>(value); },
             settings::SettingsScope::Global);
+
+        //        settings->registerValueChange(
+        //            settings::SystemProperties::activeSim,
+        //            [this](std::string value) { activeSimChanged(value); },
+        //            settings::SettingsScope::Global);
+        Store::GSM::get()->selected = Store::GSM::SIM::NONE;
+
         return sys::ReturnCodes::Success;
     }
 

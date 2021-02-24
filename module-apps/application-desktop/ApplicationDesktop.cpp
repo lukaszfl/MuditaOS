@@ -96,9 +96,6 @@ namespace app
         if (auto msg = dynamic_cast<db::NotificationMessage *>(msgl)) {
             handled = handle(msg);
         }
-        else if (auto msg = dynamic_cast<cellular::StateChange *>(msgl)) {
-            handled = handle(msg);
-        }
         else if (auto msg = dynamic_cast<sdesktop::developerMode::DeveloperModeRequest *>(msgl)) {
             if (auto event = dynamic_cast<sdesktop::developerMode::ScreenlockCheckEvent *>(msg->event.get())) {
                 handled = handle(event);
@@ -206,25 +203,6 @@ namespace app
         return false;
     }
 
-    auto ApplicationDesktop::handle(cellular::StateChange *msg) -> bool
-    {
-        assert(msg);
-        if (msg->request == cellular::State::ST::URCReady) {
-            if (need_sim_select && !lockHandler.isScreenLocked()) {
-                manager::Controller::sendAction(this, manager::actions::SelectSimCard);
-                return true;
-            }
-            else if (need_sim_select == false) {
-                bus.sendUnicast(std::make_shared<CellularRequestMessage>(MessageType::CellularSimProcedure),
-                                ServiceCellular::serviceName);
-            }
-        }
-        if (msg->request == cellular::State::ST::ModemFatalFailure) {
-            switchWindow(app::window::name::desktop_reboot);
-        }
-        return false;
-    }
-
     bool ApplicationDesktop::showCalls()
     {
         LOG_DEBUG("show calls!");
@@ -304,11 +282,6 @@ namespace app
         bus.sendUnicast(msgToSend, service::name::service_desktop);
 
         settings->registerValueChange(
-            settings::SystemProperties::activeSim,
-            [this](std::string value) { activeSimChanged(value); },
-            settings::SettingsScope::Global);
-        Store::GSM::get()->selected = Store::GSM::SIM::NONE;
-        settings->registerValueChange(
             settings::SystemProperties::lockPassHash,
             [this](std::string value) { lockPassHashChanged(value); },
             settings::SettingsScope::Global);
@@ -362,21 +335,6 @@ namespace app
 
     void ApplicationDesktop::destroyUserInterface()
     {}
-
-    void ApplicationDesktop::activeSimChanged(std::string value)
-    {
-        auto sim = magic_enum::enum_cast<Store::GSM::SIM>(value);
-        if (sim.has_value()) {
-            Store::GSM::get()->selected = sim.value();
-        }
-        else {
-            Store::GSM::get()->selected = Store::GSM::SIM::NONE;
-        }
-
-        if (Store::GSM::SIM::NONE == sim) {
-            need_sim_select = true;
-        }
-    }
 
     void ApplicationDesktop::lockPassHashChanged(std::string value)
     {

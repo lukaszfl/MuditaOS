@@ -121,7 +121,7 @@ namespace gui
         auto lock   = std::make_unique<gui::PinLock>(
             params->getSim(), PinLock::LockState::ErrorOccurred, PinLock::LockType::SimPin, params->getCMECode());
         lock->onActivatedCallback = [this](PinLock::LockType type, const std::vector<unsigned int> &data) {
-            app->switchWindow(app::window::name::desktop_main_window);
+            app->switchWindow(gui::name::window::main_window);
         };
         app->switchWindow(app::window::name::desktop_pin_lock,
                           gui::ShowMode::GUI_SHOW_INIT,
@@ -142,12 +142,12 @@ namespace gui
         else if (lock->isState(gui::PinLock::LockState::Blocked)) {
             lock->onActivatedCallback = [this](PinLock::LockType type, const std::vector<unsigned int> &data) {
                 setSimLockHandled();
-                app->switchWindow(app::window::name::desktop_main_window);
+                app->switchWindow(gui::name::window::main_window);
             };
         }
         else if (lock->isState(gui::PinLock::LockState::Unlocked)) {
             setSimLockHandled();
-            app->switchWindow(app::window::name::desktop_main_window);
+            app->switchWindow(gui::name::window::main_window);
             return;
         }
         else {

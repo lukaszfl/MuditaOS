@@ -75,10 +75,16 @@ namespace app
                                                    StartInBackground startInBackground)
         : Application(std::move(name), std::move(parent), startInBackground)
     {
-        if ((Store::GSM::SIM::SIM1 == selectedSim || Store::GSM::SIM::SIM2 == selectedSim) &&
-            Store::GSM::get()->sim == selectedSim) {
-            selectedSimNumber = CellularServiceAPI::GetOwnNumber(this);
-        }
+        topBarManager->enableIndicators({gui::top_bar::Indicator::Signal,
+                                         gui::top_bar::Indicator::Time,
+                                         gui::top_bar::Indicator::Battery,
+                                         gui::top_bar::Indicator::SimCard,
+                                         gui::top_bar::Indicator::NetworkAccessTechnology});
+
+        //        if ((Store::GSM::SIM::SIM1 == selectedSim || Store::GSM::SIM::SIM2 == selectedSim) &&
+        //            Store::GSM::get()->sim == selectedSim) {
+        //            selectedSimNumber = CellularServiceAPI::GetOwnNumber(this);
+        //        }
     }
 
     ApplicationSettingsNew::~ApplicationSettingsNew()

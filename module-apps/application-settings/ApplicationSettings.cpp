@@ -43,11 +43,11 @@ namespace app
     ApplicationSettings::ApplicationSettings(std::string name, std::string parent, StartInBackground startInBackground)
         : Application(name, parent, startInBackground)
     {
-        bus.channels.push_back(sys::BusChannel::AntennaNotifications);
-        addActionReceiver(manager::actions::SelectSimCard, [this](auto &&data) {
-            switchWindow(app::sim_select);
-            return msgHandled();
-        });
+        //        bus.channels.push_back(sys::BusChannel::AntennaNotifications);
+        //        addActionReceiver(manager::actions::SelectSimCard, [this](auto &&data) {
+        //            switchWindow(app::sim_select);
+        //            return msgHandled();
+        //        });
     }
 
     ApplicationSettings::~ApplicationSettings()

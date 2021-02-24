@@ -329,8 +329,11 @@ namespace app
         void attachPopupsWindows(const std::list<gui::popups::Popup> &popupsList);
 
         unsigned int lockPassHash = 0;
+        sys::MessagePointer handleCellularState(sys::Message *msgl);
+        void activeSimChanged(std::string value);
 
       public:
+        bool need_sim_select = false;
         gui::PinLockHandler lockHandler;
 
         unsigned int getLockPassHash() const noexcept

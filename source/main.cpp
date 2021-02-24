@@ -169,7 +169,7 @@ int main()
             // start application manager
             return sysmgr->RunService(
                 std::make_shared<app::manager::ApplicationManager>(
-                    app::manager::ApplicationManager::ServiceName, std::move(applications), app::name_desktop),
+                    app::manager::ApplicationManager::ServiceName, std::move(applications), app::name_onboarding),
                 sysmgr.get());
         });
 

@@ -1,0 +1,28 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+@startuml
+OnInput_AppWindow -> Application : switchWindow (i.e. Volume button)
+Application -> Application : Popup exists
+Application -X Application : Popup not exists
+
+@enduml
+
+
+@startuml
+
+Service -> ApplicationManager : PopupShowMessage
+ApplicationManager -> Application : messageSwitchApplication(this, \n getFocusedApplication(), PopupData)
+Application -> Application : handle Popup
+Application -> ApplicationManager : Message handled
+Application -X ApplicationManager : Message not handled
+@enduml
+
+@startuml
+
+Service -> ApplicationManager : ShowPopupAction
+ApplicationManager -> Application : messageApplicationPopup(this, \n getFocusedApplication(), ActionData)
+Application -> Application : handle Popup
+Application -> ApplicationManager : Message handled
+Application -X ApplicationManager : Message not handled
+@enduml

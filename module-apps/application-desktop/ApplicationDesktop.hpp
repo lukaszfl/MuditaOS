@@ -26,7 +26,6 @@ namespace app
     class ApplicationDesktop : public Application
     {
       public:
-        bool need_sim_select = false;
         struct Notifications
         {
             struct Counters
@@ -64,7 +63,6 @@ namespace app
         // if there is modem notification and there is no default SIM selected, then we need to select if when unlock is
         // done
         bool handle(db::NotificationMessage *msg);
-        bool handle(cellular::StateChange *msg);
         auto handle(db::query::notifications::GetAllResult *msg) -> bool;
         auto handle(sdesktop::UpdateOsMessage *msg) -> bool;
         auto handle(sdesktop::developerMode::ScreenlockCheckEvent *event) -> bool;
@@ -80,7 +78,6 @@ namespace app
         bool requestNotReadNotifications();
 
       private:
-        void activeSimChanged(std::string value);
         void lockPassHashChanged(std::string value);
         void handleLowBatteryNotification(manager::actions::ActionParamsPtr &&data);
     };

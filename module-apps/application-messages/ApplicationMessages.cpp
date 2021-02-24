@@ -42,6 +42,12 @@ namespace app
     ApplicationMessages::ApplicationMessages(std::string name, std::string parent, StartInBackground startInBackground)
         : Application(name, parent, startInBackground, 4096 * 2), AsyncCallbackReceiver{this}
     {
+        topBarManager->enableIndicators({gui::top_bar::Indicator::Signal,
+                                         gui::top_bar::Indicator::Time,
+                                         gui::top_bar::Indicator::Battery,
+                                         gui::top_bar::Indicator::SimCard,
+                                         gui::top_bar::Indicator::NetworkAccessTechnology});
+
         bus.channels.push_back(sys::BusChannel::ServiceDBNotifications);
         addActionReceiver(manager::actions::CreateSms, [this](auto &&data) {
             switchWindow(gui::name::window::new_sms, std::move(data));
