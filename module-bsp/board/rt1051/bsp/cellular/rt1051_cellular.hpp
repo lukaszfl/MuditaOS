@@ -58,7 +58,7 @@ namespace bsp
         void SetSendingAllowed(bool state) override final;
         bool GetSendingAllowed() override final;
 
-        static MessageBufferHandle_t uartRxStreamBuffer;
+        static MessageBufferHandle_t uartRxBuffer;
         static TimerHandle_t rxTimeoutTimer;
 
         void SelectAntenna(bsp::cellular::antenna antenna) override final;

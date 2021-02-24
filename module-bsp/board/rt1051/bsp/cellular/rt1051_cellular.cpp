@@ -35,7 +35,7 @@ extern "C"
     {
         uint32_t isrReg = LPUART_GetStatusFlags(CELLULAR_UART_BASE);
 
-        if (bsp::RT1051Cellular::uartRxStreamBuffer != NULL) {
+        if (bsp::RT1051Cellular::uartRxBuffer != NULL) {
             auto RxDmaStatus = LPUART_TransferGetReceiveCountEDMA(
                 CELLULAR_UART_BASE,
                 &bsp::RT1051Cellular::uartDmaHandle,
@@ -87,7 +87,7 @@ namespace bsp
 
     lpuart_edma_handle_t RT1051Cellular::uartDmaHandle       = {};
     TaskHandle_t RT1051Cellular::untilReceivedNewHandle      = nullptr;
-    MessageBufferHandle_t RT1051Cellular::uartRxStreamBuffer = nullptr;
+    MessageBufferHandle_t RT1051Cellular::uartRxBuffer       = nullptr;
 
     RT1051Cellular::RT1051Cellular()
     {
@@ -97,8 +97,8 @@ namespace bsp
             GPIO_PinRead(GPIO2, BSP_CELLULAR_SIM_TRAY_INSERTED_PIN) == 0 ? Store::GSM::Tray::IN : Store::GSM::Tray::OUT;
         DMAInit();
 
-        uartRxStreamBuffer = xMessageBufferCreate(rxStreamBufferLength);
-        if (uartRxStreamBuffer == NULL) {
+        uartRxBuffer = xMessageBufferCreate(rxStreamBufferLength);
+        if (uartRxBuffer == NULL) {
             LOG_ERROR("Could not create the RX message buffer!");
             return;
         }
@@ -151,9 +151,9 @@ namespace bsp
     RT1051Cellular::~RT1051Cellular()
     {
 
-        if (uartRxStreamBuffer) {
-            vMessageBufferDelete(uartRxStreamBuffer);
-            uartRxStreamBuffer = nullptr;
+        if (uartRxBuffer) {
+            vMessageBufferDelete(uartRxBuffer);
+            uartRxBuffer = nullptr;
         }
 
         DisableRx();
@@ -281,10 +281,10 @@ namespace bsp
         auto ret =
 #endif
         bsp::cellular::CellularDMAResult result{std::vector<uint8_t>(RXdmaBuffer, nbytes)};
-        xMessageBufferSendFromISR(uartRxStreamBuffer, (void *)&result, sizeof(result), &xHigherPriorityTaskWoken);
+        xMessageBufferSendFromISR(uartRxBuffer, (void *)&result, sizeof(result), &xHigherPriorityTaskWoken);
 
 #if _RT1051_UART_DEBUG
-        LOG_DEBUG("[RX] moved %d bytes to streambuf", ret);
+        LOG_DEBUG("[RX] moved %d bytes to buf", ret);
 #endif
 
         portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
@@ -293,7 +293,7 @@ namespace bsp
 
     size_t RT1051Cellular::GetFreeStreamBufferSize()
     {
-        if (const auto bytesFree = xMessageBufferSpaceAvailable(uartRxStreamBuffer); bytesFree > rxMessageBufferOverheadSize){
+        if (const auto bytesFree = xMessageBufferSpaceAvailable(uartRxBuffer); bytesFree > rxMessageBufferOverheadSize){
             return bytesFree;
         } else {
             return 0;
@@ -351,7 +351,7 @@ namespace bsp
 
     ssize_t RT1051Cellular::Read(void *buf, size_t nbytes, uint32_t timeoutTicks = 0)
     {
-        ssize_t ret = xMessageBufferReceive(uartRxStreamBuffer, buf, nbytes, timeoutTicks);
+        ssize_t ret = xMessageBufferReceive(uartRxBuffer, buf, nbytes, timeoutTicks);
 #if _RT1051_UART_DEBUG
         if (ret > 0) {
             LOG_PRINTF("[RX: %d]", ret);
@@ -394,7 +394,7 @@ namespace bsp
         }
 
         // no need to wait: buffer already contains something
-        if (!xMessageBufferIsEmpty(uartRxStreamBuffer)) {
+        if (!xMessageBufferIsEmpty(uartRxBuffer)) {
             return 1;
         }
 
