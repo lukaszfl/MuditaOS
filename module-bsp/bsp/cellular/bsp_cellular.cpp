@@ -8,11 +8,11 @@
 #error "Unsupported target"
 #endif
 
+namespace bsp
+{
 
-namespace bsp{
-
-    std::optional<std::unique_ptr<Cellular>> Cellular::Create(
-            [[maybe_unused]] const char* term, uint32_t portSpeed) {
+    std::optional<std::unique_ptr<Cellular>> Cellular::Create([[maybe_unused]] const char *term, uint32_t portSpeed)
+    {
 
         std::unique_ptr<Cellular> inst;
 
@@ -24,11 +24,11 @@ namespace bsp{
 #error "Unsupported target"
 #endif
 
-        if(inst->isInitialized){
+        if (inst->isInitialized) {
             return inst;
         }
 
         return {};
     }
 
-}
+} // namespace bsp

@@ -35,7 +35,7 @@ namespace cellular
 
         virtual uint32_t Wait(uint32_t timeout) = 0;
 
-        virtual ssize_t Read(void *buf, size_t nbytes) = 0;
+        virtual ssize_t Read(void *buf, size_t nbytes, uint32_t timeoutTicks) = 0;
 
         virtual ssize_t Write(void *buf, size_t nbytes) = 0;
 

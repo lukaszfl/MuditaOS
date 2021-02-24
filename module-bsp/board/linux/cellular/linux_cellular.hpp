@@ -32,7 +32,7 @@ namespace bsp
 
         uint32_t Wait(uint32_t timeout) override final;
 
-        ssize_t Read(void *buf, size_t nbytes) override final;
+        ssize_t Read(void *buf, size_t nbytes, uint32_t timeoutTicks) override final;
 
         ssize_t Write(void *buf, size_t nbytes) override final;
 

@@ -100,7 +100,7 @@ namespace bsp
     void LinuxCellular::Restart()
     {}
 
-    ssize_t LinuxCellular::Read(void *buf, size_t nbytes)
+    ssize_t LinuxCellular::Read(void *buf, size_t nbytes, uint32_t timeoutTicks)
     {
 
         cpp_freertos::LockGuard lock(serOutMutex);

@@ -7,7 +7,7 @@
 #include "bsp/cellular/bsp_cellular.hpp"
 
 #include "FreeRTOS.h"
-#include "stream_buffer.h"
+#include "message_buffer.h"
 #include "timers.h"
 #include "board.h"
 #include "fsl_lpuart.h"
@@ -41,7 +41,7 @@ namespace bsp
 
         uint32_t Wait(uint32_t timeout) override final;
 
-        ssize_t Read(void *buf, size_t nbytes) override final;
+        ssize_t Read(void *buf, size_t nbytes, uint32_t timeoutTicks) override final;
 
         ssize_t Write(void *buf, size_t nbytes) override final;
 
@@ -58,7 +58,7 @@ namespace bsp
         void SetSendingAllowed(bool state) override final;
         bool GetSendingAllowed() override final;
 
-        static StreamBufferHandle_t uartRxStreamBuffer;
+        static MessageBufferHandle_t uartRxStreamBuffer;
         static TimerHandle_t rxTimeoutTimer;
 
         void SelectAntenna(bsp::cellular::antenna antenna) override final;
@@ -124,6 +124,7 @@ namespace bsp
         const static uint32_t baudrate                               = 115200;
         const static uint32_t rxStreamBufferLength                   = 64;
         const static uint32_t rxStreamBufferNotifyWatermark          = 1;
+        const static uint16_t rxMessageBufferOverheadSize            = 4;
         const static uint32_t CELLULAR_BSP_AP_READY_PIN_ACTIVE_STATE = 1;
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_A_STATE        = 0;
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_B_STATE        = 1;
