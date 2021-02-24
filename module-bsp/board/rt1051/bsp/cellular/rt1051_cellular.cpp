@@ -11,20 +11,23 @@
 
 #include <algorithm>
 
-namespace bsp { namespace cellular
+namespace bsp
 {
-    void notifyReceivedNew()
+    namespace cellular
     {
+        void notifyReceivedNew()
+        {
 #if _RT1051_UART_DEBUG
-        LOG_DEBUG("[RX] notify to read");
+            LOG_DEBUG("[RX] notify to read");
 #endif
-        BaseType_t hp = pdFALSE;
-        if (bsp::RT1051Cellular::untilReceivedNewHandle) {
-            vTaskNotifyGiveFromISR(bsp::RT1051Cellular::untilReceivedNewHandle, &hp);
+            BaseType_t hp = pdFALSE;
+            if (bsp::RT1051Cellular::untilReceivedNewHandle) {
+                vTaskNotifyGiveFromISR(bsp::RT1051Cellular::untilReceivedNewHandle, &hp);
+            }
+            portEND_SWITCHING_ISR(hp);
         }
-        portEND_SWITCHING_ISR(hp);
-    }
-} }; // namespace bsp::cellular
+    } // namespace cellular
+};    // namespace bsp
 
 extern "C"
 {
@@ -82,8 +85,8 @@ namespace bsp
 
     using namespace drivers;
 
-    lpuart_edma_handle_t RT1051Cellular::uartDmaHandle      = {};
-    TaskHandle_t RT1051Cellular::untilReceivedNewHandle     = nullptr;
+    lpuart_edma_handle_t RT1051Cellular::uartDmaHandle       = {};
+    TaskHandle_t RT1051Cellular::untilReceivedNewHandle      = nullptr;
     MessageBufferHandle_t RT1051Cellular::uartRxStreamBuffer = nullptr;
 
     RT1051Cellular::RT1051Cellular()
@@ -278,8 +281,7 @@ namespace bsp
         auto ret =
 #endif
         bsp::cellular::CellularDMAResult result{std::vector<uint8_t>(RXdmaBuffer, nbytes)};
-        xMessageBufferSendFromISR(
-            uartRxStreamBuffer, (void *)&result, sizeof(result), &xHigherPriorityTaskWoken);
+        xMessageBufferSendFromISR(uartRxStreamBuffer, (void *)&result, sizeof(result), &xHigherPriorityTaskWoken);
 
 #if _RT1051_UART_DEBUG
         LOG_DEBUG("[RX] moved %d bytes to streambuf", ret);
