@@ -203,6 +203,7 @@ repeated until a response is obtained or action is taken by a higher layer.
 #include "Service/Service.hpp"
 #include <queue>
 #include <string>
+#include <message_buffer.h>
 
 #include "module-bsp/bsp/cellular/bsp_cellular.hpp"
 
@@ -221,7 +222,7 @@ namespace bsp
     class Cellular;
 }
 
-void workerTaskFunction(void *ptr);
+[[noreturn]] void workerTaskFunction(void *ptr);
 
 class TS0710
 {
@@ -259,14 +260,15 @@ class TS0710
     Mode mode = Mode::AT;
     std::vector<DLC_channel *> channels;
     friend void workerTaskFunction(void *ptr);
-    // worker's task handle
-    xTaskHandle taskHandle      = nullptr;
     const uint32_t taskPriority = 0;
+
     std::unique_ptr<bsp::Cellular> pv_cellular;
-    PortSpeed_e pv_portSpeed;
     ATParser *parser;
 
-    int CloseMultiplexer(); // ??
+    xTaskHandle taskHandle                      = nullptr;
+    MessageBufferHandle_t cellularResponseQueue = nullptr;
+
+    int CloseMultiplexer();
     const static bool hardwareControlFlowEnable = true;
 
     bool searchForString(const std::vector<std::string> &response, std::string str)
@@ -316,6 +318,11 @@ class TS0710
         return nullptr;
     }
 
+    std::vector<DLC_channel *> &getChannels()
+    {
+        return channels;
+    }
+
     DLC_channel *OpenChannel(Channel chanel_val)
     {
         DLC_channel *channel = new DLC_channel(static_cast<DLCI_t>(chanel_val), name(chanel_val), pv_cellular.get());
@@ -362,8 +369,6 @@ class TS0710
     ConfState ConfProcedure();
     ConfState AudioConfProcedure();
     ConfState StartMultiplexer();
-
-    ssize_t ReceiveData(std::vector<uint8_t> &data, uint32_t timeout);
 
     bsp::Cellular *getCellular()
     {
@@ -426,6 +431,8 @@ class TS0710
     TS0710(PortSpeed_e portSpeed, sys::Service *parent);
     TS0710() = delete;
     ~TS0710();
+    void Init(sys::Service *parent);
+    void SetStartParams(PortSpeed_e portSpeed);
     void SelectAntenna(bsp::cellular::antenna antenna);
     bsp::cellular::antenna GetAntenna();
     // Add error handling - only for Advanced mode. Leave for now

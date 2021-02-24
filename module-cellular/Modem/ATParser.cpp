@@ -56,27 +56,23 @@ std::vector<ATParser::Urc> ATParser::ParseURC()
     return resp;
 }
 
-int ATParser::ProcessNewData(sys::Service *service)
+int ATParser::ProcessNewData(sys::Service *service, bsp::cellular::CellularDMAResult &result)
 {
-    char rawBuffer[256] = {0};
-
-    LOG_DEBUG("Receiving data from ProcessNewData");
-    auto length = cellular->Read(rawBuffer, sizeof(rawBuffer));
-
     {
         cpp_freertos::LockGuard lock(mutex);
-        responseBuffer.append(reinterpret_cast<char *>(rawBuffer), length);
-        LOG_DEBUG("Appending %d bytes to responseBuffer[%u]: %s",
-                  static_cast<int>(length),
+        auto responseBufferSizeBeforeAppend = responseBuffer.size();
+        responseBuffer.append(result.getFrameDataAsString());
+        LOG_DEBUG("Appending %ud bytes to responseBuffer[%u]: %s",
+                  static_cast<unsigned int>(responseBuffer.size() - responseBufferSizeBeforeAppend),
                   static_cast<unsigned int>(responseBuffer.size()),
                   utils::removeNewLines(responseBuffer).c_str());
     }
 
     auto ret = ParseURC();
-    if (blockedTaskHandle) {
+    if (blockedTaskHandle != nullptr) {
         xTaskNotifyGive(blockedTaskHandle);
     }
-    else if (ret.size()) {
+    else if (!ret.empty()) {
         if (ret.size() == 1 && ret[0] == ATParser::Urc::Fota) {
             std::string fotaData(responseBuffer);
             LOG_DEBUG("parsing FOTA:\"%s\"", fotaData.c_str());

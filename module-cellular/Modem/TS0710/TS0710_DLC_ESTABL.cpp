@@ -115,7 +115,7 @@ bool TS0710_DLC_ESTABL::response(DLCI_t DLCI, DLC_ESTABL_SystemParameters_t syst
     std::unique_ptr<uint8_t[]> data(new uint8_t[size]);
 
     // uint32_t len = UartReceive(data);
-    ssize_t len = pv_cellular->Read(reinterpret_cast<void *>(data.get()), size);
+    ssize_t len = pv_cellular->Read(reinterpret_cast<void *>(data.get()), size, 0);
     LOG_DEBUG("RX length = %d", static_cast<int>(len));
 
     if (len > 0) {

@@ -14,8 +14,10 @@
 
 #include "../ATCommon.hpp"
 #include "TS0710_types.h"
+#include <bsp/cellular/CellularResult.hpp>
 #include <FreeRTOS.h>
 #include <task.h>
+#include <message_buffer.h>
 
 class DLC_channel : public at::Channel
 {
@@ -26,17 +28,16 @@ class DLC_channel : public at::Channel
     std::string pv_name;
     DLCI_t pv_DLCI;
     bool active = false;
-    DLC_ESTABL_SystemParameters_t pv_chanParams;
+    DLC_ESTABL_SystemParameters_t pv_chanParams{};
     Callback_t pv_callback;
 
-    std::string responseBuffer;
+    MessageBufferHandle_t responseBuffer = nullptr;
     bsp::Cellular *pv_cellular;
-
 
   public:
     // TS0710_DLC_ESTABL ctrlChanEstabl = TS0710_DLC_ESTABL(0);  //use default values to create control channel DLCI0
 
-    DLC_channel(DLCI_t DLCI, std::string name, bsp::Cellular *cellular, Callback_t callback = nullptr);
+    DLC_channel(DLCI_t DLCI, const std::string &name, bsp::Cellular *cellular, const Callback_t &callback = nullptr);
     DLC_channel()
     {
         pv_DLCI = -1;
@@ -73,7 +74,7 @@ class DLC_channel : public at::Channel
 
     std::vector<std::string> SendCommandPrompt(const char *cmd, size_t rxCount, uint32_t timeout = 300);
 
-    int ParseInputData(std::vector<uint8_t> &data);
+    int ParseInputData(bsp::cellular::CellularFrameResult *result);
 
     void callback(std::string &data)
     {

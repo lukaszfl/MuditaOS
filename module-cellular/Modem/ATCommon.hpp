@@ -48,10 +48,6 @@ namespace at
         virtual auto cmd(const at::AT &at) -> Result final;
         virtual auto cmd(const at::Cmd &at) -> Result final;
         virtual void cmd_log(std::string cmd, const Result &result, uint32_t timeout) final;
-        virtual auto ProcessNewData(sys::Service *service) -> int
-        {
-            return 0;
-        }
     };
 
 }; // namespace at

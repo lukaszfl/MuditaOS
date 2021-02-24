@@ -164,13 +164,13 @@ class TS0710_Frame
     std::vector<uint8_t> pv_serData;
 
   public:
-    TS0710_Frame(frame_t frame)
+    explicit TS0710_Frame(frame_t frame)
     {
         // LOG_DEBUG("Serializing given frame");
         pv_serData = frame.serialize();
         pv_frame   = frame;
     }
-    TS0710_Frame(std::vector<uint8_t> &serData)
+    explicit TS0710_Frame(std::vector<uint8_t> &serData)
     {
         // LOG_DEBUG("Deserializing serData");
         pv_frame.deserialize(serData);
@@ -191,6 +191,12 @@ class TS0710_Frame
     {
         return pv_frame;
     }
+
+    std::vector<uint8_t> &getData()
+    {
+        return pv_frame.data;
+    }
+
     std::vector<uint8_t> getSerData()
     {
         return pv_serData;
@@ -223,11 +229,9 @@ class TS0710_Frame
         return false;
     }
 
-    static bool isMyChannel(const std::vector<uint8_t> &serData, DLCI_t DLCI)
+    bool isMyChannel(DLCI_t DLCI) const
     {
-        if ((serData.size() > 1) && ((serData[1] >> 2) == DLCI))
-            return true;
-        return false;
+        return (pv_serData.size() > 1) && ((pv_serData[1] >> 2) == DLCI);
     }
 
     static DLCI_t getFrameDLCI(const std::vector<uint8_t> &serData)

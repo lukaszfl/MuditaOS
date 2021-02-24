@@ -3,6 +3,7 @@
 
 #include "TS0710.h"
 #include "bsp/cellular/bsp_cellular.hpp"
+#include "bsp/cellular/CellularResult.hpp"
 #include "projdefs.h"
 #include <service-cellular/ServiceCellular.hpp>
 #include <service-cellular/SignalStrength.hpp>
@@ -43,31 +44,13 @@ std::map<PortSpeed_e, int> ATPortSpeeds_text          = {{PortSpeed_e::PS9600, 9
 
 #define USE_DAEFAULT_BAUDRATE 1
 
-static const std::uint16_t threadSizeWords = 2048;
+static constexpr uint16_t threadSizeWords = 2048;
 
 TS0710::TS0710(PortSpeed_e portSpeed, sys::Service *parent)
 {
     LOG_INFO("Serial port: '%s'", SERIAL_PORT);
-    pv_portSpeed = portSpeed;
-    pv_cellular  = bsp::Cellular::Create(SERIAL_PORT, 115200).value_or(nullptr);
-    parser       = new ATParser(pv_cellular.get());
-    pv_parent    = parent;
-
-    // start connection
-    startParams.PortSpeed               = pv_portSpeed;
-    startParams.MaxFrameSize            = 127; // maximum for Basic mode
-    startParams.AckTimer                = 10;  // 100ms default
-    startParams.MaxNumOfRetransmissions = 3;   // default
-    startParams.MaxCtrlRespTime         = 30;  // 300ms default
-    startParams.WakeUpRespTime          = 10;  // 10s default
-    startParams.ErrRecovWindowSize      = 2;   // 2 default
-
-    BaseType_t task_error =
-        xTaskCreate(workerTaskFunction, "TS0710Worker", threadSizeWords, this, taskPriority, &taskHandle);
-    if (task_error != pdPASS) {
-        LOG_ERROR("Failed to start inputSerialWorker task");
-        return;
-    }
+    SetStartParams(portSpeed);
+    Init(parent);
 }
 
 TS0710::~TS0710()
@@ -81,7 +64,33 @@ TS0710::~TS0710()
     if (taskHandle) {
         vTaskDelete(taskHandle);
     }
+
     delete parser;
+}
+
+void TS0710::Init(sys::Service *parent)
+{
+    pv_cellular = bsp::Cellular::Create(SERIAL_PORT, 115200).value_or(nullptr);
+    parser      = new ATParser(pv_cellular.get());
+    pv_parent   = parent;
+
+    BaseType_t task_error =
+        xTaskCreate(workerTaskFunction, "TS0710Worker", threadSizeWords, this, taskPriority, &taskHandle);
+    if (task_error != pdPASS) {
+        LOG_ERROR("Failed to start inputSerialWorker task");
+        return;
+    }
+}
+
+void TS0710::SetStartParams(PortSpeed_e portSpeed)
+{
+    startParams.PortSpeed               = portSpeed;
+    startParams.MaxFrameSize            = 127; // maximum for Basic mode
+    startParams.AckTimer                = 10;  // 100ms default
+    startParams.MaxNumOfRetransmissions = 3;   // default
+    startParams.MaxCtrlRespTime         = 30;  // 300ms default
+    startParams.WakeUpRespTime          = 10;  // 10s default
+    startParams.ErrRecovWindowSize      = 2;   // 2 default
 }
 
 TS0710_Frame::frame_t createCMUXExitFrame()
@@ -397,8 +406,8 @@ TS0710::ConfState TS0710::StartMultiplexer()
         auto res = c->cmd(at::AT::SW_INFO);
         res      = c->cmd(at::AT::CSQ);
         if (res) {
-            auto beg = res.response[0].find(" ");
-            auto end = res.response[0].find(",", 1);
+            auto beg       = res.response[0].find(' ');
+            auto end       = res.response[0].find(',', 1);
             auto input_val = res.response[0].substr(beg + 1, end - beg - 1);
             auto strength  = 0;
             try {
@@ -428,92 +437,71 @@ TS0710::ConfState TS0710::StartMultiplexer()
     return ConfState::Success;
 }
 
-void workerTaskFunction(void *ptr)
+static bool parseCellularResultCMUX(std::vector<uint8_t> &currentFrame, std::vector<uint8_t> &previousData)
 {
-    TS0710 *inst = reinterpret_cast<TS0710 *>(ptr);
+    static bool frameStartDetected = false;
+    for (auto el : previousData) {
+        if (frameStartDetected || el == TS0710_FLAG) {
+            frameStartDetected = true;
+            currentFrame.push_back(el);
 
-    while (1) {
-        auto ret = inst->pv_cellular->Wait(UINT32_MAX);
-        if (ret == 0) {
-            continue;
-        }
-
-        // AT mode is used only during initialization phase
-        if (inst->mode == TS0710::Mode::AT) {
-            // inst->atParser->ProcessNewData();
-            // TODO: add AT command processing
-            LOG_DEBUG("[Worker] Processing AT response");
-            inst->parser->ProcessNewData(inst->pv_parent);
-        }
-        // CMUX mode is default operation mode
-        else if (inst->mode == TS0710::Mode::CMUX) {
-            // LOG_DEBUG("[Worker] Processing CMUX response");
-            std::vector<uint8_t> data;
-            inst->ReceiveData(data, static_cast<uint32_t>(inst->startParams.MaxCtrlRespTime));
-            // send data to fifo
-            for (uint8_t c : data) {
-                inst->RXFifo.push(c);
-            }
-            data.clear();
-            // divide message to different frames as Quectel may send them one after another
-            std::vector<std::vector<uint8_t>> multipleFrames;
-            std::vector<uint8_t> _d;
-            int fifoLen = inst->RXFifo.size();
-            // LOG_DEBUG("[RXFifo] %i elements", fifoLen);
-
-            for (int i = 0; i < fifoLen; i++) {
-                _d.push_back(inst->RXFifo.front());
-                inst->RXFifo.pop();
-                if (/*TS0710_Frame::isComplete(_d)*/ (_d.size() > 1) && (_d[0] == 0xF9) &&
-                    (_d[_d.size() - 1] == 0xF9)) {
-                    // LOG_DEBUG("Pushing back FRAME");
-                    multipleFrames.push_back(_d);
-                    _d.clear();
+            // Check if frame is complete only in case of TS0710_FLAG
+            if (el == TS0710_FLAG) {
+                if (TS0710_Frame::isComplete(currentFrame)) {
+                    frameStartDetected = false;
+                    return true;
                 }
             }
-            // if some data stored @_d then push it back to queue as incomplete packet
-            if (!_d.empty() && (_d[0] == 0xF9)) {
-                // LOG_DEBUG("Pushing back [%i] incomplete frame", _d.size());
-                for (uint8_t c : _d)
-                    inst->RXFifo.push(c);
-            }
-            _d.clear();
+        }
+    }
 
-            // LOG_DEBUG("Received %i frames", multipleFrames.size());
-            for (auto *chan : inst->channels) {
-                for (std::vector<uint8_t> v : multipleFrames) {
-                    if (TS0710_Frame::isMyChannel(v, chan->getDLCI()))
-                        chan->ParseInputData(v);
-                }
-            }
-            multipleFrames.clear();
+    return false;
+}
+
+static void sendFrameToChannel(TS0710 *inst, bsp::cellular::CellularFrameResult &frameResult)
+{
+    for (auto *chan : inst->getChannels()) {
+        if (frameResult.getFrame().isMyChannel(chan->getDLCI())) {
+            chan->ParseInputData(&frameResult);
         }
     }
 }
 
-ssize_t TS0710::ReceiveData(std::vector<uint8_t> &data, uint32_t timeout)
+[[noreturn]] void workerTaskFunction(void *ptr)
 {
-    ssize_t ret = -1;
-    std::unique_ptr<uint8_t[]> buf(new uint8_t[startParams.MaxFrameSize]);
-    bool complete     = false;
-    uint32_t _timeout = timeout;
+    TS0710 *inst = static_cast<TS0710 *>(ptr);
+    bsp::cellular::CellularDMAResult result;
+    std::vector<uint8_t> previousData;
+    std::vector<uint8_t> currentFrame;
 
-    while ((!complete) && (--_timeout)) {
-        ret = pv_cellular->Read(reinterpret_cast<void *>(buf.get()), startParams.MaxFrameSize);
-        if (ret > 0) {
-            // LOG_DEBUG("Received %i bytes", ret);
-            for (int i = 0; i < ret; i++) {
-                data.push_back(buf[i]);
+    while (true) {
+        // TODO get real maximum CellularDMAResult instance result
+        auto receivedBytes = inst->pv_cellular->Read(&result, 1024, UINT32_MAX);
+
+        if (receivedBytes > 0) {
+            // AT mode is used only during initialization phase
+            if (inst->mode == TS0710::Mode::AT) {
+                LOG_DEBUG("[Worker] Processing AT response");
+                inst->parser->ProcessNewData(inst->pv_parent, result);
             }
-            complete = TS0710_Frame::isComplete(data);
-        }
-        vTaskDelay(pdMS_TO_TICKS(1));
-    }
-    if ((!complete) && (_timeout)) {
-        LOG_ERROR("Incomplete frame received");
-    }
+            // CMUX mode is default operation mode
+            else if (inst->mode == TS0710::Mode::CMUX) {
+                // LOG_DEBUG("[Worker] Processing CMUX response");
+                previousData.insert(previousData.end(), result.getData().begin(), result.getData().end());
 
-    return ret;
+                if (parseCellularResultCMUX(currentFrame, previousData)) {
+                    bsp::cellular::CellularFrameResult frameResult{currentFrame, result.getResultCode()};
+                    sendFrameToChannel(inst, frameResult);
+                    currentFrame.clear();
+                }
+                else {
+                    if (!currentFrame.empty() && currentFrame[0] == TS0710_FLAG) {
+                        previousData = currentFrame;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void TS0710::SelectAntenna(bsp::cellular::antenna antenna)

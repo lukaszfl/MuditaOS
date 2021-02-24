@@ -12,6 +12,8 @@
 #include <task.h>
 #include <vector>
 
+#include <bsp/cellular/CellularResult.hpp>
+
 namespace bsp
 {
     class Cellular;
@@ -34,7 +36,7 @@ class ATParser : public at::Channel
     ATParser(bsp::Cellular *cellular);
     virtual ~ATParser() = default;
 
-    int ProcessNewData(sys::Service *service);
+    int ProcessNewData(sys::Service *service, bsp::cellular::CellularDMAResult &result);
 
     virtual void cmd_init() override final;
     virtual void cmd_send(std::string cmd) override final;
