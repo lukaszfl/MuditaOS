@@ -74,7 +74,7 @@ extern "C"
             LPUART_ClearStatusFlags(CELLULAR_UART_BASE, isrReg);
         }
     }
-};
+}
 
 namespace bsp
 {
@@ -85,9 +85,9 @@ namespace bsp
 
     using namespace drivers;
 
-    lpuart_edma_handle_t RT1051Cellular::uartDmaHandle       = {};
-    TaskHandle_t RT1051Cellular::untilReceivedNewHandle      = nullptr;
-    MessageBufferHandle_t RT1051Cellular::uartRxBuffer       = nullptr;
+    lpuart_edma_handle_t RT1051Cellular::uartDmaHandle  = {};
+    TaskHandle_t RT1051Cellular::untilReceivedNewHandle = nullptr;
+    MessageBufferHandle_t RT1051Cellular::uartRxBuffer  = nullptr;
 
     RT1051Cellular::RT1051Cellular()
     {
@@ -277,7 +277,8 @@ namespace bsp
             return false;
         }
 
-        bsp::cellular::CellularDMAResult result{std::vector<uint8_t>(RXdmaBuffer, nbytes)};
+        auto RXDmaBufferVec = std::vector<uint8_t>(RXdmaBuffer, nbytes);
+        bsp::cellular::CellularDMAResult result{std::move(RXDmaBufferVec)};
 #if _RT1051_UART_DEBUG
         auto ret =
 #endif
@@ -351,7 +352,8 @@ namespace bsp
 
     ssize_t RT1051Cellular::Read(void *buf, size_t nbytes, uint32_t timeoutTicks = 0)
     {
-        ssize_t ret = xMessageBufferReceive(uartRxBuffer, buf, nbytes, timeoutTicks);
+        LOG_DEBUG("[RX] Read");
+        size_t ret = xMessageBufferReceive(uartRxBuffer, buf, nbytes, timeoutTicks);
 #if _RT1051_UART_DEBUG
         if (ret > 0) {
             LOG_PRINTF("[RX: %d]", ret);

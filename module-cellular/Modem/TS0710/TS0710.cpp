@@ -454,7 +454,6 @@ static bool parseCellularResultCMUX(std::vector<uint8_t> &currentFrame, std::vec
             }
         }
     }
-
     return false;
 }
 
@@ -476,17 +475,18 @@ static void sendFrameToChannel(TS0710 *inst, bsp::cellular::CellularFrameResult 
 
     while (true) {
         // TODO get real maximum CellularDMAResult instance result
-        auto receivedBytes = inst->pv_cellular->Read(&result, 1024, UINT32_MAX);
+        auto receivedBytes = inst->pv_cellular->Read(&result, inst->pv_cellular, UINT32_MAX);
 
         if (receivedBytes > 0) {
             // AT mode is used only during initialization phase
             if (inst->mode == TS0710::Mode::AT) {
-                LOG_DEBUG("[Worker] Processing AT response");
+                if ("")
+                    LOG_DEBUG("[Worker] Processing AT response");
                 inst->parser->ProcessNewData(inst->pv_parent, result);
             }
             // CMUX mode is default operation mode
             else if (inst->mode == TS0710::Mode::CMUX) {
-                // LOG_DEBUG("[Worker] Processing CMUX response");
+                LOG_DEBUG("[Worker] Processing CMUX response");
                 previousData.insert(previousData.end(), result.getData().begin(), result.getData().end());
 
                 if (parseCellularResultCMUX(currentFrame, previousData)) {
