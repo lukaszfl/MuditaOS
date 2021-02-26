@@ -475,3 +475,16 @@ bool BackupRestore::ReplaceUserFiles()
 
     return true;
 }
+
+json11::Json BackupRestore::GetBackupFiles()
+{
+    auto dirEntryVector = std::vector<std::string>();
+    for (const auto &p : std::filesystem::directory_iterator(purefs::dir::getBackupOSPath())) {
+        if (!p.is_directory() && p.path().extension() == purefs::extension::tar) {
+            LOG_DEBUG("possible restore file %s", p.path().filename().c_str());
+            dirEntryVector.push_back(p.path().filename());
+        }
+    }
+
+    return dirEntryVector;
+}

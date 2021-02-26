@@ -5,6 +5,7 @@
 
 #include <Service/Service.hpp>
 #include <filesystem>
+#include <json/json11.hpp>
 
 namespace sys
 {
@@ -18,6 +19,7 @@ class BackupRestore
     ~BackupRestore(){};
     static bool BackupUserFiles(sys::Service *ownerService, std::filesystem::path &path);
     static void RestoreUserFiles(sys::Service *ownerService);
+    static json11::Json GetBackupFiles();
 
   private:
     static bool RemoveBackupDir(std::filesystem::path &path);
@@ -26,4 +28,5 @@ class BackupRestore
     static bool UnpackBackupFile();
     static bool ReplaceUserFiles();
     static bool WriteBackupInfo(sys::Service *ownerService, const std::filesystem::path &path);
+
 };

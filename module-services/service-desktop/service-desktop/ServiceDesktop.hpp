@@ -39,12 +39,18 @@ class ServiceDesktop : public sys::Service
     ServiceDesktop();
     ~ServiceDesktop() override;
 
-    struct BackupStatus
+    enum class Operation {
+        Backup,
+        Restore
+    };
+
+    struct BackupRestoreStatus
     {
         std::filesystem::path backupTempDir;
         std::filesystem::path location;
         std::string task;
         bool state = false;
+        Operation operation = Operation::Backup;
         json11::Json to_json() const
         {
             return json11::Json::object{
@@ -52,7 +58,7 @@ class ServiceDesktop : public sys::Service
                 {parserFSM::json::state, state ? parserFSM::json::finished : parserFSM::json::pending},
                 {parserFSM::json::location, location.string()}};
         }
-    } backupStatus;
+    } backupRestoreStatus;
 
     sys::ReturnCodes InitHandler() override;
     sys::ReturnCodes DeinitHandler() override;
@@ -63,10 +69,8 @@ class ServiceDesktop : public sys::Service
     std::unique_ptr<WorkerDesktop> desktopWorker;
     void storeHistory(const std::string &historyValue);
     void prepareBackupData();
-    const BackupStatus getBackupStatus()
-    {
-        return backupStatus;
-    }
+    void prepareRestoreData(const std::filesystem::path &restoreLocation);
+    const BackupRestoreStatus getBackupRestoreStatus() { return backupRestoreStatus; }
 
   private:
     std::unique_ptr<settings::Settings> settings;

@@ -101,9 +101,9 @@ sys::ReturnCodes ServiceDesktop::InitHandler()
         sdesktop::BackupMessage *backupMessage = dynamic_cast<sdesktop::BackupMessage *>(msg);
         if (backupMessage != nullptr) {
             RemountFS();
-            backupStatus.state = BackupRestore::BackupUserFiles(this, backupStatus.backupTempDir);
-            backupStatus.location =
-                (purefs::dir::getBackupOSPath() / backupStatus.task).replace_extension(purefs::extension::tar);
+            backupRestoreStatus.state = BackupRestore::BackupUserFiles(this, backupRestoreStatus.backupTempDir);
+            backupRestoreStatus.location =
+                (purefs::dir::getBackupOSPath() / backupRestoreStatus.task).replace_extension(purefs::extension::tar);
         }
         return std::make_shared<sys::ResponseMessage>();
     });
@@ -112,6 +112,7 @@ sys::ReturnCodes ServiceDesktop::InitHandler()
         sdesktop::RestoreMessage *restoreMessage = dynamic_cast<sdesktop::RestoreMessage *>(msg);
         if (restoreMessage != nullptr) {
             RemountFS();
+            //backupRestoreStatus.state = BackupRestore::RestoreUserFiles(this, )
             BackupRestore::RestoreUserFiles(this);
         }
         return std::make_shared<sys::ResponseMessage>();
@@ -275,7 +276,15 @@ void ServiceDesktop::storeHistory(const std::string &historyValue)
 
 void ServiceDesktop::prepareBackupData()
 {
-    backupStatus.task          = std::to_string(static_cast<uint32_t>(utils::time::getCurrentTimestamp().getTime()));
-    backupStatus.state         = false;
-    backupStatus.backupTempDir = purefs::dir::getTemporaryPath() / backupStatus.task;
+    backupRestoreStatus.operation     = ServiceDesktop::Operation::Restore;
+    backupRestoreStatus.task          = std::to_string(static_cast<uint32_t>(utils::time::getCurrentTimestamp().getTime()));
+    backupRestoreStatus.state         = false;
+    backupRestoreStatus.backupTempDir = purefs::dir::getTemporaryPath() / backupRestoreStatus.task;
+}
+
+void ServiceDesktop::prepareRestoreData(const std::filesystem::path &restoreLocation)
+{
+    backupRestoreStatus.operation     = ServiceDesktop::Operation::Restore;
+    backupRestoreStatus.location      = purefs::dir::getBackupOSPath() / restoreLocation;
+    backupRestoreStatus.state         = false;
 }
