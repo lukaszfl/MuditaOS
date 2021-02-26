@@ -93,15 +93,14 @@ add_compile_definitions(FSL_RTOS_FREE_RTOS
 
 add_compile_options( ${TARGET_COMPILE_OPTIONS}
                      $<$<COMPILE_LANGUAGE:C>:-std=gnu11>
-                     -fsingle-precision-constant
                      -ffunction-sections
                      -fdata-sections
-                     -MMD
-                     -MP
                      -fno-builtin
                      # warning flags
                      -Wall -Wextra -Wno-unused-parameter -Wno-deprecated-declarations)
 # TODO: bring back -Werror
+# TODO: -fsingle-precision-constant only for gcc
+# TODO: -MMD -MP
 
 option (GENERATE_STACK_USAGE "Generate stack usage report" OFF)
 if (GENERATE_STACK_USAGE)

@@ -13,7 +13,6 @@
 #include <log/log.hpp>
 
 #include <climits>
-#include <syslimits.h>
 #include <sys/statvfs.h>
 #include <fcntl.h>
 #include <errno.h>
