@@ -99,9 +99,9 @@ add_compile_options( ${TARGET_COMPILE_OPTIONS}
                      -MMD
                      -MP
                      -fno-builtin
-                     -fno-diagnostics-color
                      # warning flags
-                     -Wall -Wextra -Werror -Wno-unused-parameter -Wno-deprecated-declarations)
+                     -Wall -Wextra -Wno-unused-parameter -Wno-deprecated-declarations)
+# TODO: bring back -Werror
 
 option (GENERATE_STACK_USAGE "Generate stack usage report" OFF)
 if (GENERATE_STACK_USAGE)
