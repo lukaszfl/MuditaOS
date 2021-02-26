@@ -11,6 +11,8 @@
 
 #include <algorithm>
 
+static bsp::cellular::CellularDMAResultStruct dmaResult;
+
 namespace bsp
 {
     namespace cellular
@@ -55,6 +57,7 @@ extern "C"
                     }
                 }
             }
+
             if (isrReg & kLPUART_IdleLineFlag) {
 #if _RT1051_UART_DEBUG
                 LOG_DEBUG("[RX idle], received %d bytes", bsp::RT1051Cellular::RXdmaReceivedCount);
@@ -139,6 +142,7 @@ namespace bsp
         NVIC_SetPriority(LPUART1_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
         NVIC_EnableIRQ(LPUART1_IRQn);
 
+        EnableRx();
         isInitialized = true;
     }
 
@@ -272,6 +276,8 @@ namespace bsp
 
         assert(nbytes > 0);
 
+        bsp::cellular::CellularResultCode resultCode = bsp::cellular::CellularResultCode::ReceivedAndIdle;
+        // tutaj trzeba fixnąć result
         if (nbytes > GetFreeStreamBufferSize()) {
             LOG_ERROR("Cannot dump DMA buffer. Data is lost (%d>%d)", nbytes, GetFreeStreamBufferSize());
             return false;
@@ -282,7 +288,12 @@ namespace bsp
 #if _RT1051_UART_DEBUG
         auto ret =
 #endif
-        xMessageBufferSendFromISR(uartRxBuffer, (void *)&result, sizeof(result), &xHigherPriorityTaskWoken);
+        dmaResult.resultCode = resultCode;
+
+        xMessageBufferSendFromISR(uartRxBuffer,
+                                      (void *)&dmaResult,
+                                      bsp::cellular::EmptyCellularResultSize + RXdmaReceivedCount,
+                                      &xHigherPriorityTaskWoken);
 
 #if _RT1051_UART_DEBUG
         LOG_DEBUG("[RX] moved %d bytes to buf", ret);
@@ -353,6 +364,7 @@ namespace bsp
     ssize_t RT1051Cellular::Read(void *buf, size_t nbytes, uint32_t timeoutTicks = 0)
     {
         LOG_DEBUG("[RX] Read");
+
         size_t ret = xMessageBufferReceive(uartRxBuffer, buf, nbytes, timeoutTicks);
 #if _RT1051_UART_DEBUG
         if (ret > 0) {

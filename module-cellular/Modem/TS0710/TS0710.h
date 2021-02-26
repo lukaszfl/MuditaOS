@@ -266,7 +266,6 @@ class TS0710
     ATParser *parser;
 
     xTaskHandle taskHandle                      = nullptr;
-    MessageBufferHandle_t cellularResponseQueue = nullptr;
 
     int CloseMultiplexer();
     const static bool hardwareControlFlowEnable = true;
@@ -431,7 +430,7 @@ class TS0710
     TS0710(PortSpeed_e portSpeed, sys::Service *parent);
     TS0710() = delete;
     ~TS0710();
-    void Init(sys::Service *parent);
+    void Init(PortSpeed_e portSpeed, sys::Service *parent);
     void SetStartParams(PortSpeed_e portSpeed);
     void SelectAntenna(bsp::cellular::antenna antenna);
     bsp::cellular::antenna GetAntenna();

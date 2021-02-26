@@ -56,12 +56,12 @@ std::vector<ATParser::Urc> ATParser::ParseURC()
     return resp;
 }
 
-int ATParser::ProcessNewData(sys::Service *service, bsp::cellular::CellularDMAResult &result)
+int ATParser::ProcessNewData(sys::Service *service, bsp::cellular::CellularDMAResultStruct &result)
 {
     {
         cpp_freertos::LockGuard lock(mutex);
         auto responseBufferSizeBeforeAppend = responseBuffer.size();
-        responseBuffer.append(result.getFrameDataAsString());
+        responseBuffer.append(utils::to_string(result.data));
         LOG_DEBUG("Appending %ud bytes to responseBuffer[%u]: %s",
                   static_cast<unsigned int>(responseBuffer.size() - responseBufferSizeBeforeAppend),
                   static_cast<unsigned int>(responseBuffer.size()),

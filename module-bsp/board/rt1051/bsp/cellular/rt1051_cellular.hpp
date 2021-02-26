@@ -19,6 +19,7 @@
 #include "drivers/dmamux/DriverDMAMux.hpp"
 #include "drivers/dma/DriverDMA.hpp"
 #include "drivers/gpio/DriverGPIO.hpp"
+#include "../../../../bsp/cellular/CellularResult.hpp"
 
 namespace bsp
 {
@@ -120,6 +121,16 @@ namespace bsp
 
         static void uartDMACallback(LPUART_Type *base, lpuart_edma_handle_t *handle, status_t status, void *userData);
 
+      public:
+        static constexpr auto RXdmaBufferSize = 127U;
+        static uint8_t RXdmaBuffer[RXdmaBufferSize];
+        static ssize_t RXdmaReceivedCount;
+        static void MoveRxDMAtoStreamBuf();
+        static void InitDMAreceive(uint8_t *buf, size_t nbytes);
+
+        static TaskHandle_t untilReceivedNewHandle;
+
+      private:
         // Constants
         const static uint32_t baudrate                               = 115200;
         const static uint32_t rxStreamBufferLength                   = 64;
@@ -130,7 +141,7 @@ namespace bsp
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_B_STATE        = 1;
 
       public:
-        static constexpr size_t RXdmaBufferSize = 32;
+        static constexpr auto RXdmaBufferSize = 32U;
         static uint8_t RXdmaBuffer[RXdmaBufferSize];
         static ssize_t RXdmaReceivedCount;
         static size_t RXdmaMaxReceivedCount;

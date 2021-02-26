@@ -7,6 +7,8 @@ namespace bsp
 {
     namespace cellular
     {
+        constexpr size_t EmptyCellularResultSize = 12;
+
         enum CellularResultCode
         {
             ReceivedAndIdle,
@@ -17,7 +19,7 @@ namespace bsp
 
         class CellularResult
         {
-            const CellularResultCode resultCode;
+            CellularResultCode resultCode;
 
           public:
             explicit CellularResult(const CellularResultCode resultCode) : resultCode{resultCode} {};
@@ -26,29 +28,18 @@ namespace bsp
             {
                 return resultCode;
             }
+
+            auto setResultCode(CellularResultCode code) -> void
+            {
+                resultCode = code;
+            }
         };
 
-        class CellularDMAResult : public CellularResult
+        struct __attribute__((__packed__)) CellularDMAResultStruct
         {
-            const std::vector<uint8_t> data;
-
-          public:
-            explicit CellularDMAResult(const CellularResultCode resultCode = ReceivedAndIdle)
-                : CellularResult{resultCode} {};
-
-            explicit CellularDMAResult(std::vector<uint8_t> &&data,
-                                       const CellularResultCode resultCode = ReceivedAndIdle)
-                : CellularResult{resultCode}, data{data} {};
-
-            [[nodiscard]] auto getData() -> const std::vector<uint8_t> &
-            {
-                return data;
-            }
-
-            [[nodiscard]] auto getFrameDataAsString() -> std::string const
-            {
-                return std::string{data.begin(), data.end()};
-            }
+            CellularResultCode resultCode;
+            size_t dataSize;
+            uint8_t data[127];
         };
 
         class CellularFrameResult : public CellularResult

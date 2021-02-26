@@ -49,8 +49,7 @@ static constexpr uint16_t threadSizeWords = 2048;
 TS0710::TS0710(PortSpeed_e portSpeed, sys::Service *parent)
 {
     LOG_INFO("Serial port: '%s'", SERIAL_PORT);
-    SetStartParams(portSpeed);
-    Init(parent);
+    Init(portSpeed, parent);
 }
 
 TS0710::~TS0710()
@@ -68,12 +67,15 @@ TS0710::~TS0710()
     delete parser;
 }
 
-void TS0710::Init(sys::Service *parent)
+void TS0710::Init(PortSpeed_e portSpeed, sys::Service *parent)
 {
     pv_cellular = bsp::Cellular::Create(SERIAL_PORT, 115200).value_or(nullptr);
     parser      = new ATParser(pv_cellular.get());
     pv_parent   = parent;
 
+    SetStartParams(portSpeed);
+
+    LOG_DEBUG("STARTING WORKER TASK");
     BaseType_t task_error =
         xTaskCreate(workerTaskFunction, "TS0710Worker", threadSizeWords, this, taskPriority, &taskHandle);
     if (task_error != pdPASS) {
@@ -466,31 +468,30 @@ static void sendFrameToChannel(TS0710 *inst, bsp::cellular::CellularFrameResult 
     }
 }
 
-[[noreturn]] void workerTaskFunction(void *ptr)
+void workerTaskFunction(void *ptr)
 {
+    LOG_DEBUG("[TS0710] Worker start");
     TS0710 *inst = static_cast<TS0710 *>(ptr);
-    bsp::cellular::CellularDMAResult result;
+    bsp::cellular::CellularDMAResultStruct result{};
     std::vector<uint8_t> previousData;
     std::vector<uint8_t> currentFrame;
 
-    while (true) {
-        // TODO get real maximum CellularDMAResult instance result
-        auto receivedBytes = inst->pv_cellular->Read(&result, inst->pv_cellular, UINT32_MAX);
+    while (1) {
+        auto receivedBytes = inst->pv_cellular->Read(&result, 1024, UINT32_MAX);
 
         if (receivedBytes > 0) {
             // AT mode is used only during initialization phase
             if (inst->mode == TS0710::Mode::AT) {
-                if ("")
-                    LOG_DEBUG("[Worker] Processing AT response");
+                LOG_DEBUG("[Worker] Processing AT response");
                 inst->parser->ProcessNewData(inst->pv_parent, result);
             }
             // CMUX mode is default operation mode
             else if (inst->mode == TS0710::Mode::CMUX) {
                 LOG_DEBUG("[Worker] Processing CMUX response");
-                previousData.insert(previousData.end(), result.getData().begin(), result.getData().end());
+                previousData.insert(previousData.end(), std::begin(result.data), std::end(result.data));
 
                 if (parseCellularResultCMUX(currentFrame, previousData)) {
-                    bsp::cellular::CellularFrameResult frameResult{currentFrame, result.getResultCode()};
+                    bsp::cellular::CellularFrameResult frameResult{currentFrame, result.resultCode};
                     sendFrameToChannel(inst, frameResult);
                     currentFrame.clear();
                 }

@@ -112,13 +112,13 @@ void TS0710_DLC_ESTABL::indication(DLCI_t DLCI, DLC_ESTABL_SystemParameters_t sy
 bool TS0710_DLC_ESTABL::response(DLCI_t DLCI, DLC_ESTABL_SystemParameters_t system_parameters)
 {
     constexpr size_t size = 256;
-    bsp::cellular::CellularDMAResult result;
+    bsp::cellular::CellularDMAResultStruct result{};
 
     ssize_t len = pv_cellular->Read(&result, size, 0);
     LOG_DEBUG("RX length = %d", static_cast<int>(len));
 
     if (len > 0) {
-        std::vector<uint8_t> v(result.getData());
+        std::vector<uint8_t> v(result.data, result.data + result.dataSize);
         TS0710_Frame frame_c(v);
         TS0710_Frame::frame_t frame = frame_c.getFrame();
 

@@ -36,7 +36,7 @@ class ATParser : public at::Channel
     ATParser(bsp::Cellular *cellular);
     virtual ~ATParser() = default;
 
-    int ProcessNewData(sys::Service *service, bsp::cellular::CellularDMAResult &result);
+    int ProcessNewData(sys::Service *service, bsp::cellular::CellularDMAResultStruct &result);
 
     virtual void cmd_init() override final;
     virtual void cmd_send(std::string cmd) override final;
