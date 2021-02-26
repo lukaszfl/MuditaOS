@@ -27,13 +27,15 @@ set(INCLUDES
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 target_compile_options( ${PROJECT_NAME} PRIVATE "-Wno-nonnull-compare" )
-get_target_property( target_options ${PROJECT_NAME} COMPILE_OPTIONS)
-list(REMOVE_ITEM target_options "-fsanitize=address")
-set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_OPTIONS ${target_options} )
 
-get_target_property( target_options ${PROJECT_NAME} LINK_OPTIONS)
-list(REMOVE_ITEM target_options "-fsanitize=address")
-set_property(TARGET ${PROJECT_NAME} PROPERTY LINK_OPTIONS ${target_options} )
+# TODO: deal with sanitizer
+#get_target_property( target_options ${PROJECT_NAME} COMPILE_OPTIONS)
+#list(REMOVE_ITEM target_options "-fsanitize=address")
+#set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_OPTIONS ${target_options} )
+
+#get_target_property( target_options ${PROJECT_NAME} LINK_OPTIONS)
+#list(REMOVE_ITEM target_options "-fsanitize=address")
+#set_property(TARGET ${PROJECT_NAME} PROPERTY LINK_OPTIONS ${target_options} )
 
 target_link_options(${PROJECT_NAME} PRIVATE
 		"-Wl,--version-script"
