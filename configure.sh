@@ -23,8 +23,11 @@ function help() {
 
 function check_target() {
     case ${TARGET,,} in
+        linux_clang )
+            cmake_toolchain_file="Target_Linux_clang.cmake"
+            return 0 ;;
         linux ) 
-            CMAKE_TOOLCHAIN_FILE="Target_Linux.cmake"
+            cmake_toolchain_file="Target_Linux.cmake"
             return 0 ;;
         rt1051 ) 
             CMAKE_TOOLCHAIN_FILE="Target_RT1051.cmake"
