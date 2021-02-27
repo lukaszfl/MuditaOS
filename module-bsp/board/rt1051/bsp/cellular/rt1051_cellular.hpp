@@ -74,6 +74,9 @@ namespace bsp
                                     kLPUART_RxActiveEdgeInterruptEnable | kLPUART_IdleLineInterruptEnable);
             LPUART_EnableRx(CELLULAR_UART_BASE, false);
         }
+        static void FinishReceive();
+
+        static bool ReceivingPausedStreamBufFull;
       private:
         void MSPInit();
 
@@ -118,15 +121,15 @@ namespace bsp
         static constexpr auto RXdmaBufferSize = 1U;
         static uint8_t RXdmaBuffer[RXdmaBufferSize];
         static ssize_t RXdmaReceivedCount;
-        static void MoveRxDMAtoStreamBuf();
-        static void InitDMAreceive(uint8_t *buf, size_t nbytes);
+        static bool MoveRxDMAtoStreamBuf();
+        static bool StartReceive(uint8_t *buf, size_t nbytes);
 
         static TaskHandle_t untilReceivedNewHandle;
 
       private:
         // Constants
         const static uint32_t baudrate                               = 115200;
-        const static uint32_t rxStreamBufferLength                   = 1024;
+        const static uint32_t rxStreamBufferLength                   = 256;
         const static uint32_t rxStreamBufferNotifyWatermark          = 1;
         const static uint32_t CELLULAR_BSP_AP_READY_PIN_ACTIVE_STATE = 1;
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_A_STATE        = 0;
