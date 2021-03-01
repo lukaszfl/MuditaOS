@@ -118,7 +118,7 @@ namespace bsp
         static void uartDMACallback(LPUART_Type *base, lpuart_edma_handle_t *handle, status_t status, void *userData);
 
       public:
-        static constexpr auto RXdmaBufferSize = 1U;
+        static constexpr auto RXdmaBufferSize = 256U;
         static uint8_t RXdmaBuffer[RXdmaBufferSize];
         static ssize_t RXdmaReceivedCount;
         static bool MoveRxDMAtoStreamBuf();
