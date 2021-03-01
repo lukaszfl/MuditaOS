@@ -3,12 +3,12 @@
 import time
 from enum import Enum
 
-from harness import utils, log
-from harness.interface import CDCSerial as serial
-from harness.interface.defs import key_codes, endpoint, method
-from harness.interface.CDCSerial import Keytype
-from harness.utils import send_keystoke, application_keypath, send_char, clear_last_char
-from harness.interface.error import TestError, Error
+from tools.harness import utils
+from tools.harness.interface import CDCSerial as serial
+from tools.harness.interface.defs import key_codes, endpoint, method
+from tools.harness.interface.CDCSerial import Keytype
+from tools.harness.utils import send_keystoke, application_keypath, send_char, clear_last_char
+from tools.harness.interface.error import TestError, Error
 import random
 
 

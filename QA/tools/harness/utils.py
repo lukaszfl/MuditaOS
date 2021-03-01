@@ -4,8 +4,8 @@
 import time
 from enum import Enum
 
-from harness.interface.CDCSerial import Keytype
-from harness.interface.defs import key_codes
+from tools.harness.interface.CDCSerial import Keytype
+from tools.harness.interface.defs import key_codes
 
 
 # assuming that the harness is actually in the menu

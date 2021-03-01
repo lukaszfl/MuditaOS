@@ -8,8 +8,8 @@ import json
 import logging
 from enum import Enum
 
-from harness.interface.defs import endpoint, method, status
-from harness.interface.error import TestError, Error
+from tools.harness.interface.defs import endpoint, method, status
+from tools.harness.interface.error import TestError, Error
 
 log = logging.getLogger(__name__)
 
