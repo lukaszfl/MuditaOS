@@ -76,7 +76,8 @@ namespace bsp
         }
         static void FinishReceive();
 
-        static bool ReceivingPausedStreamBufFull;
+        static bool ReceivingPausedStreamBufferFullFlag;
+
       private:
         void MSPInit();
 
@@ -117,16 +118,6 @@ namespace bsp
 
         static void uartDMACallback(LPUART_Type *base, lpuart_edma_handle_t *handle, status_t status, void *userData);
 
-      public:
-        static constexpr auto RXdmaBufferSize = 256U;
-        static uint8_t RXdmaBuffer[RXdmaBufferSize];
-        static ssize_t RXdmaReceivedCount;
-        static bool MoveRxDMAtoStreamBuf();
-        static bool StartReceive(uint8_t *buf, size_t nbytes);
-
-        static TaskHandle_t untilReceivedNewHandle;
-
-      private:
         // Constants
         const static uint32_t baudrate                               = 115200;
         const static uint32_t rxStreamBufferLength                   = 256;
@@ -134,6 +125,17 @@ namespace bsp
         const static uint32_t CELLULAR_BSP_AP_READY_PIN_ACTIVE_STATE = 1;
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_A_STATE        = 0;
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_B_STATE        = 1;
+
+      public:
+        static constexpr size_t RXdmaBufferSize = 7;
+        static uint8_t RXdmaBuffer[RXdmaBufferSize];
+        static ssize_t RXdmaReceivedCount;
+        static size_t RXdmaMaxReceivedCount;
+        static bool MoveRxDMAtoStreamBuf(size_t nbytes);
+        static size_t GetFreeStreamBufferSize();
+        static bool StartReceive(size_t nbytes);
+
+        static TaskHandle_t untilReceivedNewHandle;
     };
 
 } // namespace bsp

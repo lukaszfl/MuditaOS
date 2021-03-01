@@ -10,6 +10,8 @@
 #include "fsl_cache.h"
 #include <common_data/EventStore.hpp>
 
+#include <algorithm>
+
 namespace bsp::cellular
 {
     void notifyReceivedNew()
@@ -43,9 +45,9 @@ extern "C"
                     LPUART_DisableInterrupts(CELLULAR_UART_BASE, kLPUART_RxDataRegFullInterruptEnable);
                     bsp::RT1051Cellular::RXdmaReceivedCount = -1;
                     if (!bsp::RT1051Cellular::StartReceive(
-                            bsp::RT1051Cellular::RXdmaBuffer,
-                            xStreamBufferSpacesAvailable(bsp::RT1051Cellular::uartRxStreamBuffer))) {
-                        bsp::RT1051Cellular::ReceivingPausedStreamBufFull = true;
+                            bsp::RT1051Cellular::GetFreeStreamBufferSize())) {
+                        LOG_ERROR("Expected for a buffer to be free. Data might be lost");
+                        bsp::RT1051Cellular::ReceivingPausedStreamBufferFullFlag = true;
                         bsp::RT1051Cellular::FinishReceive();
                     }
 #if _RT1051_UART_DEBUG
@@ -57,12 +59,15 @@ extern "C"
 #if _RT1051_UART_DEBUG
                 LOG_DEBUG("[RX idle], received %d bytes", bsp::RT1051Cellular::RXdmaReceivedCount);
 #endif
-                // the only exit path:
+                // the main exit path on transmission done
                 if (bsp::RT1051Cellular::RXdmaReceivedCount > 0) {
                     LPUART_TransferAbortReceiveEDMA(CELLULAR_UART_BASE, &bsp::RT1051Cellular::uartDmaHandle);
-                    bsp::RT1051Cellular::MoveRxDMAtoStreamBuf();
+                    bsp::RT1051Cellular::MoveRxDMAtoStreamBuf(bsp::RT1051Cellular::RXdmaReceivedCount);
+                    bsp::RT1051Cellular::RXdmaReceivedCount = -1;
                 }
-                bsp::RT1051Cellular::FinishReceive();
+                // Do not Disable UART Rx, as for small rxfer buffers (≈7bytes) next Rx Rnable (Wait) comes too late
+                // At the same time this means that stream buffer must be >> dma buffer. They cannot be both ≈7 bytes
+                bsp::cellular::notifyReceivedNew(); // could also Disable Rx if only stream buffer ≈ 2× max Cmux buffer
             }
 
             LPUART_ClearStatusFlags(CELLULAR_UART_BASE, isrReg);
@@ -74,7 +79,8 @@ namespace bsp
 {
     uint8_t RT1051Cellular::RXdmaBuffer[RXdmaBufferSize] = {0};
     ssize_t RT1051Cellular::RXdmaReceivedCount           = -1;
-    bool RT1051Cellular::ReceivingPausedStreamBufFull    = false;
+    size_t RT1051Cellular::RXdmaMaxReceivedCount        = -1;
+    bool RT1051Cellular::ReceivingPausedStreamBufferFullFlag = false;
 
     using namespace drivers;
 
@@ -105,7 +111,11 @@ namespace bsp
         s_cellularConfig.parityMode    = kLPUART_ParityDisabled;
         s_cellularConfig.isMsb         = false;
         s_cellularConfig.rxIdleType    = kLPUART_IdleTypeStartBit;
-        s_cellularConfig.rxIdleConfig = kLPUART_IdleCharacter1; // increase to 8 to Rx echo commands, etc. in 1 run
+#if _RT1051_UART_DEBUG
+        s_cellularConfig.rxIdleConfig = kLPUART_IdleCharacter4;
+#else
+        s_cellularConfig.rxIdleConfig = kLPUART_IdleCharacter1;
+#endif
         s_cellularConfig.enableTx     = false;
         s_cellularConfig.enableRx     = false;
         s_cellularConfig.enableTxCTS  = true;
@@ -253,47 +263,55 @@ namespace bsp
         return nbytes;
     }
 
-    bool RT1051Cellular::MoveRxDMAtoStreamBuf()
+    bool RT1051Cellular::MoveRxDMAtoStreamBuf(size_t nbytes)
     {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-        assert(RXdmaReceivedCount > 0);
+        assert(nbytes > 0);
 
-        if (static_cast<ssize_t>(xStreamBufferSpacesAvailable(uartRxStreamBuffer)) < RXdmaReceivedCount) {
-            LOG_ERROR("Cannot dump DMA buffer. Data will be lost (%d %d)",
-                      xStreamBufferSpacesAvailable(uartRxStreamBuffer),
-                      RXdmaReceivedCount);
+        if (nbytes > GetFreeStreamBufferSize()) {
+            LOG_ERROR("Cannot dump DMA buffer. Data is lost (%d>%d)", nbytes, GetFreeStreamBufferSize());
             return false;
         }
 
 #if _RT1051_UART_DEBUG
         auto ret =
 #endif
-            xStreamBufferSendFromISR(
-                uartRxStreamBuffer, (void *)&RXdmaBuffer, RXdmaReceivedCount, &xHigherPriorityTaskWoken);
+            xStreamBufferSendFromISR(uartRxStreamBuffer, (void *)&RXdmaBuffer, nbytes, &xHigherPriorityTaskWoken);
 
 #if _RT1051_UART_DEBUG
         LOG_DEBUG("[RX] moved %d bytes to streambuf", ret);
 #endif
-        RXdmaReceivedCount = -1;
 
         portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
         return true;
     }
 
-    bool RT1051Cellular::StartReceive(uint8_t *buf, size_t nbytes)
+    size_t RT1051Cellular::GetFreeStreamBufferSize()
     {
-        if (xStreamBufferSpacesAvailable(uartRxStreamBuffer) == 0) {
-            LOG_WARN("Not starting RX DMA, stream buffer is not guaranteed to accomodate");
+        return xStreamBufferSpacesAvailable(bsp::RT1051Cellular::uartRxStreamBuffer);
+    }
+
+    bool RT1051Cellular::StartReceive(size_t nbytes)
+    {
+        if (!(GetFreeStreamBufferSize() > 0)) {
+            LOG_WARN("Not starting RX DMA, stream buffer is full. Increase size or read faster");
             return false;
         }
+
         else {
-            LOG_FATAL("Starting DMA rxfer, max %d bytes", xStreamBufferSpacesAvailable(uartRxStreamBuffer));
+            // sanitize input
+            RXdmaMaxReceivedCount = std::min(nbytes, static_cast<size_t>(RXdmaBufferSize));
+#if _RT1051_UART_DEBUG
+            LOG_DEBUG("Starting DMA rxfer, max %d bytes", RXdmaMaxReceivedCount);
+#endif
         }
+        assert(RXdmaMaxReceivedCount <= RXdmaBufferSize);
+
         // start RXfer if there is a byte incoming and no pending RXfer
         lpuart_transfer_t receiveXfer;
-        receiveXfer.data     = buf;
-        receiveXfer.dataSize = nbytes;
+        receiveXfer.data     = RXdmaBuffer;
+        receiveXfer.dataSize = RXdmaMaxReceivedCount;
 
         // rx config
         // SCB_CleanInvalidateDCache(); // seems to be not needed in Rx
@@ -314,6 +332,9 @@ namespace bsp
 
     void RT1051Cellular::FinishReceive()
     {
+#if _RT1051_UART_DEBUG
+        LOG_DEBUG("[RX] Disable and notify");
+#endif
         bsp::RT1051Cellular::DisableRx();
         bsp::cellular::notifyReceivedNew();
     }
@@ -321,7 +342,7 @@ namespace bsp
     ssize_t RT1051Cellular::Read(void *buf, size_t nbytes)
     {
         ssize_t ret = xStreamBufferReceive(uartRxStreamBuffer, buf, nbytes, 0);
-#if _RT1051_UART_DEBUG or true
+#if _RT1051_UART_DEBUG
         if (ret > 0) {
             LOG_PRINTF("[RX: %d]", ret);
             uint8_t *ptr = (uint8_t *)buf;
@@ -339,11 +360,13 @@ namespace bsp
         }
         LOG_PRINTF("\n");
 #endif
-        if (ReceivingPausedStreamBufFull) {
-//            LOG_DEBUG("[RX] on Paused");
-            ReceivingPausedStreamBufFull = false;
+        if (ReceivingPausedStreamBufferFullFlag) {
+#if _RT1051_UART_DEBUG
+            LOG_DEBUG("[RX] on Paused");
+#endif
+            ReceivingPausedStreamBufferFullFlag = false;
             EnableRx();
-            StartReceive(RXdmaBuffer, xStreamBufferSpacesAvailable(bsp::RT1051Cellular::uartRxStreamBuffer));
+            StartReceive(GetFreeStreamBufferSize());
         }
         return ret;
     }
@@ -558,19 +581,18 @@ namespace bsp
             break;
         }
         case kStatus_LPUART_RxIdle:
-            RXdmaReceivedCount = RXdmaBufferSize;
 #if _RT1051_UART_DEBUG
-            LOG_WARN("[RX] cannot take any more data! Flow control must hold the gate from now on");
+            LOG_WARN("[RX] Chunk done. Flow control must hold the gate from now on");
 #endif
-            if (MoveRxDMAtoStreamBuf() and
-                StartReceive(RXdmaBuffer, xStreamBufferSpacesAvailable(bsp::RT1051Cellular::uartRxStreamBuffer))) {
+            if (MoveRxDMAtoStreamBuf(RXdmaMaxReceivedCount) and StartReceive(GetFreeStreamBufferSize())) {
                 // usual mode: append a chunk and wait for line idle to finish receive
             }
             else {
-                ReceivingPausedStreamBufFull = true;
+                // the auxiliary exit path on stream buffer full
+                ReceivingPausedStreamBufferFullFlag = true;
                 FinishReceive();
             }
-            bsp::RT1051Cellular::RXdmaReceivedCount = -1;
+            RXdmaReceivedCount = -1;
             break;
         }
     }
