@@ -3,6 +3,7 @@
 import time
 from enum import Enum
 
+from tools.harness import log
 from tools.harness import utils
 from tools.harness.interface import CDCSerial as serial
 from tools.harness.interface.defs import key_codes, endpoint, method
