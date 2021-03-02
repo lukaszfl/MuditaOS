@@ -9,7 +9,7 @@ from tools.utils import get_calllog_count
 
 @pytest.mark.rt1051
 @pytest.mark.usefixtures("phone_unlocked")
-def test_call(harness, phone_number, call_duration):
+def test_call_type_number(harness, phone_number, call_duration):
     count_before = get_calllog_count(harness)
     # enter number
     harness.send_number(str(phone_number))
@@ -22,3 +22,5 @@ def test_call(harness, phone_number, call_duration):
 
     assert count_before + 1 == count_after
     time.sleep(2)  # needed to restore after call
+
+
