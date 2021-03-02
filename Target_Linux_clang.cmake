@@ -7,8 +7,8 @@ set(TARGET_DIR_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/board/linux  CACHE INTERNAL ""
 set(TARGET_COMPILE_FEATURES CACHE INTERNAL "")
 
 set(TARGET_COMPILE_DEFINITIONS CACHE INTERNAL "")
-set(CMAKE_C_COMPILER clang)
-set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_C_COMPILER "/home/niepiekm/work/staging/llvm-project/build/bin/templight")
+set(CMAKE_CXX_COMPILER "/home/niepiekm/work/staging/llvm-project/build/bin/templight++")
 
 
 add_compile_options(-funsigned-char -Wno-unknown-warning-option)
@@ -18,7 +18,6 @@ set(TARGET_LIBRARIES
     pthread
     portaudio
     CACHE INTERNAL "" )
-
 
 option (LINUX_ENABLE_SANITIZER "Enable address sanitizer for Linux" OFF)
 if (LINUX_ENABLE_SANITIZER)

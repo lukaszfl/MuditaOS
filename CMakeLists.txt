@@ -42,11 +42,11 @@ add_custom_target(assets)
 
 # setting build flags
 if (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
-    set(CMAKE_C_FLAGS_DEBUG "-ggdb3 -DDEBUG")
+    set(CMAKE_C_FLAGS_DEBUG "-ggdb3 -DDEBUG  -Xtemplight --memory -Xtemplight --profiler ")
     set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -ggdb3 -DNDEBUG")
 
-    set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -DDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -DDEBUG   -Xtemplight --memory -Xtemplight --profiler")
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -ggdb3 -DNDEBUG")
 else()
@@ -294,9 +294,9 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
 
     add_custom_target(${VERSION_JSON_FILE}-target DEPENDS ${VERSION_JSON})
 
-    multicomp_install(PROGRAMS ${CMAKE_BINARY_DIR}/${ECOBOOT_FILE} DESTINATION "./" 
+    multicomp_install(PROGRAMS ${CMAKE_BINARY_DIR}/${ECOBOOT_FILE} DESTINATION "./"
         COMPONENTS Standalone Update)
-    multicomp_install(FILES ${VERSION_JSON} DESTINATION "./" 
+    multicomp_install(FILES ${VERSION_JSON} DESTINATION "./"
         COMPONENTS Standalone Update)
 endif()
 
@@ -404,7 +404,7 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
     add_custom_target(package-standalone
         COMMAND tar -ScJf ${PACKAGE_STANDALONE_FILE_NAME} ${DISK_IMAGE_NAME}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        DEPENDS ${BIN_FILE}-target ${ECOBOOT_FILE}-target ${VERSION_JSON_FILE}-target  disk_image 
+        DEPENDS ${BIN_FILE}-target ${ECOBOOT_FILE}-target ${VERSION_JSON_FILE}-target  disk_image
         )
 
     set(PACKAGE_UPDATE_FILE_NAME ${PACKAGE_COMMON_NAME}-Update.tar)
@@ -414,7 +414,7 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
         COMMAND ${CMAKE_CPACK_COMMAND}
         -C $<CONFIGURATION>
         --config ${CPACK_OUTPUT_CONFIG_FILE}
-        DEPENDS  ${BIN_FILE}-target ${ECOBOOT_FILE}-target ${VERSION_JSON_FILE}-target 
+        DEPENDS  ${BIN_FILE}-target ${ECOBOOT_FILE}-target ${VERSION_JSON_FILE}-target
         )
     add_custom_target(package-update-checksums
         COMMAND rhash
@@ -424,12 +424,12 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
         DEPENDS package-update-staged
         )
 
-    
+
     add_custom_target(package-update
         COMMAND tar
         -cf ${CMAKE_BINARY_DIR}/${PACKAGE_UPDATE_FILE_NAME}
         -C ${PACKAGE_STAGING_DIRECTORY}/Update "."
-        DEPENDS  ${ECOBOOT_FILE}-target ${VERSION_JSON_FILE}-target PurePhone package-update-staged package-update-checksums 
+        DEPENDS  ${ECOBOOT_FILE}-target ${VERSION_JSON_FILE}-target PurePhone package-update-staged package-update-checksums
         )
 endif()
 
