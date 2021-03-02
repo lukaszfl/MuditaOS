@@ -66,14 +66,6 @@ namespace bsp
 
         static lpuart_edma_handle_t uartDmaHandle;
 
-        static inline void DisableRx()
-        {
-            LPUART_DisableInterrupts(CELLULAR_UART_BASE,
-                                     kLPUART_RxActiveEdgeInterruptEnable | kLPUART_IdleLineInterruptEnable);
-            LPUART_ClearStatusFlags(CELLULAR_UART_BASE,
-                                    kLPUART_RxActiveEdgeInterruptEnable | kLPUART_IdleLineInterruptEnable);
-            LPUART_EnableRx(CELLULAR_UART_BASE, false);
-        }
         static void FinishReceive();
 
         static bool ReceivingPausedStreamBufferFullFlag;
@@ -87,13 +79,23 @@ namespace bsp
 
         void DMADeinit();
 
-        static inline void EnableRx()
+        const static uint32_t defaultInterruptsMask = kLPUART_RxActiveEdgeInterruptEnable | kLPUART_IdleLineInterruptEnable;
+
+        static inline void EnableRx(uint32_t interruptsMask = defaultInterruptsMask)
         {
             LPUART_ClearStatusFlags(CELLULAR_UART_BASE, 0xFFFFFFFF);
             LPUART_EnableInterrupts(CELLULAR_UART_BASE,
-                                    kLPUART_RxActiveEdgeInterruptEnable |
-                                        kLPUART_IdleLineInterruptEnable);
+                                    interruptsMask);
             LPUART_EnableRx(CELLULAR_UART_BASE, true);
+        }
+
+        static inline void DisableRx(uint32_t interruptsMask = defaultInterruptsMask)
+        {
+            LPUART_DisableInterrupts(CELLULAR_UART_BASE,
+                                     interruptsMask);
+            LPUART_ClearStatusFlags(CELLULAR_UART_BASE,
+                                    interruptsMask);
+            LPUART_EnableRx(CELLULAR_UART_BASE, false);
         }
 
         inline void EnableTx()
@@ -120,14 +122,14 @@ namespace bsp
 
         // Constants
         const static uint32_t baudrate                               = 115200;
-        const static uint32_t rxStreamBufferLength                   = 256;
+        const static uint32_t rxStreamBufferLength                   = 32;
         const static uint32_t rxStreamBufferNotifyWatermark          = 1;
         const static uint32_t CELLULAR_BSP_AP_READY_PIN_ACTIVE_STATE = 1;
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_A_STATE        = 0;
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_B_STATE        = 1;
 
       public:
-        static constexpr size_t RXdmaBufferSize = 7;
+        static constexpr size_t RXdmaBufferSize = 32;
         static uint8_t RXdmaBuffer[RXdmaBufferSize];
         static ssize_t RXdmaReceivedCount;
         static size_t RXdmaMaxReceivedCount;

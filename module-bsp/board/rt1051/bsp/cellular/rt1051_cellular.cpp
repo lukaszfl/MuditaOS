@@ -46,7 +46,6 @@ extern "C"
                     bsp::RT1051Cellular::RXdmaReceivedCount = -1;
                     if (!bsp::RT1051Cellular::StartReceive(
                             bsp::RT1051Cellular::GetFreeStreamBufferSize())) {
-                        LOG_ERROR("Expected for a buffer to be free. Data might be lost");
                         bsp::RT1051Cellular::ReceivingPausedStreamBufferFullFlag = true;
                         bsp::RT1051Cellular::FinishReceive();
                     }
@@ -335,7 +334,7 @@ namespace bsp
 #if _RT1051_UART_DEBUG
         LOG_DEBUG("[RX] Disable and notify");
 #endif
-        bsp::RT1051Cellular::DisableRx();
+        DisableRx();
         bsp::cellular::notifyReceivedNew();
     }
 
@@ -362,10 +361,11 @@ namespace bsp
 #endif
         if (ReceivingPausedStreamBufferFullFlag) {
 #if _RT1051_UART_DEBUG
-            LOG_DEBUG("[RX] on Paused");
+            LOG_DEBUG("[RX] resume on Paused");
 #endif
             ReceivingPausedStreamBufferFullFlag = false;
-            EnableRx();
+            // need to start manually, as RegBuf might be already full, therefore no Active Edge Interrupt
+            EnableRx(defaultInterruptsMask & ~kLPUART_IdleLineInterruptEnable);
             StartReceive(GetFreeStreamBufferSize());
         }
         return ret;
