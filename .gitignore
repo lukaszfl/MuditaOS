@@ -57,3 +57,7 @@ update/
 # build in docker files
 .ccache/
 .bash_history
+
+# Python related files
+.idea
+venv/
