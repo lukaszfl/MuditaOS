@@ -59,5 +59,5 @@ update/
 .bash_history
 
 # Python related files
-.idea
+.idea/
 venv/
