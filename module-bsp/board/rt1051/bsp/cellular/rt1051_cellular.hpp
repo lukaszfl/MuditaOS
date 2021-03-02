@@ -122,7 +122,7 @@ namespace bsp
 
         // Constants
         const static uint32_t baudrate                               = 115200;
-        const static uint32_t rxStreamBufferLength                   = 32;
+        const static uint32_t rxStreamBufferLength                   = 64;
         const static uint32_t rxStreamBufferNotifyWatermark          = 1;
         const static uint32_t CELLULAR_BSP_AP_READY_PIN_ACTIVE_STATE = 1;
         const static uint32_t CELLULAR_BSP_ANTSEL_PIN_A_STATE        = 0;

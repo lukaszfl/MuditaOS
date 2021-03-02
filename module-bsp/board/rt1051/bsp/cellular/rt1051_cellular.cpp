@@ -41,21 +41,21 @@ extern "C"
 
             if (isrReg & kLPUART_RxActiveEdgeFlag) {
                 if (RxDmaStatus == kStatus_NoTransferInProgress) {
-                    // regular xfers don't need reg full irqs
-                    LPUART_DisableInterrupts(CELLULAR_UART_BASE, kLPUART_RxDataRegFullInterruptEnable);
-                    bsp::RT1051Cellular::RXdmaReceivedCount = -1;
-                    if (!bsp::RT1051Cellular::StartReceive(
-                            bsp::RT1051Cellular::GetFreeStreamBufferSize())) {
-                        bsp::RT1051Cellular::ReceivingPausedStreamBufferFullFlag = true;
-                        bsp::RT1051Cellular::FinishReceive();
-                    }
 #if _RT1051_UART_DEBUG
                     LOG_WARN("[RX] on Start bit");
 #endif
+                    // regular xfers don't need reg full irqs
+                    LPUART_DisableInterrupts(CELLULAR_UART_BASE, kLPUART_RxDataRegFullInterruptEnable);
+                    bsp::RT1051Cellular::RXdmaReceivedCount = -1;
+                    if (not bsp::RT1051Cellular::StartReceive(bsp::RT1051Cellular::GetFreeStreamBufferSize())) {
+                        bsp::RT1051Cellular::ReceivingPausedStreamBufferFullFlag = true;
+                        bsp::RT1051Cellular::FinishReceive();
+                    }
                 }
             }
             if (isrReg & kLPUART_IdleLineFlag) {
 #if _RT1051_UART_DEBUG
+                LOG_DEBUG("[RX idle], received %d bytes", bsp::RT1051Cellular::RXdmaReceivedCount);
                 LOG_DEBUG("[RX idle], received %d bytes", bsp::RT1051Cellular::RXdmaReceivedCount);
 #endif
                 // the main exit path on transmission done
@@ -64,7 +64,7 @@ extern "C"
                     bsp::RT1051Cellular::MoveRxDMAtoStreamBuf(bsp::RT1051Cellular::RXdmaReceivedCount);
                     bsp::RT1051Cellular::RXdmaReceivedCount = -1;
                 }
-                // Do not Disable UART Rx, as for small rxfer buffers (≈7bytes) next Rx Rnable (Wait) comes too late
+                // Do not Disable UART Rx, as for small stream buffers (≈7bytes) next EnableRx (in Wait) comes too late
                 // At the same time this means that stream buffer must be >> dma buffer. They cannot be both ≈7 bytes
                 bsp::cellular::notifyReceivedNew(); // could also Disable Rx if only stream buffer ≈ 2× max Cmux buffer
             }
@@ -111,21 +111,23 @@ namespace bsp
         s_cellularConfig.isMsb         = false;
         s_cellularConfig.rxIdleType    = kLPUART_IdleTypeStartBit;
 #if _RT1051_UART_DEBUG
-        s_cellularConfig.rxIdleConfig = kLPUART_IdleCharacter4;
+        s_cellularConfig.rxIdleConfig = kLPUART_IdleCharacter4; // Logs take time
 #else
         s_cellularConfig.rxIdleConfig = kLPUART_IdleCharacter1;
 #endif
-        s_cellularConfig.enableTx     = false;
-        s_cellularConfig.enableRx     = false;
-        s_cellularConfig.enableTxCTS  = true;
-        s_cellularConfig.txCtsConfig  = kLPUART_CtsSampleAtStart; // be nice, allow to stop mid txfer
-        s_cellularConfig.enableRxRTS  = true;
+        s_cellularConfig.enableTx    = false;
+        s_cellularConfig.enableRx    = false;
+        s_cellularConfig.enableTxCTS = true;
+        s_cellularConfig.txCtsConfig = kLPUART_CtsSampleAtStart; // be nice, allow to stop mid txfer
+        s_cellularConfig.enableRxRTS = true;
 
         if (LPUART_Init(CELLULAR_UART_BASE, &s_cellularConfig, GetPerphSourceClock(PerphClock_LPUART)) !=
             kStatus_Success) {
             LOG_ERROR("Could not initialize the uart!");
             return;
         }
+
+        static_assert(rxStreamBufferLength >= 6, "Minimum buffer size (i.e. sufficient to enable flow control)");
 
         // CANNOT disable FIFO, dma *needs* it :o
         // CELLULAR_UART_BASE->FIFO &= ~LPUART_FIFO_RXFE_MASK;
@@ -294,7 +296,9 @@ namespace bsp
     bool RT1051Cellular::StartReceive(size_t nbytes)
     {
         if (!(GetFreeStreamBufferSize() > 0)) {
-            LOG_WARN("Not starting RX DMA, stream buffer is full. Increase size or read faster");
+#if _RT1051_UART_DEBUG
+            LOG_WARN("Not starting RX DMA, stream buffer is full. Be aware");
+#endif
             return false;
         }
 
@@ -302,7 +306,7 @@ namespace bsp
             // sanitize input
             RXdmaMaxReceivedCount = std::min(nbytes, static_cast<size_t>(RXdmaBufferSize));
 #if _RT1051_UART_DEBUG
-            LOG_DEBUG("Starting DMA rxfer, max %d bytes", RXdmaMaxReceivedCount);
+            LOG_DEBUG("Starting DMA RX, max %d bytes", RXdmaMaxReceivedCount);
 #endif
         }
         assert(RXdmaMaxReceivedCount <= RXdmaBufferSize);
@@ -341,7 +345,7 @@ namespace bsp
     ssize_t RT1051Cellular::Read(void *buf, size_t nbytes)
     {
         ssize_t ret = xStreamBufferReceive(uartRxStreamBuffer, buf, nbytes, 0);
-#if _RT1051_UART_DEBUG
+#if _RT1051_UART_DEBUG or true
         if (ret > 0) {
             LOG_PRINTF("[RX: %d]", ret);
             uint8_t *ptr = (uint8_t *)buf;
@@ -361,11 +365,11 @@ namespace bsp
 #endif
         if (ReceivingPausedStreamBufferFullFlag) {
 #if _RT1051_UART_DEBUG
-            LOG_DEBUG("[RX] resume on Paused");
+            LOG_FATAL("[RX] resume on Paused");
 #endif
             ReceivingPausedStreamBufferFullFlag = false;
             // need to start manually, as RegBuf might be already full, therefore no Active Edge Interrupt
-            EnableRx(defaultInterruptsMask & ~kLPUART_IdleLineInterruptEnable);
+            EnableRx(defaultInterruptsMask & ~kLPUART_RxActiveEdgeInterruptEnable);
             StartReceive(GetFreeStreamBufferSize());
         }
         return ret;
