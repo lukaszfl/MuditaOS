@@ -28,9 +28,11 @@ namespace gui::top_bar
     } // namespace
 
     BatteryBar::BatteryBar(Item *parent, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
-        : BatteryBase(parent, x, y, w, h)
+        : BatteryBase(parent, x, y, 0, 0)
     {
         img = new Image(this, battery1);
+
+        setMinimumSize(img->getWidth(), style::header::status_bar::height);
     }
 
     void BatteryBar::showBatteryLevel(std::uint32_t percentage)

@@ -10,13 +10,14 @@ namespace gui::top_bar
         : StatusBarWidgetBase(parent, x, y, w, h)
     {
         setFilled(false);
-        setBorderColor(gui::ColorNoColor);
+        setEdges(RectangleEdge::None);
         setFont(style::header::font::modes);
-        setAlignment(gui::Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center));
+        setAlignment(gui::Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Bottom));
     }
 
     void NetworkAccessTechnology::update(const Store::Network::AccessTechnology accessTechnology)
     {
+        setMaximumSize(this->getWidth(), this->getHeight());
         _accessTechnology      = accessTechnology;
         constexpr auto text2g  = "2G";
         constexpr auto text3g  = "3G";
@@ -37,7 +38,7 @@ namespace gui::top_bar
             setText(textLte);
             break;
         case Store::Network::AccessTechnology::Unknown:
-            setText("");
+            setText("LTE");
             break;
         }
     }

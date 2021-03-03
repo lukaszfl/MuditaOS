@@ -5,6 +5,7 @@
 #include <iomanip>
 #include "Label.hpp"
 #include "Image.hpp"
+#include "BoxLayout.hpp"
 #include "TopBar.hpp"
 #include <time/time_conversion.hpp>
 #include "Style.hpp"
@@ -19,23 +20,48 @@
 #include "common_data/EventStore.hpp"
 #include "time/time_locale.hpp"
 
+namespace style
+{
+    namespace margins
+    {
+        constexpr auto iconBottom = 4u;
+        constexpr auto textBottom = 5u;
+        constexpr auto between    = 10u;
+    }; // namespace margins
+    namespace time
+    {
+        constexpr auto maxX = 100u;
+    };
+    namespace nat
+    {
+        constexpr auto maxX = 35u;
+    };
+    namespace boxes
+    {
+        namespace left
+        {
+            constexpr auto minX = 165u;
+            constexpr auto maxX = 205u;
+        }; // namespace left
+        namespace right
+        {
+            constexpr auto minX = 165u;
+            constexpr auto maxX = 205u;
+        }; // namespace right
+        namespace center
+        {
+            constexpr auto maxX = time::maxX;
+            constexpr auto minX = 30;
+        }; // namespace center
+    };     // namespace boxes
+} // namespace style
+
 namespace gui::top_bar
 {
     constexpr auto batteryWidgetAsText = true;
     using BatteryType                  = std::conditional<batteryWidgetAsText, BatteryText, BatteryBar>::type;
     constexpr auto signalWidgetAsText  = true;
-    using SignalType = std::conditional<signalWidgetAsText, SignalStrengthText, SignalStrengthBar>::type;
-
-    namespace networkTechnology
-    {
-        constexpr uint32_t x = 100;
-        constexpr uint32_t y = 21;
-        constexpr uint32_t w = 130;
-        constexpr uint32_t h = 20;
-    } // namespace networkTechnology
-
-    static constexpr uint32_t signalOffset  = 20;
-    static constexpr uint32_t batteryOffset = 413;
+    using SignalType = std::conditional<signalWidgetAsText, SignalStrengthText, SignalStrengthBar>::type;    
 
     void Configuration::enable(Indicator indicator)
     {
@@ -79,14 +105,12 @@ namespace gui::top_bar
         return indicatorStatuses;
     }
 
-    TopBar::TopBar(Item *parent, uint32_t x, uint32_t y, uint32_t w, uint32_t h) : Rect{parent, x, y, w, h}
+    TopBar::TopBar(Item *parent, uint32_t x, uint32_t y, uint32_t w, uint32_t h) : HBox{parent, x, y, w, h}
     {
         prepareWidget();
 
-        setFillColor(ColorFullWhite);
-        setBorderColor(ColorNoColor);
-        setFilled(true);
-        setSize(480, 50);
+        setEdges(RectangleEdge::None);
+        setAlignment(Alignment(Alignment::Horizontal::Center));
         updateDrawArea();
 
         preBuildDrawListHook = [this](std::list<Command> &) { updateTime(); };
@@ -94,17 +118,38 @@ namespace gui::top_bar
 
     void TopBar::prepareWidget()
     {
-        battery                      = new BatteryType(this, batteryOffset, 15, 60, 24);
-        signal                       = new SignalType(this, signalOffset, 17, 70, 24);
-        const auto design_sim_offset = 376; // this offset is not final, but it is pixel Purefect
-        sim                          = new SIM(this, design_sim_offset, 12);
+        // left
+        leftBox = new HBox(this, 0, 0, 0, 0);
+        leftBox->setMinimumSize(style::boxes::left::minX, this->drawArea.h);
+        leftBox->setMaximumSize(style::boxes::left::maxX, this->drawArea.h);
+        leftBox->setAlignment(Alignment(Alignment::Horizontal::Left, Alignment::Vertical::Bottom));
+        leftBox->setEdges(RectangleEdge::None);
+        signal                  = new SignalType(leftBox, 0, 0, 0, 0);
+        signal->setMargins(gui::Margins(style::margins::between, 0, 0, style::margins::iconBottom));
+        networkAccessTechnology = new NetworkAccessTechnology(leftBox, 0, 0, 0, 0);
+        networkAccessTechnology->setMaximumSize(style::nat::maxX, this->drawArea.h);
+        networkAccessTechnology->setMargins(gui::Margins(style::margins::between, 0, 0, style::margins::textBottom));
 
-        lock = new Lock(this, 240 - 11, 17);
+        // center
+        centralBox = new HBox(this, 0, 0, 0, 0);
+        centralBox->setAlignment(Alignment(Alignment::Horizontal::Center, Alignment::Vertical::Bottom));
+        centralBox->setEdges(RectangleEdge::None);
+        lock = new Lock(centralBox, 0, 0);
+        lock->setMargins(Margins(0,0,0,style::margins::iconBottom));
+        time = new Time(centralBox, 0, 0, 0, 0);
+        time->setMaximumSize(style::time::maxX, this->drawArea.h);
 
-        time = new Time(this, 0, 0, 480, this->drawArea.h);
-
-        networkAccessTechnology = new NetworkAccessTechnology(
-            this, networkTechnology::x, networkTechnology::y, networkTechnology::w, networkTechnology::h);
+        // right
+        rightBox = new HBox(this, 0, 0, 0, 0);
+        rightBox->setMinimumSize(style::boxes::right::minX, this->drawArea.h);
+        rightBox->setMaximumSize(style::boxes::right::maxX, this->drawArea.h);
+        rightBox->setAlignment(Alignment(Alignment::Horizontal::Right, Alignment::Vertical::Bottom));
+        rightBox->setEdges(RectangleEdge::None);
+        rightBox->setReverseOrder(true);
+        battery = new BatteryType(rightBox, 0, 0, 0, 0);
+        battery->setMargins(gui::Margins(0, 0, style::margins::between, style::margins::iconBottom));
+        sim     = new SIM(rightBox, 0, 0);
+        sim->setMargins(gui::Margins(0, 0, style::margins::between, style::margins::iconBottom));
 
         updateSignalStrength();
         updateNetworkAccessTechnology();
@@ -131,6 +176,8 @@ namespace gui::top_bar
             setIndicatorStatus(indicator, enabled);
         }
         configuration = std::move(config);
+
+        resizeItems();
     }
 
     void TopBar::setIndicatorStatus(Indicator indicator, bool enabled)
@@ -222,8 +269,10 @@ namespace gui::top_bar
     {
         time->update();
         if (enabled) {
+            centralBox->setMinimumSize(style::boxes::center::maxX, this->drawArea.h);
             time->show();
             lock->hide();
+            centralBox->resizeItems();
             return;
         }
         time->hide();
@@ -232,6 +281,7 @@ namespace gui::top_bar
     void TopBar::showLock(bool enabled)
     {
         if (enabled) {
+            centralBox->setMinimumSize(style::boxes::center::minX, this->drawArea.h);
             lock->show();
             time->hide();
             return;

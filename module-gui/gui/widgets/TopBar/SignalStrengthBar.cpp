@@ -30,13 +30,13 @@ namespace gui::top_bar
         : SignalStrengthBase(parent, x, y, w, h)
     {
         img                             = new Image(this, signalMap.at(Store::RssiBar::zero));
-        constexpr auto signalBarMarginX = 10u;
-        img->setMargins(gui::Margins(signalBarMarginX, 0, 0, 0));
+        setMinimumSize(img->getWidth(), style::header::status_bar::height);
     }
 
     void SignalStrengthBar::update()
     {
-        img->set(signalMap.at(signalStrength.rssiBar));
+        //        img->set(signalMap.at(signalStrength.rssiBar));
+        img->set(signal5);
     }
 
 } // namespace gui::top_bar
