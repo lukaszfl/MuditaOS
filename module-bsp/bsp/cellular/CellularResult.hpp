@@ -13,6 +13,7 @@ namespace bsp
         {
             ReceivedAndIdle,
             ReceivedAndFull,
+            ReceivedAfterFull, // ??? strange case
             ReceivingNotStarted,
             TransmittingNotStarted,
         };
@@ -38,8 +39,8 @@ namespace bsp
         struct __attribute__((__packed__)) CellularDMAResultStruct
         {
             CellularResultCode resultCode;
-            size_t dataSize;
-            uint8_t data[127];
+            ssize_t dataSize;
+            uint8_t data[70U];
         };
 
         class CellularFrameResult : public CellularResult
