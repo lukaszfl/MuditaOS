@@ -8,6 +8,12 @@
 #include "gui/widgets/TopBar.hpp"
 #include "log/log.hpp"
 #include <application-desktop/windows/Names.hpp>
+<<<<<<< HEAD
+=======
+#include <service-appmgr/model/ApplicationManager.hpp>
+#include <service-appmgr/Controller.hpp>
+#include <Image.hpp>
+>>>>>>> d389860ea ([EGD-6014] Fix top bar includes)
 
 namespace gui
 {
