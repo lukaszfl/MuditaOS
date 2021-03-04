@@ -10,7 +10,7 @@ import os.path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
-from tools.harness import log
+from tools.harnt ess import log
 from tools. harness.harness import Harness
 from tools.harness import utils
 from tools.harness.interface.error import TestError, Error
