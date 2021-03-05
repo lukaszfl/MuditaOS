@@ -11,6 +11,7 @@
 #include <optional>
 #include <task.h>
 #include <vector>
+#include <message_buffer.h>
 
 #include <bsp/cellular/CellularResult.hpp>
 
@@ -36,19 +37,20 @@ class ATParser : public at::Channel
     ATParser(bsp::Cellular *cellular);
     virtual ~ATParser() = default;
 
-    int ProcessNewData(sys::Service *service, bsp::cellular::CellularDMAResultStruct &result);
+    int ProcessNewData(sys::Service *service, bsp::cellular::CellularATResult *result);
 
     virtual void cmd_init() override final;
     virtual void cmd_send(std::string cmd) override final;
-    virtual std::string cmd_receive() override final;
+    virtual bool cmd_receive(bsp::cellular::CellularResult &frame, std::chrono::milliseconds timeout) override final;
     virtual void cmd_post() override final;
 
   private:
     std::vector<Urc> ParseURC();
-    bsp::Cellular *cellular = nullptr;
-    std::string responseBuffer;
-    std::vector<ATParser::Urc> urcs;
-    bool isInitialized = false;
+    bsp::Cellular *cellular              = nullptr;
+    MessageBufferHandle_t responseBuffer = nullptr;
+    std::string urcBuffer                = {};
+    std::vector<ATParser::Urc> urcs      = {};
+    bool isInitialized                   = false;
 };
 
 #endif // PUREPHONE_ATPARSER_HPP

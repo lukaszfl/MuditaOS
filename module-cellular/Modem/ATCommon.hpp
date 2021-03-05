@@ -7,6 +7,7 @@
 #include <at/ErrorCode.hpp>
 #include <mutex.hpp>
 #include <task.h>
+#include <message_buffer.h>
 #include "BaseChannel.hpp"
 
 namespace sys
@@ -27,6 +28,7 @@ namespace at
 
         cpp_freertos::MutexStandard mutex;
         TaskHandle_t blockedTaskHandle = nullptr;
+        MessageBufferHandle_t responseBuffer = nullptr;
 
       public:
         static const std::string OK;
@@ -47,7 +49,7 @@ namespace at
                          size_t rxCount                    = 0) -> Result final;
         virtual auto cmd(const at::AT &at) -> Result final;
         virtual auto cmd(const at::Cmd &at) -> Result final;
-        virtual void cmd_log(std::string cmd, const Result &result, uint32_t timeout) final;
+        virtual void cmd_log(std::string cmd, const Result &result, std::chrono::milliseconds timeout) final;
     };
 
 }; // namespace at

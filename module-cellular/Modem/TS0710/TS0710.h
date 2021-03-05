@@ -221,6 +221,7 @@ namespace bsp
 {
     class Cellular;
 }
+LOG_DEBUG("[Worker] Processing AT response");
 
 [[noreturn]] void workerTaskFunction(void *ptr);
 
@@ -265,7 +266,7 @@ class TS0710
     std::unique_ptr<bsp::Cellular> pv_cellular;
     ATParser *parser;
 
-    xTaskHandle taskHandle                      = nullptr;
+    xTaskHandle taskHandle = nullptr;
 
     int CloseMultiplexer();
     const static bool hardwareControlFlowEnable = true;
@@ -326,27 +327,13 @@ class TS0710
     {
         DLC_channel *channel = new DLC_channel(static_cast<DLCI_t>(chanel_val), name(chanel_val), pv_cellular.get());
         channels.push_back(channel);
+
+        if (!channel->init()) {
+            channels.pop_back();
+            delete channel;
+        }
+
         return channels.back();
-    }
-
-    void CloseChannel(unsigned index)
-    {
-        if (index >= channels.size()) {
-            LOG_ERROR("Wrong channel index");
-            return;
-        }
-        delete channels[index];
-        channels.erase(channels.begin() + index);
-    }
-
-    void CloseChannel(const std::string &name)
-    {
-        for (size_t i = 0; i < channels.size(); i++) {
-            if (channels[i]->getName() == name) {
-                delete channels[i];
-                channels.erase(channels.begin() + 1);
-            }
-        }
     }
 
     void CloseChannels()
@@ -363,6 +350,7 @@ class TS0710
     {
         return static_cast<DLCI_t>(channels.size() == 0 ? 0 : channels.size() - 1);
     }
+
     ConfState BaudDetectOnce();
     ConfState BaudDetectProcedure(uint16_t timeout_s = 30);
     ConfState ConfProcedure();

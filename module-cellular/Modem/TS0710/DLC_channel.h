@@ -12,7 +12,7 @@
 #include <vector>
 #include <functional>
 
-#include "../ATCommon.hpp"
+#include "module-cellular/Modem/ATCommon.hpp"
 #include "TS0710_types.h"
 #include <bsp/cellular/CellularResult.hpp>
 #include <FreeRTOS.h>
@@ -30,9 +30,7 @@ class DLC_channel : public at::Channel
     bool active = false;
     DLC_ESTABL_SystemParameters_t pv_chanParams{};
     Callback_t pv_callback;
-
-    MessageBufferHandle_t responseBuffer = nullptr;
-    bsp::Cellular *pv_cellular;
+    bsp::Cellular *pv_cellular{};
 
   public:
     // TS0710_DLC_ESTABL ctrlChanEstabl = TS0710_DLC_ESTABL(0);  //use default values to create control channel DLCI0
@@ -44,6 +42,9 @@ class DLC_channel : public at::Channel
         pv_name = "none";
     } // default constructor creates empty channel
     virtual ~DLC_channel();
+
+    bool init();
+    bool establish();
 
     void SendData(std::vector<uint8_t> &data);
 
@@ -69,10 +70,13 @@ class DLC_channel : public at::Channel
 
     virtual void cmd_init() override final;
     virtual void cmd_send(std::string cmd) override final;
-    virtual std::string cmd_receive() override final;
+    virtual bool cmd_receive(bsp::cellular::CellularResult &frame,
+                             std::chrono::milliseconds timeout = std::chrono::milliseconds{300}) override final;
     virtual void cmd_post() override final;
 
-    std::vector<std::string> SendCommandPrompt(const char *cmd, size_t rxCount, uint32_t timeout = 300);
+    std::vector<std::string> SendCommandPrompt(const char *cmd,
+                                               size_t rxCount,
+                                               std::chrono::milliseconds timeout = std::chrono::milliseconds{300});
 
     int ParseInputData(bsp::cellular::CellularFrameResult *result);
 

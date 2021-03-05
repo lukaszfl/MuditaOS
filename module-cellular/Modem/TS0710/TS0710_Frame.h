@@ -40,6 +40,12 @@ class TS0710_Frame
         uint8_t Control;
         std::vector<uint8_t> data;
 
+        frame_t()
+        {}
+
+        explicit frame_t(uint8_t address, uint8_t control) : Address{address}, Control{control}
+        {}
+
         std::vector<uint8_t> serialize()
         {
             std::vector<uint8_t> ret;
@@ -65,7 +71,7 @@ class TS0710_Frame
             unsigned char i   = 1;
             if (Control == static_cast<uint8_t>(TypeOfFrame_e::UIH)) {
                 len = 3; // par. 5.3.6 of GSM0710 document states that for UIH frames, the FCS shall be calculated over
-                         // only the address, control and length fields TODO: include 2-byte address
+                // only the address, control and length fields TODO: include 2-byte address
                 // if (Length > 127)
                 //     len += 1;
             }
@@ -135,7 +141,7 @@ class TS0710_Frame
             unsigned char i   = 1;
             if (Control == static_cast<uint8_t>(TypeOfFrame_e::UIH)) {
                 len = 3; // par. 5.3.6 of GSM0710 document states that for UIH frames, the FCS shall be calculated over
-                         // only the address, control and length fields: include 2-byte address
+                // only the address, control and length fields: include 2-byte address
                 // if (Length > 127)
                 //     len += 1;
             }
@@ -205,11 +211,15 @@ class TS0710_Frame
     /* F9 03 3F 01 1C F9 */
     static bool isComplete(const std::vector<uint8_t> &serData)
     {
-        if (serData.size() < 4)
+        if (serData.size() < 4) {
+            LOG_DEBUG("[FRAME] 1");
             return false; // check if buffer has enough data to get length
+        }
 
-        if ((serData[0] != TS0710_FLAG) || (serData[serData.size() - 1] != TS0710_FLAG))
+        if ((serData[0] != TS0710_FLAG) || (serData[serData.size() - 1] != TS0710_FLAG)) {
+            LOG_DEBUG("[FRAME] 2");
             return false;
+        }
 
         int Length = 0;
         if (serData[3] & 0x01) { // short length
@@ -218,13 +228,17 @@ class TS0710_Frame
         else if (serData.size() > 4) { // long length - another check if enough bytes in buffer
             Length = static_cast<uint16_t>(serData[3] >> 1) + (static_cast<uint16_t>(serData[4]) << 7);
         }
-        else
+        else {
+            LOG_DEBUG("[FRAME] 3");
             return false;
+        }
 
         if (serData.size() >=
             static_cast<size_t>(TS0710_FRAME_HDR_LEN + Length +
-                                (serData[3] & 0x01 ? 0 : 1))) // include extended address byte if present
+                                (serData[3] & 0x01 ? 0 : 1))) { // include extended address byte if present
+            LOG_DEBUG("[FRAME] 4");
             return true;
+        }
 
         return false;
     }
@@ -238,6 +252,13 @@ class TS0710_Frame
     {
         if (serData.size() > 1)
             return (serData[1] >> 2);
+        return -1;
+    }
+
+    DLCI_t getFrameDLCI() const
+    {
+        if (pv_serData.size() > 1)
+            return (pv_serData[1] >> 2);
         return -1;
     }
 };

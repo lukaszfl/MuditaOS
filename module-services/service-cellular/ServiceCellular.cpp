@@ -1328,8 +1328,7 @@ bool ServiceCellular::sendSMS(SMSRecord record)
             std::string body         = UCS2(UTF8(receiver)).str();
             std::string suffix       = "\"";
             std::string command_data = command + body + suffix;
-            if (cmux->CheckATCommandPrompt(
-                    channel->SendCommandPrompt(command_data.c_str(), 1, commandTimeout.count()))) {
+            if (cmux->CheckATCommandPrompt(channel->SendCommandPrompt(command_data.c_str(), 1, commandTimeout))) {
 
                 if (channel->cmd((UCS2(record.body).str() + "\032").c_str(), commandTimeout)) {
                     result = true;
@@ -1367,8 +1366,7 @@ bool ServiceCellular::sendSMS(SMSRecord record)
                     std::string command(at::factory(at::AT::QCMGS) + UCS2(UTF8(receiver)).str() + "\",120," +
                                         std::to_string(i + 1) + "," + std::to_string(messagePartsCount));
 
-                    if (cmux->CheckATCommandPrompt(
-                            channel->SendCommandPrompt(command.c_str(), 1, commandTimeout.count()))) {
+                    if (cmux->CheckATCommandPrompt(channel->SendCommandPrompt(command.c_str(), 1, commandTimeout))) {
                         // prompt sign received, send data ended by "Ctrl+Z"
                         if (channel->cmd(UCS2(messagePart).str() + "\032", commandTimeout, 2)) {
                             result = true;
@@ -2031,7 +2029,7 @@ void ServiceCellular::handle_power_state_change()
 
 bool ServiceCellular::handleUSSDRequest(CellularUSSDMessage::RequestType requestType, const std::string &request)
 {
-    constexpr uint32_t commandTimeout        = 120000;
+    constexpr uint32_t commandTimeout = 120000;
 
     auto channel = cmux->get(TS0710::Channel::Commands);
     if (channel != nullptr) {

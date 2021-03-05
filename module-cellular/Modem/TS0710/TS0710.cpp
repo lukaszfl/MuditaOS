@@ -439,31 +439,40 @@ TS0710::ConfState TS0710::StartMultiplexer()
     return ConfState::Success;
 }
 
-static bool parseCellularResultCMUX(std::vector<uint8_t> &currentFrame, std::vector<uint8_t> &previousData)
-{
-    static bool frameStartDetected = false;
-    for (auto el : previousData) {
-        if (frameStartDetected || el == TS0710_FLAG) {
-            frameStartDetected = true;
-            currentFrame.push_back(el);
-
-            // Check if frame is complete only in case of TS0710_FLAG
-            if (el == TS0710_FLAG) {
-                if (TS0710_Frame::isComplete(currentFrame)) {
-                    frameStartDetected = false;
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
 static void sendFrameToChannel(TS0710 *inst, bsp::cellular::CellularFrameResult &frameResult)
 {
     for (auto *chan : inst->getChannels()) {
         if (frameResult.getFrame().isMyChannel(chan->getDLCI())) {
             chan->ParseInputData(&frameResult);
+            return;
+        }
+    }
+}
+
+static void parseCellularResultCMUX(TS0710 *inst, const bsp::cellular::CellularDMAResultStruct &result)
+{
+    static std::vector<uint8_t> currentFrame = {};
+    static bool frameStartDetected           = false;
+
+    for (int i = 0; i < result.dataSize; ++i) {
+        uint8_t character = result.data[i];
+        if (frameStartDetected || character == TS0710_FLAG) {
+
+            currentFrame.push_back(character);
+
+            // Check if frame is complete only in case of TS0710_FLAG
+            if (frameStartDetected && character == TS0710_FLAG) {
+                if (TS0710_Frame::isComplete(currentFrame)) {
+                    frameStartDetected = false;
+                    bsp::cellular::CellularFrameResult frameResult{currentFrame, result.resultCode};
+                    LOG_DEBUG("FRAME SIZE: %d", sizeof(frameResult));
+                    sendFrameToChannel(inst, frameResult);
+                    currentFrame.clear();
+                    continue;
+                }
+            }
+
+            frameStartDetected = true;
         }
     }
 }
@@ -473,33 +482,31 @@ void workerTaskFunction(void *ptr)
     LOG_DEBUG("[TS0710] Worker start");
     TS0710 *inst = static_cast<TS0710 *>(ptr);
     bsp::cellular::CellularDMAResultStruct result{};
-    std::vector<uint8_t> previousData;
-    std::vector<uint8_t> currentFrame;
 
-    while (1) {
-        auto receivedBytes = inst->pv_cellular->Read(&result, 1024, UINT32_MAX);
+    while (true) {
+        auto receivedBytes = inst->pv_cellular->Read(&result, bsp::cellular::CellularResultStructSize, UINT32_MAX);
+
+        LOG_DEBUG("[Worker] Received bytes: %d", receivedBytes);
+
+        std::stringstream ss;
+
+        for (int i = 0; i < result.dataSize; ++i) {
+            ss << "0x" << std::hex << static_cast<int>(result.data[i]) << " ";
+        }
+
+        LOG_DEBUG("[DATA] > %s", ss.str().c_str());
 
         if (receivedBytes > 0) {
             // AT mode is used only during initialization phase
             if (inst->mode == TS0710::Mode::AT) {
                 LOG_DEBUG("[Worker] Processing AT response");
-                inst->parser->ProcessNewData(inst->pv_parent, result);
+                bsp::cellular::CellularATResult atResult{result};
+                inst->parser->ProcessNewData(inst->pv_parent, &atResult);
             }
             // CMUX mode is default operation mode
-            else if (inst->mode == TS0710::Mode::CMUX) {
+            else if (inst->mode == TS0710::Mode::CMUX || inst->mode == TS0710::Mode::CMUX_SETUP) {
                 LOG_DEBUG("[Worker] Processing CMUX response");
-                previousData.insert(previousData.end(), std::begin(result.data), std::end(result.data));
-
-                if (parseCellularResultCMUX(currentFrame, previousData)) {
-                    bsp::cellular::CellularFrameResult frameResult{currentFrame, result.resultCode};
-                    sendFrameToChannel(inst, frameResult);
-                    currentFrame.clear();
-                }
-                else {
-                    if (!currentFrame.empty() && currentFrame[0] == TS0710_FLAG) {
-                        previousData = currentFrame;
-                    }
-                }
+                parseCellularResultCMUX(inst, result);
             }
         }
     }

@@ -4,7 +4,6 @@
 #include "DLC_channel.h"
 
 #include "TS0710_DATA.h"
-#include "TS0710_DLC_ESTABL.h"
 #include "TS0710_DLC_RELEASE.h"
 #include "TS0710_Frame.h"
 
@@ -22,24 +21,23 @@ DLC_channel::DLC_channel(DLCI_t DLCI, const std::string &name, bsp::Cellular *ce
     if (callback != nullptr)
         pv_callback = callback;
 
-    DLC_ESTABL_SystemParameters_t system_parameters{};
-    system_parameters.TypeOfFrame             = TypeOfFrame_e::SABM;
-    system_parameters.ConvergenceLayer        = 1;
-    system_parameters.Priority                = 1;
-    system_parameters.AckTime                 = 100; // 100ms default
-    system_parameters.MaxFrameSize            = 128;
-    system_parameters.MaxNumOfRetransmissions = 3; // default 3
-    system_parameters.ErrRecovWindowSize      = 2; // default 2
+    pv_chanParams.TypeOfFrame             = TypeOfFrame_e::SABM;
+    pv_chanParams.ConvergenceLayer        = 1;
+    pv_chanParams.Priority                = 1;
+    pv_chanParams.AckTime                 = 100; // 100ms default
+    pv_chanParams.MaxFrameSize            = 128;
+    pv_chanParams.MaxNumOfRetransmissions = 3; // default 3
+    pv_chanParams.ErrRecovWindowSize      = 2; // default 2
 
-    // TODO set appropraite buffer size
-    responseBuffer = xMessageBufferCreate(100);
+    responseBuffer = xMessageBufferCreate(pv_chanParams.MaxFrameSize);
+}
 
-    TS0710_DLC_ESTABL establ = TS0710_DLC_ESTABL(DLCI, system_parameters, cellular);
-    pv_chanParams            = establ.getParams();
+bool DLC_channel::init()
+{
+    active = establish();
+    LOG_INFO("Create channel %s: %s", pv_name.c_str(), active ? "TRUE" : "FALSE");
 
-    // wait for return & set active
-    active = establ.getResponse();
-    LOG_DEBUG("Create channel %s: %s", pv_name.c_str(), active ? "TRUE" : "FALSE");
+    return active;
 }
 
 DLC_channel::~DLC_channel()
@@ -52,6 +50,49 @@ void DLC_channel::SendData(std::vector<uint8_t> &data)
     TS0710_DATA _data = TS0710_DATA(pv_DLCI, pv_chanParams, data, pv_cellular);
 }
 
+bool DLC_channel::establish()
+{
+    LOG_DEBUG("Sending %s frame to DLCI %i", TypeOfFrame_text[pv_chanParams.TypeOfFrame].c_str(), pv_DLCI);
+
+    TS0710_Frame frame_c(TS0710_Frame::frame_t(static_cast<uint8_t>(pv_DLCI << 2) | (1 << 1),
+                                               static_cast<uint8_t>(pv_chanParams.TypeOfFrame)));
+
+    LOG_DEBUG("[DLC] Ser data len: %d", frame_c.getSerData().size());
+
+    {
+        cpp_freertos::LockGuard lock(mutex);
+        blockedTaskHandle = xTaskGetCurrentTaskHandle();
+    }
+
+    bsp::cellular::CellularFrameResult response{};
+
+    for (int retries = 0; retries < pv_chanParams.MaxNumOfRetransmissions; ++retries) {
+        pv_cellular->Write(static_cast<void *>(frame_c.getSerData().data()), frame_c.getSerData().size());
+
+        if (cmd_receive(response)) {
+            LOG_INFO("Got response");
+
+            TS0710_Frame frame = response.getFrame();
+
+            if (response.getFrame().getFrameDLCI() == pv_DLCI &&
+                (frame.getFrame().Control == (static_cast<uint8_t>(TypeOfFrame_e::UA) & ~(1 << 4)))) {
+                LOG_INFO("Frame correct");
+                return true;
+            }
+
+            LOG_INFO("ERROR - discarding frame !");
+            return false;
+        }
+    }
+
+    LOG_ERROR("Sending frame failed");
+    {
+        cpp_freertos::LockGuard lock(mutex);
+        blockedTaskHandle = nullptr;
+    }
+    return false;
+}
+
 void DLC_channel::cmd_init()
 {}
 
@@ -61,20 +102,18 @@ void DLC_channel::cmd_send(std::string cmd)
     SendData(data);
 }
 
-std::string DLC_channel::cmd_receive()
+bool DLC_channel::cmd_receive(bsp::cellular::CellularResult &frame, std::chrono::milliseconds timeout)
 {
-    bsp::cellular::CellularFrameResult result;
-    if (!xMessageBufferReceive(responseBuffer, &result, sizeof(result), 0)) {
-        return {};
-    }
-
-    return result.getFrameDataAsString();
+    return (xMessageBufferReceive(
+                responseBuffer, &frame, 2 * pv_chanParams.MaxFrameSize, pdMS_TO_TICKS(timeout.count())) != 0);
 }
 
 void DLC_channel::cmd_post()
 {}
 
-std::vector<std::string> DLC_channel::SendCommandPrompt(const char *cmd, size_t rxCount, uint32_t timeout)
+std::vector<std::string> DLC_channel::SendCommandPrompt(const char *cmd,
+                                                        size_t rxCount,
+                                                        std::chrono::milliseconds timeout)
 {
     std::vector<std::string> tokens;
 
@@ -88,7 +127,8 @@ std::vector<std::string> DLC_channel::SendCommandPrompt(const char *cmd, size_t 
 
     // Wait for response:
     while (true) {
-        if (!xMessageBufferReceive(responseBuffer, &responseFrame, sizeof(responseFrame), pdMS_TO_TICKS(timeout))) {
+        if (!xMessageBufferReceive(
+                responseBuffer, &responseFrame, pv_chanParams.MaxFrameSize, pdMS_TO_TICKS(timeout.count()))) {
             result.code = at::Result::Code::TIMEOUT;
         }
         else {
@@ -114,7 +154,11 @@ std::vector<std::string> DLC_channel::SendCommandPrompt(const char *cmd, size_t 
 
 int DLC_channel::ParseInputData(bsp::cellular::CellularFrameResult *result)
 {
+    cpp_freertos::LockGuard lock(mutex);
+
+    LOG_DEBUG("[DLC] Parse input data: DLC %d", this->getDLCI());
     if (blockedTaskHandle != nullptr) {
+        LOG_DEBUG("[DLC] Adding to message buffer");
         xMessageBufferSend(responseBuffer, result, sizeof(*result), 0);
     }
     else if (pv_callback != nullptr) {

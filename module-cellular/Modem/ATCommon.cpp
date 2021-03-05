@@ -25,19 +25,18 @@ const std::string Channel::CMS_ERROR  = "+CMS ERROR:";
 // const std::string Channel::RING = "RING";
 // const std::string Channel::NO_DIALTONE = "NO DIALTONE";
 
-void Channel::cmd_log(std::string cmd, const Result &result, uint32_t timeout)
+void Channel::cmd_log(std::string cmd, const Result &result, std::chrono::milliseconds timeout)
 {
     cmd.erase(std::remove(cmd.begin(), cmd.end(), '\r'), cmd.end());
     cmd.erase(std::remove(cmd.begin(), cmd.end(), '\n'), cmd.end());
     switch (result.code) {
     case Result::Code::TIMEOUT: {
-        LOG_ERROR("[AT]: >%s<, timeout %" PRIu32
-                  " - please check the value with Quectel_EC25&EC21_AT_Commands_Manual_V1.3.pdf",
-                  cmd.c_str(),
-                  timeout);
+        LOG_ERROR(
+            "[AT]: >%s<, timeout %llu - please check the value with Quectel_EC25&EC21_AT_Commands_Manual_V1.3.pdf",
+            cmd.c_str(),
+            timeout.count());
     } break;
     case Result::Code::ERROR: {
-
         LOG_ERROR("[AT]: >%s<, >%s<", cmd.c_str(), result.response.size() ? result.response.back().c_str() : "");
     } break;
     default:
@@ -63,18 +62,19 @@ std::string Channel::formatCommand(const std::string &cmd) const
 Result Channel::cmd(const std::string &cmd, std::chrono::milliseconds timeout, size_t rxCount)
 {
     Result result;
+    bsp::cellular::CellularATResult frame{};
+
     blockedTaskHandle = xTaskGetCurrentTaskHandle();
+
+    ATStream atStream(rxCount);
 
     cmd_init();
     std::string cmdFixed = formatCommand(cmd);
-
     cmd_send(cmdFixed);
 
     uint32_t currentTime   = cpp_freertos::Ticks::GetTicks();
     uint32_t timeoutNeeded = ((timeout.count() == UINT32_MAX) ? UINT32_MAX : currentTime + timeout.count());
     uint32_t timeElapsed   = currentTime;
-
-    ATStream atStream(rxCount);
 
     while (true) {
         if (timeoutNeeded != UINT32_MAX && timeElapsed >= timeoutNeeded) {
@@ -82,11 +82,9 @@ Result Channel::cmd(const std::string &cmd, std::chrono::milliseconds timeout, s
             break;
         }
 
-        auto taskUnlocked = ulTaskNotifyTake(pdTRUE, timeoutNeeded - timeElapsed);
-        timeElapsed       = cpp_freertos::Ticks::GetTicks();
-
-        if (taskUnlocked) {
-            atStream.write(cmd_receive());
+        if (cmd_receive(frame, std::chrono::milliseconds{0})) {
+            timeElapsed = cpp_freertos::Ticks::GetTicks();
+            atStream.write(frame.getData());
 
             if (atStream.isReady()) {
                 result = atStream.getResult();
@@ -95,10 +93,9 @@ Result Channel::cmd(const std::string &cmd, std::chrono::milliseconds timeout, s
         }
     }
 
-    blockedTaskHandle = nullptr;
     cmd_post();
-    cmd_log(cmdFixed, result, timeout.count());
-
+    cmd_log(cmdFixed, result, timeout);
+    blockedTaskHandle = nullptr;
     return result;
 }
 
