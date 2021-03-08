@@ -29,7 +29,7 @@ DLC_channel::DLC_channel(DLCI_t DLCI, const std::string &name, bsp::Cellular *ce
     pv_chanParams.MaxNumOfRetransmissions = 3; // default 3
     pv_chanParams.ErrRecovWindowSize      = 2; // default 2
 
-    responseBuffer = xMessageBufferCreate(pv_chanParams.MaxFrameSize);
+    responseBuffer = xMessageBufferCreate(5 * pv_chanParams.MaxFrameSize);
 }
 
 bool DLC_channel::init()
@@ -57,8 +57,6 @@ bool DLC_channel::establish()
     TS0710_Frame frame_c(TS0710_Frame::frame_t(static_cast<uint8_t>(pv_DLCI << 2) | (1 << 1),
                                                static_cast<uint8_t>(pv_chanParams.TypeOfFrame)));
 
-    LOG_DEBUG("[DLC] Ser data len: %d", frame_c.getSerData().size());
-
     {
         cpp_freertos::LockGuard lock(mutex);
         blockedTaskHandle = xTaskGetCurrentTaskHandle();
@@ -69,27 +67,24 @@ bool DLC_channel::establish()
     for (int retries = 0; retries < pv_chanParams.MaxNumOfRetransmissions; ++retries) {
         pv_cellular->Write(static_cast<void *>(frame_c.getSerData().data()), frame_c.getSerData().size());
 
-        if (cmd_receive(response)) {
-            LOG_INFO("Got response");
+        if (cmd_receive(&response)) {
 
             TS0710_Frame frame = response.getFrame();
 
             if (response.getFrame().getFrameDLCI() == pv_DLCI &&
                 (frame.getFrame().Control == (static_cast<uint8_t>(TypeOfFrame_e::UA) & ~(1 << 4)))) {
-                LOG_INFO("Frame correct");
                 return true;
             }
 
             LOG_INFO("ERROR - discarding frame !");
-            return false;
         }
     }
 
-    LOG_ERROR("Sending frame failed");
     {
         cpp_freertos::LockGuard lock(mutex);
         blockedTaskHandle = nullptr;
     }
+
     return false;
 }
 
@@ -102,10 +97,10 @@ void DLC_channel::cmd_send(std::string cmd)
     SendData(data);
 }
 
-bool DLC_channel::cmd_receive(bsp::cellular::CellularResult &frame, std::chrono::milliseconds timeout)
+bool DLC_channel::cmd_receive(bsp::cellular::CellularResult *result, std::chrono::milliseconds timeout)
 {
     return (xMessageBufferReceive(
-                responseBuffer, &frame, 2 * pv_chanParams.MaxFrameSize, pdMS_TO_TICKS(timeout.count())) != 0);
+                responseBuffer, result, 2 * pv_chanParams.MaxFrameSize, pdMS_TO_TICKS(timeout.count())) != 0);
 }
 
 void DLC_channel::cmd_post()
@@ -115,31 +110,40 @@ std::vector<std::string> DLC_channel::SendCommandPrompt(const char *cmd,
                                                         size_t rxCount,
                                                         std::chrono::milliseconds timeout)
 {
+    static bsp::cellular::CellularFrameResult responseFrame{};
     std::vector<std::string> tokens;
 
-    blockedTaskHandle = xTaskGetCurrentTaskHandle();
+    {
+        cpp_freertos::LockGuard lock(mutex);
+        blockedTaskHandle = xTaskGetCurrentTaskHandle();
+    }
+
     at::Result result;
-    bsp::cellular::CellularFrameResult responseFrame;
 
     cmd_init();
     std::string cmdFixed = formatCommand(cmd);
+    LOG_DEBUG("[DLC] Cmd send");
     cmd_send(cmdFixed);
+    LOG_DEBUG("[DLC] Cmd sent");
 
     // Wait for response:
     while (true) {
-        if (!xMessageBufferReceive(
-                responseBuffer, &responseFrame, pv_chanParams.MaxFrameSize, pdMS_TO_TICKS(timeout.count()))) {
+        if (cmd_receive(&responseFrame, timeout)) {
+            LOG_DEBUG("[DLC] Timeout");
             result.code = at::Result::Code::TIMEOUT;
         }
         else {
+            LOG_DEBUG("[DLC] Processing frame");
             auto str = responseFrame.getFrameDataAsString();
             // tokenize responseBuffer
             auto pos = str.find('>');
             if (pos != std::string::npos) {
+                LOG_DEBUG("[DLC] Pushing token");
                 tokens.push_back(str.substr(pos, strlen(">")));
                 break;
             }
             if (tokens.size() >= rxCount) {
+                LOG_DEBUG("[DLC] More tokends than rxCount");
                 break;
             }
         }
@@ -147,7 +151,11 @@ std::vector<std::string> DLC_channel::SendCommandPrompt(const char *cmd,
 
     cmd_log(cmdFixed, result, timeout);
     cmd_post();
-    blockedTaskHandle = nullptr;
+
+    {
+        cpp_freertos::LockGuard lock(mutex);
+        blockedTaskHandle = nullptr;
+    }
 
     return tokens;
 }
@@ -156,9 +164,7 @@ int DLC_channel::ParseInputData(bsp::cellular::CellularFrameResult *result)
 {
     cpp_freertos::LockGuard lock(mutex);
 
-    LOG_DEBUG("[DLC] Parse input data: DLC %d", this->getDLCI());
     if (blockedTaskHandle != nullptr) {
-        LOG_DEBUG("[DLC] Adding to message buffer");
         xMessageBufferSend(responseBuffer, result, sizeof(*result), 0);
     }
     else if (pv_callback != nullptr) {

@@ -212,12 +212,10 @@ class TS0710_Frame
     static bool isComplete(const std::vector<uint8_t> &serData)
     {
         if (serData.size() < 4) {
-            LOG_DEBUG("[FRAME] 1");
             return false; // check if buffer has enough data to get length
         }
 
         if ((serData[0] != TS0710_FLAG) || (serData[serData.size() - 1] != TS0710_FLAG)) {
-            LOG_DEBUG("[FRAME] 2");
             return false;
         }
 
@@ -229,14 +227,12 @@ class TS0710_Frame
             Length = static_cast<uint16_t>(serData[3] >> 1) + (static_cast<uint16_t>(serData[4]) << 7);
         }
         else {
-            LOG_DEBUG("[FRAME] 3");
             return false;
         }
 
         if (serData.size() >=
             static_cast<size_t>(TS0710_FRAME_HDR_LEN + Length +
                                 (serData[3] & 0x01 ? 0 : 1))) { // include extended address byte if present
-            LOG_DEBUG("[FRAME] 4");
             return true;
         }
 

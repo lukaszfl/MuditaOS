@@ -64,8 +64,6 @@ int ATParser::ProcessNewData(sys::Service *service, bsp::cellular::CellularATRes
         urcBuffer.append(result->getData());
     }
 
-    LOG_DEBUG("[AT] %s", result->getData().c_str());
-
     auto ret = ParseURC();
 
     if (blockedTaskHandle != nullptr) {
@@ -109,15 +107,15 @@ void ATParser::cmd_send(std::string cmd)
     cellular->Write(const_cast<char *>(cmd.c_str()), cmd.size());
 }
 
-bool ATParser::cmd_receive(bsp::cellular::CellularResult &frame,
+bool ATParser::cmd_receive(bsp::cellular::CellularResult *result,
                            std::chrono::milliseconds timeout = std::chrono::milliseconds{0})
 {
-    // TODO add constexpr somewhere with AT max size and MUX max size
-    return (xMessageBufferReceive(responseBuffer, &frame, 128, pdMS_TO_TICKS(timeout.count())) != 0);
+    return (xMessageBufferReceive(responseBuffer, result, 256, pdMS_TO_TICKS(timeout.count())) != 0);
 }
 
 void ATParser::cmd_post()
 {
     cpp_freertos::LockGuard lock(mutex);
     urcBuffer.erase(); // TODO:M.P is it okay to flush buffer here ?
+    xMessageBufferReset(responseBuffer);
 }

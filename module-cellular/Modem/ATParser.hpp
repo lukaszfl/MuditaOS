@@ -41,7 +41,7 @@ class ATParser : public at::Channel
 
     virtual void cmd_init() override final;
     virtual void cmd_send(std::string cmd) override final;
-    virtual bool cmd_receive(bsp::cellular::CellularResult &frame, std::chrono::milliseconds timeout) override final;
+    virtual bool cmd_receive(bsp::cellular::CellularResult *result, std::chrono::milliseconds timeout) override final;
     virtual void cmd_post() override final;
 
   private:

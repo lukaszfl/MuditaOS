@@ -27,7 +27,7 @@ namespace at
         [[nodiscard]] auto formatCommand(const std::string &cmd) const -> std::string;
 
         cpp_freertos::MutexStandard mutex;
-        TaskHandle_t blockedTaskHandle = nullptr;
+        TaskHandle_t blockedTaskHandle       = nullptr;
         MessageBufferHandle_t responseBuffer = nullptr;
 
       public:

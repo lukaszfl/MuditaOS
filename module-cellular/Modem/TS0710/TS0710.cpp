@@ -392,21 +392,20 @@ TS0710::ConfState TS0710::StartMultiplexer()
         }
     };
 
-    // channels[0]->setCallback(controlCallback);
-
-    // TODO: Open remaining channels
     OpenChannel(Channel::Commands);
     OpenChannel(Channel::Notifications);
     OpenChannel(Channel::Data);
+    LOG_DEBUG("[TS0710] Channels open");
 
-    mode           = Mode::CMUX;
-    DLC_channel *c = get(Channel::Commands);
-    if (c != nullptr) {
+    mode                 = Mode::CMUX;
+    DLC_channel *channel = get(Channel::Commands);
+    if (channel != nullptr) {
         // Route URCs to second (Notifications) MUX channel
-        c->cmd(at::AT::SET_URC_CHANNEL);
+        LOG_DEBUG("[TS0710] Setting URC Channel");
+        channel->cmd(at::AT::SET_URC_CHANNEL);
         LOG_DEBUG("Sending test ATI");
-        auto res = c->cmd(at::AT::SW_INFO);
-        res      = c->cmd(at::AT::CSQ);
+        auto res = channel->cmd(at::AT::SW_INFO);
+        res      = channel->cmd(at::AT::CSQ);
         if (res) {
             auto beg       = res.response[0].find(' ');
             auto end       = res.response[0].find(',', 1);
@@ -436,6 +435,7 @@ TS0710::ConfState TS0710::StartMultiplexer()
         return ConfState::Failure;
     }
 
+    LOG_DEBUG("[TS0710] Mux started");
     return ConfState::Success;
 }
 
@@ -465,7 +465,6 @@ static void parseCellularResultCMUX(TS0710 *inst, const bsp::cellular::CellularD
                 if (TS0710_Frame::isComplete(currentFrame)) {
                     frameStartDetected = false;
                     bsp::cellular::CellularFrameResult frameResult{currentFrame, result.resultCode};
-                    LOG_DEBUG("FRAME SIZE: %d", sizeof(frameResult));
                     sendFrameToChannel(inst, frameResult);
                     currentFrame.clear();
                     continue;
@@ -489,12 +488,6 @@ void workerTaskFunction(void *ptr)
         LOG_DEBUG("[Worker] Received bytes: %d", receivedBytes);
 
         std::stringstream ss;
-
-        for (int i = 0; i < result.dataSize; ++i) {
-            ss << "0x" << std::hex << static_cast<int>(result.data[i]) << " ";
-        }
-
-        LOG_DEBUG("[DATA] > %s", ss.str().c_str());
 
         if (receivedBytes > 0) {
             // AT mode is used only during initialization phase

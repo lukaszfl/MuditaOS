@@ -8,15 +8,15 @@ namespace bsp
 {
     namespace cellular
     {
-        constexpr size_t EmptyCellularResultSize = 12;
+        constexpr size_t EmptyCellularResultSize         = 12;
         constexpr size_t CellularResultStructMaxDataSize = 70;
-        constexpr size_t CellularResultStructSize = CellularResultStructMaxDataSize + EmptyCellularResultSize;
+        constexpr size_t CellularResultStructSize        = CellularResultStructMaxDataSize + EmptyCellularResultSize;
 
         enum CellularResultCode
         {
             ReceivedAndIdle,
             ReceivedAndFull,
-            ReceivedAfterFull, // ??? strange case
+            ReceivedAfterFull,
             ReceivingNotStarted,
             TransmittingNotStarted,
         };
@@ -27,6 +27,8 @@ namespace bsp
 
           public:
             explicit CellularResult(const CellularResultCode resultCode) : resultCode{resultCode} {};
+
+            [[nodiscard]] virtual auto getData() -> const std::string & = 0;
 
             auto getResultCode() -> CellularResultCode
             {
@@ -52,30 +54,39 @@ namespace bsp
 
           public:
             explicit CellularATResult(const CellularResultCode resultCode = ReceivedAndIdle)
-                : CellularResult{resultCode} {
-                      data.reserve(64);
-                  };
+                : CellularResult{resultCode}
+            {
+                reserve();
+            };
 
-            explicit CellularATResult(std::vector<uint8_t> &data,
-            const CellularResultCode resultCode = ReceivedAndIdle)
-            : CellularResult{resultCode}, data{data.begin(), data.end()} {};
+            explicit CellularATResult(std::vector<uint8_t> &data, const CellularResultCode resultCode = ReceivedAndIdle)
+                : CellularResult{resultCode}, data{data.begin(), data.end()} {};
 
             explicit CellularATResult(CellularDMAResultStruct &dmaResult)
                 : CellularResult{dmaResult.resultCode}, data{utils::to_string(dmaResult.data)} {};
 
-            [[nodiscard]] auto getData() -> const std::string &
+            [[nodiscard]] auto getData() -> const std::string & override
             {
                 return data;
+            }
+
+            auto reserve() -> void
+            {
+                data.reserve(256);
             }
         };
 
         class CellularFrameResult : public CellularResult
         {
             TS0710_Frame frame;
+            std::string data;
 
           public:
             explicit CellularFrameResult(const CellularResultCode resultCode = ReceivedAndIdle)
-                : CellularResult{resultCode} {};
+                : CellularResult{resultCode}
+            {
+                reserve();
+            };
 
             explicit CellularFrameResult(std::vector<uint8_t> &data,
                                          const CellularResultCode resultCode = ReceivedAndIdle)
@@ -86,9 +97,22 @@ namespace bsp
                 return frame;
             }
 
-            [[nodiscard]] auto getFrameDataAsString() -> std::string const
+            [[nodiscard]] auto getFrameDataAsString() -> const std::string &
             {
-                return std::string{frame.getData().begin(), frame.getData().end()};
+                if (data.empty()) {
+                    data = std::string{frame.getData().begin(), frame.getData().end()};
+                }
+                return data;
+            }
+
+            [[nodiscard]] auto getData() -> const std::string & override
+            {
+                return getFrameDataAsString();
+            }
+
+            auto reserve() -> void
+            {
+                frame.getData().reserve(256);
             }
         };
     } // namespace cellular

@@ -7,7 +7,6 @@
 #include <log/log.hpp>
 #include <string>
 #include <ticks.hpp>
-#include <vector>
 #include <inttypes.h> // for PRIu32
 #include <Utils.hpp>
 #include "ATStream.hpp"
@@ -61,8 +60,10 @@ std::string Channel::formatCommand(const std::string &cmd) const
 
 Result Channel::cmd(const std::string &cmd, std::chrono::milliseconds timeout, size_t rxCount)
 {
+    bsp::cellular::CellularResult *response;
+    response = static_cast<bsp::cellular::CellularResult *>(pvPortMalloc(256));
+
     Result result;
-    bsp::cellular::CellularATResult frame{};
 
     blockedTaskHandle = xTaskGetCurrentTaskHandle();
 
@@ -82,19 +83,21 @@ Result Channel::cmd(const std::string &cmd, std::chrono::milliseconds timeout, s
             break;
         }
 
-        if (cmd_receive(frame, std::chrono::milliseconds{0})) {
-            timeElapsed = cpp_freertos::Ticks::GetTicks();
-            atStream.write(frame.getData());
+        if (cmd_receive(response, std::chrono::milliseconds{0})) {
+            atStream.write(response->getData());
 
             if (atStream.isReady()) {
                 result = atStream.getResult();
                 break;
             }
         }
+
+        timeElapsed = cpp_freertos::Ticks::GetTicks();
     }
 
     cmd_post();
     cmd_log(cmdFixed, result, timeout);
+    vPortFree(response);
     blockedTaskHandle = nullptr;
     return result;
 }

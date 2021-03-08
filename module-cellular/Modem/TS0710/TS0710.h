@@ -221,7 +221,6 @@ namespace bsp
 {
     class Cellular;
 }
-LOG_DEBUG("[Worker] Processing AT response");
 
 [[noreturn]] void workerTaskFunction(void *ptr);
 
@@ -284,7 +283,6 @@ class TS0710
     sys::Service *pv_parent;
 
     DLC_channel::Callback_t controlCallback = nullptr;
-    std::queue<uint8_t> RXFifo;
 
     enum class EchoCancellerStrength
     {

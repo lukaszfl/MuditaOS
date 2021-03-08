@@ -29,10 +29,10 @@ namespace at
         /// {
         virtual void cmd_log(std::string cmd, const Result &result, std::chrono::milliseconds timeout)
         {}
-        virtual void cmd_init()                                                                             = 0;
-        virtual void cmd_send(std::string cmd)                                                              = 0;
-        virtual bool cmd_receive(bsp::cellular::CellularResult &frame, std::chrono::milliseconds timeoutMs) = 0;
-        virtual void cmd_post()                                                                             = 0;
+        virtual void cmd_init()                                                                              = 0;
+        virtual void cmd_send(std::string cmd)                                                               = 0;
+        virtual bool cmd_receive(bsp::cellular::CellularResult *result, std::chrono::milliseconds timeoutMs) = 0;
+        virtual void cmd_post()                                                                              = 0;
         /// }
     };
 } // namespace at
