@@ -21,7 +21,7 @@ install(TARGETS ${PROJECT_NAME} DESTINATION "./" COMPONENT Standalone)
 target_link_libraries( ${PROJECT_NAME}  ${GTKMM_LIBRARIES}  )
 target_include_directories(${PROJECT_NAME} PUBLIC ${GTKMM_LIBRARY_DIRS} )
 target_include_directories( ${PROJECT_NAME}  PUBLIC ${GTKMM_INCLUDE_DIRS}  )
-target_link_libraries( ${PROJECT_NAME} ${LIBRT} rt pthread )
+target_link_libraries( ${PROJECT_NAME} ${LIBRT} rt pthread stdc++)
 
 #key_code
 target_include_directories( ${PROJECT_NAME}  PUBLIC "${CMAKE_SOURCE_DIR}/"  )
