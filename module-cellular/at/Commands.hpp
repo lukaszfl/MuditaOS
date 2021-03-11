@@ -199,7 +199,7 @@ namespace at
             {AT::STORE_SETTINGS_ATW, {"AT&W"}},
             {AT::CEER, {"AT+CEER"}},
             {AT::QIGETERROR, {"AT+QIGETERROR"}},
-            {AT::VTS, {"AT+VTS="}},
+            {AT::VTS, {"AT+VTS=", 1000ms}}, // timeout is network-dependent. Default duration is 3/10 sec.
             {AT::QLDTMF, {"AT+QLDTMF=1,"}},
             {AT::CUSD_OPEN_SESSION, {"AT+CUSD=1"}},
             {AT::CUSD_CLOSE_SESSION, {"AT+CUSD=2"}},

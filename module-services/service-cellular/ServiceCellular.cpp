@@ -1794,7 +1794,7 @@ bool ServiceCellular::transmitDtmfTone(uint32_t digit)
         resp                   = channel->cmd(command.getCmd() + dtmfString);
         if (resp) {
             command = at::factory(at::AT::VTS);
-            resp    = channel->cmd(command.getCmd() + dtmfString);
+            resp    = channel->cmd(command.getCmd() + dtmfString, command.getTimeout());
         }
     }
     return resp.code == at::Result::Code::OK;
