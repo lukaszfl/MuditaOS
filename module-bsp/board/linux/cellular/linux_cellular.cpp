@@ -258,6 +258,9 @@ namespace bsp
                 return Store::GSM::Tray::IN;
             }
 
+            void set_sim_card_presence(bool presence)
+            {}
+
             void hotswap_trigger()
             {}
 

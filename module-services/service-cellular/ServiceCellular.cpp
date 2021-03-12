@@ -183,6 +183,9 @@ ServiceCellular::ServiceCellular()
     ussdTimer = std::make_unique<sys::Timer>("ussd", this, 1000);
     ussdTimer->connect([&](sys::Timer &) { handleUSSDTimer(); });
 
+    simTimer = std::make_unique<sys::Timer>("sim", this, 1000*10, sys::Timer::Type::SingleShot);
+    simTimer->connect([&](sys::Timer &) { handleSIMTimer(); });
+
     ongoingCall.setStartCallAction([=](const CalllogRecord &rec) {
         auto call = DBServiceAPI::CalllogAdd(this, rec);
         if (call.ID == DB_ID_NONE) {
@@ -206,6 +209,7 @@ ServiceCellular::ServiceCellular()
 
         std::string logStr = utils::removeNewLines(data);
         LOG_DEBUG("Data: %s", logStr.c_str());
+      LOG_ERROR("Data: %s", logStr.c_str());
         atURCStream.write(data);
         auto vUrc = atURCStream.getURCList();
 
@@ -330,11 +334,12 @@ void ServiceCellular::registerMessageHandlers()
 
     connect(typeid(CellularChangeSimDataMessage), [&](sys::Message *request) -> sys::MessagePointer {
         auto msg                    = static_cast<CellularChangeSimDataMessage *>(request);
+        LOG_ERROR("SIM CHanged ...................");
         Store::GSM::get()->selected = msg->getSim();
-        bsp::cellular::sim::sim_sel();
-        bsp::cellular::sim::hotswap_trigger();
+        handle_select_sim();
         return std::make_shared<CellularResponseMessage>(true);
     });
+
 
     connect(typeid(CellularStartOperatorsScanMessage), [&](sys::Message *request) -> sys::MessagePointer {
         auto msg = static_cast<CellularStartOperatorsScanMessage *>(request);
@@ -940,7 +945,7 @@ std::optional<std::shared_ptr<CellularMessage>> ServiceCellular::identifyNotific
 
     std::string logStr = utils::removeNewLines(str);
     LOG_DEBUG("Notification:: %s", logStr.c_str());
-
+    LOG_ERROR("Notification:: %s", logStr.c_str());
     auto urc = at::urc::UrcFactory::Create(str);
     urc->Handle(urcHandler);
 
@@ -1094,6 +1099,8 @@ auto ServiceCellular::handleSimResponse(sys::Message *msgl) -> std::shared_ptr<s
 
 bool ServiceCellular::handleSimState(at::SimState state, const std::string message)
 {
+
+    simTimer->stop(); //TODO moze znajdzie sie jakis case do wysylki message typu Not Ready
 
     std::shared_ptr<CellularMessage> response;
     switch (state) {
@@ -1603,11 +1610,61 @@ bool ServiceCellular::handle_sim_sanity_check()
     return ret;
 }
 
+void ServiceCellular::handleSIMTimer()
+{
+    LOG_ERROR("Sim timer");
+    //zablokuj mozliwosc sima(aby wejsc w ten tryb gdzie sim jest nie podpiety, to znosi tez zawolanie hotswap_trigger)
+    bsp::cellular::sim::set_sim_card_presence(false);
+
+    //send message w stylu
+    std::shared_ptr<CellularMessage> response = std::move(std::make_unique<CellularSimNotReadyNotification>()); //tak zastalem unique - shared, pytalem nie wyjasnilo sie
+    bus.sendMulticast(response, sys::BusChannel::ServiceCellularNotifications);
+}
+
 bool ServiceCellular::handle_select_sim()
 {
 
     bsp::cellular::sim::sim_sel();
     bsp::cellular::sim::hotswap_trigger();
+
+    ///here could be small delay let say 10-100ms
+    vTaskDelay(100);
+    /// check card
+    DLC_channel *channel = cmux->get(TS0710::Channel::Commands); //warning see define linux, clean up
+
+
+    auto resp = channel->cmd(at::factory(at::AT::CPIN) + "?");//dla ladnosci mozna uzyc if (auto state = simCard.simStateWithMessage(msg); state) {
+
+    if (resp.code == at::Result::Code::OK) {
+        // in this case just go (ready, puk etc ... should be handled via URC)
+    }
+    else {
+        //resp
+
+        if (std::holds_alternative<at::EquipmentErrorCode>(resp.errorCode)) {
+            /*
+             * in our scope
+             *
+             *         SIMNotInserted  -> tu moze byc fuckup, ze delay za maly i modem sie nie ogarnal low risk
+                       SIMFailure       -> popsuta kart? nie mam pojecia co
+                       SIMBusy      -> sytuacja w ktorej modem sie nie ogarnal rowniez moze byc za maly delay, jest szansa ze cos zadzieje
+                       SIMWrong     -> podobnie jak fail
+
+                       inne przypadki w zasadzie FATAL ale trzeba sprawdzic czy np nie trafi SIM PIN (niby z OK powinien byc)
+             */
+
+            //startujemy timer singleshota, trzeba odwolac w ready etc. >>>> handleSimState
+            LOG_ERROR("Timer start .........................");
+            simTimer->start();//dobrac timeout
+        }else{
+                //...... niby error z serii fatal ale patrz na karte ktora jest zablokowana w sensie PUKa, testy
+        }
+
+    }
+
+
+
+
 #if defined(TARGET_Linux)
     DLC_channel *channel = cmux->get(TS0710::Channel::Commands);
     auto ret             = channel->cmd(at::AT::QSIMSTAT);

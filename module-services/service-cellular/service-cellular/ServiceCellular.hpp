@@ -173,6 +173,7 @@ class ServiceCellular : public sys::Service
     std::unique_ptr<sys::Timer> callStateTimer;
     std::unique_ptr<sys::Timer> stateTimer;
     std::unique_ptr<sys::Timer> ussdTimer;
+    std::unique_ptr<sys::Timer> simTimer;
     void CallStateTimerHandler();
     DLC_channel::Callback_t notificationCallback = nullptr;
 
@@ -276,6 +277,8 @@ class ServiceCellular : public sys::Service
     void startStateTimer(uint32_t timeout);
     void stopStateTimer();
     void handleStateTimer();
+
+    void handleSIMTimer();
 
     // db response handlers
     auto handle(db::query::SMSSearchByTypeResult *response) -> bool;

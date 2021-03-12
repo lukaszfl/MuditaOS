@@ -107,6 +107,9 @@ namespace cellular
             BaseType_t trayIRQ_handler();
 
             Store::GSM::Tray getTray();
+
+            /// disable/enable sim card access for modem
+            void set_sim_card_presence(bool presence);
             /// trigger swap pin on gsm so that it would reload sim card in tray
             /// after that +QPIN urc should come
             void hotswap_trigger();

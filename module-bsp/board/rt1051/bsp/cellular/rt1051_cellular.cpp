@@ -590,6 +590,11 @@ namespace bsp
                 return state;
             }
 
+            void set_sim_card_presence(bool presence)
+            {
+                GPIO_PinWrite(BSP_CELLULAR_SIM_CARD_PRESENCE_PORT, BSP_CELLULAR_SIM_CARD_PRESENCE_PIN, (presence)? 0 : 1);
+            }
+
             void hotswap_trigger()
             {
                 GPIO_PinWrite(BSP_CELLULAR_SIM_CARD_PRESENCE_PORT, BSP_CELLULAR_SIM_CARD_PRESENCE_PIN, 1);
