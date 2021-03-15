@@ -39,7 +39,8 @@ namespace app
                                          Indicator::SimCard,
                                          Indicator::NetworkAccessTechnology});
         addActionReceiver(manager::actions::Call, [this](auto &&data) {
-            switchWindow(window::name_call, std::forward<decltype(data)>(data));
+            LOG_ERROR("Odebralem akcje call");
+            switchWindow(app::window::name_call, std::forward<decltype(data)>(data));
             return actionHandled();
         });
         addActionReceiver(manager::actions::Dial, [this](auto &&data) {
@@ -71,8 +72,6 @@ namespace app
             showNotification(buttonAction, iconNoSim, textNoSim);
             return actionHandled();
         });
-
-        attachPopups({gui::popup::ID::Volume});
     }
 
     //  number of seconds after end call to switch back to previous application
@@ -80,7 +79,17 @@ namespace app
 
     void ApplicationCall::CallAbortHandler()
     {
-        manager::Controller::sendAction(this, manager::actions::Call, std::make_unique<app::CallAbortData>());
+        LOG_ERROR("Wchodzi się tutaj ? jaki jest state %s", c_str(state));
+        //        setState(call::State::CALL_ENDED);
+
+        if (Application::getState() != State::ACTIVE_FORGROUND) {
+            windowsStack.windows.clear();
+            windowsStack.stack.clear();
+            setState(call::State::IDLE);
+        }
+        else {
+            manager::Controller::sendAction(this, manager::actions::Call, std::make_unique<app::CallAbortData>());
+        }
     }
 
     void ApplicationCall::CallActiveHandler()
@@ -102,12 +111,22 @@ namespace app
 
     void ApplicationCall::IncomingCallHandler(const CellularIncominCallMessage *const msg)
     {
+        LOG_ERROR("Przychodzi połączenie jaki mamy stan %s", c_str(state));
+
         if (getState() == call::State::IDLE) {
             constexpr sys::ms callerIdTimeout = 1000;
             callerIdTimer =
                 std::make_unique<sys::Timer>("CallerIdTimer", this, callerIdTimeout, sys::Timer::Type::SingleShot);
+
+            LOG_ERROR("Handluje przyjscie calla");
+
+            setActiveWindow(app::window::name_call);
+
             callerIdTimer->connect([=](sys::Timer &) {
                 callerIdTimer->stop();
+
+                LOG_ERROR("Wysylam akcje");
+
                 manager::Controller::sendAction(
                     this,
                     manager::actions::Call,
@@ -195,7 +214,6 @@ namespace app
     // Invoked during initialization
     sys::ReturnCodes ApplicationCall::InitHandler()
     {
-
         auto ret = Application::InitHandler();
         if (ret != sys::ReturnCodes::Success) {
             return ret;
@@ -203,7 +221,7 @@ namespace app
 
         createUserInterface();
 
-        setActiveWindow(gui::name::window::main_window);
+        setActiveWindow(app::window::name_call);
 
         return ret;
     }
@@ -227,6 +245,8 @@ namespace app
         windowsFactory.attach(app::window::name_dialogConfirm, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DialogConfirm>(app, name);
         });
+
+        attachPopups({gui::popup::ID::Volume});
     }
 
     bool ApplicationCall::showNotification(std::function<bool()> action,

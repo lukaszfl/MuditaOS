@@ -448,6 +448,8 @@ namespace app::manager
             return false;
         }
 
+        LOG_ERROR("Robie switcha z aplikacji %s i do okna %s", msg->getName().c_str(), msg->getWindow().c_str());
+
         onApplicationSwitch(*app, std::move(msg->getData()), msg->getWindow());
         const bool isFocusedAppCloseable =
             closeCurrentlyFocusedApp && currentlyFocusedApp->closeable() && !currentlyFocusedApp->blockClosing;
@@ -536,6 +538,10 @@ namespace app::manager
         auto &actionParams = action.params;
         if (targetApp->state() != ApplicationHandle::State::ACTIVE_FORGROUND) {
             const auto focusedAppClose = !(actionParams && actionParams->disableAppClose);
+
+            LOG_ERROR(
+                "Akcja idzie do apki %s i do okna %s", targetApp->name().c_str(), targetApp->switchWindow.c_str());
+
             SwitchRequest switchRequest(
                 ServiceName, targetApp->name(), targetApp->switchWindow, std::move(targetApp->switchData));
             return handleSwitchApplication(&switchRequest, focusedAppClose);

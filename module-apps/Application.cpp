@@ -198,9 +198,25 @@ namespace app
                  data ? data->getDescription().c_str() : "");
 #endif
 
+        LOG_ERROR("switching [%s] to window: %s data description: %s",
+                  GetName().c_str(),
+                  windowName.c_str(),
+                  data ? data->getDescription().c_str() : "");
+
+        for (auto it = windowsStack.begin(); it != windowsStack.end(); it++) {
+
+            LOG_ERROR("To mam na stacku %s", it->first.c_str());
+        }
+
         // case to handle returning to previous application
-        if (windowName.empty()) {
+        if (windowsStack.isEmpty()) {
+            LOG_ERROR("Mamy pusty stack");
+            app::manager::Controller::switchBack(this);
+        }
+        else if (windowName.empty()) {
+            LOG_ERROR("Tutaj mam empty!");
             window = getCurrentWindow()->getName();
+            LOG_ERROR("Co odczytałem za window %s", window.c_str());
             auto msg =
                 std::make_shared<AppSwitchWindowMessage>(window, getCurrentWindow()->getName(), std::move(data), cmd);
             bus.sendUnicast(msg, this->GetName());

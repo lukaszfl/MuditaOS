@@ -256,7 +256,10 @@ namespace gui
 
     void CallWindow::onBeforeShow(ShowMode mode, SwitchData *data)
     {
+        LOG_ERROR("EJ KURWA JA COS TUTAJ ROBIE PRWADA??");
+
         if (auto callData = dynamic_cast<app::CallSwitchData *>(data); callData != nullptr) {
+
             phoneNumber = callData->getPhoneNumber();
             if (!callData->getPhoneNumber().getFormatted().empty()) {
                 auto contact     = DBServiceAPI::MatchContactByPhoneNumber(this->application, phoneNumber);
