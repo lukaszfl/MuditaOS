@@ -1011,7 +1011,7 @@ EinkStatus_e EinkRefreshImage(
     std::string _msg;
     busy_pin_ticks = xTaskGetTickCount();
     if (BSP_EinkWaitUntilDisplayBusy(pdMS_TO_TICKS(BSP_EinkBusyTimeout)) == 0) {
-        parserFSM::MessageHandler::putToSendQueue(std::string("eINK refresh nBUSY timeout \r\n"));
+        //parserFSM::MessageHandler::putToSendQueue(std::string("eINK refresh nBUSY timeout \r\n"));
         LOG_ERROR("eINk refresh nBUSY timeout");
         EinkResetAndInitialize();
         return EinkSPIErr;
@@ -1020,7 +1020,7 @@ EinkStatus_e EinkRefreshImage(
 
     _msg = "2: " + std::to_string(busy_pin_ticks_diff);
     _msg += " ms\r\n";
-    parserFSM::MessageHandler::putToSendQueue(_msg);
+    //parserFSM::MessageHandler::putToSendQueue(_msg);
     if (busy_pin_ticks_diff < pdMS_TO_TICKS(5)) {
         LOG_DEBUG("eINk refresh nBUSY too short (=%li)", busy_pin_ticks_diff);
         EinkResetAndInitialize();
