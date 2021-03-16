@@ -968,10 +968,12 @@ EinkStatus_e EinkFillScreenWithColor(EinkDisplayColorFilling_e colorFill)
 
     return EinkOK;
 }
-
+#include "parser/MessageHandler.hpp"
 EinkStatus_e EinkRefreshImage(
     uint16_t X, uint16_t Y, uint16_t W, uint16_t H, EinkDisplayTimingsMode_e refreshTimingsMode)
 {
+    TickType_t busy_pin_ticks, busy_pin_ticks_diff;
+
     EinkChangeDisplayUpdateTimings(refreshTimingsMode);
 
     s_EinkSetGateOrder();
@@ -1006,7 +1008,24 @@ EinkStatus_e EinkRefreshImage(
         return EinkSPIErr;
     }
 
-    BSP_EinkWaitUntilDisplayBusy(pdMS_TO_TICKS(BSP_EinkBusyTimeout));
+    std::string _msg;
+    busy_pin_ticks = xTaskGetTickCount();
+    if (BSP_EinkWaitUntilDisplayBusy(pdMS_TO_TICKS(BSP_EinkBusyTimeout)) == 0) {
+        parserFSM::MessageHandler::putToSendQueue(std::string("eINK refresh nBUSY timeout \r\n"));
+        LOG_ERROR("eINk refresh nBUSY timeout");
+        EinkResetAndInitialize();
+        return EinkSPIErr;
+    }
+    busy_pin_ticks_diff = xTaskGetTickCount() - busy_pin_ticks;
+
+    _msg = "2: " + std::to_string(busy_pin_ticks_diff);
+    _msg += " ms\r\n";
+    parserFSM::MessageHandler::putToSendQueue(_msg);
+    if (busy_pin_ticks_diff < pdMS_TO_TICKS(5)) {
+        LOG_DEBUG("eINk refresh nBUSY too short (=%li)", busy_pin_ticks_diff);
+        EinkResetAndInitialize();
+        return EinkSPIErr;
+    }
 
     return EinkOK;
 }
