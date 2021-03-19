@@ -188,6 +188,8 @@ namespace bsp
             uint32_t reg   = 0;
             //status_t error = 0;
 
+            i2c.reset();
+
             gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::KEYBOARD_RESET_PIN), 0);
             vTaskDelay(1);
             gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::KEYBOARD_RESET_PIN), 1);

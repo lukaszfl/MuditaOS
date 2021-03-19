@@ -892,7 +892,7 @@ EinkStatus_e EinkUpdateFrame(
                          // system to the ED028TC1 one
 
     if (BSP_EinkWriteData(buf, 9, SPI_AUTOMATIC_CS) != 0) {
-        //        LOG_ERROR("Eink: transmitting the display update header FAILED");
+        LOG_ERROR("Eink: transmitting the display update header FAILED");
         EinkResetAndInitialize();
         return EinkSPIErr;
     }
@@ -902,7 +902,7 @@ EinkStatus_e EinkUpdateFrame(
     // Send the part of the image to the display memory
 
     if (BSP_EinkWriteData(s_einkServiceRotatedBuf, msgSize, SPI_AUTOMATIC_CS) != 0) {
-        //        LOG_ERROR("Eink: transmitting the display update image FAILED");
+        LOG_ERROR("Eink: transmitting the display update image FAILED");
         EinkResetAndInitialize();
         return EinkSPIErr;
     }
@@ -1003,27 +1003,29 @@ EinkStatus_e EinkRefreshImage(
                          // system to the ED028TC1 one
 
     if (BSP_EinkWriteData(buf, sizeof(buf), SPI_AUTOMATIC_CS) != 0) {
-        //        LOG_ERROR("Eink: transmitting the refresh request image FAILED");
+        LOG_ERROR("Eink: transmitting the refresh request image FAILED");
         EinkResetAndInitialize();
         return EinkSPIErr;
     }
 
-    std::string _msg;
+    //std::string _msg;
     busy_pin_ticks = xTaskGetTickCount();
     if (BSP_EinkWaitUntilDisplayBusy(pdMS_TO_TICKS(BSP_EinkBusyTimeout)) == 0) {
         //parserFSM::MessageHandler::putToSendQueue(std::string("eINK refresh nBUSY timeout \r\n"));
         LOG_ERROR("eINk refresh nBUSY timeout");
         EinkResetAndInitialize();
+            
         return EinkSPIErr;
     }
     busy_pin_ticks_diff = xTaskGetTickCount() - busy_pin_ticks;
 
-    _msg = "2: " + std::to_string(busy_pin_ticks_diff);
-    _msg += " ms\r\n";
+    //_msg = "2: " + std::to_string(busy_pin_ticks_diff);
+    //_msg += " ms\r\n";
     //parserFSM::MessageHandler::putToSendQueue(_msg);
     if (busy_pin_ticks_diff < pdMS_TO_TICKS(5)) {
         LOG_DEBUG("eINk refresh nBUSY too short (=%li)", busy_pin_ticks_diff);
         EinkResetAndInitialize();
+            
         return EinkSPIErr;
     }
 
