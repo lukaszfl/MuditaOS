@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "TS0710.h"
@@ -63,10 +63,16 @@ TS0710::TS0710(PortSpeed_e portSpeed, sys::Service *parent)
     startParams.WakeUpRespTime          = 10;  // 10s default
     startParams.ErrRecovWindowSize      = 2;   // 2 default
 
+    if (auto flushed = FlushReceiveData(); flushed > 0) {
+        LOG_INFO("Discarded initial %" PRIu32 " bytes sent by modem",
+                 static_cast<uint32_t>(flushed)); // not baud-accurate. Might be 460800÷115200 times more
+    }
+
+    constexpr auto workerName = "TS0710SerialRxWorker";
     BaseType_t task_error =
-        xTaskCreate(workerTaskFunction, "TS0710Worker", threadSizeWords, this, taskPriority, &taskHandle);
+        xTaskCreate(workerTaskFunction, workerName, threadSizeWords, this, taskPriority, &taskHandle);
     if (task_error != pdPASS) {
-        LOG_ERROR("Failed to start inputSerialWorker task");
+        LOG_ERROR("Failed to start %s task", workerName);
         return;
     }
 }
@@ -215,6 +221,17 @@ TS0710::ConfState TS0710::ConfProcedure()
         return ConfState::Failure;
     }
 
+    at::AT flowCmd;
+    if (hardwareControlFlowEnable) {
+        flowCmd = (at::AT::FLOW_CTRL_ON);
+    }
+    else {
+        flowCmd = (at::AT::FLOW_CTRL_OFF);
+    }
+    if (!parser->cmd(flowCmd)) {
+        return ConfState::Failure;
+    }
+
     LOG_INFO("GSM modem info:");
     auto ret = parser->cmd(at::AT::SW_INFO);
     if (ret) {
@@ -225,17 +242,6 @@ TS0710::ConfState TS0710::ConfProcedure()
     }
     else {
         LOG_ERROR("Could not get modem firmware information");
-        return ConfState::Failure;
-    }
-
-    at::AT flowCmd;
-    if (hardwareControlFlowEnable) {
-        flowCmd = (at::AT::FLOW_CTRL_ON);
-    }
-    else {
-        flowCmd = (at::AT::FLOW_CTRL_OFF);
-    }
-    if (!parser->cmd(flowCmd)) {
         return ConfState::Failure;
     }
 
@@ -499,6 +505,19 @@ void workerTaskFunction(void *ptr)
             multipleFrames.clear();
         }
     }
+}
+
+size_t TS0710::FlushReceiveData()
+{
+    using namespace std::chrono_literals;
+
+    auto flushed                          = 0U;
+    constexpr auto flushInactivityTimeout = 20ms;
+    std::uint8_t dummyRead[50];
+    while (pv_cellular->Wait(flushInactivityTimeout.count())) {
+        flushed += pv_cellular->Read(dummyRead, sizeof(dummyRead));
+    }
+    return flushed;
 }
 
 ssize_t TS0710::ReceiveData(std::vector<uint8_t> &data, uint32_t timeout)

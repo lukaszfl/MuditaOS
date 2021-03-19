@@ -20,7 +20,6 @@
 #include <list>                           // for list
 #include <map>                            // for allocator, map
 #include <memory>                         // for make_shared
-#include <module-bsp/bsp/torch/torch.hpp> // for State, State...
 #include <stdint.h>                       // for uint32_t
 #include <string>                         // for string
 #include <utility>                        // for move, pair
@@ -64,16 +63,6 @@ namespace app
 {
     class Application;
     class GuiTimer;
-
-    inline auto msgHandled() -> sys::MessagePointer
-    {
-        return std::make_shared<sys::ResponseMessage>();
-    }
-
-    inline auto msgNotHandled() -> sys::MessagePointer
-    {
-        return std::make_shared<sys::ResponseMessage>(sys::ReturnCodes::Unresolved);
-    }
 
     class ActionHandledResponse; // Forward declaration
     using ActionResult = std::shared_ptr<ActionHandledResponse>;
@@ -160,6 +149,7 @@ namespace app
             /// perform all necessary cleanup and request System Manager to close it.
             DEACTIVATING
         };
+
         /// c_str() function for Application::State
         static const char *stateStr(State st);
 
@@ -300,7 +290,9 @@ namespace app
         }
         audio::RetCode getCurrentVolume(audio::Volume &volume);
 
-        void toggleTorch(bsp::torch::ColourTemperature temperature);
+        void toggleTorchOnOff();
+
+        void toggleTorchColor();
 
         void cancelCallbacks(AsyncCallbackReceiver::Ptr receiver) override;
 

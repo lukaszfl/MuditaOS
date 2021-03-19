@@ -275,7 +275,7 @@ class TS0710
     ATParser *parser;
 
     int CloseMultiplexer();
-    const static bool hardwareControlFlowEnable = false;
+    static constexpr auto hardwareControlFlowEnable = true;
 
     bool searchForString(const std::vector<std::string> &response, std::string str)
     {
@@ -363,6 +363,7 @@ class TS0710
     ConfState AudioConfProcedure();
     ConfState StartMultiplexer();
 
+    size_t FlushReceiveData();
     ssize_t ReceiveData(std::vector<uint8_t> &data, uint32_t timeout);
 
     bsp::Cellular *getCellular()

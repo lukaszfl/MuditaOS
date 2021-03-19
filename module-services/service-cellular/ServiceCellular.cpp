@@ -579,6 +579,9 @@ void ServiceCellular::registerMessageHandlers()
     connect(typeid(CellularSimNotReadyNotification),
             [&](sys::Message *request) -> sys::MessagePointer { return handleSimNotReadyNotification(request); });
 
+    connect(typeid(CellularUrcIncomingNotification),
+            [&](sys::Message *request) -> sys::MessagePointer { return handleUrcIncomingNotification(request); });
+
     handle_CellularGetChannelMessage();
 }
 
@@ -1393,11 +1396,11 @@ auto ServiceCellular::receiveSMS(std::string messageNumber) -> std::shared_ptr<C
             }
         }
     }
-    if (channel->cmd(at::AT::SMS_GSM)) {
+    if (!channel->cmd(at::AT::SMS_GSM)) {
         LOG_ERROR("Could not set GSM (default) charset mode for TE");
     }
     // delete message from modem memory
-    if (channel->cmd(at::factory(at::AT::CMGD) + messageNumber)) {
+    if (!channel->cmd(at::factory(at::AT::CMGD) + messageNumber)) {
         LOG_ERROR("Could not delete SMS from modem");
     }
     return std::make_shared<CellularResponseMessage>(true);
@@ -2507,6 +2510,12 @@ auto ServiceCellular::handleNetworkStatusUpdateNotification(sys::Message *msg) -
 auto ServiceCellular::handleSimNotReadyNotification(sys::Message *msg) -> std::shared_ptr<sys::ResponseMessage>
 {
     return std::make_shared<CellularResponseMessage>(false);
+}
+
+auto ServiceCellular::handleUrcIncomingNotification(sys::Message *msg) -> std::shared_ptr<sys::ResponseMessage>
+{
+    cmux->ExitSleepMode();
+    return std::make_shared<CellularResponseMessage>(true);
 }
 
 auto ServiceCellular::handleCellularSetFlightModeMessage(sys::Message *msg) -> std::shared_ptr<sys::ResponseMessage>

@@ -25,6 +25,7 @@
 #include <bsp/battery-charger/battery_charger.hpp>
 #include <common_data/RawKey.hpp>
 #include <log/log.hpp>
+#include <log/Logger.hpp>
 #include <module-utils/time/time_conversion.hpp>
 #include <service-appmgr/Controller.hpp>
 #include <service-audio/AudioMessage.hpp>
@@ -33,7 +34,10 @@
 #include <service-db/DBNotificationMessage.hpp>
 #include <service-desktop/Constants.hpp>
 #include <service-desktop/DesktopMessages.hpp>
+#include <service-cellular/ServiceCellular.hpp>
 #include <cassert>
+#include <fstream>
+#include <filesystem>
 #include <list>
 #include <tuple>
 #include <vector>
@@ -43,8 +47,16 @@
 #include <SystemManager/messages/PhoneModeRequest.hpp>
 #include <vibra/Vibra.hpp>
 
+namespace
+{
+    constexpr auto loggerDelayMs   = 1000 * 10;
+    constexpr auto loggerTimerName = "Logger";
+} // namespace
+
 EventManager::EventManager(const std::string &name)
-    : sys::Service(name, "", stackDepth), settings(std::make_shared<settings::Settings>(this)),
+    : sys::Service(name, "", stackDepth),
+      settings(std::make_shared<settings::Settings>(this)), loggerTimer{std::make_unique<sys::Timer>(
+                                                                loggerTimerName, this, loggerDelayMs)},
       screenLightControl(std::make_unique<screen_light_control::ScreenLightControl>(settings, this)),
       Vibra(std::make_unique<vibra_handle::Vibra>(this))
 {
@@ -52,6 +64,8 @@ EventManager::EventManager(const std::string &name)
     alarmTimestamp = 0;
     alarmID        = 0;
     bus.channels.push_back(sys::BusChannel::ServiceDBNotifications);
+    loggerTimer->connect([&](sys::Timer &) { dumpLogsToFile(); });
+    loggerTimer->start();
 }
 
 EventManager::~EventManager()
@@ -157,26 +171,6 @@ sys::MessagePointer EventManager::DataReceivedHandler(sys::DataMessage *msgl, sy
         }
         handled = true;
     }
-    else if (msgl->messageType == MessageType::EVMTorchStateMessage) {
-        auto msg = dynamic_cast<sevm::TorchStateMessage *>(msgl);
-        if (msg != nullptr) {
-            auto message = std::make_shared<sevm::TorchStateResultMessage>(msg->action);
-
-            switch (msg->action) {
-            case bsp::torch::Action::getState:
-                std::tie(message->success, message->state) = bsp::torch::getState();
-                message->colourTemp                        = bsp::torch::getColorTemp();
-                break;
-            case bsp::torch::Action::setState:
-                message->success = bsp::torch::turn(msg->state, msg->colourTemp);
-                break;
-            case bsp::torch::Action::toggle:
-                message->success = bsp::torch::toggle();
-                break;
-            }
-            return message;
-        }
-    }
     else if (msgl->messageType == MessageType::CellularTimeUpdated) {
         auto msg = dynamic_cast<CellularTimeNotificationMessage *>(msgl);
         if (msg != nullptr) {
@@ -193,8 +187,8 @@ sys::MessagePointer EventManager::DataReceivedHandler(sys::DataMessage *msgl, sy
         }
     }
     else if (msgl->messageType == MessageType::EVMRingIndicator) {
-        auto msg = std::make_shared<sys::CpuFrequencyMessage>(sys::CpuFrequencyMessage::Action::Increase);
-        bus.sendUnicast(msg, service::name::system_manager);
+        auto msg = std::make_shared<CellularUrcIncomingNotification>();
+        bus.sendUnicast(std::move(msg), ServiceCellular::serviceName);
     }
 
     if (handled) {
@@ -268,7 +262,7 @@ sys::ReturnCodes EventManager::InitHandler()
         bsp::rtc_SetDateTimeFromTimestamp(msg->getTime());
         bsp::rtc_SetMinuteAlarm(msg->getTime());
         handleMinuteUpdate(msg->getTime());
-        return app::msgHandled();
+        return sys::msgHandled();
     });
 
     connect(sevm::BatteryStatusChangeMessage(), [&](sys::Message *msgl) {
@@ -291,6 +285,16 @@ sys::ReturnCodes EventManager::InitHandler()
     connect(sevm::VibraMessage(bsp::vibrator::Action::stop), [&](sys::Message *msgl) {
         auto request = static_cast<sevm::VibraMessage *>(msgl);
         processVibraRequest(request->action, request->repetitionTime);
+        return std::make_shared<sys::ResponseMessage>();
+    });
+
+    connect(sevm::ToggleTorchOnOffMessage(), [&](sys::Message *) {
+        toggleTorchOnOff();
+        return std::make_shared<sys::ResponseMessage>();
+    });
+
+    connect(sevm::ToggleTorchColorMessage(), [&](sys::Message *) {
+        toggleTorchColor();
         return std::make_shared<sys::ResponseMessage>();
     });
 
@@ -350,6 +354,17 @@ bool EventManager::messageSetApplication(sys::Service *sender, const std::string
     return sender->bus.sendUnicast(msg, service::name::evt_manager);
 }
 
+void EventManager::dumpLogsToFile()
+{
+    const auto logPath = purefs::dir::getUserDiskPath() / LOG_FILE_NAME;
+    const bool dumpLog = !(std::filesystem::exists(logPath) && std::filesystem::file_size(logPath) > MAX_LOG_FILE_SIZE);
+    if (dumpLog) {
+        const auto &logs = Log::Logger::get().getLogs();
+        std::fstream logFile(logPath, std::fstream::out | std::fstream::app);
+        logFile.write(logs.data(), logs.size());
+    }
+}
+
 void EventManager::handleMinuteUpdate(time_t timestamp)
 {
     if (!targetApplication.empty()) {
@@ -393,4 +408,22 @@ bool EventManager::processVibraRequest(bsp::vibrator::Action act, sys::ms Repeti
         break;
     }
     return true;
+}
+
+void EventManager::toggleTorchOnOff()
+{
+    auto state    = bsp::torch::getState();
+    auto newState = (state.second == bsp::torch::State::off) ? bsp::torch::State::on : bsp::torch::State::off;
+    bsp::torch::turn(newState, bsp::torch::ColourTemperature::coldest);
+}
+
+void EventManager::toggleTorchColor()
+{
+    auto state = bsp::torch::getState();
+    if (state.second == bsp::torch::State::on) {
+        auto color    = bsp::torch::getColorTemp();
+        auto newColor = (color == bsp::torch::ColourTemperature::coldest) ? bsp::torch::ColourTemperature::warmest
+                                                                          : bsp::torch::ColourTemperature::coldest;
+        bsp::torch::turn(bsp::torch::State::on, newColor);
+    }
 }

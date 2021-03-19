@@ -92,6 +92,7 @@ namespace sys
       public:
         explicit DataMessage(MessageType messageType);
         explicit DataMessage(BusChannel channel);
+        DataMessage();
 
         // This field must by provided by the class that inherits DataMessage
         MessageType messageType = MessageType::MessageTypeUninitialized;
@@ -108,4 +109,14 @@ namespace sys
         ReturnCodes retCode;
         MessageType responseTo;
     };
+
+    inline auto msgHandled() -> MessagePointer
+    {
+        return std::make_shared<ResponseMessage>();
+    }
+
+    inline auto msgNotHandled() -> MessagePointer
+    {
+        return std::make_shared<ResponseMessage>(ReturnCodes::Unresolved);
+    }
 } // namespace sys
