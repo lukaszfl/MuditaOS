@@ -160,6 +160,7 @@ namespace service::eink
 
         if (const auto status = refreshDisplay(refreshMode); status != EinkStatus_e ::EinkOK) {
             LOG_FATAL("Failed to refresh frame");
+            showImage(frameBuffer, ::gui::RefreshModes::GUI_REFRESH_DEEP);
             return;
         }
     }

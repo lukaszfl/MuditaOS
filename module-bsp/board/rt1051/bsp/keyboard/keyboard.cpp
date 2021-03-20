@@ -185,74 +185,13 @@ namespace bsp
         i2c->Read(i2cAddr, (uint8_t *)&retval, 1);
         if ((retval == 0x00) || (retval == 0xFF))
         {
-            uint32_t reg   = 0;
-            //status_t error = 0;
-
-            i2c.reset();
-
-            gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::KEYBOARD_RESET_PIN), 0);
-            vTaskDelay(1);
-            gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::KEYBOARD_RESET_PIN), 1);
-            vTaskDelay(10);
-
-            /* Assemble a mask for row and column registers */
-            reg = ~(uint32_t(~0) << TCA8418_ROWS_COUNT);
-            reg += (~(uint32_t(~0) << TCA8418_COL_COUNT)) << 8;
-
-            /* Set registers to keypad mode */
-            i2cAddr.subAddress = REG_KP_GPIO1;
-            i2c->Write(i2cAddr, (uint8_t *)&reg, 1);
-            reg                = reg >> 8;
-            i2cAddr.subAddress = REG_KP_GPIO2;
-            i2c->Write(i2cAddr, (uint8_t *)&reg, 1);
-            reg                = reg >> 16;
-            i2cAddr.subAddress = REG_KP_GPIO3;
-            i2c->Write(i2cAddr, (uint8_t *)&reg, 1);
-
-            /* Enable column debouncing */
-            i2cAddr.subAddress = REG_DEBOUNCE_DIS1;
-            i2c->Write(i2cAddr, (uint8_t *)&reg, 1);
-            reg                = reg >> 8;
-            i2cAddr.subAddress = REG_DEBOUNCE_DIS2;
-            i2c->Write(i2cAddr, (uint8_t *)&reg, 1);
-            reg                = reg >> 16;
-            i2cAddr.subAddress = REG_DEBOUNCE_DIS3;
-            i2c->Write(i2cAddr, (uint8_t *)&reg, 1);
-
-            // if (error != kStatus_Success) {
-            //     return;// error;
-            // }
-
-            reg = CFG_INT_CFG | CFG_OVR_FLOW_IEN | CFG_KE_IEN;
-            // Enable interrupts
-            i2cAddr.subAddress = REG_CFG;
-            i2c->Write(i2cAddr, (uint8_t *)&reg, 1);
-
-            // Clear keys FIFO, IRQs
-            uint8_t val = 0;
-            uint8_t i   = 0;
-
-            // Get key pressed/released count
-            i2cAddr.subAddress = REG_KEY_LCK_EC;
-            i2c->Read(i2cAddr, (uint8_t *)&val, 1);
-
-            uint8_t key_count = val & 0xF;
-            for (i = 0; i < key_count; i++) {
-                i2cAddr.subAddress = REG_KEY_EVENT_A;
-                i2c->Read(i2cAddr, (uint8_t *)&val, 1);
-            }
-
-            // Clear all interrupts
-            uint8_t dummy = 0xff;
-
-            i2cAddr.subAddress = REG_INT_STAT;
-            i2c->Read(i2cAddr, (uint8_t *)&dummy, 1);
-
-            // Clear all interrupts, even IRQs we didn't check (GPI, CAD, LCK)
-            reg                = 0xff;
-            i2cAddr.subAddress = REG_INT_STAT;
-            i2c->Write(i2cAddr, (uint8_t *)&reg, 1);
-
+            //gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::KEYBOARD_RESET_PIN), 0);
+            //#define PINMUX_AUDIOCODEC_SCL IOMUXC_GPIO_B0_04_LPI2C2_SCL
+            //#define PINMUX_AUDIOCODEC_SDA IOMUXC_GPIO_B0_05_LPI2C2_SDA
+            uint8_t p4, p5;
+            p4 = gpio->ReadPin(4);
+            p5 = gpio->ReadPin(5);
+            LOG_FATAL("!!!!!! I2C error (%u, %u)", p4, p5);
         }
         
         if (notification & 0x01) {
