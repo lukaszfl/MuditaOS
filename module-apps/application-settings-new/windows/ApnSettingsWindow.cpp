@@ -132,8 +132,7 @@ namespace gui
                 [=](gui::Item &item) {
                     activeApn = apn;
                     return true;
-                },
-                nullptr));
+                }));
         }
 
         return optionsList;

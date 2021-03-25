@@ -27,8 +27,7 @@ namespace gui
                 application->switchWindow(gui::window::name::new_apn, gui::ShowMode::GUI_SHOW_INIT, std::move(data));
                 return true;
             },
-            nullptr,
-            this));
+            nullptr));
 
         optionsList.emplace_back(std::make_unique<gui::option::OptionSettings>(
             utils::localize.get("app_settings_apn_options_delete"),
@@ -36,8 +35,7 @@ namespace gui
                 apnSettingsModel->removeAPN(apn);
                 return true;
             },
-            nullptr,
-            this));
+            nullptr));
 
         optionsList.emplace_back(std::make_unique<gui::option::OptionSettings>(
             utils::localize.get("app_settings_apn_options_set_as_default"),
@@ -45,8 +43,7 @@ namespace gui
                 apnSettingsModel->setAsDefaultAPN(apn);
                 return true;
             },
-            nullptr,
-            this));
+            nullptr));
 
         return optionsList;
     }

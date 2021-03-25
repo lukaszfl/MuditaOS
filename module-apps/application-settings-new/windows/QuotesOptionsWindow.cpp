@@ -38,8 +38,7 @@ namespace gui
                                            BottomBar::Side::CENTER);
                 }
                 return true;
-            },
-            this));
+            }));
 
         optionsList.emplace_back(std::make_unique<gui::option::OptionSettings>(
             utils::translateI18("app_settings_display_wallpaper_quotes_delete"),
@@ -65,8 +64,7 @@ namespace gui
                                            BottomBar::Side::CENTER);
                 }
                 return true;
-            },
-            this));
+            }));
 
         return optionsList;
     } // namespace gui

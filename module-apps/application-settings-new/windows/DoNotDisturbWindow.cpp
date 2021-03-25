@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "DoNotDisturbWindow.hpp"
@@ -49,7 +49,6 @@ namespace gui
                 return true;
             },
             nullptr,
-            this,
             (dndSettings->getNotificationsWhenLocked()) ? gui::option::SettingRightItem::On
                                                         : gui::option::SettingRightItem::Off));
 
@@ -61,7 +60,6 @@ namespace gui
                 return true;
             },
             nullptr,
-            this,
             (dndSettings->getCallsFromFavourite()) ? gui::option::SettingRightItem::On
                                                    : gui::option::SettingRightItem::Off));
 

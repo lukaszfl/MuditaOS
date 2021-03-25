@@ -25,7 +25,6 @@ namespace gui
                     return true;
                 },
                 nullptr,
-                nullptr,
                 option::SettingRightItem::ArrowWhite));
         };
 

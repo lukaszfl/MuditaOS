@@ -48,7 +48,6 @@ namespace gui
                     return true;
                 },
                 nullptr,
-                nullptr,
                 gui::option::SettingRightItem::Bt));
         }
 

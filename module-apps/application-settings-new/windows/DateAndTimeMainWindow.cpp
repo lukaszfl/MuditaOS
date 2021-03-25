@@ -26,7 +26,7 @@ namespace gui
 
         auto addOption = [&](const std::string &text, std::function<bool(Item &)> activatedCallback) {
             optionList.emplace_back(std::make_unique<option::OptionSettings>(
-                text, activatedCallback, nullptr, nullptr, option::SettingRightItem::ArrowWhite));
+                text, activatedCallback, nullptr, option::SettingRightItem::ArrowWhite));
         };
         auto addSwitchOption = [&](const std::string &text,
                                    std::function<bool(Item &)> activatedCallback,
@@ -46,7 +46,6 @@ namespace gui
                     }
                     return true;
                 },
-                nullptr,
                 rightItem,
                 false,
                 std::move(textOnRight)));

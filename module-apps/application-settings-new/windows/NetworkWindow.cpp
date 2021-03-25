@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "NetworkWindow.hpp"
@@ -64,8 +64,7 @@ namespace gui
                                            BottomBar::Side::CENTER);
                 }
                 return true;
-            },
-            this));
+            }));
 
         optList.emplace_back(std::make_unique<gui::option::OptionSettings>(
             utils::translateI18("app_settings_network_operator_auto_select"),
@@ -74,7 +73,6 @@ namespace gui
                 rebuild();
                 return true;
             },
-            nullptr,
             nullptr,
             operatorsOn ? gui::option::SettingRightItem::On : gui::option::SettingRightItem::Off));
         if (!operatorsOn) {
@@ -85,7 +83,6 @@ namespace gui
                     return true;
                 },
                 nullptr,
-                nullptr,
                 gui::option::SettingRightItem::ArrowWhite,
                 true));
         }
@@ -95,7 +92,6 @@ namespace gui
                 this->application->switchWindow(gui::window::name::import_contacts, nullptr);
                 return true;
             },
-            nullptr,
             nullptr));
 
         optList.emplace_back(std::make_unique<gui::option::OptionSettings>(
@@ -106,7 +102,6 @@ namespace gui
                 return true;
             },
             nullptr,
-            nullptr,
             voLteOn ? gui::option::SettingRightItem::On : gui::option::SettingRightItem::Off));
 
         optList.emplace_back(std::make_unique<gui::option::OptionSettings>(
@@ -115,7 +110,6 @@ namespace gui
                 this->application->switchWindow(gui::window::name::apn_settings, nullptr);
                 return true;
             },
-            nullptr,
             nullptr,
             gui::option::SettingRightItem::ArrowWhite,
             true));

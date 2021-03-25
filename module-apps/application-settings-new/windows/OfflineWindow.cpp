@@ -49,7 +49,6 @@ namespace gui
             utils::translateI18("app_settings_allow"),
             [=](gui::Item &item) { return changeFlightMode(!isFlightMode); },
             nullptr,
-            nullptr,
             gui::option::SettingRightItem::Text,
             false,
             utils::translateI18(isFlightMode ? "app_settings_no_network_connection_flight_mode"
@@ -63,7 +62,6 @@ namespace gui
                     this->application->switchWindow(gui::window::name::connection_frequency, nullptr);
                     return true;
                 },
-                nullptr,
                 nullptr,
                 gui::option::SettingRightItem::ArrowWhite));
         }

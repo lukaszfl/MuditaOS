@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "PhoneModesWindow.hpp"
@@ -31,8 +31,7 @@ namespace gui
                     this->clearBottomBarText(BottomBar::Side::CENTER);
                 }
                 return true;
-            },
-            this));
+            }));
 
         optList.emplace_back(std::make_unique<gui::option::OptionSettings>(
             utils::translateI18("app_settings_title_do_not_disturb"),
@@ -47,7 +46,6 @@ namespace gui
                 }
                 return true;
             },
-            this,
             gui::option::SettingRightItem::ArrowWhite));
 
         optList.emplace_back(std::make_unique<gui::option::OptionSettings>(
@@ -63,7 +61,6 @@ namespace gui
                 }
                 return true;
             },
-            this,
             gui::option::SettingRightItem::ArrowWhite));
 
         bottomBar->setText(BottomBar::Side::RIGHT, utils::localize.get(style::strings::common::back));

@@ -47,7 +47,6 @@ namespace gui
                 }
                 return true;
             },
-            this,
             isBluetoothSwitchOn ? gui::option::SettingRightItem::On : gui::option::SettingRightItem::Off));
 
         if (isBluetoothSwitchOn) {
@@ -64,7 +63,6 @@ namespace gui
                     }
                     return true;
                 },
-                nullptr,
                 gui::option::SettingRightItem::ArrowWhite,
                 true));
             optionsList.emplace_back(std::make_unique<gui::option::OptionSettings>(
@@ -80,7 +78,6 @@ namespace gui
                     }
                     return true;
                 },
-                this,
                 isPhoneVisibilitySwitchOn ? gui::option::SettingRightItem::On : gui::option::SettingRightItem::Off));
             if (isPhoneVisibilitySwitchOn) {
                 optionsList.emplace_back(std::make_unique<gui::option::OptionSettings>(
@@ -96,7 +93,6 @@ namespace gui
                         }
                         return true;
                     },
-                    nullptr,
                     gui::option::SettingRightItem::ArrowWhite,
                     true));
             }

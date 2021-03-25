@@ -55,7 +55,6 @@ namespace gui
                 }
                 return true;
             },
-            this,
             switchState ? gui::option::SettingRightItem::On : gui::option::SettingRightItem::Off));
 
         if (switchState) {
@@ -72,7 +71,6 @@ namespace gui
                     }
                     return true;
                 },
-                nullptr,
                 gui::option::SettingRightItem::ArrowWhite));
         }
 

@@ -77,18 +77,17 @@ namespace gui
                     }
                     return true;
                 },
-                this,
                 toggle ? gui::option::SettingRightItem::On : gui::option::SettingRightItem::Off));
         };
 
         auto addDisplayLight = [&](UTF8 text) {
             optionsList.emplace_back(std::make_unique<gui::option::OptionSettings>(
-                text, nullptr, nullptr, this, gui::option::SettingRightItem::Disabled));
+                text, nullptr, nullptr, gui::option::SettingRightItem::Disabled));
         };
 
         auto addBrightnessValue = [&](UTF8 text) {
             optionsList.emplace_back(std::make_unique<gui::option::OptionSettings>(
-                text, nullptr, nullptr, this, gui::option::SettingRightItem::Disabled));
+                text, nullptr, nullptr, gui::option::SettingRightItem::Disabled));
         };
 
         addOnOffOoption(utils::translateI18("app_settings_display_light_main"), isDisplayLightSwitchOn);

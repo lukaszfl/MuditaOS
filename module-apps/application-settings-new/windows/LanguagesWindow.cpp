@@ -37,7 +37,6 @@ namespace gui
                     return true;
                 },
                 nullptr,
-                this,
                 selectedLanguage == lang ? gui::option::SettingRightItem::Checked
                                          : gui::option::SettingRightItem::Disabled));
         }

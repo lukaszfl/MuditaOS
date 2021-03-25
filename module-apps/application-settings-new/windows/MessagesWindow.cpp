@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "MessagesWindow.hpp"
@@ -43,7 +43,6 @@ namespace gui
                     }
                     return true;
                 },
-                nullptr,
                 showUnreadMessagesFirst ? gui::option::SettingRightItem::On : gui::option::SettingRightItem::Off));
         };
 
@@ -58,7 +57,6 @@ namespace gui
                     application->switchWindow(window, nullptr);
                     return true;
                 },
-                nullptr,
                 nullptr,
                 gui::option::SettingRightItem::ArrowWhite));
         };

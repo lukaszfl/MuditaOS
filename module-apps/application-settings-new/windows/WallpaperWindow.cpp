@@ -33,7 +33,6 @@ namespace gui
                     }
                     return true;
                 },
-                this,
                 Switch ? gui::option::SettingRightItem::Checked : gui::option::SettingRightItem::Disabled));
         };
 
@@ -55,7 +54,6 @@ namespace gui
                     }
                     return true;
                 },
-                this,
                 gui::option::SettingRightItem::ArrowWhite));
         }
 

@@ -115,7 +115,6 @@ namespace gui
                     }
                     return true;
                 },
-                nullptr,
                 isConnected ? gui::option::SettingRightItem::Text : gui::option::SettingRightItem::Bt,
                 false,
                 utils::localize.get("app_settings_option_connected")));

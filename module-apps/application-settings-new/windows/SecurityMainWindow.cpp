@@ -41,7 +41,6 @@ namespace gui
                 }
                 return true;
             },
-            nullptr,
             lockScreenPasscodeIsOn ? option::SettingRightItem::On : option::SettingRightItem::Off));
 
         optionList.emplace_back(std::make_unique<option::OptionSettings>(
@@ -69,7 +68,6 @@ namespace gui
                 }
                 return true;
             },
-            nullptr,
             securitySettings->isUSBSecured() ? option::SettingRightItem::On : option::SettingRightItem::Off));
 
         if (lockScreenPasscodeIsOn) {
@@ -82,7 +80,6 @@ namespace gui
                         std::make_unique<ChangePasscodeData>(ChangePasscodeAction::ChangeCurrentPasscode));
                     return true;
                 },
-                nullptr,
                 nullptr,
                 option::SettingRightItem::ArrowWhite));
         }
