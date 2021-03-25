@@ -1,3 +1,6 @@
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
+// For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
+
 //*****************************************************************************
 // MIMXRT1052 startup code for use with MCUXpresso IDE
 //
@@ -37,6 +40,11 @@
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 // IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //*****************************************************************************
+
+#include <purefs/vfs_subsystem.hpp>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #if defined(DEBUG)
 #pragma GCC push_options
@@ -732,6 +740,7 @@ __attribute__((section(".after_vectors.reset"))) void ResetISR(void)
     __libc_init_array();
 #endif
 
+    NVIC_DisableIRQ(MemoryManagement_IRQn);
     // Reenable interrupts
     __asm volatile("cpsie i");
 
@@ -1048,9 +1057,30 @@ extern "C"
 }
 #endif
 
-WEAK_AV void MemManage_Handler(void)
+void file_test()
 {
-#if 1
+    auto fs = purefs::subsystem::vfs_core();
+    LOG_ERROR("Before open");
+    int fd = fs->open("/sys/user/dump.hex", O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    LOG_ERROR("File handle is %i", fd);
+    int res = fs->write(fd, "h3llx\n", 6);
+    LOG_ERROR("Wr bytes is %i", res);
+    auto ret = fs->close(fd);
+    LOG_ERROR("Close state %i", ret);
+}
+
+extern "C" void moja_funkcja(syslog_exception_stack_frame_t *frame, unsigned lr)
+
+{
+    LOG_ERROR("Beateafull system function");
+    file_test();
+    for (;;)
+        asm volatile("nop \n");
+}
+
+[[gnu::naked]] WEAK_AV void MemManage_Handler(void)
+{
+#if 0
     asm volatile(" tst lr,#4       \n"
                  " ite eq          \n"
                  " mrseq r0,msp    \n"
@@ -1064,8 +1094,25 @@ WEAK_AV void MemManage_Handler(void)
                  : /* Clobbers */
     );
 #endif
+    asm volatile(" tst lr,#4       \n"
+                 " ite eq          \n"
+                 " mrseq r0,msp    \n"
+                 " mrsne r0,psp    \n"
+                 " mov r1,lr       \n"
+                 " ldr r2,=moja_funkcja \n" // Modyfikacja ramki stosu
+                 " mrs r3, psp \n"
+                 " str r2, [r3, #0x18]   \n"
+                 " orr lr, lr, #4 \n" // Stos user
+                 " orr lr, lr, #8 \n" // Ma wrocic w tryb user
+                 " bx lr          \n" // Powrot
+
+                 : /* Outputs */
+                 : /* Inputs */
+                 : /* Clobbers */
+    );
 }
 
+#if 0
 [[gnu::naked]] WEAK_AV void HardFault_Handler(void)
 {
     asm volatile(" tst lr,#4       \n"
@@ -1075,6 +1122,25 @@ WEAK_AV void MemManage_Handler(void)
                  " mov r1,lr       \n"
                  " ldr r2,=HardFault_Handler_C \n"
                  " bx r2"
+
+                 : /* Outputs */
+                 : /* Inputs */
+                 : /* Clobbers */
+    );
+}
+#endif
+[[gnu::naked]] WEAK_AV void HardFault_Handler(void)
+{
+    asm volatile(" tst lr,#4       \n"
+                 " ite eq          \n"
+                 " mrseq r0,msp    \n"
+                 " mrsne r0,psp    \n"
+                 " mov r1,lr       \n"
+                 " ldr r2,=HardFault_Handler_C \n"
+                 " str r2, [r0, #-24]   \n"
+                 " orr lr, lr, #4 \n"
+                 " orr lr, lr, #8 \n"
+                 " bx lr          \n"
 
                  : /* Outputs */
                  : /* Inputs */

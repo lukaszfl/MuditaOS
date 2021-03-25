@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "MenuWindow.hpp"
@@ -141,7 +141,11 @@ namespace gui
         destroyInterface();
         buildInterface();
     }
-
+    void foo()
+    {
+        asm volatile("ldr r2, =0xE000ED00      \n"
+                     "bx r2");
+    }
     void MenuWindow::buildInterface()
     {
         AppWindow::buildInterface();
@@ -225,6 +229,7 @@ namespace gui
                 new gui::Tile{"menu_meditation_W_G",
                               "app_desktop_menu_meditation",
                               [=](gui::Item &item) {
+                                  foo();
                                   return app::manager::Controller::sendAction(
                                       application,
                                       app::manager::actions::Launch,

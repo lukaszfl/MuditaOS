@@ -2,6 +2,9 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "config.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 // applications
 #include <application-antenna/ApplicationAntenna.hpp>
