@@ -4,7 +4,7 @@
 #include "ListView.hpp"
 #include "OptionsModel.hpp"
 
-OptionsModel::OptionsModel(app::Application *app) : application(app)
+OptionsModel::OptionsModel()
 {}
 
 auto OptionsModel::requestRecordsCount() -> unsigned int

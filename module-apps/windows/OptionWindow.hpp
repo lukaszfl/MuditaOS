@@ -30,8 +30,7 @@ namespace gui
         void refreshOptions(std::list<Option> &&optionList, unsigned int pageIndex);
 
       public:
-        OptionWindow(app::Application *app, const std::string &name);
-        OptionWindow(app::Application *app, const std::string &name, std::list<Option> options);
+        OptionWindow(app::Application *app, const std::string &name, std::list<Option> options = {});
         ~OptionWindow() override;
 
         void clearOptions();
