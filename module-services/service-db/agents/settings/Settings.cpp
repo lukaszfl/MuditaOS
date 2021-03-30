@@ -22,10 +22,11 @@
 namespace settings
 {
     Settings::Settings(sys::Service *app, const std::string &dbAgentName, SettingsCache *cache)
-        : dbAgentName(dbAgentName), cache(cache)
+        : dbAgentName(dbAgentName), cache(cache), app(app)
     {
-        this->app =
-            std::shared_ptr<sys::Service>(app, [](sys::Service *service) {}); /// with deleter that doesn't delete.
+        if (app == nullptr) {
+            return;
+        }
         this->app->bus.channels.push_back(sys::BusChannel::ServiceDBNotifications);
         if (nullptr == cache) {
             this->cache = SettingsCache::getInstance();
@@ -33,25 +34,60 @@ namespace settings
         registerHandlers();
     }
 
+    Settings::~Settings()
+    {
+        deregisterHandlers();
+    }
+
     void Settings::sendMsg(std::shared_ptr<settings::Messages::SettingsMessage> &&msg)
     {
         app->bus.sendUnicast(std::move(msg), dbAgentName);
     }
 
-    void Settings::registerHandlers()
+    void Settings::changeHandlers(enum Change change)
     {
+        auto proxy = [&](const std::type_info &what, Change change, auto foo) -> void {
+            if (not app) {
+                return;
+            };
+            switch (change) {
+            case Change::Register:
+                app->connect(what, std::move(foo));
+                break;
+            case Change::Deregister:
+                app->disconnect(what);
+                break;
+            }
+        };
+
         using std::placeholders::_1;
         using std::placeholders::_2;
-        log_debug("Settings::registerHandlers for %s", app->GetName().c_str());
-        app->connect(settings::Messages::VariableChanged(), std::bind(&Settings::handleVariableChanged, this, _1));
-        app->connect(settings::Messages::CurrentProfileChanged(),
-                     std::bind(&Settings::handleCurrentProfileChanged, this, _1));
-        app->connect(settings::Messages::CurrentModeChanged(),
-                     std::bind(&Settings::handleCurrentModeChanged, this, _1));
-        app->connect(settings::Messages::ProfileListResponse(),
-                     std::bind(&Settings::handleProfileListResponse, this, _1));
-        app->connect(settings::Messages::ModeListResponse(), std::bind(&Settings::handleModeListResponse, this, _1));
+        proxy(
+            typeid(settings::Messages::VariableChanged), change, std::bind(&Settings::handleVariableChanged, this, _1));
+        proxy(typeid(settings::Messages::CurrentProfileChanged),
+              change,
+              std::bind(&Settings::handleCurrentProfileChanged, this, _1));
+        proxy(typeid(settings::Messages::CurrentModeChanged),
+              change,
+              std::bind(&Settings::handleCurrentModeChanged, this, _1));
+        proxy(typeid(settings::Messages::ProfileListResponse),
+              change,
+              std::bind(&Settings::handleProfileListResponse, this, _1));
+        proxy(typeid(settings::Messages::ModeListResponse),
+              change,
+              std::bind(&Settings::handleModeListResponse, this, _1));
     }
+
+    void Settings::registerHandlers()
+    {
+        changeHandlers(Change::Register);
+    }
+
+    void Settings::deregisterHandlers()
+    {
+        changeHandlers(Change::Deregister);
+    }
+
     auto Settings::handleVariableChanged(sys::Message *req) -> sys::MessagePointer
     {
         log_debug("handleVariableChanged");

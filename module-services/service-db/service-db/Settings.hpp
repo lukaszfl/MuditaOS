@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -31,7 +31,10 @@ namespace settings
         using OnAllProfilesRetrievedCallback = std::function<void(const ListOfProfiles &)>;
         using OnAllModesRetrievedCallback    = std::function<void(const ListOfModes &)>;
 
-        Settings(sys::Service *app, const std::string &dbAgentName = service::name::db, SettingsCache *cache = nullptr);
+        explicit Settings(sys::Service *app,
+                          const std::string &dbAgentName = service::name::db,
+                          SettingsCache *cache           = nullptr);
+        ~Settings();
 
         void setValue(const std::string &variableName,
                       const std::string &variableValue,
@@ -62,12 +65,12 @@ namespace settings
       private:
         std::string dbAgentName;
 
-        std::shared_ptr<sys::Service> app;
+        SettingsCache *cache = nullptr;
+        sys::Service *app    = nullptr;
         std::string serviceName;
         std::string phoneMode;
         std::string profile;
 
-        SettingsCache *cache;
 
         using ValueCb = std::map<EntryPath, std::pair<ValueChangedCallback, ValueChangedCallbackWithName>>;
         ValueCb cbValues;
@@ -76,7 +79,14 @@ namespace settings
         ProfileChangedCallback cbProfile;
         OnAllProfilesRetrievedCallback cbAllProfiles;
         void sendMsg(std::shared_ptr<settings::Messages::SettingsMessage> &&msg);
+        enum Change
+        {
+            Register,
+            Deregister
+        };
+        void changeHandlers(enum Change change);
         void registerHandlers();
+        void deregisterHandlers();
         auto handleVariableChanged(sys::Message *req) -> sys::MessagePointer;
         auto handleCurrentProfileChanged(sys::Message *req) -> sys::MessagePointer;
         auto handleCurrentModeChanged(sys::Message *req) -> sys::MessagePointer;

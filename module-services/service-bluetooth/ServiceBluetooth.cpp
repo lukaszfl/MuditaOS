@@ -40,8 +40,7 @@ namespace
 
 ServiceBluetooth::ServiceBluetooth() : sys::Service(service::name::bluetooth, "", BluetoothServiceStackDepth)
 {
-    auto settings                   = std::make_unique<settings::Settings>(this);
-    settingsHolder                  = std::make_shared<bluetooth::SettingsHolder>(std::move(settings));
+    settingsHolder = std::make_shared<bluetooth::SettingsHolder>(std::make_unique<settings::Settings>(this));
     bluetooth::KeyStorage::settings = settingsHolder;
     LOG_INFO("[ServiceBluetooth] Initializing");
 }

@@ -1,5 +1,5 @@
 #!/bin/bash 
-# Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved. 
+# Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 # For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 # taken from: https://raw.githubusercontent.com/andrewseidl/githook-clang-format/master/clang-format.hook
@@ -46,9 +46,9 @@ EOF
 fi
 
 get_clang_format_script() {
-    local declare searchpaths=(
-        $(which "clang-format-diff.py")                                 # clang-format-diff in path
-        "/usr/share/clang/clang-format-10/clang-format-diff.py"          # clang-format-diff location for clang format 9 Ubuntu/Debian 18.04
+    local searchpaths=(
+        "$(which "clang-format-diff.py" 2>/dev/null)"                   # clang-format-diff in path
+        "/usr/share/clang/clang-format-10/clang-format-diff.py"         # clang-format-diff location for clang format 9 Ubuntu/Debian 18.04
         "/usr/share/clang/clang-format-${CVER}/clang-format-diff.py"    # clang-format-diff location on Ubuntu/Debian
         "/usr/share/clang/clang-format-diff.py"                         # clang-format_diff location on Arch last resort
     )
@@ -60,7 +60,7 @@ get_clang_format_script() {
         fi
     done
     if [[ ${tool} == "" ]]; then
-        echo clang-format-diff not found in path and: ${sarchpaths[@]} >2
+        echo "clang-format-diff not found in path and: ${searchpaths[*]}" > /dev/null
     fi
     echo "${tool}"
 }

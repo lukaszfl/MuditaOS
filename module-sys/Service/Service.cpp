@@ -158,6 +158,9 @@ namespace sys
         const auto idx = type_index(typeid(*message));
         if (const auto handler = message_handlers.find(idx); handler != message_handlers.end()) {
             const auto &handlerFunction = handler->second;
+            if (handlerFunction == nullptr) {
+                return {true, nullptr};
+            }
             return {true, handlerFunction(message)};
         }
         return {false, nullptr};
@@ -168,7 +171,7 @@ namespace sys
         auto idx = type_index(type);
         if (message_handlers.find(idx) == message_handlers.end()) {
             log_debug("Registering new message handler on %s", type.name());
-            message_handlers[idx] = handler;
+            message_handlers[idx] = std::move(handler);
             return true;
         }
         LOG_ERROR("Handler for: %s already registered!", type.name());
@@ -184,6 +187,11 @@ namespace sys
     bool Service::connect(Message &&msg, MessageHandler handler)
     {
         return connect(&msg, handler);
+    }
+
+    bool Service::disconnect(const std::type_info &type)
+    {
+        return connect(type, nullptr);
     }
 
     void Service::CloseHandler()

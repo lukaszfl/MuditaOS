@@ -95,6 +95,8 @@ namespace sys
         bool connect(const std::type_info &type, MessageHandler handler);
         bool connect(Message *msg, MessageHandler handler);
         bool connect(Message &&msg, MessageHandler handler);
+        /// disconnect message handler for selected message
+        bool disconnect(const std::type_info &type);
 
         void sendCloseReadyMessage(Service *service);
 
