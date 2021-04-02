@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
+#include <memory>
 #include <service-db/Settings.hpp>
 #include <service-db/SettingsMessages.hpp>
 #include <service-db/SettingsCache.hpp>
@@ -21,13 +22,18 @@
 
 namespace settings
 {
+
+    Failure::Failure(const std::string &error) : std::runtime_error(error)
+    {}
     Settings::Settings(sys::Service *app, const std::string &dbAgentName, SettingsCache *cache)
-        : dbAgentName(dbAgentName), cache(cache), app(app)
+        : dbAgentName(dbAgentName), cache(cache)
     {
         if (app == nullptr) {
             return;
         }
-        this->app->bus.channels.push_back(sys::BusChannel::ServiceDBNotifications);
+        this->app        = app->shared_from_this();
+        auto application = this->app.lock();
+        application->bus.channels.push_back(sys::BusChannel::ServiceDBNotifications);
         if (nullptr == cache) {
             this->cache = SettingsCache::getInstance();
         }
@@ -37,25 +43,34 @@ namespace settings
     Settings::~Settings()
     {
         deregisterHandlers();
+        if (app.expired()) {
+            return;
+        }
+        LOG_ERROR("no crash");
     }
 
     void Settings::sendMsg(std::shared_ptr<settings::Messages::SettingsMessage> &&msg)
     {
-        app->bus.sendUnicast(std::move(msg), dbAgentName);
+        auto application = this->app.lock();
+        if (app.expired()) {
+            throw Failure("app not exists");
+        }
+        application->bus.sendUnicast(std::move(msg), dbAgentName);
     }
 
     void Settings::changeHandlers(enum Change change)
     {
         auto proxy = [&](const std::type_info &what, Change change, auto foo) -> void {
-            if (not app) {
-                return;
-            };
+            auto application = this->app.lock();
+            if (app.expired()) {
+                throw Failure("app not exists");
+            }
             switch (change) {
             case Change::Register:
-                app->connect(what, std::move(foo));
+                application->connect(what, std::move(foo));
                 break;
             case Change::Deregister:
-                app->disconnect(what);
+                application->disconnect(what);
                 break;
             }
         };
@@ -155,12 +170,22 @@ namespace settings
         return std::make_shared<sys::ResponseMessage>();
     }
 
+    auto getEntryPath(const std::string &variableName, SettingsScope scope, std::weak_ptr<sys::Service> &app)
+    {
+        auto application = app.lock();
+        if (app.expired()) {
+            throw Failure("app not exists");
+        }
+        return EntryPath{.service = application->GetName(), .variable = variableName, .scope = scope};
+    }
+
+    auto getValue = [](auto &app, const std::string &variableName, SettingsScope scope) {
+        EntryPath path = getEntryPath(variableName, scope, app);
+    };
+
     void Settings::registerValueChange(const std::string &variableName, ValueChangedCallback cb, SettingsScope scope)
     {
-        EntryPath path;
-        path.variable = variableName;
-        path.service  = app->GetName();
-        path.scope    = scope;
+        EntryPath path = getEntryPath(variableName, scope, app);
 
         auto it_cb = cbValues.find(path);
         if (cbValues.end() != it_cb && nullptr != it_cb->second.first) {
@@ -176,10 +201,7 @@ namespace settings
                                        ValueChangedCallbackWithName cb,
                                        SettingsScope scope)
     {
-        EntryPath path;
-        path.variable = variableName;
-        path.service  = app->GetName();
-        path.scope    = scope;
+        EntryPath path = getEntryPath(variableName, scope, app);
 
         auto it_cb = cbValues.find(path);
         if (cbValues.end() != it_cb && nullptr != it_cb->second.second) {
@@ -193,10 +215,7 @@ namespace settings
 
     void Settings::unregisterValueChange(const std::string &variableName, SettingsScope scope)
     {
-        EntryPath path;
-        path.variable = variableName;
-        path.service  = app->GetName();
-        path.scope    = scope;
+        EntryPath path = getEntryPath(variableName, scope, app);
 
         auto it_cb = cbValues.find(path);
         if (cbValues.end() == it_cb) {
@@ -213,32 +232,26 @@ namespace settings
 
     void Settings::unregisterValueChange()
     {
+        auto application = app.lock();
         for (const auto &it_cb : cbValues) {
             log_debug("[Settings::unregisterValueChange] %s", it_cb.first.to_string().c_str());
             auto msg = std::make_shared<settings::Messages::UnregisterOnVariableChange>(it_cb.first);
             sendMsg(std::move(msg));
         }
         cbValues.clear();
-        LOG_INFO("Unregistered all settings variable change on application (%s)", app->GetName().c_str());
+        LOG_INFO("Unregistered all settings variable change on application (%s)", application->GetName().c_str());
     }
 
     void Settings::setValue(const std::string &variableName, const std::string &variableValue, SettingsScope scope)
     {
-        EntryPath path;
-        path.variable = variableName;
-        path.service  = app->GetName();
-        path.scope    = scope;
-        auto msg      = std::make_shared<settings::Messages::SetVariable>(path, variableValue);
-        sendMsg(std::move(msg));
+        EntryPath path = getEntryPath(variableName, scope, app);
+        sendMsg(std::make_shared<settings::Messages::SetVariable>(path, variableValue));
         cache->setValue(path, variableValue);
     }
 
     std::string Settings::getValue(const std::string &variableName, SettingsScope scope)
     {
-        EntryPath path;
-        path.variable = variableName;
-        path.service  = app->GetName();
-        path.scope    = scope;
+        EntryPath path = getEntryPath(variableName, scope, app);
         return cache->getValue(path);
     }
 

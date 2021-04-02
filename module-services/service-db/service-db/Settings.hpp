@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <exception>
 #include <module-sys/Service/Message.hpp>
 #include <service-db/DBServiceName.hpp>
 #include "SettingsScope.hpp"
@@ -18,6 +19,11 @@
 
 namespace settings
 {
+    class Failure : public std::runtime_error
+    {
+      public:
+        Failure(const std::string &error);
+    };
     class SettingsCache;
     class Settings
     {
@@ -66,7 +72,7 @@ namespace settings
         std::string dbAgentName;
 
         SettingsCache *cache = nullptr;
-        sys::Service *app    = nullptr;
+        std::weak_ptr<sys::Service> app;
         std::string serviceName;
         std::string phoneMode;
         std::string profile;
@@ -84,6 +90,11 @@ namespace settings
             Register,
             Deregister
         };
+        /// using owner service either
+        /// - to register handlers
+        /// - to unregister handlers
+        /// handlers are called per service if for some reason service will stop
+        /// existing - handlers shouldn't be called
         void changeHandlers(enum Change change);
         void registerHandlers();
         void deregisterHandlers();
