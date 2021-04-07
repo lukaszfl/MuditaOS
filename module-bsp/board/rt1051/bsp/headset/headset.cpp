@@ -167,6 +167,8 @@ namespace bsp
                 i2cAddr.subAddress = HEADSET_DEV_SETTING_1_REG;
                 i2c->Modify(i2cAddr, reg, MicrophoneInserted, 1);
 
+                gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::MIC_BIAS_DRIVER_EN), !HeadsetInserted);
+
                 headsetState       = static_cast<uint8_t>(HeadsetInserted);
                 headsetStateChange = HeadsetState::Changed;
             }
@@ -203,6 +205,9 @@ namespace bsp
                 reg                = HEADSET_DEV_SET1_KP_EN;
                 i2cAddr.subAddress = HEADSET_DEV_SETTING_1_REG;
                 i2c->Modify(i2cAddr, reg, MicrophoneInserted, 1);
+
+                // Turn MICBIAS on/off depending on headset type
+                gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::MIC_BIAS_DRIVER_EN), MicrophoneInserted);
 
                 headsetState       = static_cast<uint8_t>(HeadsetInserted);
                 headsetStateChange = HeadsetState::Changed;
@@ -281,7 +286,7 @@ namespace bsp
             i2c->Write(i2cAddr, static_cast<uint8_t *>(&reg), 1);
 
             // Turn off DC and ADC conversion interrupt
-            reg = HEADSET_INT_DIS_INT_ENA | HEADSET_INT_DIS_ADC_DIS | HEADSET_INT_DIS_DC_DIS | HEADSET_INT_DIS_INS_ENA;
+            reg = HEADSET_INT_DIS_INT_ENA | HEADSET_INT_DIS_ADC_ENA | HEADSET_INT_DIS_DC_ENA | HEADSET_INT_DIS_INS_ENA;
 
             i2cAddr.subAddress = HEADSET_INTERRUPT_DIS_REG;
             i2c->Write(i2cAddr, static_cast<uint8_t *>(&reg), 1);
