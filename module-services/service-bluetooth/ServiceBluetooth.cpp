@@ -40,8 +40,6 @@ namespace
 
 ServiceBluetooth::ServiceBluetooth() : sys::Service(service::name::bluetooth, "", BluetoothServiceStackDepth)
 {
-    settingsHolder = std::make_shared<bluetooth::SettingsHolder>(std::make_unique<settings::Settings>(this));
-    bluetooth::KeyStorage::settings = settingsHolder;
     LOG_INFO("[ServiceBluetooth] Initializing");
 }
 
@@ -54,6 +52,11 @@ ServiceBluetooth::~ServiceBluetooth()
 // this means it is an init point of bluetooth feature handling
 sys::ReturnCodes ServiceBluetooth::InitHandler()
 {
+
+    settingsHolder =
+        std::make_shared<bluetooth::SettingsHolder>(std::make_unique<settings::Settings>(settings::Interface(this)));
+    bluetooth::KeyStorage::settings = settingsHolder;
+
     worker = std::make_unique<BluetoothWorker>(this);
     worker->run();
 

@@ -263,7 +263,7 @@ class ServiceCellular : public sys::Service
     /// Process change of power state
     void handle_power_state_change();
 
-    std::unique_ptr<settings::Settings> settings = std::make_unique<settings::Settings>(this);
+    std::unique_ptr<settings::Settings> settings;
     bool handle_apn_conf_procedure();
 
     bool handleTextMessagesInit();

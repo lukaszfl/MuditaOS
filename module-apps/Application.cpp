@@ -87,7 +87,6 @@ namespace app
           default_window(gui::name::window::main_window), windowsStack(this),
           keyTranslator{std::make_unique<gui::KeyInputSimpleTranslation>()}, startInBackground{startInBackground},
           callbackStorage{std::make_unique<CallbackStorage>()}, topBarManager{std::make_unique<TopBarManager>()},
-          settings(std::make_unique<settings::Settings>(this)),
           phoneModeObserver(std::make_unique<sys::phone_modes::Observer>())
     {
         topBarManager->enableIndicators({gui::top_bar::Indicator::Time});
@@ -558,6 +557,8 @@ namespace app
     sys::ReturnCodes Application::InitHandler()
     {
         setState(State::INITIALIZING);
+
+        settings = std::make_unique<settings::Settings>(settings::Interface(this));
 
         app::manager::Controller::applicationInitialised(this, StartupStatus::Success, startInBackground);
 

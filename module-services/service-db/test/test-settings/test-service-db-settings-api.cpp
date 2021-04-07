@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include <catch2/catch.hpp>
@@ -99,33 +99,39 @@ TEST_CASE("SettingsApi")
                 return ret;
             });
 
-        // start application
-        cpp_freertos::Thread::StartScheduler();
+        try {
+            // start application
+            cpp_freertos::Thread::StartScheduler();
 
-        // check the results
-        std::cout << "testVar values:" << std::endl << std::flush;
-        for (auto s : testVar->v) {
-            std::cout << s << std::endl << std::flush;
-        }
-        REQUIRE(testVar->v.size() == 3);
-        REQUIRE(testVar->v[1] == testVar->v[0] + "1");
-        REQUIRE(testVar->v[2] == testVar->v[1] + "2");
+            // check the results
+            std::cout << "testVar values:" << std::endl << std::flush;
+            for (auto s : testVar->v) {
+                std::cout << s << std::endl << std::flush;
+            }
+            REQUIRE(testVar->v.size() == 3);
+            REQUIRE(testVar->v[1] == testVar->v[0] + "1");
+            REQUIRE(testVar->v[2] == testVar->v[1] + "2");
 
-        // check the result
-        std::cout << "testProf values:" << std::endl << std::flush;
-        for (auto s : testProf->v) {
-            std::cout << s << std::endl << std::flush;
-        }
-        REQUIRE(testProf->v[1] == testProf->v[0] + "1");
-        REQUIRE(testProf->v[2] == testProf->v[0] + "12");
-        REQUIRE(testProf->v[3] == "other");
+            // check the result
+            std::cout << "testProf values:" << std::endl << std::flush;
+            for (auto s : testProf->v) {
+                std::cout << s << std::endl << std::flush;
+            }
+            REQUIRE(testProf->v[1] == testProf->v[0] + "1");
+            REQUIRE(testProf->v[2] == testProf->v[0] + "12");
+            REQUIRE(testProf->v[3] == "other");
 
-        std::cout << "testMode values:" << std::endl << std::flush;
-        for (auto s : testMode->v) {
-            std::cout << s << std::endl << std::flush;
+            std::cout << "testMode values:" << std::endl << std::flush;
+            for (auto s : testMode->v) {
+                std::cout << s << std::endl << std::flush;
+            }
+            REQUIRE(testMode->v[1] == testMode->v[0] + "1");
+            REQUIRE(testMode->v[2] == testMode->v[0] + "12");
+            REQUIRE(testMode->v[3] == "other");
         }
-        REQUIRE(testMode->v[1] == testMode->v[0] + "1");
-        REQUIRE(testMode->v[2] == testMode->v[0] + "12");
-        REQUIRE(testMode->v[3] == "other");
+        catch (std::exception &error) {
+            std::cout << error.what() << std::endl;
+            exit(1);
+        }
     }
 }

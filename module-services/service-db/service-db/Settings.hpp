@@ -24,7 +24,36 @@ namespace settings
       public:
         Failure(const std::string &error);
     };
+
     class SettingsCache;
+
+    /// interface for settings
+    /// it will throw in your face if used straight with Service constructor
+    /// this is because weak_ptr on shared_from_this doestn exist on creation
+    /// creation of setting should be delayed till we call init from Service
+    /// virtual ReturnCodes InitHandler() = 0;
+    ///
+    /// TODO invalidate interface on shared resource
+    /// (easiest : unique ptr to actual impl and clear it)
+    class Interface
+    {
+      private:
+        sys::Service *app       = nullptr;
+        std::string dbAgentName = service::name::db;
+        SettingsCache *cache    = nullptr;
+
+      public:
+        explicit Interface(sys::Service *);
+        sys::Service &getApp();
+        SettingsCache *getCache();
+        const std::string &agent()
+        {
+            return dbAgentName;
+        }
+        explicit operator bool() const noexcept;
+    };
+
+    /// see InitHandler note for settings usage for interface
     class Settings
     {
       public:
@@ -37,9 +66,7 @@ namespace settings
         using OnAllProfilesRetrievedCallback = std::function<void(const ListOfProfiles &)>;
         using OnAllModesRetrievedCallback    = std::function<void(const ListOfModes &)>;
 
-        explicit Settings(sys::Service *app,
-                          const std::string &dbAgentName = service::name::db,
-                          SettingsCache *cache           = nullptr);
+        explicit Settings(Interface interface);
         ~Settings();
 
         void setValue(const std::string &variableName,
@@ -69,10 +96,7 @@ namespace settings
         void unregisterModeChange();
 
       private:
-        std::string dbAgentName;
-
-        SettingsCache *cache = nullptr;
-        std::weak_ptr<sys::Service> app;
+        Interface interface;
         std::string serviceName;
         std::string phoneMode;
         std::string profile;
@@ -95,9 +119,9 @@ namespace settings
         /// - to unregister handlers
         /// handlers are called per service if for some reason service will stop
         /// existing - handlers shouldn't be called
-        void changeHandlers(enum Change change);
-        void registerHandlers();
-        void deregisterHandlers();
+        void changeHandlers(enum Change change, sys::Service &);
+        void registerHandlers(sys::Service &);
+        void deregisterHandlers(sys::Service &);
         auto handleVariableChanged(sys::Message *req) -> sys::MessagePointer;
         auto handleCurrentProfileChanged(sys::Message *req) -> sys::MessagePointer;
         auto handleCurrentModeChanged(sys::Message *req) -> sys::MessagePointer;

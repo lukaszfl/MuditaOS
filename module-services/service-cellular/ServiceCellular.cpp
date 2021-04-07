@@ -235,8 +235,6 @@ ServiceCellular::ServiceCellular()
 ServiceCellular::~ServiceCellular()
 {
     LOG_INFO("[ServiceCellular] Cleaning resources");
-    settings->unregisterValueChange(settings::Cellular::volte_on, ::settings::SettingsScope::Global);
-    settings->unregisterValueChange(settings::Cellular::apn_list, ::settings::SettingsScope::Global);
 }
 
 // this static function will be replaced by Settings API
@@ -268,6 +266,8 @@ void ServiceCellular::CallStateTimerHandler()
 
 sys::ReturnCodes ServiceCellular::InitHandler()
 {
+    settings = std::make_unique<settings::Settings>(settings::Interface(this));
+
     board = EventManagerServiceAPI::GetBoard(this);
 
     state.set(this, State::ST::WaitForStartPermission);

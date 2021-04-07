@@ -107,7 +107,6 @@ namespace app::manager
         : Service{serviceName, {}, ApplicationManagerStackDepth},
           ApplicationManagerBase(std::move(launchers)), rootApplicationName{_rootApplicationName},
           actionsRegistry{[this](ActionEntry &action) { return handleAction(action); }}, autoLockEnabled(false),
-          settings(std::make_unique<settings::Settings>(this)),
           phoneModeObserver(std::make_unique<sys::phone_modes::Observer>())
     {
         autoLockTimer = sys::TimerFactory::createSingleShotTimer(
@@ -118,6 +117,8 @@ namespace app::manager
 
     sys::ReturnCodes ApplicationManager::InitHandler()
     {
+
+        settings = std::make_unique<settings::Settings>(settings::Interface(this));
         utils::localize.setDisplayLanguage(settings->getValue(settings::SystemProperties::displayLanguage));
 
         settings->registerValueChange(

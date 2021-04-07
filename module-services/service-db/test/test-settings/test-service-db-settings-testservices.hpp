@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 namespace settings
@@ -8,7 +8,6 @@ namespace settings
       public:
         MyService(const std::string &name) : sys::Service(name)
         {
-            mySettings = std::make_shared<settings::Settings>(this);
         }
         std::shared_ptr<settings::Settings> mySettings;
         std::vector<std::string> valChanged;
@@ -60,6 +59,7 @@ namespace settings
         sys::ReturnCodes InitHandler() override
         {
             std::cout << "inithandler thr_id: " << std::this_thread::get_id() << std::endl << std::flush;
+            mySettings = std::make_shared<settings::Settings>(settings::Interface(this));
             return sys::ReturnCodes::Success;
         }
         sys::ReturnCodes DeinitHandler() override
