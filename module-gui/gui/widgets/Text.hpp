@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -64,6 +64,10 @@ namespace gui
         void showCursor(bool focus);
 
       public:
+        std::size_t lineCount() const
+        {
+            return lines ? lines->size() : 0;
+        }
         ExpandMode expandMode    = ExpandMode::None;
         EditMode editMode        = EditMode::Edit;
         KeyCode key_signs_remove = KeyCode::KEY_PND;

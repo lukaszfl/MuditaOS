@@ -5,6 +5,7 @@
 #include "application-calculator/widgets/CalculatorStyle.hpp"
 #include "application-calculator/data/CalculatorUtility.hpp"
 #include <i18n/i18n.hpp>
+#include <gsl/gsl_util>
 
 namespace gui
 {
@@ -28,12 +29,19 @@ namespace gui
         bottomBar->setText(gui::BottomBar::Side::LEFT, utils::localize.get(style::calculator::decimal_separator));
         bottomBar->setFont(BottomBar::Side::LEFT, style::window::font::largelight);
 
-        mathOperationInput = new gui::Text(this,
-                                           style::calculator::window::input_margin,
-                                           style::calculator::window::input_offset_top,
-                                           style::calculator::window::input_width,
-                                           style::calculator::window::input_height);
-        mathOperationInput->setEdges(gui::RectangleEdge::Bottom);
+        inputBox = new gui::HBox(this,
+                                 style::calculator::window::input_box_margin,
+                                 style::calculator::window::input_box_offset_top,
+                                 style::calculator::window::input_box_width,
+                                 style::calculator::window::input_box_height);
+        inputBox->setEdges(gui::RectangleEdge::Bottom);
+
+        ellipsis = new gui::Image(inputBox, 0, 0, 0, 0, style::calculator::ellipsis_img);
+        ellipsis->setAlignment(gui::Alignment::Vertical::Center);
+
+        mathOperationInput = new gui::TextFixedSize(inputBox, 0, 0, 0, 0);
+        mathOperationInput->setEdges(gui::RectangleEdge::All);
+        mathOperationInput->setUnderline(false);
         mathOperationInput->setAlignment(
             gui::Alignment(gui::Alignment::Horizontal::Right, gui::Alignment::Vertical::Center));
         mathOperationInput->setFont(style::window::font::supersizemelight);
@@ -51,11 +59,24 @@ namespace gui
         addWidget(mathBox);
         setFocusItem(mathOperationInput);
         applyInputCallback();
+        hideEllipsis();
     }
 
     void CalculatorMainWindow::applyInputCallback()
     {
-        mathOperationInput->inputCallback = [&](Item &item, const InputEvent &event) {
+        mathOperationInput->inputCallback = [&](Item &, const InputEvent &event) {
+            auto adjustEllipsisVisibility = gsl::finally([&] {
+                LOG_FATAL("input handled; line count: %lu", mathOperationInput->lineCount());
+
+                if (!event.isShortPress())
+                    return;
+
+                if (ellipsis->visible)
+                    hideEllipsis();
+                else
+                    showEllipsis();
+            });
+
             if (clearInput) {
                 mathOperationInput->clear();
                 clearInput = false;
@@ -135,6 +156,40 @@ namespace gui
             return mathOperationInput->getText()[mathOperationInput->getText().length() - 2];
         }
         return 0;
+    }
+
+    void CalculatorMainWindow::showEllipsis()
+    {
+        LOG_FATAL("show ellipsis");
+        if (ellipsis->visible)
+            return;
+
+        using namespace style::calculator::window;
+
+        ellipsis->setVisible(true);
+        ellipsis->setMinimumSize(ellipsis_width, ellipsis_height);
+        ellipsis->setMaximumSize(ellipsis_width, ellipsis_height);
+
+        mathOperationInput->setMinimumSize(ellipsis_visible::input_width, ellipsis_visible::input_height);
+        mathOperationInput->setMaximumSize(ellipsis_visible::input_width, ellipsis_visible::input_height);
+
+        inputBox->resizeItems();
+    }
+
+    void CalculatorMainWindow::hideEllipsis()
+    {
+        LOG_FATAL("hide ellipsis");
+        if (!ellipsis->visible)
+            return;
+
+        using namespace style::calculator::window;
+
+        ellipsis->setVisible(false);
+
+        mathOperationInput->setMinimumSize(ellipsis_hidden::input_width, ellipsis_hidden::input_height);
+        mathOperationInput->setMaximumSize(ellipsis_hidden::input_width, ellipsis_hidden::input_height);
+
+        inputBox->resizeItems();
     }
 
     void CalculatorMainWindow::writeEquation(bool lastCharIsSymbol, const UTF8 &symbol)

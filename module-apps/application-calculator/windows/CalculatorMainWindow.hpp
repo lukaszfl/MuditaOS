@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -6,7 +6,9 @@
 #include "windows/AppWindow.hpp"
 #include "Application.hpp"
 #include "application-calculator/widgets/MathOperationsBox.hpp"
-#include <module-gui/gui/widgets/Text.hpp>
+#include <module-gui/gui/widgets/BoxLayout.hpp>
+#include <module-gui/gui/widgets/Image.hpp>
+#include <module-gui/gui/widgets/TextFixedSize.hpp>
 #include <module-utils/tinyexpr/tinyexpr.h>
 
 namespace gui
@@ -14,8 +16,10 @@ namespace gui
 
     class CalculatorMainWindow : public gui::AppWindow
     {
-        gui::Text *mathOperationInput   = nullptr;
-        gui::MathOperationsBox *mathBox = nullptr;
+        gui::HBox *inputBox                    = nullptr;
+        gui::Image *ellipsis                   = nullptr;
+        gui::TextFixedSize *mathOperationInput = nullptr;
+        gui::MathOperationsBox *mathBox        = nullptr;
 
         bool clearInput = false;
         void writeEquation(bool lastCharIsSymbol, const UTF8 &symbol);
@@ -24,6 +28,8 @@ namespace gui
         bool isSymbol(uint32_t character);
         bool isDecimalSeparator(uint32_t character);
         uint32_t getPenultimate();
+        void showEllipsis();
+        void hideEllipsis();
 
       public:
         CalculatorMainWindow(app::Application *app, std::string name);
