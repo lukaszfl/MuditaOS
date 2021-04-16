@@ -35,12 +35,13 @@ namespace gui
                                  style::calculator::window::input_box_width,
                                  style::calculator::window::input_box_height);
         inputBox->setEdges(gui::RectangleEdge::Bottom);
-
-        ellipsis = new gui::Image(inputBox, 0, 0, 0, 0, style::calculator::ellipsis_img);
-        ellipsis->setAlignment(gui::Alignment::Vertical::Center);
+        inputBox->setReverseOrder(true);
 
         mathOperationInput = new gui::TextFixedSize(inputBox, 0, 0, 0, 0);
-        mathOperationInput->setEdges(gui::RectangleEdge::All);
+        mathOperationInput->setMinimumSize(style::calculator::window::ellipsis_visible::input_width,
+                                           style::calculator::window::ellipsis_visible::input_height);
+
+        mathOperationInput->setEdges(gui::RectangleEdge::None);
         mathOperationInput->setUnderline(false);
         mathOperationInput->setAlignment(
             gui::Alignment(gui::Alignment::Horizontal::Right, gui::Alignment::Vertical::Center));
@@ -50,6 +51,11 @@ namespace gui
         mathOperationInput->setPenWidth(style::window::default_border_rect_no_focus);
         mathOperationInput->setEditMode(gui::EditMode::Edit);
 
+        ellipsis             = new gui::Image(inputBox, 0, 0, 0, 0, style::calculator::ellipsis_img);
+        ellipsis->activeItem = false;
+        ellipsis->setAlignment(gui::Alignment::Vertical::Center);
+        ellipsis->setMinimumSize(style::calculator::window::ellipsis_width, style::calculator::window::ellipsis_height);
+
         mathBox = new gui::MathOperationsBox(this,
                                              style::calculator::window::math_box_offset_top,
                                              style::window::default_body_width,
@@ -57,82 +63,95 @@ namespace gui
                                              style::calculator::window::math_box_cell_width,
                                              style::calculator::window::math_box_cell_height);
         addWidget(mathBox);
-        setFocusItem(mathOperationInput);
+        setFocusItem(inputBox);
         applyInputCallback();
         hideEllipsis();
     }
 
     void CalculatorMainWindow::applyInputCallback()
     {
-        mathOperationInput->inputCallback = [&](Item &, const InputEvent &event) {
-            auto adjustEllipsisVisibility = gsl::finally([&] {
-                LOG_FATAL("input handled; line count: %lu", mathOperationInput->lineCount());
+        inputBox->inputCallback = [this](Item &, const InputEvent &event) {
+            LOG_FATAL("input handled; line count: %lu", mathOperationInput->lineCount());
 
-                if (!event.isShortPress())
-                    return;
-
-                if (ellipsis->visible)
-                    hideEllipsis();
-                else
-                    showEllipsis();
-            });
-
-            if (clearInput) {
-                mathOperationInput->clear();
-                clearInput = false;
-            }
-            if (event.isLongPress() && event.is(gui::KeyCode::KEY_PND)) {
-                mathOperationInput->clear();
-                return true;
-            }
             if (!event.isShortPress()) {
                 return false;
             }
-            if (event.is(gui::KeyCode::KEY_0) && mathOperationInput->getText() == "0") {
-                return true;
+
+            auto ret = mathOperationInput->onInput(event);
+            LOG_ERROR("Co sie wypsiuje do Textu %s", mathOperationInput->getText().c_str());
+
+            if (inputToNavigation(event) != NavigationDirection::NONE) {
+                return ret;
             }
-            auto lastChar         = mathOperationInput->getText()[mathOperationInput->getText().length() - 1];
-            bool lastCharIsSymbol = isSymbol(lastChar);
-            if (lastChar == style::calculator::symbols::codes::zero && isSymbol(getPenultimate()) &&
-                !isDecimalSeparator(getPenultimate()) && event.is(gui::KeyCode::KEY_0)) {
-                return true;
+
+            if (mathOperationInput->lineCount() > 1) {
+                showEllipsis();
             }
-            if (event.keyCode == gui::KeyCode::KEY_UP) {
-                writeEquation(lastCharIsSymbol, style::calculator::symbols::strings::plus);
-                return true;
+            else {
+                hideEllipsis();
             }
-            if (event.keyCode == gui::KeyCode::KEY_DOWN) {
-                if (lastChar != style::calculator::symbols::codes::minus) {
-                    writeEquation(lastCharIsSymbol, style::calculator::symbols::strings::minus);
-                }
-                return true;
-            }
-            if (event.keyCode == gui::KeyCode::KEY_LEFT) {
-                writeEquation(lastCharIsSymbol, style::calculator::symbols::strings::multiplication);
-                return true;
-            }
-            if (event.keyCode == gui::KeyCode::KEY_RIGHT) {
-                writeEquation(lastCharIsSymbol, style::calculator::symbols::strings::division);
-                return true;
-            }
-            if (event.keyCode == gui::KeyCode::KEY_LF) {
-                if (!isPreviousNumberDecimal()) {
-                    writeEquation(lastCharIsSymbol, utils::localize.get("app_calculator_decimal_separator"));
-                }
-                return true;
-            }
-            if (lastChar == style::calculator::symbols::codes::zero && isSymbol(getPenultimate()) &&
-                !isDecimalSeparator(getPenultimate()) && !event.is(gui::KeyCode::KEY_0) &&
-                !event.is(gui::KeyCode::KEY_PND) && !event.is(gui::KeyCode::KEY_ENTER)) {
-                mathOperationInput->removeChar();
-                return false;
-            }
-            if (!event.is(gui::KeyCode::KEY_0) && mathOperationInput->getText() == "0") {
-                mathOperationInput->clear();
-            }
-            return false;
+
+            return ret;
         };
-    }
+
+        //        mathOperationInput->textChangedCallback = [this](Item &, const UTF8 &text) { inputBox->resizeItems();
+        //        };
+
+        //            if (clearInput) {
+        //                mathOperationInput->clear();
+        //                clearInput = false;
+        //            }
+        //            if (event.isLongPress() && event.is(gui::KeyCode::KEY_PND)) {
+        //                mathOperationInput->clear();
+        //                return true;
+        //            }
+        //            if (!event.isShortPress()) {
+        //                return false;
+        //            }
+        //            if (event.is(gui::KeyCode::KEY_0) && mathOperationInput->getText() == "0") {
+        //                return true;
+        //            }
+        //            auto lastChar         = mathOperationInput->getText()[mathOperationInput->getText().length() - 1];
+        //            bool lastCharIsSymbol = isSymbol(lastChar);
+        //            if (lastChar == style::calculator::symbols::codes::zero && isSymbol(getPenultimate()) &&
+        //                !isDecimalSeparator(getPenultimate()) && event.is(gui::KeyCode::KEY_0)) {
+        //                return true;
+        //            }
+        //            if (event.keyCode == gui::KeyCode::KEY_UP) {
+        //                writeEquation(lastCharIsSymbol, style::calculator::symbols::strings::plus);
+        //                return true;
+        //            }
+        //            if (event.keyCode == gui::KeyCode::KEY_DOWN) {
+        //                if (lastChar != style::calculator::symbols::codes::minus) {
+        //                    writeEquation(lastCharIsSymbol, style::calculator::symbols::strings::minus);
+        //                }
+        //                return true;
+        //            }
+        //            if (event.keyCode == gui::KeyCode::KEY_LEFT) {
+        //                writeEquation(lastCharIsSymbol, style::calculator::symbols::strings::multiplication);
+        //                return true;
+        //            }
+        //            if (event.keyCode == gui::KeyCode::KEY_RIGHT) {
+        //                writeEquation(lastCharIsSymbol, style::calculator::symbols::strings::division);
+        //                return true;
+        //            }
+        //            if (event.keyCode == gui::KeyCode::KEY_LF) {
+        //                if (!isPreviousNumberDecimal()) {
+        //                    writeEquation(lastCharIsSymbol, utils::localize.get("app_calculator_decimal_separator"));
+        //                }
+        //                return true;
+        //            }
+        //            if (lastChar == style::calculator::symbols::codes::zero && isSymbol(getPenultimate()) &&
+        //                !isDecimalSeparator(getPenultimate()) && !event.is(gui::KeyCode::KEY_0) &&
+        //                !event.is(gui::KeyCode::KEY_PND) && !event.is(gui::KeyCode::KEY_ENTER)) {
+        //                mathOperationInput->removeChar();
+        //                return false;
+        //            }
+        //            if (!event.is(gui::KeyCode::KEY_0) && mathOperationInput->getText() == "0") {
+        //                mathOperationInput->clear();
+        //            }
+        //    };
+    } // namespace gui
 
     bool CalculatorMainWindow::isSymbol(uint32_t character)
     {
@@ -164,16 +183,13 @@ namespace gui
         if (ellipsis->visible)
             return;
 
-        using namespace style::calculator::window;
+        auto backupText = mathOperationInput->backupText();
 
         ellipsis->setVisible(true);
-        ellipsis->setMinimumSize(ellipsis_width, ellipsis_height);
-        ellipsis->setMaximumSize(ellipsis_width, ellipsis_height);
-
-        mathOperationInput->setMinimumSize(ellipsis_visible::input_width, ellipsis_visible::input_height);
-        mathOperationInput->setMaximumSize(ellipsis_visible::input_width, ellipsis_visible::input_height);
+        mathOperationInput->setMinimumWidth(style::calculator::window::ellipsis_visible::input_width);
 
         inputBox->resizeItems();
+        mathOperationInput->restoreFrom(backupText);
     }
 
     void CalculatorMainWindow::hideEllipsis()
@@ -182,14 +198,13 @@ namespace gui
         if (!ellipsis->visible)
             return;
 
-        using namespace style::calculator::window;
+        auto backupText = mathOperationInput->backupText();
 
         ellipsis->setVisible(false);
-
-        mathOperationInput->setMinimumSize(ellipsis_hidden::input_width, ellipsis_hidden::input_height);
-        mathOperationInput->setMaximumSize(ellipsis_hidden::input_width, ellipsis_hidden::input_height);
+        mathOperationInput->setMinimumWidth(style::calculator::window::ellipsis_visible::input_width);
 
         inputBox->resizeItems();
+        mathOperationInput->restoreFrom(backupText);
     }
 
     void CalculatorMainWindow::writeEquation(bool lastCharIsSymbol, const UTF8 &symbol)
@@ -249,10 +264,10 @@ namespace gui
         }
 
         if (inputEvent.keyCode == gui::KeyCode::KEY_ENTER) {
-            auto result = Calculator().calculate(std::string(mathOperationInput->getText()));
-            mathOperationInput->setText(result.value);
-            clearInput = result.isError;
-            return true;
+            //            auto result = Calculator().calculate(std::string(mathOperationInput->getText()));
+            //            mathOperationInput->setText(result.value);
+            //            clearInput = result.isError;
+            //            return true;
         }
 
         return false;

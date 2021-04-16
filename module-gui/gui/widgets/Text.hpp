@@ -66,7 +66,7 @@ namespace gui
       public:
         std::size_t lineCount() const
         {
-            return lines ? lines->size() : 0;
+            return lines ? lines->size() + lines->previousLinesStart.size() : 0;
         }
         ExpandMode expandMode    = ExpandMode::None;
         EditMode editMode        = EditMode::Edit;

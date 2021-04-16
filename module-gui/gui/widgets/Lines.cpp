@@ -120,6 +120,13 @@ namespace gui
             line.setPosition(lineXPosition, lineYPosition);
 
             lineYPosition += line.height();
+
+            if (line.height() == 0) {
+                lineYPosition += initHeight;
+            }
+            else {
+                lineYPosition += line.height();
+            }
         }
     }
 
