@@ -15,7 +15,12 @@ namespace app
                                                  sys::phone_modes::PhoneMode mode,
                                                  StartInBackground startInBackground)
         : Application{name, parent, mode, startInBackground}, state{std::make_unique<gui::OptionsData>()}
-    {}
+    {
+        float axa             = 14.333f;
+        std::string_view dupa = "dupa";
+        LOG_ERROR("ZMIENNA AXA %f >>", axa);
+        LOG_ERROR("STRING VIEW %.*s", int(dupa.length()), dupa.data());
+    }
 
     auto ApplicationMeditation::InitHandler() -> sys::ReturnCodes
     {
