@@ -10,15 +10,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "macros.h"
-
-/**
- * Sets heap size in SDRAM
- */
-#ifndef PROJECT_CONFIG_USER_DYNMEM_SIZE
-#define USERMEM_TOTAL_HEAP_SIZE	0
-#else
-#define USERMEM_TOTAL_HEAP_SIZE	PROJECT_CONFIG_USER_DYNMEM_SIZE
-#endif
+#include "usermem.h"
 
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
 all the API functions to use the MPU wrappers.  That should only be done when
@@ -36,18 +28,6 @@ task.h is included from an application file. */
 
 /* Block sizes must not get too small. */
 #define heapMINIMUM_BLOCK_SIZE	( ( size_t ) ( xHeapStructSize << 1 ) )
-
-/* Assumes 8bit bytes! */
-#define heapBITS_PER_BYTE		( ( size_t ) 8 )
-/**
- * Document specified below is must to read. It explains cached memory regions alignment requirements
- * and so on.
- * https://www.avrfreaks.net/sites/default/files/forum_attachments/AN-15679_SAMS70_E70_Cache_Coherence.pdf
- */
-
-#define usermemBYTE_ALIGNMENT		32
-#define usermemBYTE_ALIGNMENT_MASK ( 0x001f )
-
 
 #if( PROJECT_CONFIG_HEAP_INTEGRITY_CHECKS != 0 )
     #define INTEGRITY_STAMP_TAKEN   33333

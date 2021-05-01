@@ -25,11 +25,22 @@ set(SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/FreeRTOS/stream_buffer.c
         ${CMAKE_CURRENT_SOURCE_DIR}/FreeRTOS/timers.c
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/memory/usermem.c
-
         ${CMAKE_CURRENT_SOURCE_DIR}/CriticalSectionGuard.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/LockGuard.cpp
         )
+
+# Include TLSF allocator if enabled
+if(${TLSF_ENABLED})
+set(SOURCES ${SOURCES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/memory/usermem_tlsf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/memory/tlsf/tlsf.c
+        )
+else()
+set(SOURCES ${SOURCES}
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/memory/usermem.c
+        )
+endif()
 
 #Substitute FreeRTOS SystemvView sources if enabled
 if((${PROJECT_TARGET} STREQUAL "TARGET_RT1051") AND (${SYSTEM_VIEW_ENABLED}))

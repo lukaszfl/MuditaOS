@@ -84,3 +84,6 @@
 [submodule "module-utils/CrashDebug"]
 	path = module-utils/CrashDebug
 	url = https://github.com/adamgreen/CrashDebug.git
+[submodule "module-os/memory/tlsf"]
+	path = module-os/memory/tlsf
+	url = https://github.com/mattconte/tlsf

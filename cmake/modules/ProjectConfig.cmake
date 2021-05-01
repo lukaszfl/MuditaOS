@@ -24,6 +24,14 @@ else()
     set (USBCDC_ECHO_ENABLED 0 CACHE INTERNAL "")
 endif()
 
+# Enable TLSF allocator
+option(TLSF_ALLOCATOR "TLSF_ALLOCATOR" OFF)
+if (${TLSF_ALLOCATOR} STREQUAL "ON")
+    set (TLSF_ENABLED 1 CACHE INTERNAL "")
+else()
+    set (TLSF_ENABLED 0 CACHE INTERNAL "")
+endif()
+
 #add Debug LUART enable option
 if (${LOG_REDIRECT} STREQUAL "RTT_LUART")
     set (LOG_LUART_ENABLED 1 CACHE INTERNAL "")
