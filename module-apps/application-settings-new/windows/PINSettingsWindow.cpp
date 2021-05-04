@@ -8,14 +8,14 @@
 #include "OptionSetting.hpp"
 
 #include <service-appmgr/Controller.hpp>
-#include <service-appmgr/service-appmgr/data/SimActionsParams.hpp>
-#include <service-cellular-api>
+#include <locks/data/SimLockMessages.hpp>
+#include "service-cellular/CellularServiceAPI.hpp"
 
 namespace gui
 {
     PINSettingsWindow::PINSettingsWindow(app::Application *app) : BaseSettingsWindow(app, window::name::pin_settings)
     {
-        app->bus.sendUnicast<cellular::msg::request::sim::GetLockState>();
+        CellularServiceAPI::RequestSimCardPinLockState(app);
     }
 
     void PINSettingsWindow::onBeforeShow(ShowMode /*mode*/, SwitchData *data)
@@ -56,11 +56,8 @@ namespace gui
             optionList.emplace_back(std::make_unique<option::OptionSettings>(
                 utils::translate("app_settings_network_pin_change_code"),
                 [=](Item & /*item*/) {
-                    using namespace app::manager::actions;
-                    auto params = std::make_unique<PasscodeParams>(Store::GSM::get()->selected,
-                                                                   PasscodeParams::numOfAttemptsForEnteringPIN,
-                                                                   PasscodeParams::pinName);
-                    app::manager::Controller::sendAction(application, RequestPinChange, std::move(params));
+                    application->bus.sendUnicast(std::make_shared<locks::ChangeSimPin>(),
+                                                 app::manager::ApplicationManager::ServiceName);
                     return true;
                 },
                 nullptr,
@@ -75,14 +72,13 @@ namespace gui
     {
         currentState = !currentState;
         refreshOptionsList();
-        using namespace app::manager::actions;
-        auto params = std::make_unique<PasscodeParams>(
-            Store::GSM::get()->selected, PasscodeParams::numOfAttemptsForEnteringPIN, PasscodeParams::pinName);
         if (!currentState) {
-            app::manager::Controller::sendAction(application, RequestPinDisable, std::move(params));
+            application->bus.sendUnicast(std::make_shared<locks::DisableSimPin>(),
+                                         app::manager::ApplicationManager::ServiceName);
         }
         else {
-            app::manager::Controller::sendAction(application, RequestPinEnable, std::move(params));
+            application->bus.sendUnicast(std::make_shared<locks::EnableSimPin>(),
+                                         app::manager::ApplicationManager::ServiceName);
         }
     }
 } // namespace gui

@@ -7,6 +7,7 @@
 #include <module-services/service-appmgr/service-appmgr/Controller.hpp>
 #include <service-time/ServiceTime.hpp>
 #include <service-time/TimeMessage.hpp>
+#include <module-services/service-cellular/service-cellular/CellularMessage.hpp>
 
 namespace gui
 {
@@ -100,6 +101,33 @@ namespace gui
             application->switchWindow(gui::popup::window::power_off_window);
             return true;
         }
+
+        if (inputEvent.is(KeyCode::KEY_1)) {
+
+            auto message = std::make_shared<CellularSimRequestPinMessage>(Store::GSM::get()->selected, 4, "Pin");
+            application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
+        }
+        if (inputEvent.is(KeyCode::KEY_2)) {
+
+            auto message = std::make_shared<CellularSimRequestPukMessage>(Store::GSM::get()->selected, 4, "PUK");
+            application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
+        }
+        if (inputEvent.is(KeyCode::KEY_3)) {
+
+            auto message = std::make_shared<CellularBlockSimMessage>(Store::GSM::get()->selected);
+            application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
+        }
+        if (inputEvent.is(KeyCode::KEY_4)) {
+
+            auto message = std::make_shared<CellularDisplayCMEMessage>(Store::GSM::get()->selected, 4);
+            application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
+        }
+        if (inputEvent.is(KeyCode::KEY_4)) {
+
+            auto message = std::make_shared<CellularChangeSimDataMessage>(Store::GSM::get()->selected);
+            application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
+        }
+
         // check if any of the lower inheritance onInput methods catch the event
         return AppWindow::onInput(inputEvent);
     }

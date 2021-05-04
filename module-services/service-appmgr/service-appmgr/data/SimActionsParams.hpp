@@ -13,15 +13,16 @@ namespace app::manager::actions
      * RequestPukAction
      * ChangePinAction
      */
-    class PasscodeParams : public ActionParams
+    class SimLockParams : public ActionParams
     {
         Store::GSM::SIM sim;
-        unsigned int attempts;
+        unsigned int attempts{};
         /// passcodeName stands for PIN1/PIN2 or PUK1/PUK2 type
         std::string passcodeName;
 
       public:
-        PasscodeParams(Store::GSM::SIM _sim, unsigned int _attempts, std::string _passcodeName);
+        SimLockParams() = default;
+        SimLockParams(Store::GSM::SIM _sim, unsigned int _attempts, std::string _passcodeName);
 
         [[nodiscard]] Store::GSM::SIM getSim() const noexcept;
         [[nodiscard]] unsigned int getAttempts() const noexcept;

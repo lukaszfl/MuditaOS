@@ -4,7 +4,6 @@
 #pragma once
 
 #include "windows/Names.hpp"
-#include "locks/handlers/PinLockHandler.hpp"
 #include "widgets/DBNotificationsHandler.hpp"
 #include "Constants.hpp"
 #include <Application.hpp>
@@ -26,9 +25,6 @@ namespace app
     class ApplicationDesktop : public Application, public AsyncCallbackReceiver
     {
       public:
-        bool need_sim_select = false;
-
-        gui::PinLockHandler lockHandler;
 
         explicit ApplicationDesktop(std::string name                    = name_desktop,
                                     std::string parent                  = {},
@@ -63,7 +59,6 @@ namespace app
 
       private:
         bool refreshMenuWindow();
-        void activeSimChanged(std::string value);
         void handleLowBatteryNotification(manager::actions::ActionParamsPtr &&data);
         void osUpdateVersionChanged(const std::string &value);
         void osCurrentVersionChanged(const std::string &value);
@@ -78,17 +73,9 @@ namespace app
         {
             return {{manager::actions::Launch,
                      manager::actions::AutoLock,
-                     manager::actions::RequestPin,
-                     manager::actions::RequestPuk,
-                     manager::actions::RequestPinChange,
-                     manager::actions::RequestPinDisable,
-                     manager::actions::RequestPinEnable,
-                     manager::actions::UnlockSim,
-                     manager::actions::BlockSim,
                      manager::actions::ShowMMIResponse,
                      manager::actions::ShowMMIPush,
                      manager::actions::ShowMMIResult,
-                     manager::actions::DisplayCMEError,
                      manager::actions::DisplayLowBatteryScreen,
                      manager::actions::SystemBrownout,
                      manager::actions::DisplayLogoAtExit,

@@ -47,8 +47,8 @@ namespace gui
         optionList.emplace_back(std::make_unique<option::OptionSettings>(
             utils::translate("app_settings_security_usb_passcode"),
             [=](Item &item) {
-                auto lock = std::make_unique<locks::Lock>(
-                    Store::GSM::SIM::NONE, locks::Lock::LockState::InputRequired, locks::Lock::LockType::Screen);
+                auto lock =
+                    std::make_unique<locks::Lock>(locks::Lock::LockState::InputRequired, locks::Lock::LockType::Screen);
                 lock->onActivatedCallback = [this](locks::Lock::LockType type, const std::vector<unsigned int> &data) {
                     securitySettings->setUSBSecurity(!securitySettings->isUSBSecured());
                     application->returnToPreviousWindow();

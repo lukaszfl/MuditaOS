@@ -81,7 +81,6 @@
 #include <module-apps/application-desktop/windows/Names.hpp>
 #include <module-apps/messages/DialogMetadataMessage.hpp>
 #include <module-apps/windows/Dialog.hpp>
-#include <locks/windows/PinLockWindow.hpp>
 
 #include <i18n/i18n.hpp>
 
@@ -426,9 +425,6 @@ namespace app
         windowsFactory.attach(gui::window::name::security, [](Application *app, const std::string &name) {
             return std::make_unique<gui::SecurityMainWindow>(app, static_cast<ApplicationSettingsNew *>(app));
         });
-        windowsFactory.attach(app::window::name::desktop_pin_lock, [&](Application *app, const std::string newname) {
-            return std::make_unique<gui::PinLockWindow>(app, app::window::name::desktop_pin_lock);
-        });
         windowsFactory.attach(gui::window::name::dialog_confirm, [](Application *app, const std::string &name) {
             return std::make_unique<gui::DialogConfirm>(app, gui::window::name::dialog_confirm);
         });
@@ -507,8 +503,12 @@ namespace app
                               [](Application *app, const std::string &name) {
                                   return std::make_unique<gui::BluetoothCheckPasskeyWindow>(app);
                               });
-        attachPopups(
-            {gui::popup::ID::Volume, gui::popup::ID::Tethering, gui::popup::ID::PhoneModes, gui::popup::ID::PhoneLock});
+
+        attachPopups({gui::popup::ID::Volume,
+                      gui::popup::ID::Tethering,
+                      gui::popup::ID::PhoneModes,
+                      gui::popup::ID::PhoneLock,
+                      gui::popup::ID::SimUnlock});
     }
 
     void ApplicationSettingsNew::destroyUserInterface()

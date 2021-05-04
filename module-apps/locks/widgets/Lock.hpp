@@ -17,6 +17,7 @@ namespace gui
 namespace locks
 {
     class PhoneLockHandler;
+    class SimLockHandler;
 
     class Lock
     {
@@ -73,10 +74,7 @@ namespace locks
         {
             return attemptsLeft;
         }
-        [[nodiscard]] bool isSim(Store::GSM::SIM _sim) const noexcept
-        {
-            return sim == _sim;
-        }
+
         [[nodiscard]] bool isState(LockState state) const noexcept
         {
             return lockState == state;
@@ -89,10 +87,6 @@ namespace locks
         {
             return lockName;
         }
-        [[nodiscard]] Store::GSM::SIM getSim() const noexcept
-        {
-            return sim;
-        }
 
         void putNextChar(unsigned int c);
         /// removes a last character passed to Lock via putNextChar. The last character can not be popped
@@ -104,8 +98,8 @@ namespace locks
         /// calls
         void activate();
 
-        Lock(Store::GSM::SIM sim, LockState state, LockType type, unsigned int attemptsLeft = unlimitedNumOfAttempts)
-            : sim{sim}, lockState{state}, lockType{type}, attemptsLeft{attemptsLeft}
+        Lock(LockState state, LockType type, unsigned int attemptsLeft = unlimitedNumOfAttempts)
+            : lockState{state}, lockType{type}, attemptsLeft{attemptsLeft}
         {}
 
         Lock(LockState state, unsigned int attemptsLeft = unlimitedNumOfAttempts)
@@ -116,7 +110,6 @@ namespace locks
 
       private:
         std::string lockName;
-        Store::GSM::SIM sim       = Store::GSM::SIM::NONE;
         LockState lockState       = LockState::Unlocked;
         LockType lockType         = LockType::Screen;
         unsigned int attemptsLeft = 0;
@@ -140,6 +133,7 @@ namespace locks
         }
 
         friend class PhoneLockHandler;
+        friend class SimLockHandler;
         friend class gui::PinLockHandler;
     };
 
