@@ -9,3 +9,4 @@
 # CODEOWNERS for teams have some issues: https://github.community/t/codeowners-works-with-users-but-not-teams/733
 
 CMakeLists.txt                              @mpsm
+*.cmake                                     @mpsm
