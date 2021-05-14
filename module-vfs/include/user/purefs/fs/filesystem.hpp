@@ -65,10 +65,10 @@ namespace purefs::fs
         /** Event notifiers */
         struct
         {
-            Event<const std::string_view & /*path*/, int /*flags*/, int /*fd*/> open;
+            Event<std::string_view /*path*/, int /*flags*/, int /*fd*/> open;
             Event<int /*fd*/> close;
-            Event<const std::string_view & /*from*/, const std::string_view & /*to*/> move;
-            Event<const std::string_view & /*path*/> remove;
+            Event<std::string_view /*from*/, std::string_view /*to*/> move;
+            Event<std::string_view /*path*/> remove;
         } notifier;
 
         /** Utility API */
@@ -77,16 +77,8 @@ namespace purefs::fs
          * @param[in] fops Filesystem operation structure
          * @return zero on sucess otherwise error
          */
-        /*
-                template <typename T> auto register_filesystem(std::string_view fsname, std::shared_ptr<T> fops) -> int
-                {
-                    if (!fops || !std::is_convertible_v<T *, filesystem_operations *>) {
-                        return -EINVAL;
-                    }
-                    return register_filesystem(fsname, std::shared_ptr<filesystem_operations>(fops));
-                }
-        */
         auto register_filesystem(std::string_view fsname, std::shared_ptr<filesystem_operations> fops) -> int;
+
         /** Unregister filesystem driver
          * @param[in] fsname Unique filesystem name for example fat
          * @return zero on success otherwise error

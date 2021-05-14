@@ -72,8 +72,9 @@ namespace service::file_indexer
 
     void EventMapper::notify(FileChange::Event ev, std::string_view path, std::string_view old_path)
     {
-        // if (mThread == cpp_freertos::Thread::GetCurrentThreadHandle())
-        //     return;
+        if (mThread == cpp_freertos::Thread::GetCurrentThreadHandle()) {
+            return;
+        }
         auto message = std::make_shared<FileChangeMessage>(ev, path, old_path);
         mService->bus.sendUnicast(message, mService->GetName());
     }
