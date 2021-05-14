@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 #include <purefs/fs/filesystem.hpp>
 #include <errno.h>
@@ -103,7 +103,11 @@ namespace purefs::fs
 
     auto filesystem::rename(std::string_view oldname, std::string_view newname) noexcept -> int
     {
-        return invoke_fops_same_mp(&filesystem_operations::rename, oldname, newname);
+        const auto err = invoke_fops_same_mp(&filesystem_operations::rename, oldname, newname);
+        if (!err) {
+            notifier.move(oldname, newname);
+        }
+        return err;
     }
 
     auto filesystem::open(std::string_view path, int flags, int mode) noexcept -> int
