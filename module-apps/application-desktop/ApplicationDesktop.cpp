@@ -71,13 +71,12 @@ namespace app
 
         addActionReceiver(app::manager::actions::RequestPinDisable, [this](auto &&data) {
             lockHandler.handlePinEnableRequest(std::forward<decltype(data)>(data),
-                                               cellular::api::SimLockState::Disabled);
+                                               cellular::api::SimLockState::Unlocked);
             return actionHandled();
         });
 
         addActionReceiver(app::manager::actions::RequestPinEnable, [this](auto &&data) {
-            lockHandler.handlePinEnableRequest(std::forward<decltype(data)>(data),
-                                               cellular::api::SimLockState::Enabled);
+            lockHandler.handlePinEnableRequest(std::forward<decltype(data)>(data), cellular::api::SimLockState::Locked);
             return actionHandled();
         });
 
@@ -307,7 +306,7 @@ namespace app
                         auto metaData = std::make_unique<gui::DialogMetadataMessage>(
                             gui::DialogMetadata{"",
                                                 "success_icon_W_G",
-                                                response->lock == cellular::api::SimLockState::Disabled
+                                                response->lock == cellular::api::SimLockState::Unlocked
                                                     ? utils::translate("app_desktop_sim_card_unlocked")
                                                     : utils::translate("app_desktop_sim_card_locked"),
                                                 "",
