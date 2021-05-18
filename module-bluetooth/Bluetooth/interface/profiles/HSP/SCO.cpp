@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "SCO.hpp"
@@ -29,6 +29,7 @@ namespace bluetooth
         static void send(hci_con_handle_t scoHandle);
         static void receive(uint8_t *packet, uint16_t size);
         void setOwnerService(const sys::Service *service);
+        void setCodec(uint8_t codec);
         auto getStreamData() -> std::shared_ptr<BluetoothStreamData>;
 
       private:
@@ -40,7 +41,7 @@ namespace bluetooth
         static constexpr auto VOICE_SETTING_CVSD  = 0x60; // linear, unsigned, 16-bit, CVSD
 
         static btstack_cvsd_plc_state_t cvsdPlcState;
-
+        static uint8_t negotiated_codec;
         static QueueHandle_t sinkQueue;
         static QueueHandle_t sourceQueue;
         static DeviceMetadata_t metadata;
@@ -90,6 +91,10 @@ namespace bluetooth
     {
         pimpl->setOwnerService(service);
     }
+    void SCO::setCodec(uint8_t codec)
+    {
+        pimpl->setCodec(codec);
+    }
 
     SCO::~SCO() = default;
 } // namespace Bt
@@ -101,6 +106,7 @@ QueueHandle_t SCO::SCOImpl::sinkQueue;
 QueueHandle_t SCO::SCOImpl::sourceQueue;
 const sys::Service *SCO::SCOImpl::ownerService = nullptr;
 DeviceMetadata_t SCO::SCOImpl::metadata;
+uint8_t SCO::SCOImpl::negotiated_codec;
 
 void SCO::SCOImpl::sendEvent(audio::EventType event, audio::Event::DeviceState state)
 {
@@ -247,4 +253,20 @@ auto SCO::SCOImpl::getStreamData() -> std::shared_ptr<BluetoothStreamData>
 void SCO::SCOImpl::setOwnerService(const sys::Service *service)
 {
     ownerService = service;
+}
+// to be fixed
+void SCO::SCOImpl::setCodec(uint8_t codec)
+{
+    if (negotiated_codec == codec) {
+        return;
+    }
+    negotiated_codec = codec;
+
+    if (negotiated_codec == HFP_CODEC_MSBC) {
+        // btstack_sbc_decoder_init(&decoder_state, SBC_MODE_mSBC, &handle_pcm_data, NULL);
+        hfp_msbc_init();
+    }
+    else {
+        initCvsd();
+    }
 }

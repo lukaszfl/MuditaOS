@@ -14,8 +14,8 @@ namespace bluetooth
     auto ProfileManager::init() -> Error::Code
     {
         if (!initialized) {
-            profilesList = {{AudioProfile::A2DP, std::make_shared<bluetooth::A2DP>()},
-                            {AudioProfile::HSP, std::make_shared<bluetooth::HSP>()},
+            profilesList = {{AudioProfile::A2DP, nullptr},
+                            {AudioProfile::HSP, std::make_shared<bluetooth::HFP>()},
                             {AudioProfile::HFP, nullptr},
                             {AudioProfile::None, nullptr}};
 
@@ -25,7 +25,7 @@ namespace bluetooth
                     ptr->init();
                 }
             }
-            currentProfilePtr = profilesList[AudioProfile::A2DP].get();
+            currentProfilePtr = profilesList[AudioProfile::HSP].get();
 
             if (auto serviceBt = dynamic_cast<ServiceBluetooth *>(ownerService); serviceBt != nullptr) {
                 serviceBt->profileManagerPtr = this;
