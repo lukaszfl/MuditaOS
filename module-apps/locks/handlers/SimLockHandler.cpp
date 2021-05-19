@@ -9,7 +9,8 @@
 #include <memory>
 
 #include <module-apps/popups/data/PopupRequestParams.hpp>
-#include <module-services/service-cellular/include/service-cellular-api>
+#include <service-cellular-api>
+#include <module-utils/common_data/EventStore.hpp>
 
 namespace locks
 {
