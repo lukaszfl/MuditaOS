@@ -31,8 +31,6 @@ namespace gui
         void setVisibleStateError(unsigned int errorCode) final;
         void applyLockActionText(locks::SimInputTypeAction simLockInputTypeAction);
 
-        [[nodiscard]] top_bar::Configuration configureTopBar();
-
         LockInputWindow *LockWindow;
         std::string textForInputRequired;
         std::string textForInvalidInput;

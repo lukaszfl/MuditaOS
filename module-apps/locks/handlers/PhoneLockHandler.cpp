@@ -143,7 +143,6 @@ namespace locks
 
         // Check if phoneLock has not been disabled by setting
         if (!phoneLockEnabled) {
-            lock.lockState = Lock::LockState::Unlocked;
             phoneUnlockAction();
             return sys::msgHandled();
         }

@@ -25,7 +25,6 @@ namespace app
     class ApplicationDesktop : public Application, public AsyncCallbackReceiver
     {
       public:
-
         explicit ApplicationDesktop(std::string name                    = name_desktop,
                                     std::string parent                  = {},
                                     sys::phone_modes::PhoneMode mode    = sys::phone_modes::PhoneMode::Connected,

@@ -14,8 +14,6 @@
 
 namespace locks
 {
-    constexpr inline auto serviceCellular = "ServiceCellular";
-
     constexpr unsigned int default_attempts = 4;
     constexpr unsigned int max_input_size   = 8;
     constexpr unsigned int min_input_size   = 4;
@@ -74,8 +72,8 @@ namespace locks
     void SimLockHandler::getSettingsSimSelect(const std::string &settingsSim)
     {
         auto selectedSim = magic_enum::enum_cast<Store::GSM::SIM>(settingsSim);
-        if (selectedSim.has_value()) {
-            // TODO check that
+
+        if ((selectedSim.value() == Store::GSM::SIM::SIM1 || selectedSim.value() == Store::GSM::SIM::SIM2)) {
             Store::GSM::get()->selected = selectedSim.value();
             auto arg =
                 (selectedSim == Store::GSM::SIM::SIM2) ? cellular::api::SimSlot::SIM2 : cellular::api::SimSlot::SIM1;
@@ -310,41 +308,35 @@ namespace locks
 
     sys::MessagePointer SimLockHandler::unlockSimWithPin(const std::vector<unsigned int> &pinInputData)
     {
-        owner->bus.sendUnicast(std::make_shared<cellular::msg::request::sim::PinUnlock>(pinInputData), serviceCellular);
+        owner->bus.sendUnicast<cellular::msg::request::sim::PinUnlock>(pinInputData);
         return sys::msgHandled();
     }
 
     sys::MessagePointer SimLockHandler::unlockSimWithPuk(const std::vector<unsigned int> &pukInputData,
                                                          const std::vector<unsigned int> &newPinInputData)
     {
-        owner->bus.sendUnicast(
-            std::make_shared<cellular::msg::request::sim::UnblockWithPuk>(pukInputData, newPinInputData),
-            serviceCellular);
+        owner->bus.sendUnicast<cellular::msg::request::sim::UnblockWithPuk>(pukInputData, newPinInputData);
         return sys::msgHandled();
     }
 
     sys::MessagePointer SimLockHandler::changeSimPin(const std::vector<unsigned int> &oldPinInputData,
                                                      const std::vector<unsigned int> &newPinInputData)
     {
-        owner->bus.sendUnicast(
-            std::make_shared<cellular::msg::request::sim::ChangePin>(oldPinInputData, newPinInputData),
-            serviceCellular);
+        owner->bus.sendUnicast<cellular::msg::request::sim::ChangePin>(oldPinInputData, newPinInputData);
         return sys::msgHandled();
     }
 
     sys::MessagePointer SimLockHandler::enableSimPin(const std::vector<unsigned int> &pinInputData)
     {
-        owner->bus.sendUnicast(std::make_shared<cellular::msg::request::sim::SetPinLock>(
-                                   cellular::api::SimLockState::Enabled, pinInputData),
-                               serviceCellular);
+        owner->bus.sendUnicast<cellular::msg::request::sim::SetPinLock>(cellular::api::SimLockState::Enabled,
+                                                                        pinInputData);
         return sys::msgHandled();
     }
 
     sys::MessagePointer SimLockHandler::disableSimPin(const std::vector<unsigned int> &pinInputData)
     {
-        owner->bus.sendUnicast(std::make_shared<cellular::msg::request::sim::SetPinLock>(
-                                   cellular::api::SimLockState::Disabled, pinInputData),
-                               serviceCellular);
+        owner->bus.sendUnicast<cellular::msg::request::sim::SetPinLock>(cellular::api::SimLockState::Disabled,
+                                                                        pinInputData);
         return sys::msgHandled();
     }
 } // namespace locks

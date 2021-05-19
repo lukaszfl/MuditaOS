@@ -15,9 +15,28 @@ namespace locks
         }
     }
 
+    void SimLockSubject::setSim(cellular::api::SimSlot simSlot)
+    {
+        owner->bus.sendUnicast<cellular::msg::request::sim::SetActiveSim>(simSlot);
+    }
+
+    void SimLockSubject::changeSimPin()
+    {
+        owner->bus.sendUnicast(std::make_shared<locks::ChangeSimPin>(), app::manager::ApplicationManager::ServiceName);
+    }
+
+    void SimLockSubject::enableSimPin()
+    {
+        owner->bus.sendUnicast(std::make_shared<locks::EnableSimPin>(), app::manager::ApplicationManager::ServiceName);
+    }
+
+    void SimLockSubject::disableSimPin()
+    {
+        owner->bus.sendUnicast(std::make_shared<locks::DisableSimPin>(), app::manager::ApplicationManager::ServiceName);
+    }
+
     void SimLockSubject::verifyInput(const std::vector<unsigned int> &inputData)
     {
-        LOG_ERROR("Chce sobie odblokowac sima !");
         owner->bus.sendUnicast(std::make_shared<UnLockSimInput>(inputData),
                                app::manager::ApplicationManager::ServiceName);
     }

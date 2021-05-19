@@ -41,8 +41,6 @@ namespace gui
         using namespace style::window::lock_input;
 
         infoImage = new gui::ImageBox(body, 0, 0, 0, 0, new gui::Image(""));
-        //        infoImage->setEdges(RectangleEdge::All);
-        //        infoImage->setPenWidth(2);
         infoImage->setMinimumSize(image::wh, image::wh);
         infoImage->setMargins(Margins(0, image::image_top_margin, 0, image::image_bottom_margin));
         infoImage->showImage(false);
@@ -57,17 +55,11 @@ namespace gui
         primaryText->setFont(style::window::font::medium);
         primaryText->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Top));
 
-        //        primaryText->setEdges(RectangleEdge::All);
-        //        primaryText->setPenWidth(2);
-
         secondaryText = new Text(body, 0, 0, 0, secondary_text::h);
         secondaryText->setMinimumSize(style::window::default_body_width, secondary_text::h);
         secondaryText->setMargins(Margins(0, secondary_text::top_margin, 0, 0));
         secondaryText->setFont(style::window::font::medium);
         secondaryText->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Top));
-
-        //        secondaryText->setEdges(RectangleEdge::All);
-        //        secondaryText->setPenWidth(2);
     }
 
     void LockInputWindow::buildBottomBar()
@@ -107,9 +99,7 @@ namespace gui
         pinLabelsBox->setMinimumSize(lock_style::input_box::w, lock_style::input_box::h);
         pinLabelsBox->setAlignment(Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Center));
         pinLabelsBox->setMargins(Margins(0, lock_style::input_box::top_margin, 0, 0));
-
         pinLabelsBox->setEdges(RectangleEdge::None);
-        //        pinLabelsBox->setPenWidth(2);
     }
 
     void LockInputWindow::buildPinLabels(const std::function<Rect *()> &itemBuilder, unsigned int pinSize)

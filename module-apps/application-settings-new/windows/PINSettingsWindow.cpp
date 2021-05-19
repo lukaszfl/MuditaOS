@@ -56,8 +56,7 @@ namespace gui
             optionList.emplace_back(std::make_unique<option::OptionSettings>(
                 utils::translate("app_settings_network_pin_change_code"),
                 [=](Item & /*item*/) {
-                    application->bus.sendUnicast(std::make_shared<locks::ChangeSimPin>(),
-                                                 app::manager::ApplicationManager::ServiceName);
+                    application->getSimLockSubject().changeSimPin();
                     return true;
                 },
                 nullptr,
@@ -73,12 +72,10 @@ namespace gui
         currentState = !currentState;
         refreshOptionsList();
         if (!currentState) {
-            application->bus.sendUnicast(std::make_shared<locks::DisableSimPin>(),
-                                         app::manager::ApplicationManager::ServiceName);
+            application->getSimLockSubject().disableSimPin();
         }
         else {
-            application->bus.sendUnicast(std::make_shared<locks::EnableSimPin>(),
-                                         app::manager::ApplicationManager::ServiceName);
+            application->getSimLockSubject().enableSimPin();
         }
     }
 } // namespace gui

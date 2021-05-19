@@ -11,21 +11,11 @@ namespace gui
         LockBoxInconstantSize::buildLockBox(pinSize);
     }
 
-    top_bar::Configuration SimLockBox::configureTopBar()
-    {
-        top_bar::Configuration appConfiguration;
-        appConfiguration.disable(top_bar::Indicator::Time);
-        appConfiguration.enable(top_bar::Indicator::Lock);
-
-        return appConfiguration;
-    }
-
     void SimLockBox::applyLockActionText(locks::SimInputTypeAction simInputTypeAction)
     {
         LockWindow->setText("sim_header_setup",
                             LockInputWindow::TextType::Title,
                             {{LockWindow->getToken(LockInputWindow::Token::Sim), LockWindow->lock->getLockName()}});
-        LockWindow->configureTopBar(configureTopBar());
         LockWindow->setTitleBar(true, true);
 
         switch (simInputTypeAction) {

@@ -96,9 +96,7 @@ namespace gui
             }
         }
         else if (inputEvent.isDigit()) {
-
             if (isInInputState() && lock->canPut()) {
-
                 lockBox->putChar(lock->getCharCount());
                 lock->putNextChar(inputEvent.numericValue());
 
@@ -106,11 +104,8 @@ namespace gui
                 return true;
             }
         }
-
         else if (inputEvent.is(KeyCode::KEY_ENTER) && bottomBar->isActive(BottomBar::Side::CENTER)) {
             if (isInInputState()) {
-
-                LOG_ERROR("Tutaj wchodzi do tej validacji inputa??");
                 application->getSimLockSubject().verifyInput(lock->getInput());
             }
             else if (isInInvalidInputState()) {
@@ -118,7 +113,6 @@ namespace gui
                 lock->clearAttempt();
                 setVisibleState();
             }
-
             return true;
         }
 

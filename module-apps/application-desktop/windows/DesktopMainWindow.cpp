@@ -128,7 +128,6 @@ namespace gui
             application->switchWindow(popup::window::power_off_window);
             return true;
         }
-
         // check if any of the lower inheritance onInput methods catch the event
         return AppWindow::onInput(inputEvent);
     }

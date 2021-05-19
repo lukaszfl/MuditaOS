@@ -4,6 +4,7 @@
 #pragma once
 
 #include <module-sys/Service/Service.hpp>
+#include <service-cellular-api>
 
 namespace locks
 {
@@ -15,6 +16,10 @@ namespace locks
       public:
         explicit SimLockSubject(sys::Service *owner);
 
+        void setSim(cellular::api::SimSlot simSlot);
+        void changeSimPin();
+        void enableSimPin();
+        void disableSimPin();
         void verifyInput(const std::vector<unsigned int> &inputData);
     };
 

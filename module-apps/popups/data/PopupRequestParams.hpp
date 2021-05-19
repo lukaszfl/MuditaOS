@@ -10,7 +10,6 @@
 #include <module-audio/Audio/AudioCommon.hpp>
 #include <locks/widgets/Lock.hpp>
 #include <locks/data/LockData.hpp>
-#include <utility>
 
 namespace gui
 {

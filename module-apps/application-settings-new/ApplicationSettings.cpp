@@ -58,8 +58,6 @@
 #include <application-settings-new/windows/BluetoothCheckPasskeyWindow.hpp>
 
 #include <service-evtmgr/EventManagerServiceAPI.hpp>
-#include <service-cellular/CellularServiceAPI.hpp>
-#include <service-cellular-api>
 #include <service-bluetooth/BluetoothMessage.hpp>
 #include <service-bluetooth/Constants.hpp>
 #include <service-bluetooth/messages/Status.hpp>
@@ -522,7 +520,7 @@ namespace app
     void ApplicationSettingsNew::setSim(Store::GSM::SIM sim)
     {
         auto arg = (sim == Store::GSM::SIM::SIM2) ? cellular::api::SimSlot::SIM2 : cellular::api::SimSlot::SIM1;
-        bus.sendUnicast<cellular::msg::request::sim::SetActiveSim>(arg);
+        getSimLockSubject().setSim(arg);
     }
 
     Store::GSM::SIM ApplicationSettingsNew::getSim()

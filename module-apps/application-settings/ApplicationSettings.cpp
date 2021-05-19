@@ -20,8 +20,6 @@
 
 #include "ApplicationSettings.hpp"
 
-#include "service-cellular/ServiceCellular.hpp"
-#include <service-cellular/CellularServiceAPI.hpp>
 #include "windows/SettingsMainWindow.hpp"
 #include "windows/CellularPassthroughWindow.hpp"
 
