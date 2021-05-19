@@ -148,7 +148,7 @@ namespace app
     auto ApplicationDesktop::handle(cellular::StateChange *msg) -> bool
     {
         assert(msg);
-        if (msg->request == cellular::State::ST::ModemFatalFailure) {
+        if (msg->request == cellular::service::State::ST::ModemFatalFailure) {
             switchWindow(app::window::name::desktop_reboot);
         }
         return false;

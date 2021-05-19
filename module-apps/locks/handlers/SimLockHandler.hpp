@@ -8,7 +8,6 @@
 #include <locks/data/LockData.hpp>
 
 #include <module-sys/Service/Service.hpp>
-#include <service-appmgr/service-appmgr/data/SimActionsParams.hpp>
 
 namespace locks
 {
@@ -19,14 +18,11 @@ namespace locks
         Lock lock;
 
         SimInputTypeAction simInputTypeAction = SimInputTypeAction::UnlockWithPin;
-        Store::GSM::SIM sim       = Store::GSM::SIM::NONE;
-        app::manager::actions::SimLockParams storedUnlockSimData;
         unsigned int storedErrorCode     = 0;
         bool simUnlockBlockOnLockedPhone = false;
         std::vector<unsigned int> storedFirstInput;
         std::vector<unsigned int> storedSecondInput;
 
-        void getCellularSimValues(const app::manager::actions::SimLockParams &data);
         void clearStoredInputs();
         void setSimInputTypeAction(SimInputTypeAction _simInputTypeAction);
 
@@ -54,15 +50,15 @@ namespace locks
 
         sys::MessagePointer verifySimLockInput(const std::vector<unsigned int> &inputData);
 
-        sys::MessagePointer handleSimPinRequest(const app::manager::actions::SimLockParams &data);
-        sys::MessagePointer handleSimPukRequest(const app::manager::actions::SimLockParams &data);
+        sys::MessagePointer handleSimPinRequest(unsigned int attempts);
+        sys::MessagePointer handleSimPukRequest(unsigned int attempts);
         sys::MessagePointer handleSimPinChangeRequest();
         sys::MessagePointer handleSimEnableRequest();
         sys::MessagePointer handleSimDisableRequest();
         sys::MessagePointer handleSimBlockedRequest();
         sys::MessagePointer handleCMEErrorRequest(unsigned int errorCode);
 
-        sys::MessagePointer handleSimUnlockedMessage(const app::manager::actions::SimStateParams &data);
+        sys::MessagePointer handleSimUnlockedMessage();
         sys::MessagePointer handleSimChangedMessage();
         sys::MessagePointer handleSimAvailabilityMessage();
 

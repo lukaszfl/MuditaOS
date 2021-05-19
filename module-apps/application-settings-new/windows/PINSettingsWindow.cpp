@@ -9,13 +9,13 @@
 
 #include <service-appmgr/Controller.hpp>
 #include <locks/data/SimLockMessages.hpp>
-#include "service-cellular/CellularServiceAPI.hpp"
+#include <service-cellular-api>
 
 namespace gui
 {
     PINSettingsWindow::PINSettingsWindow(app::Application *app) : BaseSettingsWindow(app, window::name::pin_settings)
     {
-        CellularServiceAPI::RequestSimCardPinLockState(app);
+        app->bus.sendUnicast<cellular::msg::request::sim::GetLockState>();
     }
 
     void PINSettingsWindow::onBeforeShow(ShowMode /*mode*/, SwitchData *data)

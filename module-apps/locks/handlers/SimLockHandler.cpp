@@ -9,8 +9,7 @@
 #include <memory>
 
 #include <module-apps/popups/data/PopupRequestParams.hpp>
-#include <module-services/service-cellular/service-cellular/CellularMessage.hpp>
-#include <module-services/service-cellular/service-cellular/CellularServiceAPI.hpp>
+#include <module-services/service-cellular/include/service-cellular-api>
 
 namespace locks
 {
@@ -24,13 +23,6 @@ namespace locks
         : owner(owner), lock(Lock::LockState::Unlocked, default_attempts)
     {
         lock.setInputSizeBounds(min_input_size, max_input_size);
-    }
-
-    void SimLockHandler::getCellularSimValues(const app::manager::actions::SimLockParams &data)
-    {
-        sim               = data.getSim();
-        lock.attemptsLeft = data.getAttempts();
-        lock.lockName     = utils::enumToString(data.getSim());
     }
 
     void SimLockHandler::clearStoredInputs()
@@ -82,26 +74,25 @@ namespace locks
     {
         auto selectedSim = magic_enum::enum_cast<Store::GSM::SIM>(settingsSim);
         if (selectedSim.has_value()) {
+            // TODO check that
             Store::GSM::get()->selected = selectedSim.value();
-            CellularServiceAPI::SetSimCard(owner, Store::GSM::get()->selected);
+            auto arg =
+                (selectedSim == Store::GSM::SIM::SIM2) ? cellular::api::SimSlot::SIM2 : cellular::api::SimSlot::SIM1;
+            owner->bus.sendUnicast<cellular::msg::request::sim::SetActiveSim>(arg);
         }
         else {
             Store::GSM::get()->selected = Store::GSM::SIM::NONE;
         }
     }
 
-    sys::MessagePointer SimLockHandler::handleSimPinRequest(const app::manager::actions::SimLockParams &data)
+    sys::MessagePointer SimLockHandler::handleSimPinRequest(unsigned int attempts)
     {
-        LOG_ERROR("Odbieram cos PIN %s?", data.getPasscodeName().c_str());
-
         setSimInputTypeAction(SimInputTypeAction::UnlockWithPin);
+        lock.attemptsLeft = attempts;
 
         if (simUnlockBlockOnLockedPhone) {
-            storedUnlockSimData = data;
             return sys::msgNotHandled();
         }
-
-        getCellularSimValues(data);
 
         if (lock.isState(Lock::LockState::Unlocked)) {
             lock.lockState = Lock::LockState::InputRequired;
@@ -114,18 +105,15 @@ namespace locks
         return sys::msgHandled();
     }
 
-    sys::MessagePointer SimLockHandler::handleSimPukRequest(const app::manager::actions::SimLockParams &data)
+    sys::MessagePointer SimLockHandler::handleSimPukRequest(unsigned int attempts)
     {
-        LOG_ERROR("Odbieram cos PUK %s?", data.getPasscodeName().c_str());
-
         setSimInputTypeAction(SimInputTypeAction::UnlockWithPuk);
+        lock.attemptsLeft = attempts;
 
         if (simUnlockBlockOnLockedPhone) {
-            storedUnlockSimData = data;
             return sys::msgNotHandled();
         }
 
-        getCellularSimValues(data);
         clearStoredInputs();
 
         if (lock.isState(Lock::LockState::Unlocked)) {
@@ -141,19 +129,16 @@ namespace locks
         return sys::msgHandled();
     }
 
-    sys::MessagePointer SimLockHandler::handleSimUnlockedMessage(const app::manager::actions::SimStateParams &data)
+    sys::MessagePointer SimLockHandler::handleSimUnlockedMessage()
     {
         lock.lockState = Lock::LockState::Unlocked;
 
-        if (sim == data.getSim()) {
-            if (simInputTypeAction == SimInputTypeAction::UnlockWithPuk ||
-                simInputTypeAction == SimInputTypeAction::ChangePin) {
-                simInfoAction();
-            }
-
-            simUnlockAction();
+        if (simInputTypeAction == SimInputTypeAction::UnlockWithPuk ||
+            simInputTypeAction == SimInputTypeAction::ChangePin) {
+            simInfoAction();
         }
-        sim = data.getSim();
+
+        simUnlockAction();
 
         return sys::msgHandled();
     }
@@ -180,9 +165,7 @@ namespace locks
     {
         setSimInputTypeAction(SimInputTypeAction::ChangePin);
 
-        sim           = Store::GSM::get()->selected;
-        lock.lockName = utils::enumToString(sim);
-
+        lock.lockName  = utils::enumToString(Store::GSM::get()->selected);
         lock.lockState = Lock::LockState::InputRequired;
         simInputRequiredAction();
 
@@ -193,9 +176,7 @@ namespace locks
     {
         setSimInputTypeAction(SimInputTypeAction::EnablePin);
 
-        sim           = Store::GSM::get()->selected;
-        lock.lockName = utils::enumToString(sim);
-
+        lock.lockName  = utils::enumToString(Store::GSM::get()->selected);
         lock.lockState = Lock::LockState::InputRequired;
         simInputRequiredAction();
 
@@ -206,9 +187,7 @@ namespace locks
     {
         setSimInputTypeAction(SimInputTypeAction::DisablePin);
 
-        sim           = Store::GSM::get()->selected;
-        lock.lockName = utils::enumToString(sim);
-
+        lock.lockName  = utils::enumToString(Store::GSM::get()->selected);
         lock.lockState = Lock::LockState::InputRequired;
         simInputRequiredAction();
 
@@ -223,8 +202,7 @@ namespace locks
             return sys::msgNotHandled();
         }
 
-        sim            = Store::GSM::get()->selected;
-        lock.lockName  = utils::enumToString(sim);
+        lock.lockName  = utils::enumToString(Store::GSM::get()->selected);
         lock.lockState = Lock::LockState::Blocked;
         simInputRequiredAction();
 
@@ -240,8 +218,7 @@ namespace locks
             return sys::msgNotHandled();
         }
 
-        sim            = Store::GSM::get()->selected;
-        lock.lockName  = utils::enumToString(sim);
+        lock.lockName  = utils::enumToString(Store::GSM::get()->selected);
         lock.lockState = Lock::LockState::ErrorOccurred;
         simErrorAction(errorCode);
 
@@ -303,10 +280,10 @@ namespace locks
         if (simUnlockBlockOnLockedPhone) {
             simUnlockBlockOnLockedPhone = false;
             if (simInputTypeAction == SimInputTypeAction::UnlockWithPin) {
-                return handleSimPinRequest(storedUnlockSimData);
+                return handleSimPinRequest(lock.getAttemptsLeft());
             }
             else if (simInputTypeAction == SimInputTypeAction::UnlockWithPuk) {
-                return handleSimPukRequest(storedUnlockSimData);
+                return handleSimPukRequest(lock.getAttemptsLeft());
             }
             else if (simInputTypeAction == SimInputTypeAction::Blocked) {
                 return handleSimBlockedRequest();
@@ -332,45 +309,41 @@ namespace locks
 
     sys::MessagePointer SimLockHandler::unlockSimWithPin(const std::vector<unsigned int> &pinInputData)
     {
-        owner->bus.sendUnicast(std::make_shared<CellularSimPinDataMessage>(sim, pinInputData), serviceCellular);
+        owner->bus.sendUnicast(std::make_shared<cellular::msg::request::sim::PinUnlock>(pinInputData), serviceCellular);
         return sys::msgHandled();
     }
 
     sys::MessagePointer SimLockHandler::unlockSimWithPuk(const std::vector<unsigned int> &pukInputData,
                                                          const std::vector<unsigned int> &newPinInputData)
     {
-        owner->bus.sendUnicast(std::make_shared<CellularSimPukDataMessage>(sim, pukInputData, newPinInputData),
-                               serviceCellular);
+        owner->bus.sendUnicast(
+            std::make_shared<cellular::msg::request::sim::UnblockWithPuk>(pukInputData, newPinInputData),
+            serviceCellular);
         return sys::msgHandled();
     }
 
     sys::MessagePointer SimLockHandler::changeSimPin(const std::vector<unsigned int> &oldPinInputData,
                                                      const std::vector<unsigned int> &newPinInputData)
     {
-        owner->bus.sendUnicast(std::make_shared<CellularSimNewPinDataMessage>(sim, oldPinInputData, newPinInputData),
-                               serviceCellular);
+        owner->bus.sendUnicast(
+            std::make_shared<cellular::msg::request::sim::ChangePin>(oldPinInputData, newPinInputData),
+            serviceCellular);
         return sys::msgHandled();
     }
 
     sys::MessagePointer SimLockHandler::enableSimPin(const std::vector<unsigned int> &pinInputData)
     {
-        LOG_ERROR("chce enbla na sima dać");
-
-        owner->bus.sendUnicast(
-            std::make_shared<CellularSimCardLockAvailabilityDataMessage>(
-                sim, CellularSimCardLockAvailabilityDataMessage::SimCardLockAvailability::Enabled, pinInputData),
-            serviceCellular);
+        owner->bus.sendUnicast(std::make_shared<cellular::msg::request::sim::SetPinLock>(
+                                   cellular::api::SimLockState::Enabled, pinInputData),
+                               serviceCellular);
         return sys::msgHandled();
     }
 
     sys::MessagePointer SimLockHandler::disableSimPin(const std::vector<unsigned int> &pinInputData)
     {
-        LOG_ERROR("chce disabla na sima dać");
-
-        owner->bus.sendUnicast(
-            std::make_shared<CellularSimCardLockAvailabilityDataMessage>(
-                sim, CellularSimCardLockAvailabilityDataMessage::SimCardLockAvailability::Disabled, pinInputData),
-            serviceCellular);
+        owner->bus.sendUnicast(std::make_shared<cellular::msg::request::sim::SetPinLock>(
+                                   cellular::api::SimLockState::Disabled, pinInputData),
+                               serviceCellular);
         return sys::msgHandled();
     }
 } // namespace locks

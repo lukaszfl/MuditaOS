@@ -7,7 +7,7 @@
 #include <module-services/service-appmgr/service-appmgr/Controller.hpp>
 #include <service-time/ServiceTime.hpp>
 #include <service-time/TimeMessage.hpp>
-#include <module-services/service-cellular/service-cellular/CellularMessage.hpp>
+#include <module-services/service-cellular/include/service-cellular-api>
 
 namespace gui
 {
@@ -104,27 +104,27 @@ namespace gui
 
         if (inputEvent.is(KeyCode::KEY_1)) {
 
-            auto message = std::make_shared<CellularSimRequestPinMessage>(Store::GSM::get()->selected, 4, "Pin");
+            auto message = std::make_shared<cellular::msg::notification::SimNeedPin>(4);
             application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
         }
         if (inputEvent.is(KeyCode::KEY_2)) {
 
-            auto message = std::make_shared<CellularSimRequestPukMessage>(Store::GSM::get()->selected, 4, "PUK");
+            auto message = std::make_shared<cellular::msg::notification::SimNeedPuk>(4);
             application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
         }
         if (inputEvent.is(KeyCode::KEY_3)) {
 
-            auto message = std::make_shared<CellularBlockSimMessage>(Store::GSM::get()->selected);
+            auto message = std::make_shared<cellular::msg::notification::SimBlocked>();
             application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
         }
         if (inputEvent.is(KeyCode::KEY_4)) {
 
-            auto message = std::make_shared<CellularDisplayCMEMessage>(Store::GSM::get()->selected, 4);
+            auto message = std::make_shared<cellular::msg::notification::UnhandledCME>(4);
             application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
         }
-        if (inputEvent.is(KeyCode::KEY_4)) {
+        if (inputEvent.is(KeyCode::KEY_5)) {
 
-            auto message = std::make_shared<CellularChangeSimDataMessage>(Store::GSM::get()->selected);
+            auto message = std::make_shared<cellular::msg::request::sim::ChangePin::Response>(true);
             application->bus.sendUnicast(message, app::manager::ApplicationManager::ServiceName);
         }
 
