@@ -4,7 +4,7 @@
 #pragma once
 
 #include <json/json11.hpp>
-#include <module-utils/microtar/src/microtar.hpp>
+#include <third-party/microtar/src/src/microtar.hpp>
 #include <boot/bootconfig.hpp>
 #include <purefs/filesystem_paths.hpp>
 

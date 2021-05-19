@@ -9,7 +9,6 @@
 #include <crc32.h>
 #include <json/json11.hpp>
 #include <log/log.hpp>
-#include <microtar/src/microtar.hpp>
 #include <application-desktop/Constants.hpp>
 #include <service-db/service-db/Settings.hpp>
 #include <purefs/filesystem_paths.hpp>
