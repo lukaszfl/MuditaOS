@@ -39,7 +39,6 @@ namespace app::manager
             EditContact,
             ShowContactDetails,
             ShowSpecialInput,
-            SelectSimCard,
             ShowAlarm,
             ShowReminder,
             ShowMMIResult,
