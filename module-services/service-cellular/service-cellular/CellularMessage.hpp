@@ -40,6 +40,7 @@ class CellularMessage : public sys::DataMessage
         CallRequest,      ///< Call request
         PowerStateChange, ///< Change power state of the module
 
+        GetCurrentCallType,
         ListCurrentCalls,
         SimProcedure,        // Broadcast on sim state changed
         SimResponse,         // Send to PIN window (show, error state, hide)
@@ -186,6 +187,7 @@ class CellularGetCurrentOperatorResponse : public CellularMessage
         return currentOperatorName;
     }
 };
+
 class CellularSetOperatorMessage : public sys::DataMessage
 {
     at::response::cops::CopsMode mode;
@@ -883,6 +885,13 @@ class CellularHangupCallMessage : public CellularMessage
     {}
 };
 
+class CellularGetCurrentCallTypeMessage : public CellularMessage
+{
+  public:
+    CellularGetCurrentCallTypeMessage() : CellularMessage(Type::GetCurrentCallType)
+    {}
+};
+
 class CellularListCallsMessage : public CellularMessage
 {
   public:
@@ -1129,6 +1138,21 @@ class CellularCallRejectedByOfflineNotification : public CellularResponseMessage
         return std::make_unique<app::manager::ActionRequest>(sender,
                                                              app::manager::actions::CallRejectedByOfflineNotification,
                                                              std::make_unique<app::manager::actions::ActionParams>());
+    }
+};
+
+class CellularGetCurrentCallTypeMessageResponse : public CellularResponseMessage
+{
+    CallType callType;
+
+  public:
+    explicit CellularGetCurrentCallTypeMessageResponse(CallType callType)
+        : CellularResponseMessage(true), callType(callType)
+    {}
+
+    CallType getCurrentCallType() const
+    {
+        return callType;
     }
 };
 

@@ -31,6 +31,11 @@ namespace bluetooth
         return CellularServiceAPI::HangupCall(service);
     }
 
+    CallType CellularInterfaceImpl::getCurrentCallType(sys::Service *service)
+    {
+        return CellularServiceAPI::GetCurrentCallType(service);
+    }
+
     HSP::HSP() : pimpl(std::make_unique<HSPImpl>(HSPImpl()))
     {}
 
@@ -183,7 +188,10 @@ namespace bluetooth
             else {
                 scoHandle = hsp_subevent_audio_connection_complete_get_handle(event);
                 LOG_DEBUG("Audio connection established with SCO handle 0x%04x.\n", scoHandle);
-                cellularInterface->answerIncomingCall(const_cast<sys::Service *>(ownerService));
+                if (cellularInterface->getCurrentCallType(const_cast<sys::Service *>(ownerService)) ==
+                    CallType::CT_INCOMING) {
+                    cellularInterface->answerIncomingCall(const_cast<sys::Service *>(ownerService));
+                }
                 hci_request_sco_can_send_now_event();
                 RunLoop::trigger();
             }

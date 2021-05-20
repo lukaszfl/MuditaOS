@@ -5,6 +5,7 @@
 
 #include "Profile.hpp"
 #include <service-bluetooth/BluetoothMessage.hpp>
+#include <Interface/CalllogRecord.hpp>
 #include <btstack_run_loop.h>
 
 namespace bluetooth
@@ -12,15 +13,17 @@ namespace bluetooth
     class CellularInterface
     {
       public:
-        virtual ~CellularInterface()                           = default;
-        virtual bool answerIncomingCall(sys::Service *service) = 0;
-        virtual bool hangupCall(sys::Service *service)         = 0;
+        virtual ~CellularInterface()                               = default;
+        virtual bool answerIncomingCall(sys::Service *service)     = 0;
+        virtual bool hangupCall(sys::Service *service)             = 0;
+        virtual CallType getCurrentCallType(sys::Service *service) = 0;
     };
     class CellularInterfaceImpl : public CellularInterface
     {
       public:
         bool answerIncomingCall(sys::Service *service) override;
         bool hangupCall(sys::Service *service) override;
+        CallType getCurrentCallType(sys::Service *service) override;
     };
     class HSP : public Profile
     {

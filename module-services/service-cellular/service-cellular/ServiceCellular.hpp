@@ -37,7 +37,6 @@
 #include <vector>   // for vector
 #include <cstdint>
 
-
 namespace db
 {
     namespace query
@@ -345,6 +344,8 @@ class ServiceCellular : public sys::Service
     auto handleCellularAnswerIncomingCallMessage(CellularMessage *msg) -> std::shared_ptr<CellularResponseMessage>;
     auto handleCellularCallRequestMessage(CellularCallRequestMessage *msg) -> std::shared_ptr<CellularResponseMessage>;
     void handleCellularHangupCallMessage(CellularHangupCallMessage *msg);
+    auto handleCellularGetCurrentCallTypeMessage(CellularGetCurrentCallTypeMessage *msg)
+        -> std::shared_ptr<CellularResponseMessage>;
     auto handleDBQueryResponseMessage(db::QueryResponse *msg) -> std::shared_ptr<sys::ResponseMessage>;
     auto handleCellularListCallsMessage(CellularMessage *msg) -> std::shared_ptr<sys::ResponseMessage>;
     auto handleDBNotificatioMessage(db::NotificationMessage *msg) -> std::shared_ptr<sys::ResponseMessage>;

@@ -48,6 +48,24 @@ bool CellularServiceAPI::HangupCall(sys::Service *serv)
     return serv->bus.sendUnicast(msg, ServiceCellular::serviceName);
 }
 
+CallType CellularServiceAPI::GetCurrentCallType(sys::Service *serv)
+{
+    auto callType = CallType::CT_NONE;
+
+    auto msg = std::make_shared<CellularGetCurrentCallTypeMessage>();
+    auto ret = serv->bus.sendUnicastSync(msg, ServiceCellular::serviceName, 5000);
+    CellularGetCurrentCallTypeMessageResponse *response =
+        dynamic_cast<CellularGetCurrentCallTypeMessageResponse *>(ret.second.get());
+
+    if (response != nullptr && ret.first == sys::ReturnCodes::Success) {
+        callType = response->getCurrentCallType();
+    }
+    else {
+        LOG_ERROR("CellularServiceAPI::GetCurrentCallType failed");
+    }
+    return callType;
+}
+
 std::string CellularServiceAPI::GetIMSI(sys::Service *serv, bool getFullIMSINumber)
 {
 

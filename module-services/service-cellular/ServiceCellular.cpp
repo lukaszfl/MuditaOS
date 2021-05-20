@@ -382,6 +382,11 @@ void ServiceCellular::registerMessageHandlers()
         return handleCellularStartOperatorsScan(msg);
     });
 
+    connect(typeid(CellularGetCurrentCallTypeMessage), [&](sys::Message *request) -> sys::MessagePointer {
+        auto msg = static_cast<CellularGetCurrentCallTypeMessage *>(request);
+        return handleCellularGetCurrentCallTypeMessage(msg);
+    });
+
     connect(typeid(CellularGetActiveContextsMessage), [&](sys::Message *request) -> sys::MessagePointer {
         auto msg = static_cast<CellularGetActiveContextsMessage *>(request);
         return handleCellularGetActiveContextsMessage(msg);
@@ -2323,6 +2328,12 @@ void ServiceCellular::handleCellularHangupCallMessage(CellularHangupCallMessage 
     }
     bus.sendMulticast(std::make_shared<CellularResponseMessage>(false, msg->type),
                       sys::BusChannel::ServiceCellularNotifications);
+}
+
+auto ServiceCellular::handleCellularGetCurrentCallTypeMessage(CellularGetCurrentCallTypeMessage *msg)
+    -> std::shared_ptr<CellularResponseMessage>
+{
+    return std::make_shared<CellularGetCurrentCallTypeMessageResponse>(ongoingCall.getType());
 }
 
 auto ServiceCellular::handleDBQueryResponseMessage(db::QueryResponse *msg) -> std::shared_ptr<sys::ResponseMessage>
