@@ -4,7 +4,8 @@
 #pragma once
 
 #include <endpoints/developerMode/DeveloperModeEndpoint.hpp>
-#include <endpoints/update/UpdateMuditaOS.hpp>
+//#include <endpoints/update/UpdateMuditaOS.hpp>
+#include <endpoints/update/UpdateOSTypes.hpp>
 
 #include <service-appmgr/Actions.hpp>
 #include <service-appmgr/messages/ActionRequest.hpp>
