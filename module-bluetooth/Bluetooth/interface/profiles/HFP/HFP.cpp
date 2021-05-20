@@ -8,7 +8,6 @@
 #include <log/log.hpp>
 #include <service-evtmgr/Constants.hpp>
 #include <service-audio/AudioMessage.hpp>
-#include <service-cellular/service-cellular/CellularServiceAPI.hpp>
 #include <BluetoothWorker.hpp>
 
 extern "C"
@@ -21,14 +20,10 @@ extern "C"
 
 namespace bluetooth
 {
-    bool CellularInterfaceImpl::answerIncomingCall(sys::Service *service)
+    namespace
     {
-        return CellularServiceAPI::AnswerIncomingCall(service);
-    }
-
-    bool CellularInterfaceImpl::hangupCall(sys::Service *service)
-    {
-        return CellularServiceAPI::HangupCall(service);
+        class CellularInterfaceImpl : public CellularInterface
+        {};
     }
 
     HFP::HFP() : pimpl(std::make_unique<HFPImpl>(HFPImpl()))
@@ -105,17 +100,14 @@ namespace bluetooth
     hci_con_handle_t HFP::HFPImpl::scoHandle = HCI_CON_HANDLE_INVALID;
     hci_con_handle_t HFP::HFPImpl::aclHandle = HCI_CON_HANDLE_INVALID;
     bd_addr_t HFP::HFPImpl::deviceAddr;
-    //    std::array<char, commandBufferLength> HFP::HFPImpl::ATcommandBuffer;
     std::array<uint8_t, serviceBufferLength> HFP::HFPImpl::serviceBuffer;
     std::unique_ptr<SCO> HFP::HFPImpl::sco;
     std::unique_ptr<CellularInterface> HFP::HFPImpl::cellularInterface = nullptr;
     const sys::Service *HFP::HFPImpl::ownerService;
     std::string HFP::HFPImpl::agServiceName = "PurePhone HFP";
     bool HFP::HFPImpl::isConnected          = false;
-    //    uint8_t HFP::HFPImpl::codecs[2] = {HFP_CODEC_CVSD, HFP_CODEC_MSBC};
-    uint8_t HFP::HFPImpl::codecs[1] = {HFP_CODEC_CVSD};
+    SCOCodec HFP::HFPImpl::codec            = SCOCodec::both;
 
-    uint8_t HFP::HFPImpl::negotiated_codec = HFP_CODEC_CVSD;
     int HFP::HFPImpl::memory_1_enabled     = 1;
     btstack_packet_callback_registration_t HFP::HFPImpl::hci_event_callback_registration;
     [[maybe_unused]] int HFP::HFPImpl::ag_indicators_nr = 7;
@@ -137,29 +129,27 @@ namespace bluetooth
     };
     void HFP::HFPImpl::dump_supported_codecs(void)
     {
-        unsigned int i;
-        int mSBC_skipped = 0;
         LOG_DEBUG("Supported codecs: ");
-        for (i = 0; i < sizeof(codecs); i++) {
-            switch (codecs[i]) {
-            case HFP_CODEC_CVSD:
-                LOG_DEBUG("CVSD");
-                break;
-            case HFP_CODEC_MSBC:
-                if (hci_extended_sco_link_supported()) {
-                    LOG_DEBUG("mSBC");
-                }
-                else {
-                    mSBC_skipped = 1;
-                }
-                break;
-            default:
-                btstack_assert(false);
-                break;
+
+        switch (codec) {
+        case SCOCodec::CVSD:
+            LOG_DEBUG("CVSD");
+            break;
+        case SCOCodec::both:
+            LOG_DEBUG("CVSD");
+            [[fallthrough]];
+        case SCOCodec::mSBC:
+            if (hci_extended_sco_link_supported()) {
+                LOG_DEBUG("mSBC");
             }
-        }
-        if (mSBC_skipped) {
-            LOG_WARN("mSBC codec disabled because eSCO not supported by local controller.\n");
+            else {
+                LOG_WARN("mSBC codec disabled because eSCO not supported by local controller.\n");
+            }
+            break;
+
+        case SCOCodec::other:
+            LOG_WARN("Using other codec");
+            break;
         }
     }
     void HFP::HFPImpl::sendAudioEvent(audio::EventType event, audio::Event::DeviceState state)
@@ -222,14 +212,14 @@ namespace bluetooth
             hfp_subevent_service_level_connection_established_get_bd_addr(event, deviceAddr);
             LOG_DEBUG("Service level connection established to %s.\n", bd_addr_to_str(deviceAddr));
             isConnected = true;
-            sendAudioEvent(audio::EventType::BlutoothHSPDeviceState, audio::Event::DeviceState::Connected);
+            sendAudioEvent(audio::EventType::BlutoothHFPDeviceState, audio::Event::DeviceState::Connected);
             dump_supported_codecs();
             break;
         case HFP_SUBEVENT_SERVICE_LEVEL_CONNECTION_RELEASED:
             LOG_DEBUG("Service level connection released.\n");
             aclHandle = HCI_CON_HANDLE_INVALID;
             // todo hsp->hfp
-            sendAudioEvent(audio::EventType::BlutoothHSPDeviceState, audio::Event::DeviceState::Disconnected);
+            sendAudioEvent(audio::EventType::BlutoothHFPDeviceState, audio::Event::DeviceState::Disconnected);
 
             break;
         case HFP_SUBEVENT_AUDIO_CONNECTION_ESTABLISHED:
@@ -240,19 +230,10 @@ namespace bluetooth
             else {
                 scoHandle = hfp_subevent_audio_connection_established_get_handle(event);
                 LOG_DEBUG("Audio connection established with SCO handle 0x%04x.\n", scoHandle);
-                negotiated_codec = hfp_subevent_audio_connection_established_get_negotiated_codec(event);
-                switch (negotiated_codec) {
-                case 0x01:
-                    LOG_DEBUG("Using CVSD codec.\n");
-                    break;
-                case 0x02:
-                    LOG_DEBUG("Using mSBC codec.\n");
-                    break;
-                default:
-                    LOG_DEBUG("Using unknown codec 0x%02x.\n", negotiated_codec);
-                    break;
-                }
-                sco->setCodec(negotiated_codec);
+                codec = static_cast<SCOCodec>(hfp_subevent_audio_connection_established_get_negotiated_codec(event));
+                dump_supported_codecs();
+
+                sco->setCodec(codec);
                 hci_request_sco_can_send_now_event();
                 RunLoop::trigger();
             }
@@ -260,7 +241,6 @@ namespace bluetooth
         case HFP_SUBEVENT_AUDIO_CONNECTION_RELEASED:
             LOG_DEBUG("Audio connection released\n");
             scoHandle = HCI_CON_HANDLE_INVALID;
-            // todo disconnect here
             break;
         case HFP_SUBEVENT_START_RINGINIG:
             LOG_DEBUG("Start Ringing\n");
@@ -318,7 +298,7 @@ namespace bluetooth
         Profile::initSdp();
 
         serviceBuffer.fill(0);
-        constexpr uint32_t hspSdpRecordHandle = 0x10001;
+        constexpr std::uint32_t hspSdpRecordHandle = 0x10001;
         uint16_t supported_features           = (1 << HFP_AGSF_ESCO_S4) | (1 << HFP_AGSF_HF_INDICATORS) |
                                       (1 << HFP_AGSF_CODEC_NEGOTIATION) | (1 << HFP_AGSF_EXTENDED_ERROR_RESULT_CODES) |
                                       (1 << HFP_AGSF_ENHANCED_CALL_CONTROL) | (1 << HFP_AGSF_ENHANCED_CALL_STATUS) |
@@ -339,7 +319,7 @@ namespace bluetooth
         rfcomm_init();
         hfp_ag_init(rfcommChannelNr);
         hfp_ag_init_supported_features(supported_features);
-        hfp_ag_init_codecs(sizeof(codecs), codecs);
+        initCodecs();
         hfp_ag_init_ag_indicators(ag_indicators_nr, ag_indicators);
         hfp_ag_init_hf_indicators(hf_indicators_nr, hf_indicators);
         hfp_ag_init_call_hold_services(call_hold_services_nr, call_hold_services);
@@ -411,5 +391,21 @@ namespace bluetooth
     {
         stopRinging();
         establishAudioConnection();
+    }
+    void HFP::HFPImpl::initCodecs()
+    {
+        std::vector<SCOCodec> codecsList;
+        switch (codec) {
+
+        case SCOCodec::other:
+        case SCOCodec::CVSD:
+            codecsList.push_back(SCOCodec::CVSD);
+            break;
+        case SCOCodec::mSBC:
+            break;
+        case SCOCodec::both:
+            break;
+        }
+        hfp_ag_init_codecs(codecsList.size(), reinterpret_cast<uint8_t *>(codecsList.data()));
     }
 } // namespace bluetooth

@@ -12,7 +12,13 @@ extern "C"
 };
 namespace bluetooth
 {
-
+    enum SCOCodec
+    {
+        CVSD  = 1,
+        mSBC  = 2,
+        both  = 3,
+        other = 4
+    };
     class SCO
     {
       public:
@@ -29,10 +35,10 @@ namespace bluetooth
         void receive(uint8_t *packet, uint16_t size);
         [[nodiscard]] auto getStreamData() const -> std::shared_ptr<BluetoothStreamData>;
         void setOwnerService(const sys::Service *service);
-        void setCodec(uint8_t codec);
+        void setCodec(SCOCodec codec);
 
       private:
         class SCOImpl;
         std::unique_ptr<SCOImpl> pimpl;
     };
-} // namespace Bt
+} // namespace bluetooth

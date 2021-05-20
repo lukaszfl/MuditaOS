@@ -8,24 +8,24 @@ set(CMAKE_CXX_STANDARD 17)
 module_is_test_entity()
 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/audio/BluetoothAudioDevice.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/BluetoothWorker.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/WorkerController.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/CommandHandler.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/glucode/BluetoothRunLoop.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/BluetoothDriverImpl.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/BtKeysStorage.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/GAP/GAP.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/A2DP/A2DP.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/A2DP/AVRCP.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/A2DP/AVDTP.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/HSP/HSP.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/HFP/HFP.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/HSP/SCO.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/Profile.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/ProfileManager.cpp
-
-        )
+    Bluetooth/audio/BluetoothAudioDevice.cpp
+    Bluetooth/BluetoothWorker.cpp
+    Bluetooth/WorkerController.cpp
+    Bluetooth/CommandHandler.cpp
+    Bluetooth/glucode/BluetoothRunLoop.cpp
+    Bluetooth/interface/BluetoothDriverImpl.cpp
+    Bluetooth/BtKeysStorage.cpp
+    Bluetooth/interface/profiles/GAP/GAP.cpp
+    Bluetooth/interface/profiles/A2DP/A2DP.cpp
+    Bluetooth/interface/profiles/A2DP/AVRCP.cpp
+    Bluetooth/interface/profiles/A2DP/AVDTP.cpp
+    Bluetooth/interface/profiles/HSP/HSP.cpp
+    Bluetooth/interface/profiles/HFP/HFP.cpp
+    Bluetooth/interface/profiles/SCO.cpp
+    Bluetooth/interface/profiles/Profile.cpp
+    Bluetooth/interface/profiles/ProfileManager.cpp
+    Bluetooth/interface/profiles/CellularInterface.cpp
+    )
 
 message("Build with BlueKitchen")
 include(lib/btstack.cmake)
@@ -72,8 +72,6 @@ target_link_libraries(${PROJECT_NAME}
     service-evtmgr
     module-bsp
     service-bluetooth
-    module-utils
-    module-vfs
     module-sys
     module-audio
     service-audio

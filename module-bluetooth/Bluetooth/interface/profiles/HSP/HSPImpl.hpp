@@ -4,7 +4,7 @@
 #pragma once
 #include "HSP.hpp"
 #include "Error.hpp"
-#include "SCO.hpp"
+#include "module-bluetooth/Bluetooth/interface/profiles/SCO.hpp"
 #include <Audio/AudioCommon.hpp>
 
 namespace bluetooth

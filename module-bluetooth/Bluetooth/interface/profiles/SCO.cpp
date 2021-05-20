@@ -11,9 +11,7 @@ extern "C"
 {
 #include "btstack_audio.h"
 #include "btstack_debug.h"
-#include "btstack_ring_buffer.h"
 #include "classic/btstack_cvsd_plc.h"
-#include "classic/btstack_sbc.h"
 #include "classic/hfp.h"
 #include "classic/hfp_msbc.h"
 #include "hci.h"
@@ -91,13 +89,13 @@ namespace bluetooth
     {
         pimpl->setOwnerService(service);
     }
-    void SCO::setCodec(uint8_t codec)
+    void SCO::setCodec(SCOCodec codec)
     {
-        pimpl->setCodec(codec);
+        pimpl->setCodec(static_cast<uint8_t>(codec));
     }
 
     SCO::~SCO() = default;
-} // namespace Bt
+} // namespace bluetooth
 
 using namespace bluetooth;
 
@@ -110,8 +108,8 @@ uint8_t SCO::SCOImpl::negotiated_codec;
 
 void SCO::SCOImpl::sendEvent(audio::EventType event, audio::Event::DeviceState state)
 {
-    auto evt = std::make_shared<audio::Event>(event, state);
-    auto msg = std::make_shared<AudioEventRequest>(std::move(evt));
+    auto evt       = std::make_shared<audio::Event>(event, state);
+    auto msg       = std::make_shared<AudioEventRequest>(std::move(evt));
     auto &busProxy = const_cast<sys::Service *>(ownerService)->bus;
     busProxy.sendUnicast(std::move(msg), service::name::evt_manager);
 }
@@ -254,7 +252,7 @@ void SCO::SCOImpl::setOwnerService(const sys::Service *service)
 {
     ownerService = service;
 }
-// to be fixed
+
 void SCO::SCOImpl::setCodec(uint8_t codec)
 {
     if (negotiated_codec == codec) {

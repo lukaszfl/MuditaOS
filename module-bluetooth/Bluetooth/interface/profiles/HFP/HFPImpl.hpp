@@ -4,7 +4,7 @@
 #pragma once
 #include "HFP.hpp"
 #include "Error.hpp"
-#include "HSP/SCO.hpp"
+#include "module-bluetooth/Bluetooth/interface/profiles/SCO.hpp"
 #include <Audio/AudioCommon.hpp>
 
 namespace bluetooth
@@ -33,6 +33,7 @@ namespace bluetooth
         static void processHCIEvent(uint8_t *event);
         static void processHFPEvent(uint8_t *event);
         static void establishAudioConnection();
+        static void initCodecs();
         static void dump_supported_codecs(void);
         static std::array<uint8_t, serviceBufferLength> serviceBuffer;
         static constexpr uint8_t rfcommChannelNr = 1;
@@ -45,9 +46,7 @@ namespace bluetooth
         static bd_addr_t deviceAddr;
         static const sys::Service *ownerService;
         static bool isConnected;
-        //        static uint8_t codecs[2];
-        static uint8_t codecs[1];
-        static uint8_t negotiated_codec;
+        static SCOCodec codec;
         static int memory_1_enabled;
         static btstack_packet_callback_registration_t hci_event_callback_registration;
         [[maybe_unused]] static int ag_indicators_nr;

@@ -21,16 +21,11 @@ extern "C"
 
 namespace bluetooth
 {
-    bool CellularInterfaceImpl::answerIncomingCall(sys::Service *service)
+    namespace
     {
-        return CellularServiceAPI::AnswerIncomingCall(service);
+        class CellularInterfaceImpl : public CellularInterface
+        {};
     }
-
-    bool CellularInterfaceImpl::hangupCall(sys::Service *service)
-    {
-        return CellularServiceAPI::HangupCall(service);
-    }
-
     HSP::HSP() : pimpl(std::make_unique<HSPImpl>(HSPImpl()))
     {}
 

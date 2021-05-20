@@ -10,12 +10,7 @@
 
 namespace bluetooth
 {
-    //    class CellularInterfaceImpl : public CellularInterface
-    //    {
-    //      public:
-    //        bool answerIncomingCall(sys::Service *service) override;
-    //        bool hangupCall(sys::Service *service) override;
-    //    };
+
     class HFP : public Profile
     {
         // static constexpr auto CLASS_OF_DEVICE = 0x400204;
