@@ -6,14 +6,12 @@
 #include <memory> // for allocator, unique_ptr
 
 #include "WorkerDesktop.hpp"
-#include "endpoints/update/UpdateMuditaOS.hpp"
 #include "Service/Common.hpp"  // for ReturnCodes, ServicePowerMode
 #include "Service/Message.hpp" // for MessagePointer, DataMessage (ptr only), ResponseMessage (ptr only)
 #include "Service/Service.hpp" // for Service
 #include "Timers/TimerHandle.hpp"
 #include "Constants.hpp"
 #include "USBSecurityModel.hpp"
-#include <endpoints/update/UpdateMuditaOS.hpp>
 #include <service-db/DBServiceName.hpp>
 
 namespace settings
@@ -39,6 +37,8 @@ namespace sdesktop::bluetooth
 {
     class BluetoothMessagesHandler;
 }
+
+class UpdateMuditaOS;
 
 class ServiceDesktop : public sys::Service
 {

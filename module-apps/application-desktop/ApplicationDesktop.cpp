@@ -30,6 +30,7 @@
 #include <service-cellular/CellularMessage.hpp>
 #include <service-db/QueryMessage.hpp>
 #include <module-services/service-db/agents/settings/SystemSettings.hpp>
+#include <module-services/service-desktop/service-desktop/Constants.hpp>
 #include <module-utils/magic_enum/include/magic_enum.hpp>
 #include <module-apps/messages/AppMessage.hpp>
 #include <SystemManager/messages/SystemManagerMessage.hpp>
