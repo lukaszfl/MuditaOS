@@ -38,11 +38,11 @@ void SimInfoWindow::onBeforeShow(ShowMode mode, SwitchData *data)
             break;
         case locks::SimInputTypeAction::EnablePin:
             setTitle("");
-            infoIcon->text->setRichText(utils::translate("sim_card_locked"));
+            infoIcon->text->setRichText(utils::translate("sim_card_pin_enabled"));
             break;
         case locks::SimInputTypeAction::DisablePin:
             setTitle("");
-            infoIcon->text->setRichText(utils::translate("sim_card_unlocked"));
+            infoIcon->text->setRichText(utils::translate("sim_card_pin_disabled"));
             break;
         default:
             break;

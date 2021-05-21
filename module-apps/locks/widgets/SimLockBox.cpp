@@ -8,7 +8,7 @@ namespace gui
 {
     void SimLockBox::buildLockBox(unsigned int pinSize)
     {
-        LockBoxInconstantSize::buildLockBox(pinSize);
+        LockBoxAlternatingSize::buildLockBox(pinSize);
     }
 
     void SimLockBox::applyLockActionText(locks::SimInputTypeAction simInputTypeAction)
@@ -101,7 +101,7 @@ namespace gui
     {
         LockWindow->setText("sim_cme_error",
                             LockInputWindow::TextType::Primary,
-                            {{LockWindow->getToken(LockInputWindow::Token::CmeCode), errorCode}});
+                            {{LockWindow->getToken(LockInputWindow::Token::CmeCode), static_cast<int>(errorCode)}});
         LockWindow->setImage("info_icon_W_G");
         LockWindow->setBottomBarWidgetsActive(false, false, true);
     }

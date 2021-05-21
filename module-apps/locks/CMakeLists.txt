@@ -21,7 +21,7 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/windows/LockInputWindow.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/Lock.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/LockBoxConstantSize.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/widgets/LockBoxInconstantSize.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/widgets/LockBoxAlternatingSize.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/PhoneLockBox.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/SimLockBox.cpp"
 
@@ -39,7 +39,7 @@ target_sources( ${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/Lock.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/LockBox.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/LockBoxConstantSize.hpp"
-		"${CMAKE_CURRENT_LIST_DIR}/widgets/LockBoxInconstantSize.hpp"
+		"${CMAKE_CURRENT_LIST_DIR}/widgets/LockBoxAlternatingSize.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/PhoneLockBox.hpp"
 		"${CMAKE_CURRENT_LIST_DIR}/widgets/SimLockBox.hpp"
 )

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <locks/data/LockData.hpp>
 #include <module-sys/Service/Service.hpp>
 
 namespace locks
@@ -22,7 +23,7 @@ namespace locks
         void changePhoneLock();
         void setPhoneLock();
         void skipSetPhoneLock();
-        void verifyInput(const std::vector<unsigned int> &inputData);
+        void verifyInput(LockInput inputData);
     };
 
 } // namespace locks

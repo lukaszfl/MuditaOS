@@ -10,7 +10,7 @@
 
 namespace gui
 {
-    class LockBoxInconstantSize : public LockBox
+    class LockBoxAlternatingSize : public LockBox
     {
       public:
         void buildLockBox(unsigned int pinSize) override;
@@ -19,7 +19,7 @@ namespace gui
         void putChar(unsigned int charNum) final;
 
       protected:
-        explicit LockBoxInconstantSize(LockInputWindow *lockBaseWindow) : lockWindow(lockBaseWindow)
+        explicit LockBoxAlternatingSize(LockInputWindow *lockBaseWindow) : lockWindow(lockBaseWindow)
         {}
 
         void buildPinLabels(unsigned int pinSize);

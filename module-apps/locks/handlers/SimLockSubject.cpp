@@ -35,7 +35,7 @@ namespace locks
         owner->bus.sendUnicast(std::make_shared<locks::DisableSimPin>(), app::manager::ApplicationManager::ServiceName);
     }
 
-    void SimLockSubject::verifyInput(const std::vector<unsigned int> &inputData)
+    void SimLockSubject::verifyInput(LockInput inputData)
     {
         owner->bus.sendUnicast(std::make_shared<UnLockSimInput>(inputData),
                                app::manager::ApplicationManager::ServiceName);

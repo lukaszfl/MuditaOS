@@ -438,7 +438,7 @@ namespace app::manager
             return phoneLockHandler.handleUnlockCancelRequest();
         });
         connect(typeid(locks::UnLockPhoneInput), [&](sys::Message *request) -> sys::MessagePointer {
-            auto data = dynamic_cast<locks::UnLockPhoneInput *>(request);
+            auto data = static_cast<locks::UnLockPhoneInput *>(request);
             return phoneLockHandler.verifyPhoneLockInput(data->getInputData());
         });
         connect(typeid(locks::EnablePhoneLock),
@@ -459,7 +459,7 @@ namespace app::manager
 
         // SimLock connects
         connect(typeid(cellular::msg::notification::SimNeedPin), [&](sys::Message *request) -> sys::MessagePointer {
-            auto data = dynamic_cast<cellular::msg::notification::SimNeedPin *>(request);
+            auto data = static_cast<cellular::msg::notification::SimNeedPin *>(request);
             if (phoneLockHandler.isPhoneLocked()) {
                 simLockHandler.setSimUnlockBlockOnLockedPhone();
             }
@@ -470,11 +470,10 @@ namespace app::manager
             return simLockHandler.verifySimLockInput(msg->getInputData());
         });
         connect(typeid(cellular::msg::notification::SimReady), [&](sys::Message *request) -> sys::MessagePointer {
-            //            auto data = dynamic_cast<cellular::msg::notification::SimReady *>(request);
             return simLockHandler.handleSimUnlockedMessage();
         });
         connect(typeid(cellular::msg::notification::SimNeedPuk), [&](sys::Message *request) -> sys::MessagePointer {
-            auto data = dynamic_cast<cellular::msg::notification::SimNeedPuk *>(request);
+            auto data = static_cast<cellular::msg::notification::SimNeedPuk *>(request);
             if (phoneLockHandler.isPhoneLocked()) {
                 simLockHandler.setSimUnlockBlockOnLockedPhone();
             }
@@ -485,7 +484,7 @@ namespace app::manager
         });
         connect(typeid(cellular::msg::request::sim::ChangePin::Response),
                 [&](sys::Message *request) -> sys::MessagePointer {
-                    auto data = dynamic_cast<cellular::msg::request::sim::ChangePin::Response *>(request);
+                    auto data = static_cast<cellular::msg::request::sim::ChangePin::Response *>(request);
                     if (data->retCode) {
                         return simLockHandler.handleSimChangedMessage();
                     }
@@ -499,7 +498,7 @@ namespace app::manager
                 [&](sys::Message *request) -> sys::MessagePointer { return simLockHandler.handleSimDisableRequest(); });
         connect(typeid(cellular::msg::request::sim::SetPinLock::Response),
                 [&](sys::Message *request) -> sys::MessagePointer {
-                    auto data = dynamic_cast<cellular::msg::request::sim::SetPinLock::Response *>(request);
+                    auto data = static_cast<cellular::msg::request::sim::SetPinLock::Response *>(request);
                     if (data->retCode) {
                         return simLockHandler.handleSimAvailabilityMessage();
                     }
@@ -519,7 +518,7 @@ namespace app::manager
             return simLockHandler.handleSimBlockedRequest();
         });
         connect(typeid(cellular::msg::notification::UnhandledCME), [&](sys::Message *request) -> sys::MessagePointer {
-            auto data = dynamic_cast<cellular::msg::notification::UnhandledCME *>(request);
+            auto data = static_cast<cellular::msg::notification::UnhandledCME *>(request);
             if (phoneLockHandler.isPhoneLocked()) {
                 simLockHandler.setSimUnlockBlockOnLockedPhone();
             }

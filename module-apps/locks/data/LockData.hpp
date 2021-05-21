@@ -9,6 +9,8 @@
 
 namespace locks
 {
+    using LockInput = const std::vector<unsigned int> &;
+
     enum class PhoneLockInputTypeAction
     {
         Unlock,

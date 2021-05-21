@@ -11,6 +11,8 @@
 
 namespace locks
 {
+    using StoredLockInput = std::vector<unsigned int>;
+
     class SimLockHandler
     {
       private:
@@ -18,10 +20,10 @@ namespace locks
         Lock lock;
 
         SimInputTypeAction simInputTypeAction = SimInputTypeAction::UnlockWithPin;
-        unsigned int storedErrorCode     = 0;
-        bool simUnlockBlockOnLockedPhone = false;
-        std::vector<unsigned int> storedFirstInput;
-        std::vector<unsigned int> storedSecondInput;
+        unsigned int storedErrorCode          = 0;
+        bool simUnlockBlockOnLockedPhone      = false;
+        StoredLockInput storedFirstInput;
+        StoredLockInput storedSecondInput;
 
         void clearStoredInputs();
         void setSimInputTypeAction(SimInputTypeAction _simInputTypeAction);
@@ -31,16 +33,13 @@ namespace locks
         void simUnlockAction();
         void simInfoAction();
 
-        sys::MessagePointer unlockSimWithPin(const std::vector<unsigned int> &pinInputData);
-        sys::MessagePointer processLockWithNewInput(const std::vector<unsigned int> &inputData);
-        sys::MessagePointer resolveNewInputAction(const std::vector<unsigned int> &firstInputData,
-                                                  const std::vector<unsigned int> &secondInputData);
-        sys::MessagePointer unlockSimWithPuk(const std::vector<unsigned int> &pukInputData,
-                                             const std::vector<unsigned int> &newPinInputData);
-        sys::MessagePointer changeSimPin(const std::vector<unsigned int> &oldPinInputData,
-                                         const std::vector<unsigned int> &newPinInputData);
-        sys::MessagePointer enableSimPin(const std::vector<unsigned int> &pinInputData);
-        sys::MessagePointer disableSimPin(const std::vector<unsigned int> &pinInputData);
+        sys::MessagePointer unlockSimWithPin(LockInput pinInputData);
+        sys::MessagePointer processLockWithNewInput(LockInput inputData);
+        sys::MessagePointer resolveNewInputAction(LockInput firstInputData, LockInput secondInputData);
+        sys::MessagePointer unlockSimWithPuk(LockInput pukInputData, LockInput newPinInputData);
+        sys::MessagePointer changeSimPin(LockInput oldPinInputData, LockInput newPinInputData);
+        sys::MessagePointer enableSimPin(LockInput pinInputData);
+        sys::MessagePointer disableSimPin(LockInput pinInputData);
 
       public:
         explicit SimLockHandler(sys::Service *owner);
@@ -48,7 +47,7 @@ namespace locks
         void setSimUnlockBlockOnLockedPhone();
         sys::MessagePointer releaseSimUnlockBlockOnLockedPhone();
 
-        sys::MessagePointer verifySimLockInput(const std::vector<unsigned int> &inputData);
+        sys::MessagePointer verifySimLockInput(LockInput inputData);
 
         sys::MessagePointer handleSimPinRequest(unsigned int attempts);
         sys::MessagePointer handleSimPukRequest(unsigned int attempts);
@@ -57,7 +56,6 @@ namespace locks
         sys::MessagePointer handleSimDisableRequest();
         sys::MessagePointer handleSimBlockedRequest();
         sys::MessagePointer handleCMEErrorRequest(unsigned int errorCode);
-
         sys::MessagePointer handleSimUnlockedMessage();
         sys::MessagePointer handleSimChangedMessage();
         sys::MessagePointer handleSimAvailabilityMessage();

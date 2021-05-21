@@ -207,24 +207,28 @@ namespace gui
     void LockInputWindow::setVisibleState()
     {
         restore();
-        if (lock->isState(locks::Lock::LockState::InputRequired)) {
+        switch (lock->getState()) {
+        case locks::Lock::LockState::InputRequired:
             lockBox->setVisibleStateInputRequired(LockBox::InputActionType::ProvideInput);
-        }
-        else if (lock->isState(locks::Lock::LockState::InputInvalid)) {
+            break;
+        case locks::Lock::LockState::InputInvalid:
             lockBox->setVisibleStateInputInvalid(LockBox::InputErrorType::InvalidInput, lock->getAttemptsLeft());
-        }
-        else if (lock->isState(locks::Lock::LockState::Blocked)) {
+            break;
+        case locks::Lock::LockState::Blocked:
             lockBox->setVisibleStateBlocked();
-        }
-        else if (lock->isState(locks::Lock::LockState::NewInputRequired)) {
+            break;
+        case locks::Lock::LockState::NewInputRequired:
             lockBox->setVisibleStateInputRequired(LockBox::InputActionType::ProvideNewInput);
-        }
-        else if (lock->isState(locks::Lock::LockState::NewInputConfirmRequired)) {
+            break;
+        case locks::Lock::LockState::NewInputConfirmRequired:
             lockBox->setVisibleStateInputRequired(LockBox::InputActionType::ConfirmNewInput);
-        }
-        else if (lock->isState(locks::Lock::LockState::NewInputInvalid)) {
+            break;
+        case locks::Lock::LockState::NewInputInvalid:
             lockBox->setVisibleStateInputInvalid(LockBox::InputErrorType::NewInputConfirmFailed,
                                                  lock->getAttemptsLeft());
+            break;
+        default:
+            break;
         }
     }
 

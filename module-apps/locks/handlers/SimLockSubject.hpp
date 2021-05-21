@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <locks/data/LockData.hpp>
+
 #include <module-sys/Service/Service.hpp>
 #include <service-cellular-api>
 
@@ -20,7 +22,7 @@ namespace locks
         void changeSimPin();
         void enableSimPin();
         void disableSimPin();
-        void verifyInput(const std::vector<unsigned int> &inputData);
+        void verifyInput(LockInput inputData);
     };
 
 } // namespace locks

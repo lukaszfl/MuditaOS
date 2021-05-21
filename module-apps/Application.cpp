@@ -794,7 +794,7 @@ namespace app
                     return std::make_unique<gui::PowerOffWindow>(app, std::move(presenter));
                 });
                 break;
-            case ID::SimUnlock:
+            case ID::SimLock:
             case ID::SimInfo:
                 windowsFactory.attach(window::sim_unlock_window, [](Application *app, const std::string &name) {
                     return std::make_unique<gui::SimLockInputWindow>(app, window::sim_unlock_window);
@@ -828,7 +828,7 @@ namespace app
                 gui::popup::resolveWindowName(id),
                 std::make_unique<locks::LockData>(popupParams->getLock(), popupParams->getPhoneLockInputTypeAction()));
         }
-        else if (id == ID::SimUnlock || id == ID::SimInfo) {
+        else if (id == ID::SimLock || id == ID::SimInfo) {
             auto popupParams = static_cast<const gui::SimUnlockInputRequestParams *>(params);
 
             switchWindow(gui::popup::resolveWindowName(id),

@@ -18,7 +18,6 @@ namespace gui
 
         void setVisibleState() override;
 
-      protected:
       public:
         SimLockInputWindow(app::Application *app, const std::string &window_name);
         void onBeforeShow(ShowMode mode, SwitchData *data) override;

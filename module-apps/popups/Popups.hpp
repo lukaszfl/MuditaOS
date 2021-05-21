@@ -19,7 +19,7 @@ namespace gui
             PhoneLock,
             PhoneLockInput,
             PhoneLockChangeInfo,
-            SimUnlock,
+            SimLock,
             SimInfo,
         };
 

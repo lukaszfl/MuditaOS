@@ -234,7 +234,7 @@ namespace locks
         phoneInputRequiredAction();
     }
 
-    sys::MessagePointer PhoneLockHandler::verifyPhoneLockInput(const std::vector<unsigned int> &inputData)
+    sys::MessagePointer PhoneLockHandler::verifyPhoneLockInput(LockInput inputData)
     {
         if (checkPhoneLockInputTypeAction(PhoneLockInputTypeAction::Enable) ||
             checkPhoneLockInputTypeAction(PhoneLockInputTypeAction::Change) ||
@@ -246,7 +246,7 @@ namespace locks
         }
     }
 
-    sys::MessagePointer PhoneLockHandler::verifyPhoneUnlockInput(const std::vector<unsigned int> &inputData)
+    sys::MessagePointer PhoneLockHandler::verifyPhoneUnlockInput(LockInput inputData)
     {
         const uint32_t hash = getHash(inputData);
         lock.attemptsLeft--;
@@ -269,7 +269,7 @@ namespace locks
         return sys::msgHandled();
     }
 
-    sys::MessagePointer PhoneLockHandler::verifyPhoneLockChangeInput(const std::vector<unsigned int> &inputData)
+    sys::MessagePointer PhoneLockHandler::verifyPhoneLockChangeInput(LockInput inputData)
     {
         if (lock.isState(Lock::LockState::NewInputRequired) || lock.isState(Lock::LockState::NewInputInvalid)) {
             storedInputData = inputData;

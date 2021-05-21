@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "LockBoxInconstantSize.hpp"
+#include "LockBoxAlternatingSize.hpp"
 #include <locks/data/LockData.hpp>
 
 namespace gui
@@ -13,12 +13,12 @@ namespace gui
 
 namespace gui
 {
-    class SimLockBox : public LockBoxInconstantSize
+    class SimLockBox : public LockBoxAlternatingSize
     {
       public:
         explicit SimLockBox(LockInputWindow *LockBaseWindow,
                             locks::SimInputTypeAction simLockInputTypeAction = locks::SimInputTypeAction::UnlockWithPin)
-            : LockBoxInconstantSize(LockBaseWindow), LockWindow(LockBaseWindow)
+            : LockBoxAlternatingSize(LockBaseWindow), LockWindow(LockBaseWindow)
         {
             applyLockActionText(simLockInputTypeAction);
         }

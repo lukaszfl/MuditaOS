@@ -1,5 +1,5 @@
-//// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
-//// For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
+// For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "SimLockHandler.hpp"
 
@@ -43,7 +43,7 @@ namespace locks
         app::manager::Controller::sendAction(
             owner,
             app::manager::actions::ShowPopup,
-            std::make_unique<gui::SimUnlockInputRequestParams>(gui::popup::ID::SimUnlock, lock, simInputTypeAction));
+            std::make_unique<gui::SimUnlockInputRequestParams>(gui::popup::ID::SimLock, lock, simInputTypeAction));
     }
 
     void SimLockHandler::simErrorAction(unsigned int errorCode)
@@ -51,14 +51,14 @@ namespace locks
         app::manager::Controller::sendAction(owner,
                                              app::manager::actions::ShowPopup,
                                              std::make_unique<gui::SimUnlockInputRequestParams>(
-                                                 gui::popup::ID::SimUnlock, lock, simInputTypeAction, errorCode));
+                                                 gui::popup::ID::SimLock, lock, simInputTypeAction, errorCode));
     }
 
     void SimLockHandler::simUnlockAction()
     {
         app::manager::Controller::sendAction(owner,
                                              app::manager::actions::AbortPopup,
-                                             std::make_unique<gui::PopupRequestParams>(gui::popup::ID::SimUnlock));
+                                             std::make_unique<gui::PopupRequestParams>(gui::popup::ID::SimLock));
     }
 
     void SimLockHandler::simInfoAction()
@@ -224,7 +224,7 @@ namespace locks
         return sys::msgHandled();
     }
 
-    sys::MessagePointer SimLockHandler::processLockWithNewInput(const std::vector<unsigned int> &inputData)
+    sys::MessagePointer SimLockHandler::processLockWithNewInput(LockInput inputData)
     {
         if (lock.isState(Lock::LockState::InputRequired) || (lock.isState(Lock::LockState::InputInvalid))) {
 
@@ -243,15 +243,14 @@ namespace locks
             if (storedSecondInput == inputData) {
                 return resolveNewInputAction(storedFirstInput, inputData);
             }
-            else {
-                lock.lockState = Lock::LockState::NewInputInvalid;
-                simInputRequiredAction();
-            }
+
+            lock.lockState = Lock::LockState::NewInputInvalid;
+            simInputRequiredAction();
         }
         return sys::msgHandled();
     }
 
-    sys::MessagePointer SimLockHandler::verifySimLockInput(const std::vector<unsigned int> &inputData)
+    sys::MessagePointer SimLockHandler::verifySimLockInput(LockInput inputData)
     {
         switch (simInputTypeAction) {
         case SimInputTypeAction::UnlockWithPin:
@@ -294,8 +293,7 @@ namespace locks
         return sys::msgNotHandled();
     }
 
-    sys::MessagePointer SimLockHandler::resolveNewInputAction(const std::vector<unsigned int> &firstInputData,
-                                                              const std::vector<unsigned int> &secondInputData)
+    sys::MessagePointer SimLockHandler::resolveNewInputAction(LockInput firstInputData, LockInput secondInputData)
     {
         if (simInputTypeAction == SimInputTypeAction::UnlockWithPuk) {
             return unlockSimWithPuk(firstInputData, secondInputData);
@@ -306,34 +304,32 @@ namespace locks
         return sys::msgNotHandled();
     }
 
-    sys::MessagePointer SimLockHandler::unlockSimWithPin(const std::vector<unsigned int> &pinInputData)
+    sys::MessagePointer SimLockHandler::unlockSimWithPin(LockInput pinInputData)
     {
         owner->bus.sendUnicast<cellular::msg::request::sim::PinUnlock>(pinInputData);
         return sys::msgHandled();
     }
 
-    sys::MessagePointer SimLockHandler::unlockSimWithPuk(const std::vector<unsigned int> &pukInputData,
-                                                         const std::vector<unsigned int> &newPinInputData)
+    sys::MessagePointer SimLockHandler::unlockSimWithPuk(LockInput pukInputData, LockInput newPinInputData)
     {
         owner->bus.sendUnicast<cellular::msg::request::sim::UnblockWithPuk>(pukInputData, newPinInputData);
         return sys::msgHandled();
     }
 
-    sys::MessagePointer SimLockHandler::changeSimPin(const std::vector<unsigned int> &oldPinInputData,
-                                                     const std::vector<unsigned int> &newPinInputData)
+    sys::MessagePointer SimLockHandler::changeSimPin(LockInput oldPinInputData, LockInput newPinInputData)
     {
         owner->bus.sendUnicast<cellular::msg::request::sim::ChangePin>(oldPinInputData, newPinInputData);
         return sys::msgHandled();
     }
 
-    sys::MessagePointer SimLockHandler::enableSimPin(const std::vector<unsigned int> &pinInputData)
+    sys::MessagePointer SimLockHandler::enableSimPin(LockInput pinInputData)
     {
         owner->bus.sendUnicast<cellular::msg::request::sim::SetPinLock>(cellular::api::SimLockState::Enabled,
                                                                         pinInputData);
         return sys::msgHandled();
     }
 
-    sys::MessagePointer SimLockHandler::disableSimPin(const std::vector<unsigned int> &pinInputData)
+    sys::MessagePointer SimLockHandler::disableSimPin(LockInput pinInputData)
     {
         owner->bus.sendUnicast<cellular::msg::request::sim::SetPinLock>(cellular::api::SimLockState::Disabled,
                                                                         pinInputData);

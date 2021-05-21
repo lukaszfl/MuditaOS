@@ -2,35 +2,35 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "Lock.hpp"
-#include "LockBoxInconstantSize.hpp"
+#include "LockBoxAlternatingSize.hpp"
 
 #include <locks/data/LockStyle.hpp>
 #include <locks/windows/LockInputWindow.hpp>
 
 namespace gui
 {
-    void LockBoxInconstantSize::buildLockBox(unsigned int pinSize)
+    void LockBoxAlternatingSize::buildLockBox(unsigned int pinSize)
     {
         buildPinLabels(0);
     }
 
-    void LockBoxInconstantSize::clear()
+    void LockBoxAlternatingSize::clear()
     {
         lockWindow->pinLabelsBox->erase();
         buildPinLabels(0);
     }
 
-    void LockBoxInconstantSize::popChar(unsigned int charNum)
+    void LockBoxAlternatingSize::popChar(unsigned int charNum)
     {
         buildPinLabels(charNum);
     }
 
-    void LockBoxInconstantSize::putChar(unsigned int charNum)
+    void LockBoxAlternatingSize::putChar(unsigned int charNum)
     {
-        buildPinLabels(++charNum);
+        buildPinLabels(charNum + 1);
     }
 
-    void LockBoxInconstantSize::buildPinLabels(unsigned int pinSize)
+    void LockBoxAlternatingSize::buildPinLabels(unsigned int pinSize)
     {
         if (lockWindow->pinLabelsBox) {
             lockWindow->pinLabelsBox->erase();
