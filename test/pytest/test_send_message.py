@@ -6,6 +6,7 @@ import copy
 
 from harness.interface.defs import key_codes, SMSType, status
 from harness.interface.CDCSerial import Keytype
+from harness import log
 
 # time for  message to leave the sending queue
 extra_time_to_send_message  = 50
@@ -520,3 +521,12 @@ def test_send_message_using_phonebook(harness, phone_number, sms_text):
     assert ret["status"] == status["OK"]
 
 
+@pytest.mark.rt1051
+@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_in_desktop")
+def test_send_2k_message(harness, phone_number, sms_text):
+    log.info(f"run test with nr: {phone_number}")
+    for value in range(0, 2000):
+        log.info(f"sending message nr: {value}")
+        test_send_prepared_message(harness, phone_number, f"sms_text {value}", False)
+        time.sleep(3)
