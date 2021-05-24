@@ -76,22 +76,17 @@ namespace bluetooth
     {
         pimpl->stop();
     }
-
     auto HFP::startRinging() const noexcept -> Error::Code
     {
-        pimpl->startRinging();
         return Error::Success;
     }
-
     auto HFP::stopRinging() const noexcept -> Error::Code
     {
-        pimpl->stopRinging();
         return Error::Success;
     }
-
     auto HFP::initializeCall() const noexcept -> Error::Code
     {
-        pimpl->initializeCall();
+        pimpl->start();
         return Error::Success;
     }
 
@@ -106,7 +101,8 @@ namespace bluetooth
     const sys::Service *HFP::HFPImpl::ownerService;
     std::string HFP::HFPImpl::agServiceName = "PurePhone HFP";
     bool HFP::HFPImpl::isConnected          = false;
-    SCOCodec HFP::HFPImpl::codec            = SCOCodec::both;
+    //    SCOCodec HFP::HFPImpl::codec            = SCOCodec::both;
+    SCOCodec HFP::HFPImpl::codec = SCOCodec::CVSD;
 
     int HFP::HFPImpl::memory_1_enabled     = 1;
     btstack_packet_callback_registration_t HFP::HFPImpl::hci_event_callback_registration;
@@ -167,7 +163,7 @@ namespace bluetooth
             if (READ_SCO_CONNECTION_HANDLE(event) != scoHandle) {
                 break;
             }
-            LOG_DEBUG("Processsing SCO receive");
+            LOG_DEBUG("Processing SCO receive");
 
             sco->receive(event, eventSize);
             break;
@@ -200,12 +196,22 @@ namespace bluetooth
 
     void HFP::HFPImpl::processHFPEvent(uint8_t *event)
     {
+        // NOTE some of the subevents are not mentioned here yet
+        /*
+         *
+         * in hfp_ag.h there are descriptions of cellular and UI interface of HFP:
+         * // Cellular Actions
+         * and
+         * // actions used by local device / user
+         * those should be called to trigger requested state in HFP's state machine
+         * (which this switch...case depends on)
+         */
         switch (hci_event_hfp_meta_get_subevent_code(event)) {
         case HFP_SUBEVENT_SERVICE_LEVEL_CONNECTION_ESTABLISHED:
             std::uint8_t status;
             status = hfp_subevent_service_level_connection_established_get_status(event);
             if (status) {
-                LOG_DEBUG("Connection failed, staus 0x%02x\n", status);
+                LOG_DEBUG("Connection failed, status 0x%02x\n", status);
                 break;
             }
             aclHandle = hfp_subevent_service_level_connection_established_get_con_handle(event);
@@ -218,7 +224,7 @@ namespace bluetooth
         case HFP_SUBEVENT_SERVICE_LEVEL_CONNECTION_RELEASED:
             LOG_DEBUG("Service level connection released.\n");
             aclHandle = HCI_CON_HANDLE_INVALID;
-            // todo hsp->hfp
+
             sendAudioEvent(audio::EventType::BlutoothHFPDeviceState, audio::Event::DeviceState::Disconnected);
 
             break;
@@ -244,13 +250,16 @@ namespace bluetooth
             break;
         case HFP_SUBEVENT_START_RINGINIG:
             LOG_DEBUG("Start Ringing\n");
+
+            // todo request here ringtone stream
             break;
         case HFP_SUBEVENT_STOP_RINGINIG:
             LOG_DEBUG("Stop Ringing\n");
+            // todo stop ringtone stream here
             break;
         case HFP_SUBEVENT_PLACE_CALL_WITH_NUMBER:
             LOG_DEBUG("Outgoing call '%s'\n", hfp_subevent_place_call_with_number_get_number(event));
-            // validate number
+            // todo has to be feeded with proper phone number from cellular
             if (strcmp("1234567", hfp_subevent_place_call_with_number_get_number(event)) == 0 ||
                 strcmp("7654321", hfp_subevent_place_call_with_number_get_number(event)) == 0 ||
                 (memory_1_enabled && strcmp(">1", hfp_subevent_place_call_with_number_get_number(event)) == 0)) {
@@ -264,7 +273,8 @@ namespace bluetooth
             break;
 
         case HFP_SUBEVENT_ATTACH_NUMBER_TO_VOICE_TAG:
-            LOG_DEBUG("Attach number to voice tag. Sending '1234567\n");
+            // todo has to be feeded with proper phone number from cellular
+            // LOG_DEBUG("Attach number to voice tag. Sending '1234567\n");
             hfp_ag_send_phone_number_for_voice_tag(aclHandle, "1234567");
             break;
         case HFP_SUBEVENT_TRANSMIT_DTMF_CODES:
@@ -273,6 +283,11 @@ namespace bluetooth
             break;
         case HFP_SUBEVENT_CALL_ANSWERED:
             LOG_DEBUG("Call answered by HF\n");
+            cellularInterface->answerIncomingCall(const_cast<sys::Service *>(ownerService));
+            break;
+        case HFP_SUBEVENT_CALL_TERMINATED:
+            LOG_DEBUG("Call terminated by HF\n");
+            cellularInterface->hangupCall(const_cast<sys::Service *>(ownerService));
             break;
         default:
             LOG_DEBUG("Event not handled %u\n", hci_event_hfp_meta_get_subevent_code(event));
@@ -369,29 +384,13 @@ namespace bluetooth
         if (!isConnected) {
             connect();
         }
-        hfp_ag_establish_audio_connection(aclHandle);
+        establishAudioConnection();
     }
     void HFP::HFPImpl::stop()
     {
-        //        stopRinging();
         hfp_ag_release_audio_connection(aclHandle);
     }
 
-    void HFP::HFPImpl::startRinging() const noexcept
-    {
-        //        LOG_DEBUG("Bluetooth ring started");
-    }
-    void HFP::HFPImpl::stopRinging() const noexcept
-    {
-        //        LOG_DEBUG("Bluetooth ring stopped");
-        //        hsp_ag_stop_ringing();
-    }
-
-    void HFP::HFPImpl::initializeCall() const noexcept
-    {
-        stopRinging();
-        establishAudioConnection();
-    }
     void HFP::HFPImpl::initCodecs()
     {
         std::vector<SCOCodec> codecsList;
@@ -402,8 +401,11 @@ namespace bluetooth
             codecsList.push_back(SCOCodec::CVSD);
             break;
         case SCOCodec::mSBC:
+            codecsList.push_back(SCOCodec::mSBC);
             break;
         case SCOCodec::both:
+            codecsList.push_back(SCOCodec::CVSD);
+            codecsList.push_back(SCOCodec::mSBC);
             break;
         }
         hfp_ag_init_codecs(codecsList.size(), reinterpret_cast<uint8_t *>(codecsList.data()));

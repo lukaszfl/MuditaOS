@@ -13,6 +13,7 @@ namespace bluetooth
 
     auto ProfileManager::init() -> Error::Code
     {
+        // todo reenable A2DP and HSP
         if (!initialized) {
             profilesList = {{AudioProfile::A2DP, nullptr},
                             {AudioProfile::HSP, std::make_shared<bluetooth::HFP>()},
