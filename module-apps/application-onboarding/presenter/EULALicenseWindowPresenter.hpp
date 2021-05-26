@@ -1,47 +1,41 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
 
 #include <module-apps/application-onboarding/model/EULARepository.hpp>
 
-#include "functional"
-#include "string"
-#include "BasePresenter.hpp"
+#include "EULALicenseWindowContract.hpp"
 
-using Function = std::function<void()>;
+#include <functional>
+#include <string>
 
-namespace app::onBoarding
+namespace app
 {
-    class EULALicenseWindowContract
+    class Application;
+
+    namespace onBoarding
     {
-      public:
-        class View
+        class EULALicenseWindowPresenter : public EULALicenseWindowContract::Presenter
         {
           public:
-            virtual ~View() noexcept = default;
+            /**
+             * Currently it is GUI (specifically gui::AppWindow) who gets access to app::Application*
+             * but here it's rather a Presenter's responsibility to switch Views.
+             * Or it might be just Application's?
+             */
+            explicit EULALicenseWindowPresenter(std::function<void()> acceptEULAApplication,
+                                                std::unique_ptr<AbstractEULARepository> &&eulaRepository,
+                                                app::Application *app);
+
+            /* EULALicenseWindowContract::Presenter interface implementation */
+            void onInterfaceReady() override;
+            void onEULAAccepted() override;
+
+          private:
+            std::function<void()> acceptEULAApp;
+            std::unique_ptr<AbstractEULARepository> eulaRepository;
+            app::Application *app;
         };
-        class Presenter : public BasePresenter<EULALicenseWindowContract::View>
-        {
-          public:
-            ~Presenter() noexcept override = default;
-
-            virtual void acceptEULA()     = 0;
-            virtual std::string getEULA() = 0;
-        };
-    };
-
-    class EULALicenseWindowPresenter : public EULALicenseWindowContract::Presenter
-    {
-      public:
-        explicit EULALicenseWindowPresenter(Function acceptEULAApplication,
-                                            std::unique_ptr<AbstractEULARepository> &&eulaRepository);
-
-        void acceptEULA() override;
-        std::string getEULA() override;
-
-      private:
-        std::function<void()> acceptEULAApp;
-        std::unique_ptr<AbstractEULARepository> eulaRepository;
-    };
-} // namespace app::onBoarding
+    } // namespace onBoarding
+} // namespace app

@@ -6,15 +6,17 @@
 #include <i18n/i18n.hpp>
 #include <Style.hpp>
 
+/* Importing style from application-notes */
 #include <module-apps/application-notes/style/NotePreviewStyle.hpp>
+/* Only for a window name */
 #include <module-apps/application-onboarding/ApplicationOnBoarding.hpp>
-#include <module-apps/application-onboarding/data/OnBoardingSwitchData.hpp>
 
 namespace app::onBoarding
 {
     EULALicenseWindow::EULALicenseWindow(app::Application *app,
                                          std::unique_ptr<EULALicenseWindowContract::Presenter> &&windowPresenter)
-        : gui::AppWindow(app, gui::window::name::onBoarding_eula), presenter{std::move(windowPresenter)}
+        : gui::AppWindow(app, gui::window::name::onBoarding_eula),
+          EULALicenseWindowContract::View(windowPresenter.get()), presenter{std::move(windowPresenter)}
     {
         presenter->attach(this);
         buildInterface();
@@ -64,19 +66,23 @@ namespace app::onBoarding
         setFocusItem(eulaText);
     }
 
+    void EULALicenseWindow::showEULA(const std::string &eula)
+    {
+        /* View manipulation */
+        eulaText->setRichText(eula);
+    }
+
     void EULALicenseWindow::onBeforeShow(gui::ShowMode mode, gui::SwitchData *data)
     {
-        eulaText->setRichText(presenter->getEULA());
+        /* GUI event notification */
+        presenter->onInterfaceReady();
     }
 
     bool EULALicenseWindow::onInput(const gui::InputEvent &inputEvent)
     {
         if (inputEvent.isShortRelease(gui::KeyCode::KEY_ENTER)) {
-            presenter->acceptEULA();
-
-            application->switchWindow(gui::window::name::onBoarding_start_configuration,
-                                      gui::ShowMode::GUI_SHOW_INIT,
-                                      std::make_unique<OnBoardingSwitchData>());
+            /* Windows report events, not make requests */
+            presenter->onEULAAccepted();
         }
         return AppWindow::onInput(inputEvent);
     }

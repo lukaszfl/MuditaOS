@@ -5,7 +5,7 @@
 
 #include "AppWindow.hpp"
 
-#include <module-apps/application-onboarding/presenter/EULALicenseWindowPresenter.hpp>
+#include <application-onboarding/presenter/EULALicenseWindowContract.hpp>
 
 #include <module-gui/gui/widgets/Label.hpp>
 #include <module-gui/gui/widgets/Text.hpp>
@@ -26,6 +26,9 @@ namespace app::onBoarding
         void rebuild() override;
         void buildInterface() override;
         void destroyInterface() override;
+
+        /* EULALicenseWindowContract::View interface implementation */
+        void showEULA(const std::string &eula) final;
 
       private:
         std::unique_ptr<EULALicenseWindowContract::Presenter> presenter;
