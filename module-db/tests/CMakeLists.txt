@@ -20,6 +20,7 @@ add_catch2_executable(
         DbInitializer.cpp
         EventsRecord_tests.cpp
         #EventsTable_tests.cpp
+        Multimedia_tests.cpp
         NotesRecord_tests.cpp
         NotesTable_tests.cpp
         NotificationsRecord_tests.cpp
@@ -38,7 +39,7 @@ add_catch2_executable(
         module-db
         module-vfs
         iosyscalls
-    DEPS
-        disk_image
+#    DEPS
+#        disk_image
 )
 add_subdirectory(test-initializer)

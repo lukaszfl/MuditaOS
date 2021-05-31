@@ -27,6 +27,7 @@ set(SOURCES
         Databases/CountryCodesDB.cpp
         Databases/NotificationsDB.cpp
         Databases/EventsDB.cpp
+        Databases/MultimediaDB.cpp
 
         Tables/Table.cpp
         Tables/SMSTable.cpp
@@ -45,6 +46,7 @@ set(SOURCES
         Tables/SMSTemplateTable.cpp
         Tables/NotificationsTable.cpp
         Tables/EventsTable.cpp
+        Tables/AudioFilesTable.cpp
 
         Interface/Record.cpp
         Interface/SMSRecord.cpp
