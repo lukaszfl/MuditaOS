@@ -6,7 +6,6 @@
 #include <module-apps/application-onboarding/ApplicationOnBoarding.hpp>
 #include <module-apps/application-onboarding/data/OnBoardingSwitchData.hpp>
 #include <module-apps/messages/DialogMetadataMessage.hpp>
-#include <widgets/IceBox.hpp>
 #include <service-appmgr/Controller.hpp>
 
 #include <i18n/i18n.hpp>
@@ -17,10 +16,9 @@ namespace app::onBoarding
     NoConfigurationDialogWindow::NoConfigurationDialogWindow(app::Application *app)
         : gui::Dialog(app, gui::window::name::onBoarding_no_configuration)
     {
+        header->navigationIndicatorAdd(gui::header::NavigationIndicator::Ice);
         bottomBar->setText(gui::BottomBar::Side::CENTER, utils::translate(style::strings::common::start));
         bottomBar->setActive(gui::BottomBar::Side::RIGHT, false);
-
-        new gui::IceBox(this);
     }
 
     bool NoConfigurationDialogWindow::onInput(const gui::InputEvent &inputEvent)
