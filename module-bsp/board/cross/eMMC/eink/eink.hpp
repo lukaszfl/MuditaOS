@@ -17,29 +17,35 @@ class AbstractEink
         ROTATE_270,
     };
 
+    enum class FillingColor
+    {
+        BLACK = 0,
+        WHITE = 0xFF
+    };
+
     public:
         using Size = std::pair<uint32_t, uint32_t>;
         using Position = std::pair<uint32_t, uint32_t>;
 
         AbstractEink() = delete;
 
-        AbstractEink(Size requested_size, RotateMode rotate_mode, BPPMode bpp_mode);
-        
-        virtual Size lookupEinkSize(RotateMode rotate_mode);
+        AbstractEink(RotateMode rotate_mode, BPPMode bpp_mode);
 
-        virtual void draw(Position pos, Size canvas_size, uint8_t *buf);
+        virtual Size getResolution() = 0;
 
-        virtual void setInvertColors(bool set);
+        virtual void powerOn() = 0;
 
-        // TODO: proposition to adjust
-        virtual void UpdateWaveform();
-        virtual void PowerOn() = 0;
-        virtual void PowerOff() = 0;
-        virtual void PowerDown() = 0;
-        virtual int GetTemperature() = 0;
-        virtual void Renit() = 0;
-        virtual void Dither() = 0;
-        virtual void Draw() = 0;
-        virtual void FillScreenWithColor() = 0;
-        virtual void Refresh() = 0;
+        virtual void powerOff() = 0;
+
+        virtual void draw(Position pos, Size canvas_size, uint8_t *buf, bool invert_colors, bool refreshDeep) = 0;
+
+        virtual void refresh() = 0;
+
+        virtual void refreshDeep() = 0;
+
+        virtual void fillWithColor(FillingColor color, bool refreshDeep) = 0;
+
+    private:
+        RotateMode rotate_mode;
+        BPPMode bpp_mode;
 };
