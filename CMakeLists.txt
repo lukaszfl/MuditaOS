@@ -19,7 +19,12 @@ include(ModuleUtils)
 include(FetchBootloader)
 include(DiskImage)
 include(AddPackage)
+include(Product)
 
+product_check_selection()
+set(SELECTED_PRODUCT ${PRODUCT} CACHE STRING INTERNAL)
+
+message("Selected product: ${PRODUCT}")
 message("PROJECT_TARGET: ${PROJECT_TARGET}")
 message("TARGET_COMPILE_DEFINITIONS: ${TARGET_COMPILE_OPTIONS}")
 message("TARGET_LIBRARIES: ${TARGET_LIBRARIES}")
@@ -31,8 +36,6 @@ message("Project target name: ${PROJECT_TARGET_NAME}")
 if (NOT ${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
     set(ENABLE_TESTS ON)
 endif()
-
-
 
 if (${ENABLE_TESTS})
     enable_testing()
@@ -117,6 +120,8 @@ if (${PROJECT_TARGET} STREQUAL "TARGET_Linux")
 elseif(${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
     add_subdirectory(board/rt1051)
 endif()
+
+
 
 add_subdirectory(source)
 add_subdirectory(module-sys)
