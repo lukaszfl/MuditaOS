@@ -3,14 +3,23 @@
 
 #pragma once
 
+#include "module-sys/Service/SystemReturnCodes.hpp"
+#include <crc32.h>
+
 #include <filesystem>
 #include <vector>
 #include <map>
 #include <atomic>
+#include <fstream>
+#include <iostream>
 
-struct FileContext
+class FileContext
 {
-    explicit FileContext(std::filesystem::path path, std::size_t size, std::size_t offset, std::size_t chunkSize);
+  public:
+    explicit FileContext(
+        std::filesystem::path path, std::size_t size, std::size_t offset, std::size_t chunkSize, std::string openMode);
+
+    virtual ~FileContext();
 
     auto validateChunkRequest(std::uint32_t chunkNo) const -> bool;
 
@@ -18,17 +27,52 @@ struct FileContext
 
     auto reachedEOF() const -> bool;
 
+    auto fileHash() const -> std::string;
+
     auto chunksInQuantity(std::size_t quantity) const -> std::size_t;
 
     auto totalChunksInFile() const -> std::size_t;
 
     auto expectedChunkInFile() const -> std::size_t;
 
-    auto getDataForFile() -> std::vector<std::uint8_t>;
-
-  private:
+  protected:
     std::filesystem::path path{};
+    std::FILE *fileDes{};
     std::size_t size{};
     std::size_t offset{};
     std::size_t chunkSize{};
+    CRC32 runningCrc32Digest;
+};
+
+class FileReadContext : public FileContext
+{
+  public:
+    explicit FileReadContext(std::filesystem::path path, std::size_t size, std::size_t offset, std::size_t chunkSize);
+
+    ~FileReadContext();
+
+    auto getFileHash() -> std::string;
+
+    auto getDataForFile() -> std::vector<std::uint8_t>;
+};
+
+class FileWriteContext : public FileContext
+{
+  public:
+    explicit FileWriteContext(std::filesystem::path path,
+                              std::size_t size,
+                              std::string crc32Digest,
+                              std::size_t offset,
+                              std::size_t chunkSize);
+
+    ~FileWriteContext();
+
+    auto crc32Matches() const -> bool;
+
+    auto removeFile() -> void;
+
+    auto sendDataForFile(const std::vector<std::uint8_t> &data) -> void;
+
+  private:
+    std::string crc32Digest{};
 };
