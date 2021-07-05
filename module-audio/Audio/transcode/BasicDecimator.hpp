@@ -60,7 +60,8 @@ namespace audio::transcode
 
         auto transform(const Span &inputSpan, const Span &transformSpace) const -> Span override
         {
-            auto outputSpan     = Span{.data = transformSpace.data, .dataSize = transformBlockSize(inputSpan.dataSize)};
+            auto outputSpan =
+                Span{.data = transformSpace.data, .dataSize = transformBlockSize(inputSpan.dataSize / Ratio)};
             IntegerType *input  = reinterpret_cast<IntegerType *>(inputSpan.data);
             IntegerType *output = reinterpret_cast<IntegerType *>(outputSpan.data);
 

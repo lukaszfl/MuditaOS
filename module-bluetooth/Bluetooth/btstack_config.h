@@ -62,6 +62,6 @@
 // // Interal ring buffer: 21 kB
 // #define HCI_HOST_ACL_PACKET_NUM 20
 // #define HCI_HOST_ACL_PACKET_LEN 1024
-// #define HCI_HOST_SCO_PACKET_NUM 10
-// #define HCI_HOST_SCO_PACKET_LEN 60
+ #define HCI_HOST_SCO_PACKET_NUM 10
+ #define HCI_HOST_SCO_PACKET_LEN 128
 #endif
