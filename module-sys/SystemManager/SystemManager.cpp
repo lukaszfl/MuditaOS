@@ -174,6 +174,7 @@ namespace sys
         if (userInit) {
             userInit();
         }
+        powerManager->init();
     }
 
     void SystemManager::StartSystemServices()

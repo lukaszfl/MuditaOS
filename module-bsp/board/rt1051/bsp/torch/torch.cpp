@@ -22,7 +22,7 @@ namespace bsp
 
         static I2CAddress addr = {.deviceAddress = 0x63, .subAddress = 0, .subAddressSize = 1};
 
-        std::shared_ptr<DriverGPIO> gpio;
+        // std::shared_ptr<DriverGPIO> gpio;
         const unsigned short max_current_mA = 150;
         ColourTemperature currentColourTemp = ColourTemperature::warmest;
 
@@ -34,18 +34,19 @@ namespace bsp
 
             qHandleIrq = qHandle;
 
-            gpio =
-                DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::TORCH_DRIVER_GPIO), DriverGPIOParams{});
+            // gpio =
+            //     DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::TORCH_DRIVER_GPIO),
+            //     DriverGPIOParams{});
 
-            // OUTPUT
-            gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
-                                              .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
-                                              .defLogic = 0,
-                                              .pin      = static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN)});
-            gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN), 0);
-            vTaskDelay(pdMS_TO_TICKS(5));
-            gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN), 1);
-            vTaskDelay(pdMS_TO_TICKS(5));
+            // // OUTPUT
+            // gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
+            //                                   .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
+            //                                   .defLogic = 0,
+            //                                   .pin      = static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN)});
+            // gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN), 0);
+            // vTaskDelay(pdMS_TO_TICKS(5));
+            // gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN), 1);
+            // vTaskDelay(pdMS_TO_TICKS(5));
 
             if (isPresent()) {
                 turn(State::off);

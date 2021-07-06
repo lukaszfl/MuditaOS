@@ -4,14 +4,53 @@
 #include <log.hpp>
 
 #include "PowerManager.hpp"
+#include "bsp/BoardDefinitions.hpp"
+#include <module-bsp/drivers/gpio/DriverGPIO.hpp>
+#include "fsl_common.h"
 
 namespace sys
 {
+    namespace
+    {
+        std::shared_ptr<drivers::DriverGPIO> gpio;
+    }
+
     PowerManager::PowerManager()
     {
         lowPowerControl = bsp::LowPowerMode::Create().value_or(nullptr);
         driverSEMC      = drivers::DriverSEMC::Create("ExternalRAM");
         cpuGovernor     = std::make_unique<CpuGovernor>();
+    }
+
+    void PowerManager::init()
+    {
+        using namespace drivers;
+        gpio = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_GPIO),
+                                  DriverGPIOParams{});
+
+        gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
+                                          .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
+                                          .defLogic = 0,
+                                          .pin      = static_cast<uint32_t>(BoardDefinitions::EINK_FRONTLIGHT_GPIO)});
+
+        gpio->ConfPin(
+            DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
+                                .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
+                                .defLogic = 0,
+                                .pin      = static_cast<uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST)});
+
+        gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
+                                          .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
+                                          .defLogic = 0,
+                                          .pin      = static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN)});
+        setGpio(0xff);
+    }
+
+    void PowerManager::setGpio(std::uint8_t encoded) const
+    {
+        gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::EINK_FRONTLIGHT_GPIO), encoded & 0x01);
+        gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST), encoded & 0x02);
+        gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN), encoded & 0x04);
     }
 
     PowerManager::~PowerManager()
@@ -81,6 +120,7 @@ namespace sys
         // and increase frequency
         if (freq < bsp::CpuFrequencyHz::Level_6) {
             SetCpuFrequency(bsp::CpuFrequencyHz::Level_6);
+            setGpio(6);
         }
     }
 
@@ -92,20 +132,26 @@ namespace sys
         switch (freq) {
         case bsp::CpuFrequencyHz::Level_6:
             level = bsp::CpuFrequencyHz::Level_5;
+            setGpio(6);
             break;
         case bsp::CpuFrequencyHz::Level_5:
             level = bsp::CpuFrequencyHz::Level_4;
+            setGpio(5);
             break;
         case bsp::CpuFrequencyHz::Level_4:
             level = bsp::CpuFrequencyHz::Level_3;
+            setGpio(4);
             break;
         case bsp::CpuFrequencyHz::Level_3:
             level = bsp::CpuFrequencyHz::Level_2;
+            setGpio(3);
             break;
         case bsp::CpuFrequencyHz::Level_2:
             level = bsp::CpuFrequencyHz::Level_1;
+            setGpio(2);
             break;
         case bsp::CpuFrequencyHz::Level_1:
+            setGpio(1);
             break;
         }
 

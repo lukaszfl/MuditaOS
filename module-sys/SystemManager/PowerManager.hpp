@@ -26,6 +26,7 @@ namespace sys
 
         int32_t PowerOff();
         int32_t Reboot();
+        void init();
 
         /// called periodically to calculate the CPU requirement
         ///
@@ -53,6 +54,7 @@ namespace sys
       private:
         void ResetFrequencyShiftCounter();
         void SetCpuFrequency(bsp::CpuFrequencyHz freq) const;
+        void setGpio(std::uint8_t encode) const;
 
         uint32_t belowThresholdCounter{0};
         uint32_t aboveThresholdCounter{0};

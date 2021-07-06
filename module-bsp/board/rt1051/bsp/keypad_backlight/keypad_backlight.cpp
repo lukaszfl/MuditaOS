@@ -21,7 +21,7 @@ namespace bsp::keypad_backlight
 {
     namespace
     {
-        std::shared_ptr<drivers::DriverGPIO> gpio;
+        // std::shared_ptr<drivers::DriverGPIO> gpio;
 
         std::shared_ptr<drivers::DriverI2C> i2c;
 
@@ -86,15 +86,15 @@ namespace bsp::keypad_backlight
             drivers::DriverI2CParams{
                 .baudrate = static_cast<std::uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_I2C_BAUDRATE)});
 
-        gpio = drivers::DriverGPIO::Create(
-            static_cast<drivers::GPIOInstances>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_GPIO),
-            drivers::DriverGPIOParams{});
+        // gpio = drivers::DriverGPIO::Create(
+        //     static_cast<drivers::GPIOInstances>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_GPIO),
+        //     drivers::DriverGPIOParams{});
 
-        gpio->ConfPin(drivers::DriverGPIOPinParams{
-            .dir      = drivers::DriverGPIOPinParams::Direction::Output,
-            .irqMode  = drivers::DriverGPIOPinParams::InterruptMode::NoIntmode,
-            .defLogic = 1,
-            .pin      = static_cast<std::uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST)});
+        // gpio->ConfPin(drivers::DriverGPIOPinParams{
+        //     .dir      = drivers::DriverGPIOPinParams::Direction::Output,
+        //     .irqMode  = drivers::DriverGPIOPinParams::InterruptMode::NoIntmode,
+        //     .defLogic = 1,
+        //     .pin      = static_cast<std::uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST)});
 
         wakeup();
         bool status = reset();
@@ -172,13 +172,13 @@ namespace bsp::keypad_backlight
 
     bool shutdown()
     {
-        gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST), 0);
+        // gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST), 0);
         return true;
     }
 
     void wakeup()
     {
-        gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST), 1);
+        // gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST), 1);
     }
 
     bool reset()
