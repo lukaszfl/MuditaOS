@@ -30,30 +30,38 @@ namespace sys
     void PowerManager::UpdateCpuFrequency(uint32_t cpuLoad)
     {
         const auto currentCpuFreq        = lowPowerControl->GetCurrentFrequencyLevel();
-        const auto minFrequencyRequested = cpuGovernor->GetMinimumFrequencyRequested();
 
-        if (cpuLoad > frequencyShiftUpperThreshold && currentCpuFreq < bsp::CpuFrequencyHz::Level_6) {
-            aboveThresholdCounter++;
-            belowThresholdCounter = 0;
-        }
-        else if (cpuLoad < frequencyShiftLowerThreshold && currentCpuFreq > bsp::CpuFrequencyHz::Level_1) {
-            belowThresholdCounter++;
-            aboveThresholdCounter = 0;
+        if (currentCpuFreq > bsp::CpuFrequencyHz::Level_1) {
+            DecreaseCpuFrequency();
         }
         else {
-            ResetFrequencyShiftCounter();
-        }
-
-        if (aboveThresholdCounter >= maxAboveThresholdCount || minFrequencyRequested > currentCpuFreq) {
-            ResetFrequencyShiftCounter();
             IncreaseCpuFrequency();
         }
-        else {
-            if (belowThresholdCounter >= maxBelowThresholdCount && currentCpuFreq > minFrequencyRequested) {
-                ResetFrequencyShiftCounter();
-                DecreaseCpuFrequency();
-            }
-        }
+
+        /*        const auto minFrequencyRequested = cpuGovernor->GetMinimumFrequencyRequested();
+
+                if (cpuLoad > frequencyShiftUpperThreshold && currentCpuFreq < bsp::CpuFrequencyHz::Level_6) {
+                    aboveThresholdCounter++;
+                    belowThresholdCounter = 0;
+                }
+                else if (cpuLoad < frequencyShiftLowerThreshold && currentCpuFreq > bsp::CpuFrequencyHz::Level_1) {
+                    belowThresholdCounter++;
+                    aboveThresholdCounter = 0;
+                }
+                else {
+                    ResetFrequencyShiftCounter();
+                }
+
+                if (aboveThresholdCounter >= maxAboveThresholdCount || minFrequencyRequested > currentCpuFreq) {
+                    ResetFrequencyShiftCounter();
+                    IncreaseCpuFrequency();
+                }
+                else {
+                    if (belowThresholdCounter >= maxBelowThresholdCount && currentCpuFreq > minFrequencyRequested) {
+                        ResetFrequencyShiftCounter();
+                        DecreaseCpuFrequency();
+                    }
+                }*/
     }
 
     void PowerManager::IncreaseCpuFrequency() const
