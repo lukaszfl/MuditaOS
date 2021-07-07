@@ -17,20 +17,20 @@ namespace bsp
 
         void enable()
         {
-            port->WritePin(static_cast<uint32_t>(BoardDefinitions::VIBRATOR_EN), 1);
+            // port->WritePin(static_cast<uint32_t>(BoardDefinitions::VIBRATOR_EN), 1);
         }
         void disable()
         {
-            port->WritePin(static_cast<uint32_t>(BoardDefinitions::VIBRATOR_EN), 0);
+            // port->WritePin(static_cast<uint32_t>(BoardDefinitions::VIBRATOR_EN), 0);
         }
 
         void init(std::chrono::milliseconds pulse)
         {
-            port = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::VIBRATOR_GPIO), DriverGPIOParams{});
-            port->ConfPin(DriverGPIOPinParams{.dir = DriverGPIOPinParams::Direction::Output,
-                                              .irqMode = DriverGPIOPinParams::InterruptMode::NoIntmode,
-                                              .defLogic = 0,
-                                              .pin = static_cast<uint32_t>(BoardDefinitions::VIBRATOR_EN)});
+            // port = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::VIBRATOR_GPIO),
+            // DriverGPIOParams{}); port->ConfPin(DriverGPIOPinParams{.dir = DriverGPIOPinParams::Direction::Output,
+            //                                   .irqMode = DriverGPIOPinParams::InterruptMode::NoIntmode,
+            //                                   .defLogic = 0,
+            //                                   .pin = static_cast<uint32_t>(BoardDefinitions::VIBRATOR_EN)});
 
             disable();
         }

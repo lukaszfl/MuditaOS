@@ -39,18 +39,24 @@ namespace sys
                                 .defLogic = 0,
                                 .pin      = static_cast<uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST)});
 
+        // gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
+        //                                   .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
+        //                                   .defLogic = 0,
+        //                                   .pin      = static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN)});
+
         gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
                                           .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
                                           .defLogic = 0,
-                                          .pin      = static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN)});
-        setGpio(0xff);
+                                          .pin      = static_cast<uint32_t>(BoardDefinitions::VIBRATOR_EN)});
+        setGpio(0x00);
     }
 
     void PowerManager::setGpio(std::uint8_t encoded) const
     {
         gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::EINK_FRONTLIGHT_GPIO), encoded & 0x01);
         gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::KEYPAD_BACKLIGHT_DRIVER_NRST), encoded & 0x02);
-        gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN), encoded & 0x04);
+        // gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::TORCH_DRIVER_EN), encoded & 0x04);
+        gpio->WritePin(static_cast<uint32_t>(BoardDefinitions::VIBRATOR_EN), encoded & 0x04);
     }
 
     PowerManager::~PowerManager()
