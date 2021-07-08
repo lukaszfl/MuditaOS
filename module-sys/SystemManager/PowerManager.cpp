@@ -125,8 +125,8 @@ namespace sys
 
         // and increase frequency
         if (freq < bsp::CpuFrequencyHz::Level_6) {
-            SetCpuFrequency(bsp::CpuFrequencyHz::Level_6);
             setGpio(6);
+            SetCpuFrequency(bsp::CpuFrequencyHz::Level_6);
         }
     }
 
@@ -138,23 +138,23 @@ namespace sys
         switch (freq) {
         case bsp::CpuFrequencyHz::Level_6:
             level = bsp::CpuFrequencyHz::Level_5;
-            setGpio(6);
+            setGpio(5);
             break;
         case bsp::CpuFrequencyHz::Level_5:
             level = bsp::CpuFrequencyHz::Level_4;
-            setGpio(5);
+            setGpio(4);
             break;
         case bsp::CpuFrequencyHz::Level_4:
             level = bsp::CpuFrequencyHz::Level_3;
-            setGpio(4);
+            setGpio(3);
             break;
         case bsp::CpuFrequencyHz::Level_3:
             level = bsp::CpuFrequencyHz::Level_2;
-            setGpio(3);
+            setGpio(2);
             break;
         case bsp::CpuFrequencyHz::Level_2:
             level = bsp::CpuFrequencyHz::Level_1;
-            setGpio(2);
+            setGpio(1);
             break;
         case bsp::CpuFrequencyHz::Level_1:
             setGpio(1);
