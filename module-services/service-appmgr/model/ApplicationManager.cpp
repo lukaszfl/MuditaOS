@@ -1175,16 +1175,16 @@ namespace app::manager
 
     void ApplicationManager::lockTimeChanged(std::string value)
     {
-        if (value.empty()) {
-            LOG_ERROR("No value for auto-locking time period, request ignored");
-            return;
-        }
-        const auto interval = std::chrono::seconds{utils::getNumericValue<unsigned int>(value)};
-        if (interval.count() == 0) {
-            LOG_ERROR("Invalid auto-locking time period of 0s, request ignored");
-            return;
-        }
-        autoLockTimer.restart(interval);
+        //        if (value.empty()) {
+        //            LOG_ERROR("No value for auto-locking time period, request ignored");
+        //            return;
+        //        }
+        //        const auto interval = std::chrono::seconds{utils::getNumericValue<unsigned int>(value)};
+        //        if (interval.count() == 0) {
+        //            LOG_ERROR("Invalid auto-locking time period of 0s, request ignored");
+        //            return;
+        //        }
+        //        autoLockTimer.restart(interval);
     }
 
     auto ApplicationManager::handleAutoLockGetRequest([[maybe_unused]] GetAutoLockTimeoutRequest *request)

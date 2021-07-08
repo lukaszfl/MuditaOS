@@ -35,7 +35,8 @@ def send_file(harness: Harness, file: str, where: str) -> Transaction:
 
     chunkNo = 1
 
-    from functools import partial, base64
+    from functools import partial
+    import base64
     import time
     with open(file, 'rb') as l_file:
         for chunk in iter(partial(l_file.read, chunkSize), b''):
@@ -56,7 +57,7 @@ def test_update(harness: Harness):
     file = os.getcwd() + "/" + filename
 
     try:
-        send_file(harness, filename, "/sys/")
+        send_file(harness, filename, "/sys/user/")
         result = harness.request(Endpoint.DEVELOPERMODE, Method.POST, {"update": True, "reboot": True})
     except TransactionError as err:
         log.error(f"{err.message} Status: {err.status}")
