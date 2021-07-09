@@ -74,3 +74,30 @@ function(add_update_package SOURCE_TARGET)
         DEPENDS ${UPDATE_PKG}
         )
 endfunction()
+
+function(add_update_package_tiny SOURCE_TARGET)
+    if (NOT ${PROJECT_TARGET} STREQUAL "TARGET_RT1051")
+        return()
+    endif()
+    set(CPACK_PACKAGE_NAME ${SOURCE_TARGET})
+    set_cpack_vars()
+    set(UPDATE_PKG_MINI "${SOURCE_TARGET}-${CMAKE_PROJECT_VERSION}-${CPACK_SYSTEM_NAME}-UpdateMini.tar")
+
+    set(PACKAGE_UPDATE_FILE_NAME ${UPDATE_PKG_MINI} PARENT_SCOPE)
+    set(PACKAGE_UPDATE_MIME "application/x-tar" PARENT_SCOPE)
+
+    add_custom_command(
+        OUTPUT ${UPDATE_PKG_MINI}
+        DEPENDS ${SOURCE_TARGET}
+        DEPENDS ${SOURCE_TARGET}-boot.bin
+        DEPENDS ecoboot.bin-target
+        DEPENDS version.json-target
+        COMMAND ${CMAKE_SOURCE_DIR}/tools/generate_update_image.sh ${SOURCE_TARGET} ${CMAKE_PROJECT_VERSION} ${CPACK_SYSTEM_NAME} Mini
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Generating update image"
+        )
+    message("Adding '${SOURCE_TARGET}-UpdatePackageMini' target")
+    add_custom_target(${SOURCE_TARGET}-UpdatePackageMini
+        DEPENDS ${UPDATE_PKG_MINI}
+        )
+endfunction()

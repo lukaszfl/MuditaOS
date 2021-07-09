@@ -14,6 +14,9 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+set(BOOT_FILENAME boot.bin)
+set(BOOT_VERSION ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH})
+
 message("preparing version file")
 configure_file(
     ${SRC_DIR}/config/version.json.cmake_template

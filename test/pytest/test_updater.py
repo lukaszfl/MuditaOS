@@ -34,6 +34,7 @@ def send_file(harness: Harness, file: str, where: str) -> Transaction:
     chunkSize = ret.response.body["chunkSize"]
 
     chunkNo = 1
+    sent = 0
 
     from functools import partial
     import base64
@@ -44,8 +45,12 @@ def send_file(harness: Harness, file: str, where: str) -> Transaction:
 
             body = {"txID": txID, "chunkNo": chunkNo, "data": data}
             ret = harness.request(Endpoint.FILESYSTEM, Method.PUT, body)
-            time.sleep(.1)
             chunkNo += 1
+            sent = sent + chunkSize
+            pp = (sent / fileSize) * 100
+            t_time = ret.send_time + ret.read_time
+            kbps = len(data)*8/t_time/1024
+            log.info(f"sent: {sent} of {fileSize} is: {pp:.2f}% in time: {t_time:.3f} kbps: {kbps:.3f}")
 
     return ret
 
@@ -56,9 +61,13 @@ def test_update(harness: Harness):
     filename = "update.tar"
     file = os.getcwd() + "/" + filename
 
+    import time
+    start = time.time()
     try:
         send_file(harness, filename, "/sys/user/")
         result = harness.request(Endpoint.DEVELOPERMODE, Method.POST, {"update": True, "reboot": True})
+        log.info(f"ini time: {result.read_time:.3f}")
     except TransactionError as err:
         log.error(f"{err.message} Status: {err.status}")
-    log.info("update done!")
+    duration = time.time() - start
+    log.info(f"update done {duration:.3f}!")

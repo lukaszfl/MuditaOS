@@ -25,5 +25,10 @@
 		"included": "@BOOTLOADER_INCLUDED@",
 		"version": "@BOOTLOADER_VERSION@",
 		"filename": "@BOOTLOADER_FILENAME@"
+	},
+	"boot":
+	{
+		"filename": "@BOOT_FILENAME@",
+		"version": "@BOOT_VERSION@"
 	}
 }

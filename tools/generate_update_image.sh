@@ -26,17 +26,27 @@ function setVars() {
     SOURCE_TARGET=${1}
     VERSION=${2}
     PLATFORM=${3}
-    STAGEING_DIR="${SOURCE_TARGET}-${VERSION}-${PLATFORM}-Update"
+    MINI=${4}
+    STAGEING_DIR="${SOURCE_TARGET}-${VERSION}-${PLATFORM}-Update${MINI}"
+    echo ${STAGEING_DIR}
     PACKAGE_FILE="${STAGEING_DIR}.tar"
-    DEPS=(
-        "sys/current/assets"
-        "sys/user"
-        "sys/current/${SOURCE_TARGET}-boot.bin"
-        "sys/current/country-codes.db"
-        "sys/current/Luts.bin"
-        "version.json"
-        "ecoboot.bin"
-        )
+    if [[ $MINI ]]; then
+        DEPS=(
+            "sys/current/assets"
+            "sys/user"
+            "sys/current/${SOURCE_TARGET}-boot.bin"
+            "sys/current/country-codes.db"
+            "sys/current/Luts.bin"
+            "version.json"
+            "ecoboot.bin"
+            )
+    else
+         DEPS=(
+            "sys/current/${SOURCE_TARGET}-boot.bin"
+            "version.json"
+            "ecoboot.bin"
+            )
+    fi
 }
 
 function checkForDeps() {
@@ -64,19 +74,23 @@ function cleanStagingDir(){
 
 function linkInStageing(){
     pushd ${STAGEING_DIR} 1> /dev/null
-    ln -s ../sys/current/assets
-    ln -s ../sys/user
+    if [[ -z "$MINI" ]]; then
+        ln -s ../sys/current/assets
+        ln -s ../sys/user
+        ln -s ../sys/current/country-codes.db
+        ln -s ../sys/current/Luts.bin
+    fi
     ln -s ../sys/current/${SOURCE_TARGET}-boot.bin boot.bin
-    ln -s ../sys/current/country-codes.db
-    ln -s ../sys/current/Luts.bin
     ln -s ../ecoboot.bin
     ln -s ../version.json
     popd 1> /dev/null
 }
 
 function addChecksums() {
+    echo 'INFO: add version.json checksums with python'
     pushd ${STAGEING_DIR} 1> /dev/null
-    rhash -u checksums.txt -r .
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    python3 "${SCRIPT_DIR}"/add_md5_to_version_json.py "version.json" "./"
     popd 1> /dev/null
 }
 
@@ -84,12 +98,12 @@ function compress() {
     tar chf ${PACKAGE_FILE} -C ${STAGEING_DIR} .
 }
 
-if [[ $# -ne 3 ]]; then
+if [[ $# -lt 4 ]]; then
     help
     exit 1
 fi
 
-setVars "${1}" "${2}" "${3}"
+setVars "${1}" "${2}" "${3}" "${4}"
 checkForDeps ${DEPS}
 cleanStagingDir ${STAGEING_DIR}
 linkInStageing
