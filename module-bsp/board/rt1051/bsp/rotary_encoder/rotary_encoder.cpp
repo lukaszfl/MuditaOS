@@ -37,20 +37,12 @@ namespace bsp
         int32_t init(xQueueHandle qHandle)
         {
             qHandleIrq = qHandle;
+            const enc_config_t encConfig;
 
-            // INTERRUPT PIN
-            gpio =
-                DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::MAGNETOMETER_GPIO), DriverGPIOParams{});
-
-            // INTERRUPT PIN
-            gpio->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
-            gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
-                                              .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
-                                              .defLogic = 0,
-                                              .pin      = static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ)});
-    
+            ENC_GetDefaultConfig(&encConfig);
+            ENC_Init(SWITCHES_ENC_A_PERIPHERAL, &encConfig);
+            
             ENC_DoSoftwareLoadInitialPositionValue(SWITCHES_ENC_A_PERIPHERAL);
-
 
             return kStatus_Success;
         }
@@ -83,6 +75,10 @@ namespace bsp
 
         std::optional<bsp::KeyCodes> WorkerEventHandler()
         {
+            uint16_t encDiffValue = ENC_GetHoldPositionDifferenceValue(SWITCHES_ENC_A_PERIPHERAL);
+
+            // currently only single left/right keys are returned. TBD returning multiple "keypresses"
+
             // try to get new data from active magneto
             setActive(als31300::PWR_REG_SLEEP_MODE::active);
             auto [new_data, measurement] = getMeasurement();
