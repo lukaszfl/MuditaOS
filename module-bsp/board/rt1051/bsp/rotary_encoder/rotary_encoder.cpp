@@ -19,12 +19,9 @@ namespace bsp
 {
     namespace rotary_encoder
     {
-        std::shared_ptr<DriverGPIO> gpio;
-
-        bsp::KeyCodes current_parsed = bsp::KeyCodes::Undefined;
 
         static TimerHandle_t timerHandle;
-//        static constexpr uint16_t MAGNETOMETER_POLL_INTERVAL_MS = 500;
+        static constexpr uint16_t ROTARY_ENCODER_POLL_INTERVAL_MS = 100;
 
         static void TimerHandler(TimerHandle_t xTimer)
         {
@@ -44,28 +41,18 @@ namespace bsp
             
             ENC_DoSoftwareLoadInitialPositionValue(SWITCHES_ENC_A_PERIPHERAL);
 
+            if (timerHandle == nullptr) {
+                timerHandle = xTimerCreate(
+                    "RotEncTimer", pdMS_TO_TICKS(ROTARY_ENCODER_POLL_INTERVAL_MS), true, nullptr, TimerHandler);
+                if (timerHandle == nullptr) {
+                    LOG_FATAL("Could not create the timer for rotary encoder polling");
+                    return kStatus_Fail;
+                }
+            }
+
+            xTimerStart(timerHandle, 1000);
+
             return kStatus_Success;
-        }
-
-        bool setActive(als31300::PWR_REG_SLEEP_MODE sleep_mode)
-        {
-            // POWER register
-            als31300::whole_reg_t read_reg;
-
-            if (!i2cRead(als31300::PWR_REG, read_reg)) {
-                return false;
-            }
-            als31300::pwr_reg reg_pwr = read_reg;
-            reg_pwr.sleep             = sleep_mode;
-
-            if (!i2cWrite(als31300::PWR_REG, reg_pwr)) {
-                return false;
-            }
-            if (sleep_mode == als31300::PWR_REG_SLEEP_MODE::active ||
-                sleep_mode == als31300::PWR_REG_SLEEP_MODE::periodic_active) {
-                vTaskDelay(pdMS_TO_TICKS(als31300::PWR_ON_DELAY_MS)); // give it some time to wake up
-            }
-            return true;
         }
 
         bool isPresent(void)
@@ -76,37 +63,15 @@ namespace bsp
         std::optional<bsp::KeyCodes> WorkerEventHandler()
         {
             uint16_t encDiffValue = ENC_GetHoldPositionDifferenceValue(SWITCHES_ENC_A_PERIPHERAL);
-
+            
             // currently only single left/right keys are returned. TBD returning multiple "keypresses"
-
-            // try to get new data from active magneto
-            setActive(als31300::PWR_REG_SLEEP_MODE::active);
-            auto [new_data, measurement] = getMeasurement();
-            setActive(als31300::PWR_REG_SLEEP_MODE::sleep);
-            if (new_data) {
-                auto incoming_parsed = parse(measurement);
-                if (incoming_parsed != bsp::KeyCodes::Undefined and incoming_parsed != current_parsed) {
-                    current_parsed = incoming_parsed;
-                    return current_parsed;
-                }
-            }
-            return std::nullopt;
+            if (encDiffValue > 0)
+                return bsp::KeyCodes::JoystickRight;
+            else if (endDiffValue < 0)
+                return bsp::KeyCodes::JoystickLeft;
+            else
+                return std::nullopt;
         }
 
-        BaseType_t IRQHandler()
-        {
-            gpio->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
-            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-            if (qHandleIrq != NULL) {
-                uint8_t val = 0x01;
-                xQueueSendFromISR(qHandleIrq, &val, &xHigherPriorityTaskWoken);
-            }
-            return xHigherPriorityTaskWoken;
-        }
-
-        void enableIRQ()
-        {
-            gpio->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
-        }
     } // namespace rotary-encoder
 } // namespace bsp

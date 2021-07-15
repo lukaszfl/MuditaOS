@@ -16,33 +16,16 @@ extern "C"
 
 namespace bsp
 {
-
     namespace rotary_encoder
     {
-
         int32_t init(xQueueHandle qHandle);
+        void deinit();
 
         bool isPresent(void);
 
         bsp::Board GetBoard(void);
 
-        /// unit: 4 LSB/Gauss
-        struct Measurements
-        {
-            int16_t X;
-            int16_t Y;
-            int16_t Z;
-        };
-
-        /// returns a pair of <new_data_read?, values>
-        std::pair<bool, Measurements> getMeasurement();
-
-        bsp::KeyCodes parse(const Measurements &measurements);
         std::optional<bsp::KeyCodes> WorkerEventHandler();
-        void resetCurrentParsedValue();
-
-        BaseType_t IRQHandler();
-        void enableIRQ();
     } // namespace rotary-encoder
 
 } // namespace bsp

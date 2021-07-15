@@ -24,6 +24,7 @@
 #include <bsp/torch/torch.hpp>
 #include <bsp/battery-charger/battery_charger.hpp>
 #include <bsp/keyboard/key_codes.hpp>
+#include <bsp/rotary_encoder/rotary_encoder.hpp>
 #include <log.hpp>
 #include <Logger.hpp>
 #include <service-appmgr/Controller.hpp>
@@ -297,6 +298,7 @@ sys::ReturnCodes EventManager::InitHandler()
     list.emplace_back("qTorch"s, sizeof(uint8_t), 5);
     list.emplace_back("qLightSensor"s, sizeof(uint8_t), 5);
     list.emplace_back("qChargerDetect"s, sizeof(uint8_t), 5);
+    list.emplace_back("qRotaryEncoder"s, sizeof(uint8_t), 5);
 
     EventWorker->init(list, settings);
     EventWorker->run();
