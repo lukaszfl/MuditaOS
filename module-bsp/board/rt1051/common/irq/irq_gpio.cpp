@@ -16,6 +16,7 @@
 #include "bsp/BoardDefinitions.hpp"
 #include "bsp/magnetometer/magnetometer.hpp"
 #include "bsp/light_sensor/light_sensor.hpp"
+#include "bsp/bell_switches/bell_switches.hpp"
 
 #if 0 // TODO:M.P implement the rest of BSP drivers
 
@@ -129,6 +130,12 @@ namespace bsp
                 xHigherPriorityTaskWoken |= bsp::light_sensor::IRQHandler();
             }
 
+            if (irq_mask & ((1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER))
+                             | (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT)) 
+                             | (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH)))) {
+                xHigherPriorityTaskWoken |= bsp::bell_switches::bell_switches_Cent_Right_Latch_IRQHandler(irq_mask);
+            }
+
             // Clear all IRQs
             GPIO_PortClearInterruptFlags(GPIO2, irq_mask);
 
@@ -157,6 +164,10 @@ namespace bsp
                 bsp::cellular::ringIndicator::riIRQHandler();
             }
 
+            if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT))) {
+                xHigherPriorityTaskWoken |= bsp::bell_switches::bell_switches_Left_IRQHandler();
+            }
+
             // Clear all IRQs
             GPIO_PortClearInterruptFlags(GPIO2, irq_mask);
 
@@ -176,6 +187,22 @@ namespace bsp
 
             // Clear all IRQs on the GPIO3 port
             GPIO_PortClearInterruptFlags(BOARD_EINK_BUSY_GPIO, irq_mask);
+
+            // Switch context if necessary
+            portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+        }
+
+        void GPIO5_Combined_0_15_IRQHandler(void)
+        {
+            BaseType_t xHigherPriorityTaskWoken = 0;
+            uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO5);
+
+            if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP))) {
+                xHigherPriorityTaskWoken |= bsp::bell_switches::bell_wakeup_IRQHandler();
+            }
+
+            // Clear all IRQs on the GPIO3 port
+            GPIO_PortClearInterruptFlags(GPIO5, irq_mask);
 
             // Switch context if necessary
             portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
