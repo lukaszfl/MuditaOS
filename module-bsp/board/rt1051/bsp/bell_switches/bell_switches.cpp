@@ -19,7 +19,7 @@ namespace bsp
     {
         #define CONTACT_OSCILLATION_TIMEOUT_MS 20
 
-        enum class DEBOUNCE_TIMERS
+        enum DEBOUNCE_TIMERS: unsigned int
         {
             Bell_SW_Left = 0,
             Bell_SW_Right,
@@ -35,34 +35,53 @@ namespace bsp
         static xQueueHandle qHandleIrq = NULL;
         std::shared_ptr<DriverGPIO> gpio_sw;
         std::shared_ptr<DriverGPIO> gpio_wakeup;
-
-        std::function <void(TimerHandle_t)> debounce_timer_callbacks[DEBOUNCE_TIMERS::COUNT] = {
-            debounce_timer_callback(debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Left], debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Left], gpio_sw, BELL_SWITCHES_LEFT),
-            debounce_timer_callback(debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Right], debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Right], gpio_sw, BELL_SWITCHES_RIGHT),
-            debounce_timer_callback(debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Center], debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Center], gpio_sw, BELL_SWITCHES_CENTER),
-            debounce_timer_callback(debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Latch], debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Latch], gpio_sw, BELL_SWITCHES_LATCH),
-            debounce_timer_callback(debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Wakeup], debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Wakeup], gpio_sw, BELL_WAKEUP),
-        };
-
-        void debounce_timer_callback(TimerHandle_t timer, uint8_t &last_state, DriverGPIO &gpio, uint32_t pin)
+        
+        void debounce_timer_callback(TimerHandle_t timer, uint8_t last_state, std::shared_ptr<drivers::DriverGPIO> gpio, BoardDefinitions pin)
         {
+            uint8_t current_state = gpio->ReadPin(static_cast<uint32_t>(pin));
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-            gpio->ClearPortInterrupts(1U << pin);
+            xTimerStop(timer, 0);
 
-            if (s_right_functional_check_timer != NULL) {
-                gpio->DisableInterrupt(1U << pin);
-
-                if (gpio->ReadPin(pin) == 0) {
-                    last_state = 0;
+            // If user pressed button and it is not just the contact oscillation
+            if (current_state == last_state) {
+                if (current_state == 0) {
+                    // PRESSED
+                    if (qHandleIrq != NULL) {
+                        uint8_t val = 0x02;
+                        xQueueSendFromISR(qHandleIrq, &val, &xHigherPriorityTaskWoken);
+                    }
                 }
                 else {
-                    last_state = 1;
+                    // RELEASED
+                    if (qHandleIrq != NULL) {
+                        uint8_t val = 0x04;
+                        xQueueSendFromISR(qHandleIrq, &val, &xHigherPriorityTaskWoken);
+                    }
                 }
-
-                xTimerResetFromISR(timer, &xHigherPriorityTaskWoken);
             }
 
-            return xHigherPriorityTaskWoken;
+            gpio->EnableInterrupt(1U << static_cast<uint32_t>(pin));
+        }
+
+        static void Left_timer_cb(TimerHandle_t timer)
+        {
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Left], gpio_sw, BoardDefinitions::BELL_SWITCHES_LEFT);
+        }
+        static void Right_timer_cb(TimerHandle_t timer)
+        {    
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Right], gpio_sw, BoardDefinitions::BELL_SWITCHES_RIGHT);
+        }
+        static void Center_timer_cb(TimerHandle_t timer)
+        {
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Center], gpio_sw, BoardDefinitions::BELL_SWITCHES_CENTER);
+        }
+        static void Latch_timer_cb(TimerHandle_t timer)
+        {
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Latch], gpio_sw, BoardDefinitions::BELL_SWITCHES_LATCH);
+        }
+        static void Wakeup_timer_cb(TimerHandle_t timer)
+        {
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Wakeup], gpio_wakeup, BoardDefinitions::BELL_WAKEUP);
         }
 
         int32_t init(xQueueHandle qHandle)
@@ -72,7 +91,7 @@ namespace bsp
             // Switches
             gpio_sw = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_SWITCHES_GPIO), DriverGPIOParams{});
             //wakeup
-            gpio_wakup = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_WAKEUP_GPIO), DriverGPIOParams{});
+            gpio_wakeup = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_WAKEUP_GPIO), DriverGPIOParams{});
 
             // Center switch
             gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER));
@@ -109,16 +128,58 @@ namespace bsp
                                               .defLogic = 0,
                                               .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP)});  
 
+        
+
             if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Left] == NULL) {
                 debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Left] = xTimerCreate("Bell_SW_Left",
                                                           pdMS_TO_TICKS(CONTACT_OSCILLATION_TIMEOUT_MS),
                                                           false,
                                                           NULL,
-                                                          debounce_timer_callbacks[DEBOUNCE_TIMERS::Bell_SW_Left]);
-            if (s_right_functional_check_timer == NULL) {
+                                                          Left_timer_cb);
+            }
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Left] == NULL) {
                 return kStatus_Fail;
             }
-        }    
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Right] == NULL) {
+                debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Right] = xTimerCreate("Bell_SW_Right",
+                                                          pdMS_TO_TICKS(CONTACT_OSCILLATION_TIMEOUT_MS),
+                                                          false,
+                                                          NULL,
+                                                          Right_timer_cb);
+            }
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Right] == NULL) {
+                return kStatus_Fail;
+            }
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Center] == NULL) {
+                debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Center] = xTimerCreate("Bell_SW_Center",
+                                                          pdMS_TO_TICKS(CONTACT_OSCILLATION_TIMEOUT_MS),
+                                                          false,
+                                                          NULL,
+                                                          Center_timer_cb);
+            }
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Center] == NULL) {
+                return kStatus_Fail;
+            }
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Latch] == NULL) {
+                debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Latch] = xTimerCreate("Bell_SW_Latch",
+                                                          pdMS_TO_TICKS(CONTACT_OSCILLATION_TIMEOUT_MS),
+                                                          false,
+                                                          NULL,
+                                                          Latch_timer_cb);
+            }
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Latch] == NULL) {
+                return kStatus_Fail;
+            }
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Wakeup] == NULL) {
+                debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Wakeup] = xTimerCreate("Bell_SW_Wakeup",
+                                                          pdMS_TO_TICKS(CONTACT_OSCILLATION_TIMEOUT_MS),
+                                                          false,
+                                                          NULL,
+                                                          Wakeup_timer_cb);
+            }
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Wakeup] == NULL) {
+                return kStatus_Fail;
+            }   
 
             enableIRQ();           
 
@@ -131,33 +192,40 @@ namespace bsp
             disableIRQ();
         }
 
-        BaseType_t IRQHandler()
-        {
-            gpio->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ));
-            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-            if (qHandleIrq != NULL) {
-                uint8_t val = 0x01;
-                xQueueSendFromISR(qHandleIrq, &val, &xHigherPriorityTaskWoken);
-            }
-            return xHigherPriorityTaskWoken;
-        }
-
         BaseType_t bell_switches_Cent_Right_Latch_IRQHandler(uint32_t mask)
         {
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-            gpio->ClearPortInterrupts(mask);
+            gpio_sw->ClearPortInterrupts(mask);
+            BoardDefinitions gpio_index = BoardDefinitions::BELL_SWITCHES_CENTER;
+            unsigned int debounce_index = DEBOUNCE_TIMERS::COUNT;
 
-            if (s_right_functional_check_timer != NULL) {
-                gpio->DisableInterrupt(1U << static_cast<uint32_t>(BoardDefinitions::KEYBOARD_RF_BUTTON));
+            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER)))
+            {
+                gpio_index = BoardDefinitions::BELL_SWITCHES_CENTER;
+                debounce_index = DEBOUNCE_TIMERS::Bell_SW_Center;
+            }
+            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT)))
+            {
+                gpio_index = BoardDefinitions::BELL_SWITCHES_RIGHT;
+                debounce_index = DEBOUNCE_TIMERS::Bell_SW_Right;
+            }
+            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH)))
+            {
+                gpio_index = BoardDefinitions::BELL_SWITCHES_LATCH;
+                debounce_index = DEBOUNCE_TIMERS::Bell_SW_Latch;
+            }
 
-                if (gpio->ReadPin(static_cast<uint32_t>(BoardDefinitions::KEYBOARD_RF_BUTTON)) == 0) {
-                    s_rigth_functional_last_state = 0;
+            if (debounce_timer[debounce_index] != NULL) {
+                gpio_sw->DisableInterrupt(1U << static_cast<uint32_t>(gpio_index));
+
+                if (gpio_sw->ReadPin(static_cast<uint32_t>(gpio_index)) == 0) {
+                    debounce_last_state[debounce_index] = 0;
                 }
                 else {
-                    s_rigth_functional_last_state = 1;
+                    debounce_last_state[debounce_index] = 1;
                 }
 
-                xTimerResetFromISR(s_right_functional_check_timer, &xHigherPriorityTaskWoken);
+                xTimerResetFromISR(debounce_timer[debounce_index], &xHigherPriorityTaskWoken);
             }
 
             return xHigherPriorityTaskWoken;
@@ -165,11 +233,43 @@ namespace bsp
 
         BaseType_t bell_switches_Left_IRQHandler() 
         {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            gpio_sw->ClearPortInterrupts(1U << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT));
+
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Left] != NULL) {
+                gpio_sw->DisableInterrupt(1U << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT));
+
+                if (gpio_sw->ReadPin(static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT)) == 0) {
+                    debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Left] = 0;
+                }
+                else {
+                    debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Left] = 1;
+                }
+
+                xTimerResetFromISR(debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Left], &xHigherPriorityTaskWoken);
+            }
+
             return xHigherPriorityTaskWoken;
         }
 
         BaseType_t bell_wakeup_IRQHandler()
         {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            gpio_wakeup->ClearPortInterrupts(1U << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
+
+            if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Wakeup] != NULL) {
+                gpio_wakeup->DisableInterrupt(1U << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
+
+                if (gpio_wakeup->ReadPin(static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP)) == 0) {
+                    debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Wakeup] = 0;
+                }
+                else {
+                    debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Wakeup] = 1;
+                }
+
+                xTimerResetFromISR(debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Wakeup], &xHigherPriorityTaskWoken);
+            }
+
             return xHigherPriorityTaskWoken;
         }
 

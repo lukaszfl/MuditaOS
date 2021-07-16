@@ -10,7 +10,7 @@ namespace bsp
     {
         int32_t init(xQueueHandle qHandle)
         {
-            return kStatus_Success;
+            return 1;
         }
     } // namespace bell_switches
 } // namespace bsp

@@ -249,6 +249,7 @@ I2C_SDA_FXOS8700CQ;CSI_I2C_SDA}
 #include "fsl_iomuxc.h"
 #include "pin_mux.h"
 #include "board.h"
+#include "fsl_xbara.c"
 
 #define PAD_CONFIG_SLEW_RATE_SLOW (0 << 0)
 #define PAD_CONFIG_SLEW_RATE_FAST (1 << 0)
