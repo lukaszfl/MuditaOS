@@ -250,6 +250,7 @@ namespace app
 
     void ApplicationCall::startAudioRouting()
     {
+        LOG_ERROR("Start audio routing from call");
         AudioServiceAPI::RoutingStart(this);
     }
 

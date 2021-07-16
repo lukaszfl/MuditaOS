@@ -50,7 +50,7 @@ extern "C"
         }
 
         va_start(args, fmt);
-        Logger::get().log(LOGTRACE, file, line, foo, fmt, args);
+        Logger::get().log(LOGWARN, file, line, foo, fmt, args);
         va_end(args);
     }
 }

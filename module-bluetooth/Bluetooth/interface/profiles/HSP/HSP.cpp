@@ -12,6 +12,7 @@
 #include <service-bluetooth/Constants.hpp>
 #include <service-bluetooth/messages/AudioVolume.hpp>
 #include <service-cellular/service-cellular/CellularServiceAPI.hpp>
+#include <service-audio/AudioServiceAPI.hpp>
 #include <service-evtmgr/Constants.hpp>
 
 extern "C"
@@ -24,6 +25,8 @@ extern "C"
 
 namespace bluetooth
 {
+    static btstack_cvsd_plc_state_t cvsd_plc_state;
+
     bool CellularInterfaceImpl::answerIncomingCall(sys::Service *service)
     {
         return CellularServiceAPI::AnswerIncomingCall(service);
@@ -124,6 +127,32 @@ namespace bluetooth
         busProxy.sendUnicast(std::move(msg), service::name::evt_manager);
     }
 
+    static void sco_demo_receive_CVSD(uint8_t *packet, uint16_t size)
+    {
+        int16_t audio_frame_out[128]; //
+
+        if (size > sizeof(audio_frame_out)) {
+            LOG_DEBUG("sco_demo_receive_CVSD: SCO packet larger than local output buffer - dropping data.\n");
+            return;
+        }
+
+        const int audio_bytes_read = size - 3;
+        const int num_samples      = audio_bytes_read / 2;
+
+        // convert into host endian
+        int16_t audio_frame_in[128];
+        int i;
+        for (i = 0; i < num_samples; i++) {
+            audio_frame_in[i] = little_endian_read_16(packet, 3 + i * 2);
+        }
+
+        // treat packet as bad frame if controller does not report 'all good'
+        bool bad_frame = (packet[1] & 0x30) != 0;
+
+        btstack_cvsd_plc_process_data(&cvsd_plc_state, bad_frame, audio_frame_in, num_samples, audio_frame_out);
+        // btstack_ring_buffer_write(&audio_output_ring_buffer, (uint8_t *)audio_frame_out, audio_bytes_read);
+    }
+
     void HSP::HSPImpl::packetHandler(uint8_t packetType, uint16_t channel, uint8_t *event, uint16_t eventSize)
     {
         switch (packetType) {
@@ -133,6 +162,26 @@ namespace bluetooth
             }
             if (audioDevice != nullptr) {
                 audioDevice->receiveCVSD(audio::AbstractStream::Span{.data = event, .dataSize = eventSize});
+            }
+            else {
+                static uint32_t packets       = 0;
+                static uint32_t crc_errors    = 0;
+                static uint32_t data_received = 0;
+                static uint32_t byte_errors   = 0;
+
+                data_received += eventSize - 3;
+                packets++;
+                if (data_received > 100000) {
+                    LOG_WARN("Summary: data %07u, packets %04u, packet with crc errors %0u, byte errors %04u\n",
+                             (unsigned int)data_received,
+                             (unsigned int)packets,
+                             (unsigned int)crc_errors,
+                             (unsigned int)byte_errors);
+                    crc_errors    = 0;
+                    byte_errors   = 0;
+                    data_received = 0;
+                    packets       = 0;
+                }
             }
             break;
 
@@ -149,7 +198,28 @@ namespace bluetooth
         switch (hci_event_packet_get_type(event)) {
         case HCI_EVENT_SCO_CAN_SEND_NOW:
             if (audioDevice != nullptr) {
+                LOG_WARN("Audio device is not null");
                 audioDevice->onDataSend(scoHandle);
+            }
+            else {
+                LOG_WARN("Audio device is null");
+                const auto scoPacketLength  = hci_get_sco_packet_length();
+                const auto scoPayloadLength = scoPacketLength - 3;
+
+                hci_reserve_packet_buffer();
+                auto *sco_packet = hci_get_outgoing_packet_buffer();
+                for (int j = 0; j < scoPayloadLength; j++) {
+                    sco_packet[3 + j] = 0x00;
+                }
+                // memset(sco_packet + 3, 0, scoPayloadLength);
+                // set handle + flags
+                little_endian_store_16(sco_packet, 0, scoHandle);
+                // set len
+                sco_packet[2] = scoPacketLength;
+                // finally send packet
+                hci_send_sco_packet_buffer(scoPacketLength);
+
+                hci_request_sco_can_send_now_event();
             }
             break;
         case HCI_EVENT_HSP_META:
@@ -192,6 +262,8 @@ namespace bluetooth
             }
             else {
                 scoHandle = hsp_subevent_audio_connection_complete_get_handle(event);
+                LOG_ERROR("Start audio routing from HSP");
+                AudioServiceAPI::RoutingStart(const_cast<sys::Service *>(ownerService));
                 LOG_DEBUG("Audio connection established with SCO handle 0x%04x.\n", scoHandle);
                 hci_request_sco_can_send_now_event();
                 RunLoop::trigger();
@@ -251,6 +323,7 @@ namespace bluetooth
         cellularInterface = std::make_unique<CellularInterfaceImpl>();
 
         Profile::initL2cap();
+        btstack_cvsd_plc_init(&cvsd_plc_state);
         Profile::initSdp();
 
         serviceBuffer.fill(0);

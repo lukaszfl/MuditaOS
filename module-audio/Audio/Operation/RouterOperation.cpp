@@ -111,6 +111,7 @@ namespace audio
         }
 
         state = State::Paused;
+        LOG_ERROR("Router paused");
         voiceOutputConnection->disable();
         voiceInputConnection->disable();
         return RetCode::Success;

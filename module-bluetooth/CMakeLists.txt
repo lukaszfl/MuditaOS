@@ -5,6 +5,18 @@ project(module-bluetooth VERSION 1.0 DESCRIPTION "Bluetooth module library")
 
 set(CMAKE_CXX_STANDARD 17)
 
+option(BT_LOGGING "BT_LOGGING" OFF)
+if (${LOG_SENSITIVE_DATA} STREQUAL "ON")
+    set (BT_LOGGING_ENABLED 1 CACHE INTERNAL "")
+    # set (ENABLE_PRINTF_HEXDUMP 1 CACHE INTERNAL "")
+    # set (ENABLE_LOG_ERROR 1 CACHE INTERNAL "")
+    # set (ENABLE_LOG_INFO 1 CACHE INTERNAL "")
+    # set (ENABLE_LOG_WARNING 1 CACHE INTERNAL "")
+    # set (BT_LOGGING_ENABLED 1 CACHE INTERNAL "")
+else()
+    set (BT_LOGGING_ENABLED 0 CACHE INTERNAL "")
+endif()
+
 module_is_test_entity()
 
 set(SOURCES
@@ -23,7 +35,6 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/HSP/SCO.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/Profile.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Bluetooth/interface/profiles/ProfileManager.cpp
-
         )
 
 message("Build with BlueKitchen")

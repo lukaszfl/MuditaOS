@@ -22,6 +22,10 @@ extern "C"
 
 #ifdef TARGET_RT1051
 #include <Bluetooth/glucode/btstack_uart_block_rt1051.h>
+extern "C"
+{
+#include <module-bluetooth/lib/btstack/platform/embedded/hci_dump_embedded_stdout.h>
+}
 #else
 extern "C"
 {
@@ -71,6 +75,7 @@ namespace bluetooth
         };
 #ifdef TARGET_RT1051
         auto uartDriver = runLoopInitTarget(runLoop);
+        hci_dump_init(hci_dump_embedded_stdout_get_instance());
 #else
         auto uartDriver = runLoopInitLinux(runLoop);
 #endif

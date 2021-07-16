@@ -200,6 +200,13 @@ set(BOARD_DIR_SOURCES
     ${BT_STACK_ROOT}/3rd-party/bluedroid/decoder/srce/synthesis-8-generated.c
     )
 
+if (BT_LOGGING)
+message("BT LOGGING enabled")
+list(APPEND BOARD_DIR_SOURCES
+    ${BT_STACK_ROOT}/platform/embedded/hci_dump_embedded_stdout.c
+)
+endif()
+
 if(${PROJECT_TARGET} STREQUAL "TARGET_Linux")
 message("Linux specyfic sources")
 message("----------------------")

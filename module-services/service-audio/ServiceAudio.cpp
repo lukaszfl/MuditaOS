@@ -368,9 +368,13 @@ std::unique_ptr<AudioResponseMessage> ServiceAudio::HandleStart(const Operation:
         }
         if (bluetoothHSPConnected) {
             LOG_DEBUG("Sending Bluetooth start routing");
-            bus.sendUnicast(std::make_shared<message::bluetooth::StartAudioRouting>(), service::name::bluetooth);
+            if (input != audioMux.GetActiveInput()) {
+                LOG_ERROR("Audio mux input diff. Starting an audio");
+                AudioStart(input);
+                bus.sendUnicast(std::make_shared<message::bluetooth::StartAudioRouting>(), service::name::bluetooth);
+            }
         }
-        AudioStart(input);
+
         return std::make_unique<AudioStartRoutingResponse>(retCode, retToken);
     }
     return std::make_unique<AudioStartRoutingResponse>(RetCode::OperationNotSet, Token::MakeBadToken());
