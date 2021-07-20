@@ -2,8 +2,8 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "CheckBox.hpp"
-#include "InputEvent.hpp"
 #include "Style.hpp"
+#include <InputEvent.hpp>
 #include <i18n/i18n.hpp>
 
 namespace gui
@@ -14,11 +14,11 @@ namespace gui
                        const uint32_t &y,
                        const uint32_t &w,
                        const uint32_t &h,
-                       std::function<void(const UTF8 &text)> bottomBarTemporaryMode,
-                       std::function<void()> bottomBarRestoreFromTemporaryMode,
-                       bool textOnLeft)
+                       const std::function<void(const UTF8 &text)> &bottomBarTemporaryMode,
+                       const std::function<void()> &bottomBarRestoreFromTemporaryMode,
+                       BottomBar::Side bottomBarSide)
         : HBox(parent, x, y, w, h), bottomBarTemporaryMode(bottomBarTemporaryMode),
-          bottomBarRestoreFromTemporaryMode(bottomBarRestoreFromTemporaryMode), textOnLeft(textOnLeft)
+          bottomBarRestoreFromTemporaryMode(bottomBarRestoreFromTemporaryMode), bottomBarSide(bottomBarSide)
 
     {
         setEdges(RectangleEdge::Bottom);
@@ -29,6 +29,7 @@ namespace gui
         addWidget(image);
 
         applyCallbacks();
+        setFocusItem(image);
     }
 
     void CheckBox::applyCallbacks()
@@ -54,7 +55,7 @@ namespace gui
             if (!event.isShortRelease()) {
                 return false;
             }
-            if (textOnLeft) {
+            if (bottomBarSide == BottomBar::Side::LEFT) {
                 if (event.is(gui::KeyCode::KEY_LF)) {
                     image->setVisible(!image->visible);
                     if (image->visible) {
