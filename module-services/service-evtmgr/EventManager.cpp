@@ -45,6 +45,7 @@
 #include <EventStore.hpp>
 #include <SystemManager/messages/PhoneModeRequest.hpp>
 #include <vibra/Vibra.hpp>
+#include <purefs/filesystem_paths.hpp>
 
 namespace
 {
