@@ -44,7 +44,6 @@ namespace app
         // if there is modem notification and there is no default SIM selected, then we need to select if when unlock is
         // done
         void handle(cellular::msg::notification::ModemStateChanged *msg);
-        auto handle(sdesktop::UpdateOsMessage *msg) -> bool;
         void handleNotificationsChanged(std::unique_ptr<gui::SwitchData> notificationsParams) override;
 
         std::string getOsUpdateVersion() const

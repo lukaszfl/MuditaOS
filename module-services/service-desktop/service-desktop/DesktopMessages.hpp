@@ -14,35 +14,6 @@
 
 namespace sdesktop
 {
-    class UpdateOsMessage : public sys::DataMessage
-    {
-      public:
-        UpdateOsMessage(const std::string updateFilePath, const uint32_t requestUUID)
-            : sys::DataMessage(MessageType::UpdateOS)
-        {
-            updateStats.updateFile = updateFilePath;
-            updateStats.uuid       = requestUUID;
-        };
-
-        UpdateOsMessage() : sys::DataMessage(MessageType::UpdateOS)
-        {}
-
-        UpdateOsMessage(const updateos::UpdateMessageType updateMessageType)
-            : sys::DataMessage(MessageType::UpdateOS), messageType(updateMessageType)
-        {}
-
-        UpdateOsMessage(const updateos::UpdateMessageType updateMessageType, fs::path updateFileFoundOnBoot)
-            : sys::DataMessage(MessageType::UpdateOS), messageType(updateMessageType)
-        {
-            updateStats.updateFile = updateFileFoundOnBoot;
-        }
-
-        ~UpdateOsMessage() override = default;
-
-        updateos::UpdateStats updateStats       = {};
-        updateos::UpdateMessageType messageType = updateos::UpdateMessageType::UpdateNow;
-    };
-
     class BackupMessage : public sys::DataMessage
     {
       public:

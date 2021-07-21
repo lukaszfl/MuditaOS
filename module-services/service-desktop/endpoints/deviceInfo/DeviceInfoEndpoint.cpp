@@ -3,7 +3,6 @@
 
 #include "DeviceInfoEndpoint.hpp"
 #include <endpoints/Context.hpp>
-#include <endpoints/update/UpdateMuditaOS.hpp>
 #include <parser/MessageHandler.hpp>
 
 #include <EventStore.hpp>

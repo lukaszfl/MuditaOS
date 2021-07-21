@@ -95,16 +95,10 @@ namespace app
     // Invoked upon receiving data message
     sys::MessagePointer ApplicationDesktop::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
     {
-
         auto retMsg = Application::DataReceivedHandler(msgl);
         // if message was handled by application's template there is no need to process further.
         if (dynamic_cast<sys::ResponseMessage *>(retMsg.get())->retCode == sys::ReturnCodes::Success) {
             return retMsg;
-        }
-
-        bool handled = false;
-        if (auto msg = dynamic_cast<sdesktop::UpdateOsMessage *>(msgl)) {
-            handled = handle(msg);
         }
 
         // handle database response
@@ -129,18 +123,6 @@ namespace app
         }
     }
 
-    auto ApplicationDesktop::handle(sdesktop::UpdateOsMessage *msg) -> bool
-    {
-        if (msg != nullptr && msg->messageType == updateos::UpdateMessageType::UpdateFoundOnBoot) {
-
-            if (msg->updateStats.updateFile.has_filename()) {
-                LOG_DEBUG("handle pending update found: %s", msg->updateStats.updateFile.c_str());
-            }
-        }
-
-        return true;
-    }
-
     void ApplicationDesktop::handleNotificationsChanged(std::unique_ptr<gui::SwitchData> notificationsParams)
     {
         if (auto window = getCurrentWindow()->getName();
@@ -160,7 +142,6 @@ namespace app
     // Invoked during initialization
     sys::ReturnCodes ApplicationDesktop::InitHandler()
     {
-
         auto ret = Application::InitHandler();
         if (ret != sys::ReturnCodes::Success) {
             return ret;
@@ -168,39 +149,11 @@ namespace app
 
         createUserInterface();
 
-        connect(sdesktop::UpdateOsMessage(), [&](sys::Message *msg) {
-            auto *updateMsg = dynamic_cast<sdesktop::UpdateOsMessage *>(msg);
-            if (updateMsg != nullptr && updateMsg->messageType == updateos::UpdateMessageType::UpdateFoundOnBoot) {
-
-                if (getWindow(app::window::name::desktop_update)) {
-                    std::unique_ptr<gui::UpdateSwitchData> data = std::make_unique<gui::UpdateSwitchData>(updateMsg);
-                    switchWindow(app::window::name::desktop_update, gui::ShowMode::GUI_SHOW_INIT, std::move(data));
-                }
-            }
-
-            if (updateMsg != nullptr && updateMsg->messageType == updateos::UpdateMessageType::UpdateNow) {
-                auto data = std::make_unique<gui::UpdateSwitchData>(updateMsg);
-                switchWindow(app::window::name::desktop_update_progress, gui::ShowMode::GUI_SHOW_INIT, std::move(data));
-            }
-
-            if (updateMsg != nullptr && updateMsg->messageType == updateos::UpdateMessageType::UpdateInform) {
-                if (getWindow(app::window::name::desktop_update)) {
-                    std::unique_ptr<gui::UpdateSwitchData> data = std::make_unique<gui::UpdateSwitchData>(updateMsg);
-                    getWindow(app::window::name::desktop_update)->handleSwitchData(data.get());
-                }
-            }
-            return sys::msgHandled();
-        });
-
         connect(typeid(db::NotificationMessage), [&](sys::Message *request) {
             auto notificationMessage = static_cast<db::NotificationMessage *>(request);
             dbNotificationHandler.handle(notificationMessage);
             return sys::MessageNone{};
         });
-
-        auto msgToSend =
-            std::make_shared<sdesktop::UpdateOsMessage>(updateos::UpdateMessageType::UpdateCheckForUpdateOnce);
-        bus.sendUnicast(msgToSend, service::name::service_desktop);
 
         settings->registerValueChange(
             settings::SystemProperties::osCurrentVersion,
