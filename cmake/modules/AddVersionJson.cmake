@@ -1,4 +1,6 @@
 function(add_version_json SOURCE_TARGET)
+    set(BOOT_BIN_FILE ${CMAKE_BINARY_DIR}/sysroot/sys/current/${SOURCE_TARGET}-boot.bin)
+
     add_custom_command(OUTPUT ${SOURCE_TARGET}-version.json
         COMMAND ${CMAKE_COMMAND}
             -DSRC_DIR=${CMAKE_SOURCE_DIR}
@@ -8,7 +10,7 @@ function(add_version_json SOURCE_TARGET)
             -DBOOTLOADER_FILE=${CMAKE_BINARY_DIR}/ecoboot.bin
             -DBOOTLOADER_VERSION_FILE=${CMAKE_BINARY_DIR}/ecoboot.version
             -DBOOT_FILENAME=boot.bin
-            -DBOOT_FILE=$<TARGET_FILE:${SOURCE_TARGET}>
+            -DBOOT_FILE=${BOOT_BIN_FILE}
             -DBOOT_VERSION=${CMAKE_PROJECT_VERSION}
             -DUPDATER_FILENAME=updater.bin
             -DUPDATER_FILE=${CMAKE_BINARY_DIR}/updater.bin
