@@ -51,10 +51,6 @@ namespace app
       private:
         bool refreshMenuWindow();
         void handleLowBatteryNotification(manager::actions::ActionParamsPtr &&data);
-        void osUpdateVersionChanged(const std::string &value);
-        void osCurrentVersionChanged(const std::string &value);
-        // std::string osUpdateVersion{updateos::initSysVer};
-        // std::string osCurrentVersion{updateos::initSysVer};
         DBNotificationsHandler dbNotificationHandler;
     };
 

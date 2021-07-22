@@ -999,17 +999,6 @@ namespace app::manager
         return true;
     }
 
-    auto ApplicationManager::handleSetOsUpdateVersionChange(SetOsUpdateVersion *msg) -> bool
-    {
-        LOG_DEBUG("[ApplicationManager::handleSetOsUpdateVersionChange] value ....");
-        settings->setValue(
-            settings::SystemProperties::osUpdateVersion, msg->osUpdateVer, settings::SettingsScope::Global);
-
-        settings->setValue(
-            settings::SystemProperties::osCurrentVersion, msg->osCurrentVer, settings::SettingsScope::Global);
-        return true;
-    }
-
     auto ApplicationManager::handleDBResponse(db::QueryResponse *msg) -> bool
     {
         auto result = msg->getResult();
