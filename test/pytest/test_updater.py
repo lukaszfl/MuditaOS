@@ -40,7 +40,7 @@ def test_update(harness: Harness):
     PhoneReboot(Reboot.UPDATE).run(harness)
     assert harness.connection.watch_port_reboot(300)
 
-    harness = get_rt1051_harness(300)
+    harness = get_rt1051_harness(60 * 6)
     import time
     time.sleep(15)
     harness.unlock_phone()
