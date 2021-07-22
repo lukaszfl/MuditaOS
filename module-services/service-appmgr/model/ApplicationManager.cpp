@@ -353,15 +353,6 @@ namespace app::manager
         connect(typeid(GetCurrentDisplayLanguageRequest), [&](sys::Message *request) {
             return std::make_shared<GetCurrentDisplayLanguageResponse>(utils::getDisplayLanguage());
         });
-        connect(typeid(UpdateInProgress), [this](sys::Message *) {
-            closeApplicationsOnUpdate();
-            return sys::msgHandled();
-        });
-        connect(typeid(SetOsUpdateVersion), [this](sys::Message *request) {
-            auto msg = static_cast<SetOsUpdateVersion *>(request);
-            handleSetOsUpdateVersionChange(msg);
-            return sys::msgHandled();
-        });
         connect(typeid(GetAllNotificationsRequest), [&](sys::Message *request) {
             notificationProvider.requestNotSeenNotifications();
             notificationProvider.send();

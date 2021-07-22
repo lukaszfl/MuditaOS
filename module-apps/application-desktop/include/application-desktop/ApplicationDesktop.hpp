@@ -46,14 +46,6 @@ namespace app
         void handle(cellular::msg::notification::ModemStateChanged *msg);
         void handleNotificationsChanged(std::unique_ptr<gui::SwitchData> notificationsParams) override;
 
-        std::string getOsUpdateVersion() const
-        {
-            return osUpdateVersion;
-        }
-        std::string getOsCurrentVersion() const
-        {
-            return osCurrentVersion;
-        }
         void setOsUpdateVersion(const std::string &value);
 
       private:
@@ -61,8 +53,8 @@ namespace app
         void handleLowBatteryNotification(manager::actions::ActionParamsPtr &&data);
         void osUpdateVersionChanged(const std::string &value);
         void osCurrentVersionChanged(const std::string &value);
-        std::string osUpdateVersion{updateos::initSysVer};
-        std::string osCurrentVersion{updateos::initSysVer};
+        // std::string osUpdateVersion{updateos::initSysVer};
+        // std::string osCurrentVersion{updateos::initSysVer};
         DBNotificationsHandler dbNotificationHandler;
     };
 

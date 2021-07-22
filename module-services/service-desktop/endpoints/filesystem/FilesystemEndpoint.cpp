@@ -5,9 +5,12 @@
 #include "FileOperations.hpp"
 #include "service-desktop/DesktopMessages.hpp"
 #include "service-desktop/ServiceDesktop.hpp"
+#include <purefs/filesystem_paths.hpp>
+
 #include <filesystem>
 
 using namespace parserFSM;
+namespace fs = std::filesystem;
 
 auto FilesystemEndpoint::handle(Context &context) -> void
 {

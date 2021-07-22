@@ -43,8 +43,6 @@ target_sources(application-desktop
 		windows/MmiPullWindow.hpp
 		windows/MmiPushWindow.cpp
 		windows/MmiPushWindow.hpp
-		windows/PostUpdateWindow.cpp
-		windows/PostUpdateWindow.hpp
 		windows/Reboot.cpp
 		windows/Reboot.hpp
 	PUBLIC

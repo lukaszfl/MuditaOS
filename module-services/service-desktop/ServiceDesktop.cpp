@@ -8,7 +8,6 @@
 #include "service-cellular/CellularMessage.hpp"
 #include "endpoints/factoryReset/FactoryReset.hpp"
 #include "endpoints/backup/BackupRestore.hpp"
-#include "endpoints/update/UpdateMuditaOS.hpp"
 
 #include <Common/Query.hpp>
 #include <MessageType.hpp>
@@ -289,11 +288,6 @@ sys::MessagePointer ServiceDesktop::DataReceivedHandler(sys::DataMessage *msg, s
     }
 
     return std::make_shared<sys::ResponseMessage>();
-}
-
-void ServiceDesktop::storeHistory(const std::string &historyValue)
-{
-    settings->setValue(updateos::settings::history, historyValue);
 }
 
 void ServiceDesktop::prepareBackupData()

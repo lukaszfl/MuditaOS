@@ -94,10 +94,8 @@ class ServiceDesktop : public sys::Service
     sys::ReturnCodes SwitchPowerModeHandler(const sys::ServicePowerMode mode) override;
     sys::MessagePointer DataReceivedHandler(sys::DataMessage *msg, sys::ResponseMessage *resp) override;
 
-    std::unique_ptr<UpdateMuditaOS> updateOS;
     std::unique_ptr<WorkerDesktop> desktopWorker;
 
-    void storeHistory(const std::string &historyValue);
     void prepareBackupData();
     void prepareRestoreData(const std::filesystem::path &restoreLocation);
     const BackupRestoreStatus getBackupRestoreStatus()

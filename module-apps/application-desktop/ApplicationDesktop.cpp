@@ -11,10 +11,7 @@
 #include "MmiInternalMsgWindow.hpp"
 #include "MmiPullWindow.hpp"
 #include "MmiPushWindow.hpp"
-#include "PostUpdateWindow.hpp"
 #include "Reboot.hpp"
-#include "Update.hpp"
-#include "UpdateProgress.hpp"
 
 #include <apps-common/messages/AppMessage.hpp>
 #include <AppWindow.hpp>
@@ -101,6 +98,8 @@ namespace app
             return retMsg;
         }
 
+        bool handled = false;
+
         // handle database response
         if (resp != nullptr) {
             if (auto command = callbackStorage->getCallback(resp); command->execute()) {
@@ -155,16 +154,6 @@ namespace app
             return sys::MessageNone{};
         });
 
-        settings->registerValueChange(
-            settings::SystemProperties::osCurrentVersion,
-            [this](const std::string &value) { osCurrentVersionChanged(value); },
-            settings::SettingsScope::Global);
-
-        settings->registerValueChange(
-            settings::SystemProperties::osUpdateVersion,
-            [this](const std::string &value) { osUpdateVersionChanged(value); },
-            settings::SettingsScope::Global);
-
         dbNotificationHandler.initHandler();
 
         return sys::ReturnCodes::Success;
@@ -196,15 +185,6 @@ namespace app
         windowsFactory.attach(desktop_reboot, [](Application *app, const std::string newname) {
             auto presenter = std::make_unique<gui::PowerOffPresenter>(app);
             return std::make_unique<gui::RebootWindow>(app, std::move(presenter));
-        });
-        windowsFactory.attach(desktop_update, [](Application *app, const std::string newname) {
-            return std::make_unique<gui::UpdateWindow>(app);
-        });
-        windowsFactory.attach(desktop_update_progress, [](Application *app, const std::string newname) {
-            return std::make_unique<gui::UpdateProgressWindow>(app);
-        });
-        windowsFactory.attach(desktop_post_update_window, [](Application *app, const std::string newname) {
-            return std::make_unique<gui::PostUpdateWindow>(app);
         });
         windowsFactory.attach(desktop_mmi_pull, [](Application *app, const std::string newname) {
             return std::make_unique<gui::MmiPullWindow>(app, desktop_mmi_pull);
@@ -261,32 +241,4 @@ namespace app
             }
         }
     }
-
-    void ApplicationDesktop::osUpdateVersionChanged(const std::string &value)
-    {
-        LOG_DEBUG("[ApplicationDesktop::osUpdateVersionChanged] value=%s", value.c_str());
-        if (value.empty()) {
-            return;
-        }
-        osUpdateVersion = value;
-    }
-
-    void ApplicationDesktop::osCurrentVersionChanged(const std::string &value)
-    {
-        LOG_DEBUG("[ApplicationDesktop::osCurrentVersionChanged] value=%s", value.c_str());
-        if (value.empty()) {
-            return;
-        }
-        osCurrentVersion = value;
-    }
-    void ApplicationDesktop::setOsUpdateVersion(const std::string &value)
-    {
-        LOG_DEBUG("[ApplicationDesktop::setOsUpdateVersion] value=%s", value.c_str());
-        if (value.empty()) {
-            return;
-        }
-        osUpdateVersion = value;
-        settings->setValue(settings::SystemProperties::osUpdateVersion, value, settings::SettingsScope::Global);
-    }
-
 } // namespace app
