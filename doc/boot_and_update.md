@@ -2,44 +2,43 @@
 
 ## Booting Mudita Pure
 
-To follow these steps please make sure that you have the latest `ecoboot` bootloader on the phone. We recommend [version 1.0.4](https://github.com/mudita/ecoboot/releases/tag/1.0.4) which will work even if you manage to break the filesystems in the next steps (it's goot to be prepared).
+PureOS has three elements involved in boot and update. Each with its distinctive role:
+- *ecoboot.bin* - called later *bootloader*, initializes basic hardware, selects what application should be used next and calls it
+- *updater.bin* - called later *updater*, performs all update required actions such as package verification and unpack
+- *boot.bin* - called later *MuditaOS*, binary with all phone functionality
 
-1. `ecoboot` reads `/.boot.json` and `/.boot.json.crc32` and verifies if `crc32` in `/.boot.json.crc32` matches the actual `crc32` of `/.boot.json`
+All binaries are released on their respective source pages:
+- [ecoboot/releases](https://github.com/mudita/ecoboot/releases/).
+- [updater/releases](https://github.com/mudita/PureUpdater/releases/).
+- [MuditaOS/releases](https://github.com/mudita/MuditaOS/releases/).
 
-2. If `ecoboot` can't read `/.boot.json` and/or `/.boot.json.crc32` it tries to read `/.boot.json.bak` and `/.boot.json.bak.crc32` and verifies the checksum of `/.boot.json.bak`. If the `/.boot.json.bak` file passes the checksum test ecoboot should fix `/.boot.json` and `/.boot.json.crc32` files so that MuditaOS can pick up what version is booted (not implemented, ecoboot will fallback to booting /sys/current/boot.bin).
+All binaries are updated with UpdatePackage loaded on phone upon update trigger.
 
-3. If both above steps fail, `ecoboot` reads `/sys/current/boot.bin` and loads it (failsafe)
+### Boot and update process
 
-4. `boot.json` contains the filename to load in a simple INI format
+To either perform normal boot or phone update bootloader reads requested functionality passed on ram and executes updater with it as parameter.
 
-```bash
-{
-    "main": 
-    {
-        "ostype": "current",
-        "imagename": "boot.bin"
-    },
-    "bootloader":
-    {
-        "version":"0.0.0"
-    },
-    "git": {}
-}
-  
-```
+Update action trigger can be done two way. Normal flow is via API, where phone is instructed to perform any of updater actions, or it can be selected manually in bootloader menu.
+To perform update it's required that update package generated with Pure-UpdatePackage is loaded on user partition either by: 1. MuditaOS 2. Python API 3. manually after mount with fuse.
 
-There should be 2 instances of the MuditaOS on the phone (`/sys` is assumed at vfs class creation time).
+![generic update flow](./Images/boot/boot-flow.svg)
 
-```bash  
-"current"  -> /sys/current  
-"previous" -> /sys/previous  
-```
+With action selected, bootloader can perform any of update actions, plus is able to burn signature for production.
+Update related actions are named self explanatory and are:
+- update
+- restore
+- factory reset
 
-The type variable in `boot.json` is for MuditaOS - this will indicate a subdirectory name to append for all file operations (loading assets, dbs, etc.) When the option becomes possible, it should be passed as a variable to the `boot.bin` (MuditaOS) as an argument.
+As update actions uses the same code with different options functionalities selected.
 
-4. `ecoboot` boots the "**boot**" filename in `boot.json`. MuditaOS reads `boot.json` to find it's root directory and reads all assets and files from it. 
-   
-5. Updating from old style partitioning (1 partition) to new partition scheme (2 partitions). In case of problems see pt 6.
+![update actions](./Images/boot/update-actions.svg)
+
+With action selected, options are set and generic update flow is being executed.
+
+![update actions](./Images/boot/generic-update.svg)
+
+When action is processed by updater it reboots phone to bootloader - then bootloader boots the current OS.
+Update result is shown on screen as a status as well as is saved in updater log file called updater.log on user partition
 
 ## Creating a storage partition
  
@@ -82,7 +81,7 @@ I/O size (minimum/optimal): 512 bytes / 512 bytes
 >>> Script header accepted.
 >>> Created a new DOS disklabel with disk identifier 0x09650eb4.
 /home/lucck/worksrc/MuditaOS/pure.img1: Created a new partition 1 of type 'W95 FAT32' and of size 1 GiB.
-/home/lucck/worksrc/MuditaOS/pure.img2: Created a new partition 2 of type 'W95 FAT32' and of size 1 GiB.
+/home/lucck/worksrc/MuditaOS/pure.img2: Created a new partition 2 of type 'Unknown' and of size 1 GiB.
 /home/lucck/worksrc/MuditaOS/pure.img3: Created a new partition 3 of type 'Unknown' and of size 12,6 GiB.
 /home/lucck/worksrc/MuditaOS/pure.img4: Done.
 

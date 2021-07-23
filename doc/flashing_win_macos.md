@@ -24,14 +24,14 @@ The `.xz` image is compressed twice using both `tar` and `xz`. Some unpackers wi
 
 - Run balenaEtcher application and choose `Flash from file` and the ISO image as the image type. Load unzipped image onto the target device. It might look something like this:
 
-![balenaEtcher interface screenshot](./balenaetcher1.png)
+![balenaEtcher interface screenshot](./Images/flashing/balenaetcher1.png)
 
-![balenaEtcher interface screenshot](./balenaetcher2.png)
+![balenaEtcher interface screenshot](./Images/flashing/balenaetcher2.png)
 
 - press `Flash!`` and confirm if asked for the superuser password.
 - wait for the flashing to complete:
 
-![balenaEtcher interface screenshots](./balenaetcher3.png)
+![balenaEtcher interface screenshots](./Images/flashing/balenaetcher3.png)
 
 - reboot the phone.
 
