@@ -12,6 +12,7 @@ from harness.harness import Harness
 from harness.api.filesystem import put_file, get_file
 from harness.api.developermode import PhoneModeLock
 from harness.api.update import PhoneReboot, Reboot
+from assets.update_package_generator import gen_update_asset
 
 
 def get_version(harness: Harness):
@@ -32,6 +33,8 @@ def disable_some_logs(harness: Harness):
 @pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.rt1051
 def test_update(harness: Harness):
+    # TODO selectable from init
+    # filename = gen_update_asset(updater="/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin")
     filename = "update.tar"
 
     log.info(get_version(harness))

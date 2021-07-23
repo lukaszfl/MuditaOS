@@ -10,3 +10,4 @@ six==1.15.0
 toml==0.10.2
 inotify==0.2.10
 dataclasses_json==0.5.4
+git+ssh://git@github.com/mudita/github_py.git

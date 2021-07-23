@@ -7,10 +7,14 @@ import json
 import tarfile
 import shutil
 import argparse
+import logging
 from enum import Enum
 from hashlib import md5
 from download_asset.download_asset import Getter
 from tempfile import TemporaryDirectory
+
+
+log = logging.getLogger(__name__)
 
 
 def get_0_versions():
@@ -36,15 +40,15 @@ def gen_version_json(workdir, versions, checksums=None):
 
     for file in os.listdir(workdir):
         if file in locations.keys():
-            print(f"File to md5 {file}")
+            log.info(f"File to md5 {file}")
             if checksums is None or checksums[file] is None:
                 with open(file, "rb") as f:
                     md5sum = md5(f.read()).hexdigest()
-                    print(f"checksum: {md5sum}")
+                    log.info(f"checksum: {md5sum}")
                     version_json[locations[file]] = {
                         "filename": file, "version": versions[file], "md5sum": md5sum}
     with open(workdir + "/version.json", "w") as f:
-        print(f"saving version.json: {version_json}")
+        log.info(f"saving version.json: {version_json}")
         f.write(json.dumps(version_json, indent=4, ensure_ascii=True))
 
 
@@ -130,7 +134,7 @@ def gen_empty_json(workdir):
     empty json is still valid json - needs testing
     '''
     with open(workdir + "/version.json", "w") as f:
-        print("saving version.json: {}")
+        log.info("saving version.json: {}")
         f.write(json.dumps({}, indent=4, ensure_ascii=True))
 
 
@@ -178,6 +182,56 @@ class WorkOnTmp:
         return self.current
 
 
+def gen_update_asset(updater: str = None, boot: str = None, updater_version: str = None, boot_version: str = None, package_name: str = "update.tar"):
+    '''
+    Generates package:
+        updater         : if set to value, copy updater.bin from directory, otherwise load latest from PurePupdater repository
+        boot            : if set to value, copy bootloader to tar file - otherwise do not add boot.bin to package
+        updater_version : updater version to set for updater in json file
+        boot_version    : updater version to set for updater in json file
+        package_name    : package name to create
+    '''
+    g = Getter()
+    workdir = WorkOnTmp()
+    versions = get_0_versions()
+
+    if updater is None:
+        g.repo = "PureUpdater"
+        g.getReleases(None)
+        versions["updater.bin"] = g.releases[0]["tag_name"]
+        download_args = Args()
+        download_args.asset = "updater.bin"
+        download_args.tag = versions["updater.bin"]
+        download_args.workdir = workdir.name()
+        log.info(f"---> save file to: {workdir.name()}")
+        g.downloadRelease(download_args)
+    else:
+        shutil.copyfile(updater, workdir.name() + "/updater.bin")
+
+    if boot is not None:
+        shutil.copyfile(boot, workdir.name() + "/boot.bin")
+
+    if updater_version is not None:
+        versions["updater.bin"] = updater_version
+    if boot_version is not None:
+        versions["boot.bin"] = boot_version
+
+    log.info("generating version json ...")
+    gen_version_json("./", versions)
+
+    log.info(f"writting {package_name}...")
+    with tarfile.open(name=package_name, mode='w') as tar:
+        for file in os.listdir("./"):
+            tar.add(file)
+
+    log.info(f"move {package_name} to current location ...")
+    shutil.copyfile(package_name, workdir.current + package_name)
+
+    log.info(f"package generation done and copied to: {workdir.current}/{package_name}!")
+
+    return workdir.current + "/" + package_name
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""package generator
     can be used to generate update package with release from updater repository or locally
@@ -195,41 +249,7 @@ if __name__ == "__main__":
     parser.add_argument('--boot_version', help="Boot bin version to use", default=None)
     args = parser.parse_args()
 
-    print("creating temp dir...")
-    g = Getter()
-    workdir = WorkOnTmp()
-    versions = get_0_versions()
+    log.info("creating temp dir...")
 
-    if args.updater is None:
-        g.repo = "PureUpdater"
-        g.getReleases(None)
-        versions["updater.bin"] = g.releases[0]["tag_name"]
-        download_args = Args()
-        download_args.asset = "updater.bin"
-        download_args.tag = versions["updater.bin"]
-        download_args.workdir = workdir.name()
-        print(f"---> save file to: {workdir.name()}")
-        g.downloadRelease(download_args)
-    else:
-        shutil.copyfile(args.updater, workdir.name() + "/updater.bin")
-
-    if args.boot is not None:
-        shutil.copyfile(args.boot, workdir.name() + "/boot.bin")
-
-    if args.updater_version is not None:
-        versions["updater.bin"] = args.updater_version
-    if args.boot_version is not None:
-        versions["boot.bin"] = args.boot_version
-
-    print("generating version json ...")
-    gen_version_json("./", versions)
-
-    print("writting update.tar ...")
-    with tarfile.open(name="update.tar", mode='w') as tar:
-        for file in os.listdir("./"):
-            tar.add(file)
-
-    print("move update.tar to current location ...")
-    shutil.copyfile("update.tar", workdir.current + "/update.tar")
-
-    print(f"package generation done and copied to: {workdir.current}!")
+    # args.updater
+    gen_update_asset()
