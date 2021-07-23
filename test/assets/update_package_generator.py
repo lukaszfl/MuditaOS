@@ -9,7 +9,7 @@ import shutil
 import argparse
 from enum import Enum
 from hashlib import md5
-from download_asset import Getter
+from download_asset.download_asset import Getter
 from tempfile import TemporaryDirectory
 
 
