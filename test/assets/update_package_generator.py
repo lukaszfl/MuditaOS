@@ -52,112 +52,6 @@ def gen_version_json(workdir, versions, checksums=None):
         f.write(json.dumps(version_json, indent=4, ensure_ascii=True))
 
 
-def gen_deprecated_updater(workdir):
-    '''
-    first release of updater.bin is set to 0.0.1, defaults are 0.0.0 in gen_version
-    therefore update of updater should not happen and update should fail
-    TODO: discuss if we should fail update or i.e. do partial update.
-          generally it's possible to update updater and boot.bin separatelly with separate package
-          so this shouldn't be an issue
-          on the other hand - if we want to not fail with partial update success - then
-          it should make logic considerably more convoluted
-    '''
-    v = get_0_versions()
-    gen_version_json(workdir, v)
-
-
-def gen_same_updater(workdir, version: str):
-    '''
-    we should fail if software version is the same
-    '''
-    versions = get_0_versions()
-    versions["updater.bin"] = version
-    gen_version_json(workdir, versions)
-
-
-def gen_too_big_updater(workdir, version: str):
-    '''
-    we can update only one version up
-    '''
-    versions = get_0_versions()
-    version = version.split('.')
-    if len(version) < 3:
-        RuntimeError("Version has to be in format int.int.int <- three integers split with coma")
-    # smallest version +1
-    versions["updater.bin"] = version[2] + 2
-    gen_version_json(workdir, versions)
-
-
-class Version(Enum):
-    Patch = 2
-    Minor = 1
-    Major = 0
-
-
-def gen_version_up_updater(workdir, version: str, what: Version):
-    '''
-    we can update only one version up of version:
-        - Patch, Minor and Major - all should be tested
-    '''
-    versions = get_0_versions()
-    version = version.split('.')
-    if len(version) < 3:
-        RuntimeError("Version has to be in format int.int.int <- three integers split with coma")
-    # smallest version +1
-    versions["updater.bin"] = version[what.value] + 1
-    gen_version_json(workdir, versions)
-
-
-def gen_updater_bad_checksum(workdir):
-    '''
-    we can update only when checksum is proper
-    '''
-    checksums = get_none_checksums()
-    checksums['updater.bin'] = "deadbeefdeadbeefdeadbeefdeadbeef"
-    v = get_0_versions()
-    gen_version_json(workdir, v, checksums)
-
-
-def gen_updater_zero_checksum(workdir):
-    '''
-    we can update only when checksum is proper
-    - 0 checksum is corner case check
-    '''
-    checksums = get_none_checksums()
-    checksums['updater.bin'] = "0"
-    v = get_0_versions()
-    gen_version_json(workdir, v, checksums)
-
-
-def gen_empty_json(workdir):
-    '''
-    empty json is still valid json - needs testing
-    '''
-    with open(workdir + "/version.json", "w") as f:
-        log.info("saving version.json: {}")
-        f.write(json.dumps({}, indent=4, ensure_ascii=True))
-
-
-def gen_json_bad_key(workdir):
-    '''
-    if key is missing - then version json is valid json and
-    we should check that update will fail with grace
-    '''
-    pass
-
-
-def gen_existing_catalog():
-    '''
-    We allready check if we have existing file -as updater has to
-    always exist - therefore testing update of updater tests
-    overriting file
-
-    This doesn't check overwritting catalog - therefore we have to
-    test it too
-    '''
-    pass
-
-
 class Args:
     tag = ""
     asset = ""
@@ -182,7 +76,14 @@ class WorkOnTmp:
         return self.current
 
 
-def gen_update_asset(updater: str = None, boot: str = None, updater_version: str = None, boot_version: str = None, package_name: str = "update.tar"):
+def get_last_version():
+    g = Getter()
+    g.repo = "PureUpdater"
+    g.getReleases(None)
+    return g.releases[0]["tag_name"]
+
+
+def gen_update_asset(updater: str = None, boot: str = None, updater_version: str = None, boot_version: str = None, updater_checksum=None, package_name: str = "update.tar",):
     '''
     Generates package:
         updater         : if set to value, copy updater.bin from directory, otherwise load latest from PurePupdater repository
@@ -192,11 +93,11 @@ def gen_update_asset(updater: str = None, boot: str = None, updater_version: str
         package_name    : package name to create
     '''
     g = Getter()
+    g.repo = "PureUpdater"
     workdir = WorkOnTmp()
     versions = get_0_versions()
 
     if updater is None:
-        g.repo = "PureUpdater"
         g.getReleases(None)
         versions["updater.bin"] = g.releases[0]["tag_name"]
         download_args = Args()
@@ -211,16 +112,22 @@ def gen_update_asset(updater: str = None, boot: str = None, updater_version: str
     if boot is not None:
         shutil.copyfile(boot, workdir.name() + "/boot.bin")
 
+    checksums = None
+
     if updater_version is not None:
         versions["updater.bin"] = updater_version
     if boot_version is not None:
         versions["boot.bin"] = boot_version
+    if updater_checksum is not None:
+        checksums = get_none_checksums()
+        checksums["updater.bin"] = updater_checksum
 
     log.info("generating version json ...")
-    gen_version_json("./", versions)
+
+    gen_version_json("./", versions, checksums)
 
     log.info(f"writting {package_name}...")
-    with tarfile.open(name=package_name, mode='w') as tar:
+    with tarfile.open(name=package_name, mode='x') as tar:
         for file in os.listdir("./"):
             tar.add(file)
 

@@ -1,5 +1,14 @@
 # Test harness
 
+*WARNING* remember to install *requirements.txt*
+if there is no `download_asset` in package please install from wheel:
+```
+git clone git@github.com:mudita/github_py.git
+cd github_py
+python setup.py bdist_wheel
+python -m pip install dist/dist/download_asset-0.0.1-py3-none-any.whl --force-reinstall
+```
+
 The aim of this [test harness](https://en.wikipedia.org/wiki/Test_harness) is to enable tests automation and facilitate integration testing.
 
 Mudita Pure test harness makes use of USB-CDC serial (on RT1051 target) or pseudo-tty (on Linux) to communicate
