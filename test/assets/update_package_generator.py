@@ -6,6 +6,7 @@ import os
 import json
 import tarfile
 import shutil
+import argparse
 from enum import Enum
 from hashlib import md5
 from download_asset import Getter
@@ -178,27 +179,57 @@ class WorkOnTmp:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="""package generator
+    can be used to generate update package with release from updater repository or locally
+
+    to create package with local boot.bin and updater.bin pass full paths, with updater set to version 0.0.3
+        $python3 update_package_generator.py -u ~/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin --updater_version "0.0.3" -b ~/workspace/mudita/MuditaMaster/build-rt1051-RelWithDebInfo/**/boot.bin
+    to create default updater.bin package just call
+        $python3 update_package_generator.py""",
+                                     formatter_class=argparse.RawTextHelpFormatter
+                                     )
+    parser.add_argument('-w', '--workdir', help="Directory where package is build", default="./")
+    parser.add_argument('-u', '--updater', help="Updater binary to use", default=None)
+    parser.add_argument('-b', '--boot', help="Boot bin to use", default=None)
+    parser.add_argument('--updater_version', help="Updater bin version to use", default=None)
+    parser.add_argument('--boot_version', help="Boot bin version to use", default=None)
+    args = parser.parse_args()
+
     print("creating temp dir...")
     g = Getter()
     workdir = WorkOnTmp()
-    g.repo = "PureUpdater"
-    g.getReleases(None)
-    version = g.releases[0]["tag_name"]
-    args = Args()
-    args.asset = "updater.bin"
-    args.tag = version
-    args.workdir = workdir.name()
-    print(f"---> save file to: {workdir.name()}")
-    g.downloadRelease(args)
+    versions = get_0_versions()
+
+    if args.updater is None:
+        g.repo = "PureUpdater"
+        g.getReleases(None)
+        versions["updater.bin"] = g.releases[0]["tag_name"]
+        download_args = Args()
+        download_args.asset = "updater.bin"
+        download_args.tag = versions["updater.bin"]
+        download_args.workdir = workdir.name()
+        print(f"---> save file to: {workdir.name()}")
+        g.downloadRelease(download_args)
+    else:
+        shutil.copyfile(args.updater, workdir.name() + "/updater.bin")
+
+    if args.boot is not None:
+        shutil.copyfile(args.boot, workdir.name() + "/boot.bin")
+
+    if args.updater_version is not None:
+        versions["updater.bin"] = args.updater_version
+    if args.boot_version is not None:
+        versions["boot.bin"] = args.boot_version
 
     print("generating version json ...")
-    gen_same_updater("./", version)
+    gen_version_json("./", versions)
 
     print("writting update.tar ...")
     with tarfile.open(name="update.tar", mode='w') as tar:
-        tar.add("version.json")
-        tar.add("updater.bin")
+        for file in os.listdir("./"):
+            tar.add(file)
 
+    print("move update.tar to current location ...")
     shutil.copyfile("update.tar", workdir.current + "/update.tar")
 
     print(f"package generation done and copied to: {workdir.current}!")
