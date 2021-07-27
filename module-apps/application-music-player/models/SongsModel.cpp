@@ -2,6 +2,7 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "SongsModel.hpp"
+#include "Style.hpp"
 #include "application-music-player/widgets/SongItem.hpp"
 
 #include <ListView.hpp>
@@ -22,7 +23,7 @@ namespace app::music_player
 
     auto SongsModel::getMinimalItemSpaceRequired() const -> unsigned int
     {
-        return musicPlayerStyle::songItem::h;
+        return musicPlayerStyle::songItem::h + style::margins::small*2;
     }
 
     void SongsModel::requestRecords(const uint32_t offset, const uint32_t limit)
@@ -53,16 +54,8 @@ namespace app::music_player
         for (auto &item : internalData) {
             item->deleteByList = false;
         }
-
-        list->rebuildList();
     }
 
-    void SongsModel::clearData()
-    {
-        list->reset();
-
-        list->rebuildList();
-    }
 
     bool SongsModel::isSongPlaying() const noexcept
     {

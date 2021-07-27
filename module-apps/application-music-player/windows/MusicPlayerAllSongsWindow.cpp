@@ -55,7 +55,7 @@ namespace gui
 
     void MusicPlayerAllSongsWindow::onBeforeShow([[maybe_unused]] ShowMode mode, [[maybe_unused]] SwitchData *data)
     {
-        presenter->createData([this](const std::string &fileName) { return presenter->play(fileName); });
+         songsList->rebuildList(listview::RebuildType::OnPageElement, 0); // TODO: alek: add index
     }
 
 } /* namespace gui */

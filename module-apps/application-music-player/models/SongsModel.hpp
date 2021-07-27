@@ -17,7 +17,6 @@ namespace app::music_player
       public:
         explicit SongsModel(std::shared_ptr<AbstractSongsRepository> songsRepository);
 
-        void clearData();
         void createData(std::function<bool(const std::string &fileName)>) override;
 
         [[nodiscard]] auto requestRecordsCount() -> unsigned int override;
@@ -26,7 +25,7 @@ namespace app::music_player
 
         auto getItem(gui::Order order) -> gui::ListItem * override;
 
-        void requestRecords(const uint32_t offset, const uint32_t limit) override;
+        void requestRecords( uint32_t offset, uint32_t limit) override;
 
         bool isSongPlaying() const noexcept override;
         void setCurrentSongState(SongState songState) noexcept override;

@@ -94,6 +94,8 @@ namespace app
         }
 
         createUserInterface();
+        priv->songsPresenter->createData(
+            [this](const std::string &fileName) { return priv->songsPresenter->play(fileName); });
 
         return ret;
     }
