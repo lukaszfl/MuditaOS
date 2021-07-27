@@ -1,9 +1,11 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
 
-#include "AppWindow.hpp"
+#include <application-music-player/presenters/SongsPresenter.hpp>
+
+#include <AppWindow.hpp>
 #include <Text.hpp>
 #include <Image.hpp>
 
@@ -13,14 +15,15 @@
 namespace gui
 {
 
-    class MusicPlayerEmptyWindow : public AppWindow
+    class MusicPlayerEmptyWindow : public AppWindow, public app::music_player::SongsContract::View
     {
         Image *img         = nullptr;
         Text *text         = nullptr;
         Image *placeHolder = nullptr;
+        std::shared_ptr<app::music_player::SongsContract::Presenter> presenter;
 
       public:
-        MusicPlayerEmptyWindow(app::Application *app);
+        MusicPlayerEmptyWindow(app::Application *app, std::shared_ptr<app::music_player::SongsContract::Presenter> presenter);
 
         // virtual methods
         void onBeforeShow(ShowMode mode, SwitchData *data) override;

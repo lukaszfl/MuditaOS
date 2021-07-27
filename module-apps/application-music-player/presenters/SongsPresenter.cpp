@@ -24,17 +24,34 @@ namespace app::music_player
 
     bool SongsPresenter::play(const std::string &filePath)
     {
-        songsModelInterface->setCurrentSongState(SongState::Playing);
-        return audioOperations->play(filePath,
-                                     [this](audio::Token token) { songsModelInterface->setCurrentFileToken(token); });
+        return audioOperations->play(filePath, [this](audio::RetCode retCode, audio::Token token) {
+            if (retCode != audio::RetCode::Success || !token.IsValid()) {
+                LOG_ERROR("Playback audio operation failed, retcode = %s, token validity = %d",
+                          str(retCode).c_str(),
+                          token.IsValid());
+                return;
+            }
+            songsModelInterface->setCurrentSongState(SongState::Playing);
+            songsModelInterface->setCurrentFileToken(token);
+        });
     }
 
     bool SongsPresenter::pause()
     {
         auto currentFileToken = songsModelInterface->getCurrentFileToken();
-        if (currentFileToken) {
-            songsModelInterface->setCurrentSongState(SongState::NotPlaying);
-            return audioOperations->pause(currentFileToken.value());
+        if (currentFileToken) { 
+            return audioOperations->pause(currentFileToken.value(), [this](audio::RetCode retCode, audio::Token token) {
+                if (retCode != audio::RetCode::Success || !token.IsValid()) {
+                    LOG_ERROR("Pause audio operation failed, retcode = %s, token validity = %d",
+                              str(retCode).c_str(),
+                              token.IsValid());
+                    return;
+                }
+                if (token != songsModelInterface->getCurrentFileToken()) {
+                    LOG_ERROR("Pause audio operation failed, wrong token");
+                }
+                songsModelInterface->setCurrentSongState(SongState::NotPlaying);
+            });
         }
         return false;
     }
@@ -43,8 +60,18 @@ namespace app::music_player
     {
         auto currentFileToken = songsModelInterface->getCurrentFileToken();
         if (currentFileToken) {
-            songsModelInterface->setCurrentSongState(SongState::Playing);
-            return audioOperations->resume(currentFileToken.value());
+            return audioOperations->resume(currentFileToken.value(), [this](audio::RetCode retCode, audio::Token token) {
+                if (retCode != audio::RetCode::Success || !token.IsValid()) {
+                    LOG_ERROR("Resume audio operation failed, retcode = %s, token validity = %d",
+                              str(retCode).c_str(),
+                              token.IsValid());
+                    return;
+                }
+                if (token != songsModelInterface->getCurrentFileToken()) {
+                    LOG_ERROR("Resume audio operation failed, wrong token");
+                }
+                songsModelInterface->setCurrentSongState(SongState::Playing);
+            });
         }
         return false;
     }
@@ -53,12 +80,18 @@ namespace app::music_player
     {
         auto currentFileToken = songsModelInterface->getCurrentFileToken();
         if (currentFileToken) {
-            songsModelInterface->setCurrentSongState(SongState::NotPlaying);
-            return audioOperations->stop(currentFileToken.value(), [this](audio::Token token) {
-                if (token == songsModelInterface->getCurrentFileToken()) {
-                    songsModelInterface->setCurrentFileToken(std::nullopt);
-                    songsModelInterface->setCurrentSongState(SongState::NotPlaying);
+            return audioOperations->stop(currentFileToken.value(), [this](audio::RetCode retCode, audio::Token token) {
+                if (retCode != audio::RetCode::Success || !token.IsValid()) {
+                    LOG_ERROR("Stop audio operation failed, retcode = %s, token validity = %d",
+                              str(retCode).c_str(),
+                              token.IsValid());
+                    return;
                 }
+                if (token != songsModelInterface->getCurrentFileToken()) {
+                    LOG_ERROR("Playback audio operation failed, wrong token");
+                }
+                songsModelInterface->setCurrentFileToken(std::nullopt);
+                songsModelInterface->setCurrentSongState(SongState::NotPlaying);
             });
         }
         return false;

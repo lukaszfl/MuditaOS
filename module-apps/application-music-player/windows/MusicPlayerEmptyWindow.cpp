@@ -14,8 +14,8 @@ namespace gui
 {
     using namespace musicPlayerStyle::emptyWindow;
 
-    MusicPlayerEmptyWindow::MusicPlayerEmptyWindow(app::Application *app)
-        : AppWindow(app, gui::name::window::main_window)
+    MusicPlayerEmptyWindow::MusicPlayerEmptyWindow(app::Application *app, std::shared_ptr<app::music_player::SongsContract::Presenter> windowPresenter)
+        : AppWindow(app, gui::name::window::main_window), presenter{windowPresenter}
     {
         buildInterface();
     }
@@ -72,6 +72,14 @@ namespace gui
         }
 
         if (inputEvent.is(gui::KeyCode::KEY_ENTER) || inputEvent.is(gui::KeyCode::HEADSET_OK)) {
+            if(inputEvent.isLongRelease()){
+                presenter->stop();
+                return true;
+            }
+            if(inputEvent.isShortRelease()){
+                presenter->togglePlaying();
+                return true;
+            }
         }
 
         return false;

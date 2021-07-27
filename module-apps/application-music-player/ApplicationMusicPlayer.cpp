@@ -39,6 +39,8 @@ namespace app
     {
         LOG_INFO("ApplicationMusicPlayer::create");
 
+        bus.channels.push_back(sys::BusChannel::ServiceAudioNotifications);
+
         auto songsRepository = std::make_unique<app::music_player::SongsRepository>(this);
         priv->songsModel     = std::make_unique<app::music_player::SongsModel>(std::move(songsRepository));
         auto audioOperations = std::make_unique<app::music_player::AudioOperations>(this);
@@ -53,6 +55,13 @@ namespace app
             return isTrackPlaying;
         };
         lockPolicyHandler.setPreventsAutoLockByStateCallback(std::move(stateLockCallback));
+
+        connect(typeid(AudioNotificationMessage), [&](sys::Message *request) -> sys::MessagePointer {
+        //auto msg = static_cast<AudioNotificationMessage *>(request);
+
+        LOG_FATAL("AudioNotificationMessage");
+        return sys::msgHandled();
+    });
     }
 
     ApplicationMusicPlayer::~ApplicationMusicPlayer() = default;
@@ -99,8 +108,8 @@ namespace app
         windowsFactory.attach(gui::name::window::all_songs_window, [&](Application *app, const std::string &name) {
             return std::make_unique<gui::MusicPlayerAllSongsWindow>(app, priv->songsPresenter);
         });
-        windowsFactory.attach(gui::name::window::main_window, [](Application *app, const std::string &name) {
-            return std::make_unique<gui::MusicPlayerEmptyWindow>(app);
+        windowsFactory.attach(gui::name::window::main_window, [&](Application *app, const std::string &name) {
+            return std::make_unique<gui::MusicPlayerEmptyWindow>(app, priv->songsPresenter);
         });
 
         attachPopups(
