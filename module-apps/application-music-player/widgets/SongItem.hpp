@@ -9,6 +9,7 @@
 #include <Text.hpp>
 #include <TextFixedSize.hpp>
 #include <ImageBox.hpp>
+#include <Image.hpp>
 
 namespace gui
 {
@@ -16,8 +17,14 @@ namespace gui
     {
 
       public:
+        enum class State
+        {
+          Started,
+          Paused,
+          Stopped
+        };
         SongItem(const std::string &authorName, const std::string &songName, const std::string &duration);
-
+        void setSongItemState(State state);
       private:
         VBox *vBox                  = nullptr;
         HBox *firstHBox             = nullptr;
@@ -25,7 +32,7 @@ namespace gui
         TextFixedSize *authorText   = nullptr;
         TextFixedSize *songText     = nullptr;
         TextFixedSize *durationText = nullptr;
-        ImageBox *playedSong        = nullptr;
+        Image *playedSong        = nullptr;
     };
 
 } /* namespace gui */

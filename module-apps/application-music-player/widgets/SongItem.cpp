@@ -44,15 +44,14 @@ namespace gui
         songText->setMargins(Margins(songItem::leftMargin, 0, 0, 0));
         songText->setEdges(RectangleEdge::None);
         songText->setUnderline(false);
-        songText->setFont(style::window::font::verysmallbold);
+        songText->setFont(style::window::font::bigbold);
         songText->setAlignment(Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center));
         songText->setEditMode(EditMode::Browse);
         songText->setText(songName);
 
-        playedSong = new ImageBox(secondHBox, 0, 0, 0, 0, new Image("messages_error_W_M"));
-        playedSong->setMinimumSize(songItem::duration_w, songItem::text_h);
+        playedSong = new Image(secondHBox, 0, 0, "now_playing_icon_list");
+        playedSong->setAlignment(Alignment(gui::Alignment::Horizontal::Right, gui::Alignment::Vertical::Center));
         playedSong->setVisible(false);
-        playedSong->setEdges(RectangleEdge::None);
 
         authorText = new TextFixedSize(secondHBox, 0, 0, 0, 0);
         authorText->setMinimumHeight(songItem::text_h);
@@ -60,7 +59,7 @@ namespace gui
         authorText->setMargins(Margins(songItem::leftMargin, 0, 0, 0));
         authorText->setEdges(RectangleEdge::None);
         authorText->setUnderline(false);
-        authorText->setFont(style::window::font::verysmall);
+        authorText->setFont(style::window::font::medium);
         authorText->setAlignment(Alignment(gui::Alignment::Horizontal::Left, gui::Alignment::Vertical::Center));
         authorText->setEditMode(EditMode::Browse);
         authorText->setText(authorName);
@@ -69,5 +68,24 @@ namespace gui
             vBox->setArea({0, 0, newDim.w, newDim.h});
             return true;
         };
+    }
+
+    void SongItem::setSongItemState(State state)
+    {
+        switch (state)
+        {
+        case State::Started:
+            playedSong->set("now_playing_icon_pause_list");
+            playedSong->setVisible(true);
+            break;
+        case State::Paused:
+            playedSong->set("now_playing_icon_list");
+            playedSong->setVisible(true);
+            break;
+        case State::Stopped:
+            playedSong->set("");
+            playedSong->setVisible(false);
+        }
+        
     }
 } /* namespace gui */

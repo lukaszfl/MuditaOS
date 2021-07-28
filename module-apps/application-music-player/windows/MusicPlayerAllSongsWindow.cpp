@@ -32,7 +32,7 @@ namespace gui
     {
         AppWindow::buildInterface();
 
-        setTitle(utils::translate("app_music_player_all_songs"));
+        setTitle(utils::translate("app_music_player_music_library_camel"));
 
         bottomBar->setText(BottomBar::Side::CENTER, utils::translate("app_music_player_play"));
         bottomBar->setText(BottomBar::Side::RIGHT, utils::translate(style::strings::common::back));
