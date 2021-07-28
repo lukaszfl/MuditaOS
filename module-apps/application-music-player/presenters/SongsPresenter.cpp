@@ -34,6 +34,7 @@ namespace app::music_player
             LOG_FATAL("path = %s", filePath.c_str());
             SongContext songToken{SongState::Playing, token, filePath};
             songsModelInterface->setCurrentSongContext(songToken);
+            getView()->updateSongsState();
         });
     }
 
@@ -50,8 +51,10 @@ namespace app::music_player
                 }
                 if (token != songsModelInterface->getCurrentFileToken()) {
                     LOG_ERROR("Pause audio operation failed, wrong token");
+                    return;
                 }
                 songsModelInterface->setCurrentSongState(SongState::NotPlaying);
+                getView()->updateSongsState();
             });
         }
         return false;
@@ -70,8 +73,10 @@ namespace app::music_player
                 }
                 if (token != songsModelInterface->getCurrentFileToken()) {
                     LOG_ERROR("Resume audio operation failed, wrong token");
+                    return;
                 }
                 songsModelInterface->setCurrentSongState(SongState::Playing);
+                getView()->updateSongsState();
             });
         }
         return false;
@@ -88,10 +93,12 @@ namespace app::music_player
                               token.IsValid());
                     return;
                 }
-                if (token != songsModelInterface->getCurrentFileToken()) {
+                if (token == songsModelInterface->getCurrentFileToken()) { // TODO: alek: need to be !=
                     LOG_ERROR("Playback audio operation failed, wrong token");
+                    return;
                 }
                 songsModelInterface->clearCurrentSongContext();
+                getView()->updateSongsState();
             });
         }
         return false;
@@ -117,6 +124,7 @@ namespace app::music_player
         {
             LOG_FATAL("handleAudioNotification stop");
             songsModelInterface->clearCurrentSongContext();
+            getView()->updateSongsState(true);
             return sys::msgHandled();
         }
         return sys::msgNotHandled();

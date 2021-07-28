@@ -70,22 +70,20 @@ namespace gui
         };
     }
 
-    void SongItem::setSongItemState(State state)
+    void SongItem::setState(ItemState state)
     {
         switch (state)
         {
-        case State::Started:
+        case ItemState::Paused:
             playedSong->set("now_playing_icon_pause_list");
             playedSong->setVisible(true);
             break;
-        case State::Paused:
+        case ItemState::Playing:
             playedSong->set("now_playing_icon_list");
             playedSong->setVisible(true);
             break;
-        case State::Stopped:
+        case ItemState::None:
             playedSong->set("");
             playedSong->setVisible(false);
         }
-        
-    }
 } /* namespace gui */

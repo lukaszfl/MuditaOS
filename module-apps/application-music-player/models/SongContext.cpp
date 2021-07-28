@@ -12,4 +12,19 @@ namespace app::music_player
         currentFileToken = std::nullopt;
         filePath = "";
     }
+
+    bool SongContext::isValid() const
+    {
+        return (currentFileToken && currentFileToken->IsValid() && !filePath.empty());
+    }
+
+    bool SongContext::isPlaying() const
+    {
+        return isValid() && currentSongState == SongState::Playing;
+    }
+
+    bool SongContext::isPaused() const
+    {
+        return isValid() && currentSongState == SongState::NotPlaying;
+    }
 }

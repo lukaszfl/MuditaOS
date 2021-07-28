@@ -29,7 +29,6 @@ namespace app::music_player
         virtual bool isSongPlaying() const noexcept                                  = 0;
         virtual void setCurrentSongState(SongState songState) noexcept               = 0;
         virtual std::optional<audio::Token> getCurrentFileToken() const noexcept     = 0;
-        virtual void setCurrentFileToken(std::optional<audio::Token> token) noexcept = 0;
         virtual SongContext getCurrentSongContext() const noexcept = 0;
         virtual void setCurrentSongContext(SongContext context) = 0;
         virtual void clearCurrentSongContext() = 0;

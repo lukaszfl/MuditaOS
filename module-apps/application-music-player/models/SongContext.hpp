@@ -21,6 +21,10 @@ namespace app::music_player
         std::string filePath;
 
         void clear();
+
+        bool isPlaying() const;
+        bool isPaused() const;
+        bool isValid() const;
     };
 
 } // namespace app::music_player

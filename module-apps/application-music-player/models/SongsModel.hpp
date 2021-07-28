@@ -34,13 +34,14 @@ namespace app::music_player
         bool isSongPlaying() const noexcept override;
         void setCurrentSongState(SongState songState) noexcept override;
         std::optional<audio::Token> getCurrentFileToken() const noexcept override;
-        void setCurrentFileToken(std::optional<audio::Token> token) noexcept override;
 
         SongContext getCurrentSongContext() const noexcept override;
         void setCurrentSongContext(SongContext context) override;
         void clearCurrentSongContext() override;
 
       private:
+        void clearCurrentItemState();
+        void updateCurrentItemState();
         SongContext songContext;
         
         std::shared_ptr<AbstractSongsRepository> songsRepository;

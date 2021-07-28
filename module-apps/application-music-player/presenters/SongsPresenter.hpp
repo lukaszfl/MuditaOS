@@ -19,6 +19,7 @@ namespace app::music_player
         {
           public:
             virtual ~View() noexcept = default;
+            virtual void updateSongsState(bool needRefresh = false) = 0;
         };
         class Presenter : public BasePresenter<SongsContract::View>
         {

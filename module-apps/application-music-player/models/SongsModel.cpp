@@ -23,7 +23,7 @@ namespace app::music_player
 
     auto SongsModel::getMinimalItemSpaceRequired() const -> unsigned int
     {
-        return musicPlayerStyle::songItem::h + style::margins::small*2;
+        return musicPlayerStyle::songItem::h + style::margins::small * 2;
     }
 
     void SongsModel::requestRecords(const uint32_t offset, const uint32_t limit)
@@ -57,7 +57,6 @@ namespace app::music_player
         }
     }
 
-
     bool SongsModel::isSongPlaying() const noexcept
     {
         return songContext.currentSongState == SongState::Playing;
@@ -66,6 +65,7 @@ namespace app::music_player
     void SongsModel::setCurrentSongState(SongState songState) noexcept
     {
         songContext.currentSongState = songState;
+        updateCurrentItemState();
     }
 
     std::optional<audio::Token> SongsModel::getCurrentFileToken() const noexcept
@@ -73,28 +73,58 @@ namespace app::music_player
         return songContext.currentFileToken;
     }
 
-    void SongsModel::setCurrentFileToken(std::optional<audio::Token> token) noexcept
-    {
-        songContext.currentFileToken = token;
-    }
-
     size_t SongsModel::getCurrentIndex() const
     {
         return songsRepository->getFileIndex(songContext.filePath);
     }
-    
-    SongContext SongsModel::getCurrentSongContext() const noexcept 
+
+    SongContext SongsModel::getCurrentSongContext() const noexcept
     {
         return songContext;
     }
 
-    void SongsModel::setCurrentSongContext(SongContext context) 
+    void SongsModel::setCurrentSongContext(SongContext context)
     {
+        using namespace gui;
+        clearCurrentItemState();
+
         songContext = context;
+
+        updateCurrentItemState();
     }
 
     void SongsModel::clearCurrentSongContext()
     {
+        clearCurrentItemState();
         songContext.clear();
+    }
+
+    void SongsModel::clearCurrentItemState()
+    {
+        using namespace gui;
+        auto songIndex = getCurrentIndex();
+        if(songIndex < internalData.size())
+        {
+            internalData[songIndex]->setState(SongItem::ItemState::None);
+        }
+    }
+
+    void SongsModel::updateCurrentItemState()
+    {
+        using namespace gui;
+        auto songIndex = getCurrentIndex();
+        if (songIndex >= internalData.size()) {
+            return;
+        }
+
+        if (songContext.isPlaying()) {
+            internalData[songIndex]->setState(SongItem::ItemState::Playing);
+        }
+        else if (songContext.isPaused()) {
+            internalData[songIndex]->setState(SongItem::ItemState::Paused);
+        }
+        else {
+            internalData[songIndex]->setState(SongItem::ItemState::None);
+        }
     }
 } // namespace app::music_player

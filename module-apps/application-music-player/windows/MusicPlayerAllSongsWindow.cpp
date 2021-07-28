@@ -60,4 +60,14 @@ namespace gui
          songsList->rebuildList(listview::RebuildType::OnPageElement, index == static_cast<size_t>(-1) ? 0 : index);
     }
 
+    void MusicPlayerAllSongsWindow::updateSongsState(bool needRefresh) 
+    {
+        songsList->rebuildList(gui::listview::RebuildType::InPlace);
+
+        if(needRefresh)
+        {
+            application->refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+        }
+    }
+
 } /* namespace gui */

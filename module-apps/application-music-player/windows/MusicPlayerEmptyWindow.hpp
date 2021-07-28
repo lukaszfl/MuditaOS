@@ -33,6 +33,8 @@ namespace gui
         void destroyInterface() override;
         bool onDatabaseMessage(sys::Message *msg) override;
         bool onInput(const InputEvent &inputEvent) final;
+
+        void updateSongsState(bool needRefresh) override;
     };
 
 } /* namespace gui */

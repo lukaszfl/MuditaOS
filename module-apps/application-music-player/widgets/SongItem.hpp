@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -17,14 +17,17 @@ namespace gui
     {
 
       public:
-        enum class State
-        {
-          Started,
-          Paused,
-          Stopped
-        };
+
         SongItem(const std::string &authorName, const std::string &songName, const std::string &duration);
-        void setSongItemState(State state);
+
+        enum class ItemState
+        {
+            None,
+            Playing,
+            Paused
+        };
+        void setState(ItemState state);
+
       private:
         VBox *vBox                  = nullptr;
         HBox *firstHBox             = nullptr;
