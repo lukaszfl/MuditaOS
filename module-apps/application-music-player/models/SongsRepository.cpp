@@ -8,7 +8,6 @@
 #include <service-audio/AudioServiceAPI.hpp>
 #include <service-audio/AudioServiceName.hpp>
 #include <time/ScopedTime.hpp>
-#include <purefs/filesystem_paths.hpp>
 #include <service-audio/AudioMessage.hpp>
 
 #include <filesystem>
@@ -23,19 +22,18 @@ namespace app::music_player
         return AudioServiceAPI::GetFileTags(application, filePath);
     }
 
-    SongsRepository::SongsRepository(std::unique_ptr<AbstractTagsFetcher> tagsFetcher)
-        : tagsFetcher(std::move(tagsFetcher))
+    SongsRepository::SongsRepository(std::unique_ptr<AbstractTagsFetcher> tagsFetcher, std::string musicFolderName)
+        : tagsFetcher(std::move(tagsFetcher)), musicFolderName(std::move(musicFolderName))
     {}
 
     void SongsRepository::scanMusicFilesList()
     {
-        const auto musicFolder = purefs::dir::getUserDiskPath() / "music";
         musicFiles.clear();
 
-        LOG_INFO("Scanning music folder: %s", musicFolder.c_str());
+        LOG_INFO("Scanning music folder: %s", musicFolderName.c_str());
         {
             auto time = utils::time::Scoped("fetch tags time");
-            for (const auto &entry : std::filesystem::directory_iterator(musicFolder)) {
+            for (const auto &entry : std::filesystem::directory_iterator(musicFolderName)) {
                 if (!std::filesystem::is_directory(entry)) {
                     const auto &filePath = entry.path();
                     const auto fileTags  = tagsFetcher->getFileTags(filePath);

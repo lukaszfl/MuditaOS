@@ -5,6 +5,12 @@
 
 #include <apps-common/Application.hpp>
 #include <Audio/decoder/Decoder.hpp>
+#include <purefs/filesystem_paths.hpp>
+
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <cstddef>
 
 namespace app::music_player
@@ -40,8 +46,11 @@ namespace app::music_player
 
     class SongsRepository : public AbstractSongsRepository
     {
+        static constexpr auto musicSubfolderName = "music";
+
       public:
-        explicit SongsRepository(std::unique_ptr<AbstractTagsFetcher> tagsFetcher);
+        explicit SongsRepository(std::unique_ptr<AbstractTagsFetcher> tagsFetcher,
+                                 std::string musicFolderName = purefs::dir::getUserDiskPath() / musicSubfolderName);
 
         void scanMusicFilesList() override;
         std::vector<audio::Tags> getMusicFilesList() const override;
@@ -49,6 +58,7 @@ namespace app::music_player
 
       private:
         std::unique_ptr<AbstractTagsFetcher> tagsFetcher;
+        std::string musicFolderName;
         std::vector<audio::Tags> musicFiles;
     };
 } // namespace app::music_player
