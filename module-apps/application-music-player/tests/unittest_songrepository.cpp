@@ -119,6 +119,42 @@ TEST_F(SongsRepositoryFixture, ScanWithTagsReturn)
     EXPECT_EQ(musicFiles.size(), 2);
 }
 
+TEST_F(SongsRepositoryFixture, FileIndex)
+{
+    auto tagsFetcherMock = std::make_unique<MockTagsFetcher>();
+    auto rawMock         = tagsFetcherMock.get();
+    auto repo = std::make_unique<app::music_player::SongsRepository>(std::move(tagsFetcherMock), musicDirPath);
+
+    auto fooPath = musicDirPath / "foo";
+    auto barPath = musicDirPath / "bar";
+
+    auto fooTags = ::audio::Tags();
+    auto barTags = ::audio::Tags();
+
+    fooTags.title    = "foo";
+    fooTags.filePath = fooPath.c_str();
+
+    barTags.title    = "bar";
+    barTags.filePath = barPath.c_str();
+
+    ON_CALL(*rawMock, getFileTags(fs::path(musicDirPath / "foo").c_str())).WillByDefault(Return(fooTags));
+    ON_CALL(*rawMock, getFileTags(fs::path(musicDirPath / "bar").c_str())).WillByDefault(Return(barTags));
+    EXPECT_CALL(*rawMock, getFileTags).Times(2);
+    repo->scanMusicFilesList();
+
+    auto fooIndex = repo->getFileIndex(fooPath);
+    auto barIndex = repo->getFileIndex(barPath);
+
+    EXPECT_NE(fooIndex, static_cast<std::size_t>(-1));
+    EXPECT_LT(fooIndex, 2);
+
+    EXPECT_NE(barIndex, static_cast<std::size_t>(-1));
+    EXPECT_LT(barIndex, 2);
+
+    auto bazIndex = repo->getFileIndex("baz");
+    EXPECT_EQ(bazIndex, static_cast<std::size_t>(-1));
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
