@@ -17,6 +17,7 @@ namespace gui
     MusicPlayerEmptyWindow::MusicPlayerEmptyWindow(app::Application *app, std::shared_ptr<app::music_player::SongsContract::Presenter> windowPresenter)
         : AppWindow(app, gui::name::window::main_window), presenter{windowPresenter}
     {
+        presenter->attach(this);
         buildInterface();
     }
 
@@ -53,7 +54,9 @@ namespace gui
     }
 
     void MusicPlayerEmptyWindow::onBeforeShow(ShowMode mode, SwitchData *data)
-    {}
+    {
+        presenter->attach(this);
+    }
 
     bool MusicPlayerEmptyWindow::onDatabaseMessage(sys::Message *msgl)
     {

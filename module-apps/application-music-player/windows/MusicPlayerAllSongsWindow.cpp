@@ -55,9 +55,10 @@ namespace gui
 
     void MusicPlayerAllSongsWindow::onBeforeShow([[maybe_unused]] ShowMode mode, [[maybe_unused]] SwitchData *data)
     {
+        presenter->attach(this);
         auto index = presenter->getMusicPlayerItemProvider()->getCurrentIndex();
 
-         songsList->rebuildList(listview::RebuildType::OnPageElement, index == static_cast<size_t>(-1) ? 0 : index);
+        songsList->rebuildList(listview::RebuildType::OnPageElement, index == static_cast<size_t>(-1) ? 0 : index);
     }
 
     void MusicPlayerAllSongsWindow::updateSongsState(bool needRefresh) 
