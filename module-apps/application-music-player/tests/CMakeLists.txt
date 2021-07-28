@@ -5,4 +5,6 @@ add_gtest_executable(
         unittest_songrepository.cpp
     LIBS
         application-music-player
+    INCLUDE
+        ${CMAKE_CURRENT_LIST_DIR}/../models
 )

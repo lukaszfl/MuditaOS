@@ -8,6 +8,7 @@
 #include <purefs/filesystem_paths.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
