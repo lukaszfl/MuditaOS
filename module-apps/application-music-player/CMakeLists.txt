@@ -58,3 +58,7 @@ target_link_libraries(application-music-player
         apps-common
         module-audio
 )
+
+if (${ENABLE_TESTS})
+    add_subdirectory(tests)
+endif()
