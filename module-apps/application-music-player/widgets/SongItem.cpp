@@ -86,4 +86,5 @@ namespace gui
             playedSong->set("");
             playedSong->setVisible(false);
         }
+    }
 } /* namespace gui */
