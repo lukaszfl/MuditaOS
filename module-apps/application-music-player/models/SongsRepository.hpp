@@ -5,6 +5,7 @@
 
 #include <apps-common/Application.hpp>
 #include <Audio/decoder/Decoder.hpp>
+#include <cstddef>
 
 namespace app::music_player
 {
@@ -13,8 +14,10 @@ namespace app::music_player
       public:
         virtual ~AbstractSongsRepository() noexcept = default;
 
-        virtual std::vector<audio::Tags> getMusicFilesList()                        = 0;
+        virtual void scanMusicFilesList() = 0;
+        virtual std::vector<audio::Tags> getMusicFilesList() const = 0;
         virtual std::optional<audio::Tags> getFileTags(const std::string &filePath) = 0;
+        virtual std::size_t getFileIndex(const std::string &filePath) = 0;
     };
 
     class SongsRepository : public AbstractSongsRepository
@@ -22,10 +25,13 @@ namespace app::music_player
       public:
         explicit SongsRepository(Application *application);
 
-        std::vector<audio::Tags> getMusicFilesList() override;
+        void scanMusicFilesList() override;
+        std::vector<audio::Tags> getMusicFilesList() const override;
         std::optional<audio::Tags> getFileTags(const std::string &filePath) override;
+        std::size_t getFileIndex(const std::string &filePath) override;
 
       private:
         Application *application = nullptr;
+        std::vector<audio::Tags> musicFiles; 
     };
 } // namespace app::music_player

@@ -39,6 +39,7 @@ namespace app::music_player
 
     void SongsModel::createData(std::function<bool(const std::string &fileName)> func)
     {
+        songsRepository->scanMusicFilesList();
         auto songsList = songsRepository->getMusicFilesList();
         for (const auto &song : songsList) {
             auto item = new gui::SongItem(song.artist, song.title, utils::time::Duration(song.total_duration_s).str());

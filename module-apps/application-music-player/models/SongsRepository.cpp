@@ -3,6 +3,7 @@
 
 #include "SongsRepository.hpp"
 
+#include <algorithm>
 #include <log.hpp>
 #include <service-audio/AudioServiceAPI.hpp>
 #include <service-audio/AudioServiceName.hpp>
@@ -15,12 +16,14 @@
 namespace app::music_player
 {
     SongsRepository::SongsRepository(Application *application) : application(application)
-    {}
+    {
+    }
 
-    std::vector<audio::Tags> SongsRepository::getMusicFilesList()
+    void SongsRepository::scanMusicFilesList()
     {
         const auto musicFolder = purefs::dir::getUserDiskPath() / "music";
-        std::vector<audio::Tags> musicFiles;
+        musicFiles.clear();
+
         LOG_INFO("Scanning music folder: %s", musicFolder.c_str());
         {
             auto time = utils::time::Scoped("fetch tags time");
@@ -39,11 +42,29 @@ namespace app::music_player
             }
         }
         LOG_INFO("Total number of music files found: %u", static_cast<unsigned int>(musicFiles.size()));
+    }
+
+    std::vector<audio::Tags> SongsRepository::getMusicFilesList() const
+    {
         return musicFiles;
     }
 
     std::optional<audio::Tags> SongsRepository::getFileTags(const std::string &filePath)
     {
         return AudioServiceAPI::GetFileTags(application, filePath);
+    }
+
+    std::size_t SongsRepository::getFileIndex(const std::string &filePath)
+    {
+        auto it = std::find_if(musicFiles.begin(), musicFiles.end(), [filePath](const auto &musicFile) {
+            return musicFile.filePath == filePath;
+        });
+
+        if(it != musicFiles.end())
+        {
+            return std::distance(musicFiles.begin(), it);
+        }
+
+        return static_cast<size_t>(-1);
     }
 } // namespace app::music_player
