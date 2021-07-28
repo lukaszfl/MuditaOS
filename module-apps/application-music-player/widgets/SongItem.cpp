@@ -49,7 +49,7 @@ namespace gui
         songText->setEditMode(EditMode::Browse);
         songText->setText(songName);
 
-        playedSong = new Image(secondHBox, 0, 0, "now_playing_icon_list");
+        playedSong = new Image(secondHBox, 0, 0, "");
         playedSong->setAlignment(Alignment(gui::Alignment::Horizontal::Right, gui::Alignment::Vertical::Center));
         playedSong->setVisible(false);
 
@@ -72,19 +72,21 @@ namespace gui
 
     void SongItem::setState(ItemState state)
     {
-        switch (state)
-        {
+        switch (state) {
         case ItemState::Paused:
             playedSong->set("now_playing_icon_pause_list");
             playedSong->setVisible(true);
+            secondHBox->resizeItems();
             break;
         case ItemState::Playing:
             playedSong->set("now_playing_icon_list");
             playedSong->setVisible(true);
+            secondHBox->resizeItems();
             break;
         case ItemState::None:
             playedSong->set("");
             playedSong->setVisible(false);
+            secondHBox->resizeItems();
         }
     }
 } /* namespace gui */
