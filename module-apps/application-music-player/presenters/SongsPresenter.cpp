@@ -3,6 +3,8 @@
 
 #include "SongsPresenter.hpp"
 
+#include <service-audio/AudioMessage.hpp>
+
 namespace app::music_player
 {
     using SongState = SongsModelInterface::SongState;
@@ -24,13 +26,14 @@ namespace app::music_player
 
     bool SongsPresenter::play(const std::string &filePath)
     {
-        return audioOperations->play(filePath, [this](audio::RetCode retCode, audio::Token token) {
+        return audioOperations->play(filePath, [this, filePath](audio::RetCode retCode, audio::Token token) {
             if (retCode != audio::RetCode::Success || !token.IsValid()) {
                 LOG_ERROR("Playback audio operation failed, retcode = %s, token validity = %d",
                           str(retCode).c_str(),
                           token.IsValid());
                 return;
             }
+            LOG_FATAL("path = %s", filePath.c_str());
             songsModelInterface->setCurrentSongState(SongState::Playing);
             songsModelInterface->setCurrentFileToken(token);
         });
@@ -105,6 +108,22 @@ namespace app::music_player
         else {
             resume();
         }
+    }
+
+    sys::MessagePointer SongsPresenter::handleAudioNotification(const AudioNotificationMessage *notification)
+    {
+        if(notification == nullptr)
+        {
+            return sys::msgNotHandled();
+        }
+        if(notification->type == AudioNotificationMessage::Type::Stop && notification->token == songsModelInterface->getCurrentFileToken())
+        {
+            LOG_FATAL("handleAudioNotification stop");
+            songsModelInterface->setCurrentFileToken(std::nullopt);
+            songsModelInterface->setCurrentSongState(SongState::NotPlaying);
+            return sys::msgHandled();
+        }
+        return sys::msgNotHandled();
     }
 
 } // namespace app::music_player

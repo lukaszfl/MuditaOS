@@ -56,12 +56,10 @@ namespace app
         };
         lockPolicyHandler.setPreventsAutoLockByStateCallback(std::move(stateLockCallback));
 
-        connect(typeid(AudioNotificationMessage), [&](sys::Message *request) -> sys::MessagePointer {
-        //auto msg = static_cast<AudioNotificationMessage *>(request);
-
-        LOG_FATAL("AudioNotificationMessage");
-        return sys::msgHandled();
-    });
+        connect(typeid(AudioNotificationMessage), [&](sys::Message *msg) -> sys::MessagePointer {
+            auto notification = static_cast<AudioNotificationMessage *>(msg);
+            return priv->songsPresenter->handleAudioNotification(notification);
+        });
     }
 
     ApplicationMusicPlayer::~ApplicationMusicPlayer() = default;
