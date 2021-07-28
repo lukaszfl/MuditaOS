@@ -1,6 +1,6 @@
 add_gtest_executable(
     NAME 
-        music-store
+        app-music-songs-repo
     SRCS
         unittest_songrepository.cpp
     LIBS
