@@ -5,6 +5,7 @@
 
 #include "module-apps/application-music-player/data/MusicPlayerStyle.hpp"
 
+#include "SongContext.hpp"
 #include "SongsRepository.hpp"
 #include "SongsModelInterface.hpp"
 
@@ -25,17 +26,23 @@ namespace app::music_player
 
         auto getItem(gui::Order order) -> gui::ListItem * override;
 
-        void requestRecords( uint32_t offset, uint32_t limit) override;
+        void requestRecords( uint32_t offset, uint32_t limit ) override;
+
+        size_t getCurrentIndex() const override;
+        //void storeFileIndex(std::string filePath) override;
 
         bool isSongPlaying() const noexcept override;
         void setCurrentSongState(SongState songState) noexcept override;
         std::optional<audio::Token> getCurrentFileToken() const noexcept override;
         void setCurrentFileToken(std::optional<audio::Token> token) noexcept override;
 
-      protected:
-        SongState currentSongState = SongState::NotPlaying;
+        SongContext getCurrentSongContext() const noexcept override;
+        void setCurrentSongContext(SongContext context) override;
+        void clearCurrentSongContext() override;
 
-        std::optional<audio::Token> currentFileToken;
+      private:
+        SongContext songContext;
+        
         std::shared_ptr<AbstractSongsRepository> songsRepository;
     };
 } // namespace app::music_player

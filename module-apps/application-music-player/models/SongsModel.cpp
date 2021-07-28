@@ -60,21 +60,41 @@ namespace app::music_player
 
     bool SongsModel::isSongPlaying() const noexcept
     {
-        return currentSongState == SongState::Playing;
+        return songContext.currentSongState == SongState::Playing;
     }
 
     void SongsModel::setCurrentSongState(SongState songState) noexcept
     {
-        currentSongState = songState;
+        songContext.currentSongState = songState;
     }
 
     std::optional<audio::Token> SongsModel::getCurrentFileToken() const noexcept
     {
-        return currentFileToken;
+        return songContext.currentFileToken;
     }
 
     void SongsModel::setCurrentFileToken(std::optional<audio::Token> token) noexcept
     {
-        currentFileToken = token;
+        songContext.currentFileToken = token;
+    }
+
+    size_t SongsModel::getCurrentIndex() const
+    {
+        return songsRepository->getFileIndex(songContext.filePath);
+    }
+    
+    SongContext SongsModel::getCurrentSongContext() const noexcept 
+    {
+        return songContext;
+    }
+
+    void SongsModel::setCurrentSongContext(SongContext context) 
+    {
+        songContext = context;
+    }
+
+    void SongsModel::clearCurrentSongContext()
+    {
+        songContext.clear();
     }
 } // namespace app::music_player

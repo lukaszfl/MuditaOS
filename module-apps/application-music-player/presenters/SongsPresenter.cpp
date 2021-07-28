@@ -7,8 +7,6 @@
 
 namespace app::music_player
 {
-    using SongState = SongsModelInterface::SongState;
-
     SongsPresenter::SongsPresenter(std::shared_ptr<app::music_player::SongsModelInterface> songsModelInterface,
                                    std::unique_ptr<AbstractAudioOperations> &&audioOperations)
         : songsModelInterface{std::move(songsModelInterface)}, audioOperations{std::move(audioOperations)}
@@ -34,8 +32,8 @@ namespace app::music_player
                 return;
             }
             LOG_FATAL("path = %s", filePath.c_str());
-            songsModelInterface->setCurrentSongState(SongState::Playing);
-            songsModelInterface->setCurrentFileToken(token);
+            SongContext songToken{SongState::Playing, token, filePath};
+            songsModelInterface->setCurrentSongContext(songToken);
         });
     }
 
@@ -93,8 +91,7 @@ namespace app::music_player
                 if (token != songsModelInterface->getCurrentFileToken()) {
                     LOG_ERROR("Playback audio operation failed, wrong token");
                 }
-                songsModelInterface->setCurrentFileToken(std::nullopt);
-                songsModelInterface->setCurrentSongState(SongState::NotPlaying);
+                songsModelInterface->clearCurrentSongContext();
             });
         }
         return false;
@@ -119,8 +116,7 @@ namespace app::music_player
         if(notification->type == AudioNotificationMessage::Type::Stop && notification->token == songsModelInterface->getCurrentFileToken())
         {
             LOG_FATAL("handleAudioNotification stop");
-            songsModelInterface->setCurrentFileToken(std::nullopt);
-            songsModelInterface->setCurrentSongState(SongState::NotPlaying);
+            songsModelInterface->clearCurrentSongContext();
             return sys::msgHandled();
         }
         return sys::msgNotHandled();

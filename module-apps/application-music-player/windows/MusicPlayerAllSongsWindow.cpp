@@ -55,7 +55,9 @@ namespace gui
 
     void MusicPlayerAllSongsWindow::onBeforeShow([[maybe_unused]] ShowMode mode, [[maybe_unused]] SwitchData *data)
     {
-         songsList->rebuildList(listview::RebuildType::OnPageElement, 0); // TODO: alek: add index
+        auto index = presenter->getMusicPlayerItemProvider()->getCurrentIndex();
+
+         songsList->rebuildList(listview::RebuildType::OnPageElement, index == static_cast<size_t>(-1) ? 0 : index);
     }
 
 } /* namespace gui */
