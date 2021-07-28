@@ -15,9 +15,17 @@
 
 namespace app::music_player
 {
-    SongsRepository::SongsRepository(Application *application) : application(application)
+    ServiceAudioTagsFetcher::ServiceAudioTagsFetcher(Application *application) : application(application)
+    {}
+
+    std::optional<audio::Tags> ServiceAudioTagsFetcher::getFileTags(const std::string &filePath)
     {
+        return AudioServiceAPI::GetFileTags(application, filePath);
     }
+
+    SongsRepository::SongsRepository(std::unique_ptr<AbstractTagsFetcher> tagsFetcher)
+        : tagsFetcher(std::move(tagsFetcher))
+    {}
 
     void SongsRepository::scanMusicFilesList()
     {
@@ -30,7 +38,7 @@ namespace app::music_player
             for (const auto &entry : std::filesystem::directory_iterator(musicFolder)) {
                 if (!std::filesystem::is_directory(entry)) {
                     const auto &filePath = entry.path();
-                    const auto fileTags  = getFileTags(filePath);
+                    const auto fileTags  = tagsFetcher->getFileTags(filePath);
                     if (fileTags) {
                         musicFiles.push_back(*fileTags);
                         LOG_DEBUG(" - file %s found", entry.path().c_str());
@@ -49,19 +57,13 @@ namespace app::music_player
         return musicFiles;
     }
 
-    std::optional<audio::Tags> SongsRepository::getFileTags(const std::string &filePath)
-    {
-        return AudioServiceAPI::GetFileTags(application, filePath);
-    }
-
     std::size_t SongsRepository::getFileIndex(const std::string &filePath)
     {
         auto it = std::find_if(musicFiles.begin(), musicFiles.end(), [filePath](const auto &musicFile) {
             return musicFile.filePath == filePath;
         });
 
-        if(it != musicFiles.end())
-        {
+        if (it != musicFiles.end()) {
             return std::distance(musicFiles.begin(), it);
         }
 

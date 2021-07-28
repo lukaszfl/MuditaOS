@@ -41,7 +41,8 @@ namespace app
 
         bus.channels.push_back(sys::BusChannel::ServiceAudioNotifications);
 
-        auto songsRepository = std::make_unique<app::music_player::SongsRepository>(this);
+        auto tagsFetcher     = std::make_unique<app::music_player::ServiceAudioTagsFetcher>(this);
+        auto songsRepository = std::make_unique<app::music_player::SongsRepository>(std::move(tagsFetcher));
         priv->songsModel     = std::make_unique<app::music_player::SongsModel>(std::move(songsRepository));
         auto audioOperations = std::make_unique<app::music_player::AudioOperations>(this);
         priv->songsPresenter =
