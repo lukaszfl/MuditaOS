@@ -9,7 +9,6 @@
 
 #include <module-apps/application-music-player/models/SongsModelInterface.hpp>
 
-class AudioNotificationMessage;
 namespace app::music_player
 {
     class SongsContract
@@ -18,9 +17,9 @@ namespace app::music_player
         class View
         {
           public:
-            virtual ~View() noexcept = default;
+            virtual ~View() noexcept        = default;
             virtual void updateSongsState() = 0;
-            virtual void refreshWindow() = 0;
+            virtual void refreshWindow()    = 0;
         };
         class Presenter : public BasePresenter<SongsContract::View>
         {
@@ -36,7 +35,7 @@ namespace app::music_player
             virtual bool stop()                            = 0;
             virtual void togglePlaying()                   = 0;
 
-            virtual sys::MessagePointer handleAudioNotification(const AudioNotificationMessage *notification) = 0;
+            virtual bool handleAudioStopNotifiaction(audio::Token token) = 0;
         };
     };
 
@@ -56,7 +55,7 @@ namespace app::music_player
         bool stop() override;
         void togglePlaying() override;
 
-        sys::MessagePointer handleAudioNotification(const AudioNotificationMessage *notification) override;
+        bool handleAudioStopNotifiaction(audio::Token token) override;
 
       private:
         std::shared_ptr<SongsModelInterface> songsModelInterface;

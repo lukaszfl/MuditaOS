@@ -13,6 +13,7 @@ target_include_directories(application-music-player
 target_sources(application-music-player
     PRIVATE
         ApplicationMusicPlayer.cpp
+        AudioNotificationsHandler.cpp
         models/SongContext.cpp
         models/SongsModel.cpp
         models/SongsRepository.cpp
@@ -23,6 +24,7 @@ target_sources(application-music-player
         windows/MusicPlayerAllSongsWindow.cpp
         windows/MusicPlayerEmptyWindow.cpp
     PRIVATE
+        AudioNotificationsHandler.hpp
         data/MusicPlayerStyle.hpp
         models/SongContext.hpp
         models/SongsModel.hpp

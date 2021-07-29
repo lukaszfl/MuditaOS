@@ -2,6 +2,9 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include <application-music-player/ApplicationMusicPlayer.hpp>
+
+#include "AudioNotificationsHandler.hpp"
+
 #include <windows/MusicPlayerAllSongsWindow.hpp>
 #include <windows/MusicPlayerEmptyWindow.hpp>
 #include <presenters/AudioOperations.hpp>
@@ -55,7 +58,8 @@ namespace app
 
         connect(typeid(AudioNotificationMessage), [&](sys::Message *msg) -> sys::MessagePointer {
             auto notification = static_cast<AudioNotificationMessage *>(msg);
-            return priv->songsPresenter->handleAudioNotification(notification);
+            music_player::AudioNotificationsHandler audioNotificationHandler{priv->songsPresenter};
+            return audioNotificationHandler.handleAudioNotification(notification);
         });
     }
 

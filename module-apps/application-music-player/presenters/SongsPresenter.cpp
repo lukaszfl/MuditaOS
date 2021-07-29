@@ -114,21 +114,16 @@ namespace app::music_player
         }
     }
 
-    sys::MessagePointer SongsPresenter::handleAudioNotification(const AudioNotificationMessage *notification)
+    bool SongsPresenter::handleAudioStopNotifiaction(audio::Token token)
     {
-        if(notification == nullptr)
+        if(token == songsModelInterface->getCurrentFileToken())
         {
-            return sys::msgNotHandled();
-        }
-        if(notification->type == AudioNotificationMessage::Type::Stop && notification->token == songsModelInterface->getCurrentFileToken())
-        {
-            LOG_FATAL("handleAudioNotification stop");
             songsModelInterface->clearCurrentSongContext();
             getView()->updateSongsState();
             getView()->refreshWindow();
-            return sys::msgHandled();
+            return true;
         }
-        return sys::msgNotHandled();
+        return false;
     }
 
 } // namespace app::music_player
