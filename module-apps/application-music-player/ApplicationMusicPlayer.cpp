@@ -51,15 +51,13 @@ namespace app
         priv->songsPresenter =
             std::make_unique<app::music_player::SongsPresenter>(priv->songsModel, std::move(audioOperations));
 
-        std::function<bool()> stateLockCallback = [this]() -> bool {
-            return true;
-        };
+        std::function<bool()> stateLockCallback = [this]() -> bool { return true; };
         lockPolicyHandler.setPreventsAutoLockByStateCallback(std::move(stateLockCallback));
 
         connect(typeid(AudioNotificationMessage), [&](sys::Message *msg) -> sys::MessagePointer {
-            auto notification = static_cast<AudioNotificationMessage *>(msg);
+            auto notification = static_cast<AudioStopNotification *>(msg);
             music_player::AudioNotificationsHandler audioNotificationHandler{priv->songsPresenter};
-            return audioNotificationHandler.handleAudioNotification(notification);
+            return audioNotificationHandler.handleAudioStopNotification(notification);
         });
     }
 

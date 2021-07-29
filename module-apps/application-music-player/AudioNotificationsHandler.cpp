@@ -13,17 +13,14 @@ namespace app::music_player
         : presenter(presenter)
     {}
 
-    sys::MessagePointer AudioNotificationsHandler::handleAudioNotification(const AudioNotificationMessage *notification)
+    sys::MessagePointer AudioNotificationsHandler::handleAudioStopNotification(
+        const AudioStopNotification *notification)
     {
         if (notification == nullptr) {
             return sys::msgNotHandled();
         }
-        if (notification->type == AudioNotificationMessage::Type::Stop) {
 
-            return presenter->handleAudioStopNotifiaction(notification->token) ? sys::msgNotHandled()
-                                                                               : sys::msgHandled();
-        }
-        return sys::msgNotHandled();
+        return presenter->handleAudioStopNotifiaction(notification->token) ? sys::msgNotHandled() : sys::msgHandled();
     }
 
 } // namespace app::music_player

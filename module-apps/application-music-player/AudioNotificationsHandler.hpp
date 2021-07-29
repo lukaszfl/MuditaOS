@@ -5,7 +5,7 @@
 
 #include <presenters/SongsPresenter.hpp>
 
-class AudioNotificationMessage;
+class AudioStopNotification;
 namespace app::music_player
 {
     class AudioNotificationsHandler
@@ -13,7 +13,7 @@ namespace app::music_player
       public:
         explicit AudioNotificationsHandler(std::shared_ptr<app::music_player::SongsContract::Presenter> presenter);
 
-        sys::MessagePointer handleAudioNotification(const AudioNotificationMessage *notification);
+        sys::MessagePointer handleAudioStopNotification(const AudioStopNotification *notification);
 
       private:
         std::shared_ptr<app::music_player::SongsContract::Presenter> presenter;
