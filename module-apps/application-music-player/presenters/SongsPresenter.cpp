@@ -86,19 +86,8 @@ namespace app::music_player
     {
         auto currentFileToken = songsModelInterface->getCurrentFileToken();
         if (currentFileToken) {
-            return audioOperations->stop(currentFileToken.value(), [this](audio::RetCode retCode, audio::Token token) {
-                if (retCode != audio::RetCode::Success || !token.IsValid()) {
-                    LOG_ERROR("Stop audio operation failed, retcode = %s, token validity = %d",
-                              str(retCode).c_str(),
-                              token.IsValid());
-                    return;
-                }
-                if (token == songsModelInterface->getCurrentFileToken()) { // TODO: alek: need to be !=
-                    LOG_ERROR("Playback audio operation failed, wrong token");
-                    return;
-                }
-                songsModelInterface->clearCurrentSongContext();
-                getView()->updateSongsState();
+            return audioOperations->stop(currentFileToken.value(), [](audio::RetCode, audio::Token) {
+                // The answer will come via multicast and will be handled in the application
             });
         }
         return false;
