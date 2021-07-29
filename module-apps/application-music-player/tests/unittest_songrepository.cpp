@@ -4,13 +4,16 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <SongsRepository.hpp>
+#include "MockTagsFetcher.hpp"
+
+#include <models/SongsRepository.hpp>
 
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
 
-using testing::Return;
+using ::testing::Return;
+using ::testing::app::music_player::MockTagsFetcher;
 namespace fs = std::filesystem;
 
 constexpr auto testDir  = "appmusic-test";
@@ -21,12 +24,6 @@ auto testDirPath        = fs::path(testDir);
 auto emptyDirPath       = testDirPath / emptyDir;
 auto musicDirPath       = testDirPath / musicDir;
 auto bazDirPath         = musicDirPath / bazDir;
-
-class MockTagsFetcher : public ::app::music_player::AbstractTagsFetcher
-{
-  public:
-    MOCK_METHOD(std::optional<audio::Tags>, getFileTags, (const std::string &filePath), (override));
-};
 
 class SongsRepositoryFixture : public ::testing::Test
 {
@@ -153,10 +150,4 @@ TEST_F(SongsRepositoryFixture, FileIndex)
 
     auto bazIndex = repo->getFileIndex("baz");
     EXPECT_EQ(bazIndex, static_cast<std::size_t>(-1));
-}
-
-int main(int argc, char **argv)
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }
