@@ -16,7 +16,6 @@ target_sources(application-music-player
         models/SongContext.cpp
         models/SongsModel.cpp
         models/SongsRepository.cpp
-        models/SongContext.cpp
         presenters/AudioOperations.cpp
         presenters/SongsPresenter.cpp
         widgets/Action.cpp
@@ -29,7 +28,6 @@ target_sources(application-music-player
         models/SongsModel.hpp
         models/SongsRepository.hpp
         models/SongsModelInterface.hpp
-        models/SongContext.hpp
         presenters/AudioOperations.hpp
         presenters/SongsPresenter.hpp
         widgets/Action.hpp

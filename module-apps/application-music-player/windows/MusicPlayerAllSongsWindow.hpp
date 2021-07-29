@@ -26,7 +26,8 @@ namespace gui
         void buildInterface() override;
         void destroyInterface() override;
 
-        void updateSongsState(bool needRefresh) override;
+        void updateSongsState() override;
+        void refreshWindow() override;
     };
 
 } /* namespace gui */

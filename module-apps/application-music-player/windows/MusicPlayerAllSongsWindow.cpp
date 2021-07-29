@@ -32,7 +32,7 @@ namespace gui
     {
         AppWindow::buildInterface();
 
-        setTitle(utils::translate("app_music_player_music_library_camel"));
+        setTitle(utils::translate("app_music_player_music_library_window_name"));
 
         bottomBar->setText(BottomBar::Side::CENTER, utils::translate("app_music_player_play"));
         bottomBar->setText(BottomBar::Side::RIGHT, utils::translate(style::strings::common::back));
@@ -61,14 +61,14 @@ namespace gui
         songsList->rebuildList(listview::RebuildType::OnPageElement, index == static_cast<size_t>(-1) ? 0 : index);
     }
 
-    void MusicPlayerAllSongsWindow::updateSongsState(bool needRefresh) 
+    void MusicPlayerAllSongsWindow::updateSongsState() 
     {
         songsList->rebuildList(gui::listview::RebuildType::InPlace);
+    }
 
-        if(needRefresh)
-        {
-            application->refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
-        }
+    void MusicPlayerAllSongsWindow::refreshWindow()
+    {
+        application->refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
     }
 
 } /* namespace gui */

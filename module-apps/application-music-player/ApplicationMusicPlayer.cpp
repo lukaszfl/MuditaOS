@@ -49,11 +49,7 @@ namespace app
             std::make_unique<app::music_player::SongsPresenter>(priv->songsModel, std::move(audioOperations));
 
         std::function<bool()> stateLockCallback = [this]() -> bool {
-            auto isTrackPlaying = priv->songsModel->isSongPlaying();
-            if (isTrackPlaying) {
-                LOG_DEBUG("Preventing autolock while playing track.");
-            }
-            return isTrackPlaying;
+            return true;
         };
         lockPolicyHandler.setPreventsAutoLockByStateCallback(std::move(stateLockCallback));
 
@@ -101,6 +97,7 @@ namespace app
 
     sys::ReturnCodes ApplicationMusicPlayer::DeinitHandler()
     {
+        priv->songsPresenter->stop();
         return sys::ReturnCodes::Success;
     }
 

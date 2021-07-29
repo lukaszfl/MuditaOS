@@ -88,9 +88,13 @@ namespace gui
         return false;
     }
 
-    void MusicPlayerEmptyWindow::updateSongsState(bool needRefresh) 
+    void MusicPlayerEmptyWindow::updateSongsState() 
     {
-        LOG_FATAL("MusicPlayerEmptyWindow updateSongsState");
+
     }
 
+    void MusicPlayerEmptyWindow::refreshWindow()
+    {
+        application->refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+    }
 } /* namespace gui */

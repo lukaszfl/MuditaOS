@@ -34,7 +34,8 @@ namespace gui
         bool onDatabaseMessage(sys::Message *msg) override;
         bool onInput(const InputEvent &inputEvent) final;
 
-        void updateSongsState(bool needRefresh) override;
+        void updateSongsState() override;
+        void refreshWindow() override;
     };
 
 } /* namespace gui */

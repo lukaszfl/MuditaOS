@@ -13,7 +13,7 @@ namespace app::music_player
         NotPlaying
     };
 
-    class SongContext
+    struct SongContext
     {
       public:
         SongState currentSongState = SongState::NotPlaying;

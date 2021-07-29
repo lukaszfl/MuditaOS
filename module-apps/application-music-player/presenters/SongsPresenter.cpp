@@ -124,7 +124,8 @@ namespace app::music_player
         {
             LOG_FATAL("handleAudioNotification stop");
             songsModelInterface->clearCurrentSongContext();
-            getView()->updateSongsState(true);
+            getView()->updateSongsState();
+            getView()->refreshWindow();
             return sys::msgHandled();
         }
         return sys::msgNotHandled();
