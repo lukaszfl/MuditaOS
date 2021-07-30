@@ -10,9 +10,8 @@ import argparse
 import logging
 from enum import Enum
 from hashlib import md5
-from download_asset.download_asset import Getter
+from download_asset import Getter
 from tempfile import TemporaryDirectory
-
 
 log = logging.getLogger(__name__)
 
@@ -36,17 +35,20 @@ def gen_version_json(workdir, versions, checksums=None):
     version_json = {}
     # our dumb locations in json
     locations = {"boot.bin": "boot",
-                 "updater.bin": "updater", "ecoboot.bin": "bootloader"}
+                 "updater.bin": "updater",
+                 "ecoboot.bin": "bootloader"}
 
     for file in os.listdir(workdir):
         if file in locations.keys():
             log.info(f"File to md5 {file}")
-            if checksums is None or checksums[file] is None:
-                with open(file, "rb") as f:
+            with open(file, "rb") as f:
+                if checksums is None or checksums[file] is None:
                     md5sum = md5(f.read()).hexdigest()
-                    log.info(f"checksum: {md5sum}")
-                    version_json[locations[file]] = {
-                        "filename": file, "version": versions[file], "md5sum": md5sum}
+                else:
+                    md5sum = checksums[file]
+                log.info(f"checksum: {md5sum}")
+                version_json[locations[file]] = {
+                    "filename": file, "version": versions[file], "md5sum": md5sum}
     with open(workdir + "/version.json", "w") as f:
         log.info(f"saving version.json: {version_json}")
         f.write(json.dumps(version_json, indent=4, ensure_ascii=True))
@@ -83,7 +85,8 @@ def get_last_version():
     return g.releases[0]["tag_name"]
 
 
-def gen_update_asset(updater: str = None, boot: str = None, updater_version: str = None, boot_version: str = None, updater_checksum=None, package_name: str = "update.tar",):
+def gen_update_asset(updater: str = None, boot: str = None, updater_version: str = None, boot_version: str = None,
+                     updater_checksum=None, package_name: str = "update.tar", ):
     '''
     Generates package:
         updater         : if set to value, copy updater.bin from directory, otherwise load latest from PurePupdater repository
@@ -132,7 +135,7 @@ def gen_update_asset(updater: str = None, boot: str = None, updater_version: str
             tar.add(file)
 
     log.info(f"move {package_name} to current location ...")
-    shutil.copyfile(package_name, workdir.current + package_name)
+    shutil.copyfile(package_name, workdir.current + '/' + package_name)
 
     log.info(f"package generation done and copied to: {workdir.current}/{package_name}!")
 

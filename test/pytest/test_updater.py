@@ -45,7 +45,7 @@ def general_test(harness: Harness, filename, expects='FAIL'):
     get_file(harness, "updater.log", "./")
     with open("updater.log") as f:
         line = f.readline()
-        assert "FAIL" in line
+        assert expects in line
     PhoneModeLock(True).run(harness)
     log.info("update done!")
 
@@ -54,7 +54,7 @@ def general_test(harness: Harness, filename, expects='FAIL'):
 @pytest.mark.rt1051
 def test_update(harness: Harness):
     filename = gen_update_asset(
-        updater="/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin")
+        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin")
     general_test(harness, filename, 'OK')
 
 
@@ -64,7 +64,7 @@ def test_checksum_fail_bad(harness: Harness):
     '''
     we can update only when checksum is proper
     '''
-    filename = gen_update_asset(updater="/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin",
+    filename = gen_update_asset(updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin",
                                 updater_checksum="deadbeefdeadbeefdeadbeefdeadbeef")
     general_test(harness, filename, 'FAIL')
 
@@ -76,7 +76,7 @@ def test_checksum_fail_none(harness: Harness):
     we can update only when checksum is proper
     '''
     filename = gen_update_asset(
-        updater="/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin", updater_checksum="")
+        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_checksum="")
     general_test(harness, filename, 'FAIL')
 
 
@@ -87,7 +87,7 @@ def test_checksum_fail_zero(harness: Harness):
     we can update only when checksum is proper
     '''
     filename = gen_update_asset(
-        updater="/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin", updater_checksum="0")
+        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_checksum="0")
     general_test(harness, filename, 'FAIL')
 
 
@@ -103,7 +103,7 @@ def test_version_fail(harness: Harness):
           it should make logic considerably more convoluted
     '''
     filename = gen_update_asset(
-        updater="/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin", updater_version="0.0.0")
+        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_version="0.0.0")
     general_test(harness, filename, 'FAIL')
 
 
@@ -115,7 +115,7 @@ def test_version_fail_same(harness: Harness):
     '''
     version = get_last_version()
     filename = gen_update_asset(
-        updater="/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin", updater_version=version)
+        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_version=version)
     general_test(harness, filename, 'FAIL')
 
 
@@ -131,5 +131,5 @@ def test_version_success_update(harness: Harness):
     version = ".".join(version)
 
     filename = gen_update_asset(
-        updater="/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin", updater_version=version)
+        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_version=version)
     general_test(harness, filename, 'OK')
