@@ -133,6 +133,7 @@ def gen_update_asset(updater: str = None, boot: str = None, updater_version: str
     with tarfile.open(name=package_name, mode='x') as tar:
         for file in os.listdir("./"):
             tar.add(file)
+        tar.close()    
 
     log.info(f"move {package_name} to current location ...")
     shutil.copyfile(package_name, workdir.current + '/' + package_name)

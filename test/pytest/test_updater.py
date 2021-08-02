@@ -12,6 +12,8 @@ from harness.api.developermode import PhoneModeLock
 from harness.api.update import PhoneReboot, Reboot
 from assets.update_package_generator import gen_update_asset, get_last_version
 
+# !!! Please update your updater.bin path to your local path.
+updater_bin_path = "/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin"
 
 def get_version(harness: Harness):
     r = harness.request(Endpoint.DEVICEINFO, Method.GET, {}).response
@@ -46,53 +48,60 @@ def general_test(harness: Harness, filename, expects='FAIL'):
     with open("updater.log") as f:
         line = f.readline()
         assert expects in line
-    PhoneModeLock(True).run(harness)
+    #PhoneModeLock(True).run(harness)
     log.info("update done!")
 
 
-@pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.rt1051
-def test_update(harness: Harness):
+@pytest.mark.usefixtures("phone_in_desktop")
+@pytest.mark.usefixtures("phone_unlocked")
+def test_simple_update(harness: Harness):
     filename = gen_update_asset(
-        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin")
+       updater=updater_bin_path,
+       updater_version = get_last_version())
     general_test(harness, filename, 'OK')
 
 
-@pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.rt1051
+@pytest.mark.usefixtures("phone_in_desktop")
+@pytest.mark.usefixtures("phone_unlocked")
 def test_checksum_fail_bad(harness: Harness):
     '''
     we can update only when checksum is proper
     '''
-    filename = gen_update_asset(updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin",
-                                updater_checksum="deadbeefdeadbeefdeadbeefdeadbeef")
+    filename = gen_update_asset(updater=updater_bin_path,
+                                updater_checksum="deadbeefdeadbeefdeadbeefdeadbeef",
+                                updater_version = get_last_version())
     general_test(harness, filename, 'FAIL')
 
 
-@pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.rt1051
+@pytest.mark.usefixtures("phone_in_desktop")
+@pytest.mark.usefixtures("phone_unlocked")
 def test_checksum_fail_none(harness: Harness):
     '''
     we can update only when checksum is proper
     '''
     filename = gen_update_asset(
-        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_checksum="")
+        updater=updater_bin_path, updater_checksum="", updater_version = get_last_version())
     general_test(harness, filename, 'FAIL')
 
 
-@pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.rt1051
+@pytest.mark.usefixtures("phone_in_desktop")
+@pytest.mark.usefixtures("phone_unlocked")
 def test_checksum_fail_zero(harness: Harness):
     '''
     we can update only when checksum is proper
     '''
     filename = gen_update_asset(
-        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_checksum="0")
+        updater=updater_bin_path, updater_checksum="0", updater_version = get_last_version())
     general_test(harness, filename, 'FAIL')
 
 
-@pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.rt1051
+@pytest.mark.usefixtures("phone_in_desktop")
+@pytest.mark.usefixtures("phone_unlocked")
 def test_version_fail(harness: Harness):
     '''
     first release of updater.bin is set to 0.0.1, defaults are 0.0.0 in gen_version
@@ -103,25 +112,27 @@ def test_version_fail(harness: Harness):
           it should make logic considerably more convoluted
     '''
     filename = gen_update_asset(
-        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_version="0.0.0")
+        updater=updater_bin_path, updater_version="0.0.0")
     general_test(harness, filename, 'FAIL')
 
 
-@pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.rt1051
-def test_version_fail_same(harness: Harness):
+@pytest.mark.usefixtures("phone_in_desktop")
+@pytest.mark.usefixtures("phone_unlocked")
+def test_version_same(harness: Harness):
     '''
     we should fail with the latest version -as we should already have latest version
     '''
-    version = get_last_version()
+    
     filename = gen_update_asset(
-        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_version=version)
-    general_test(harness, filename, 'FAIL')
+        updater=updater_bin_path, updater_version= get_last_version())
+    general_test(harness, filename, 'OK')
 
 
-@pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.rt1051
-def test_version_success_update(harness: Harness):
+@pytest.mark.usefixtures("phone_in_desktop")
+@pytest.mark.usefixtures("phone_unlocked")
+def test_version_newer(harness: Harness):
     '''
     we should succeed with version loaded +1 bigger
     '''
@@ -131,5 +142,5 @@ def test_version_success_update(harness: Harness):
     version = ".".join(version)
 
     filename = gen_update_asset(
-        updater="/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin", updater_version=version)
+        updater=updater_bin_path, updater_version=version)
     general_test(harness, filename, 'OK')
