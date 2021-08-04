@@ -77,10 +77,6 @@ namespace bsp
             BaseType_t xHigherPriorityTaskWoken = 0;
             uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO1);
 
-            if (irq_mask & (1 << BSP_CELLULAR_STATUS_PIN)) {
-                xHigherPriorityTaskWoken |= cellular::status::statusIRQhandler();
-            }
-
             // Clear all IRQs
             GPIO_PortClearInterruptFlags(GPIO1, irq_mask);
 
@@ -92,17 +88,6 @@ namespace bsp
         {
             BaseType_t xHigherPriorityTaskWoken = 0;
             uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO1);
-
-            if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ))) {
-                xHigherPriorityTaskWoken |= bsp::magnetometer::IRQHandler();
-                LOG_DEBUG("magneto IRQ! >%s<",
-                          GPIO_PinRead(GPIO1, static_cast<uint32_t>(BoardDefinitions::MAGNETOMETER_IRQ)) ? "high"
-                                                                                                         : "low");
-            }
-
-            if (irq_mask & (1 << BSP_BLUETOOTH_UART_CTS_PIN)) {
-                LOG_DEBUG("CTS IRQ!");
-            }
 
             // Clear all IRQs
             GPIO_PortClearInterruptFlags(GPIO1, irq_mask);
@@ -116,32 +101,6 @@ namespace bsp
             BaseType_t xHigherPriorityTaskWoken = 0;
             uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO2);
 
-            if (irq_mask & (1 << BOARD_KEYBOARD_RF_BUTTON_PIN)) {
-                //xHigherPriorityTaskWoken |= keyboard_right_functional_IRQHandler();
-            }
-
-            if (irq_mask & (1 << BOARD_BATTERY_CHARGER_INOKB_PIN)) {}
-
-            if (irq_mask & (1 << BOARD_BATTERY_CHARGER_WCINOKB_PIN)) {}
-
-            if (irq_mask & (1 << BOARD_BATTERY_CHARGER_INTB_PIN)) {
-                xHigherPriorityTaskWoken |= bsp::battery_charger::INTB_IRQHandler();
-            }
-
-            if (irq_mask & (1 << BSP_CELLULAR_SIM_TRAY_INSERTED_PIN)) {
-                xHigherPriorityTaskWoken |= bsp::cellular::sim::trayIRQHandler();
-            }
-
-            if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::LIGHT_SENSOR_IRQ))) {
-                xHigherPriorityTaskWoken |= bsp::light_sensor::IRQHandler();
-            }
-
-            if (irq_mask & ((1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER))
-                             | (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT)) 
-                             | (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH)))) {
-                xHigherPriorityTaskWoken |= bsp::bell_switches::bell_switches_Cent_Right_Latch_IRQHandler(irq_mask);
-            }
-
             // Clear all IRQs
             GPIO_PortClearInterruptFlags(GPIO2, irq_mask);
 
@@ -154,24 +113,18 @@ namespace bsp
             BaseType_t xHigherPriorityTaskWoken = 0;
             uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO2);
 
-            if (irq_mask & (1 << BOARD_KEYBOARD_IRQ_GPIO_PIN)) {
-                xHigherPriorityTaskWoken |= keyboard_IRQHandler();
-            }
-
             if (irq_mask & (1 << BOARD_USBC_NINT_PIN)) {
                 // TODO:M.P xHigherPriorityTaskWoken |= bsp_usbc_IRQHandler();
             }
 
-            if (irq_mask & (1 << BOARD_JACKDET_IRQ_GPIO_PIN)) {
-                xHigherPriorityTaskWoken |= bsp::headset::headset_IRQHandler();
-            }
-
-            if (irq_mask & (1 << BSP_CELLULAR_RI_PIN)) {
-                bsp::cellular::ringIndicator::riIRQHandler();
-            }
-
-            if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT))) {
+            if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW1))) {
                 xHigherPriorityTaskWoken |= bsp::bell_switches::bell_switches_Left_IRQHandler();
+            }
+            
+            if (irq_mask & ((1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_ENC))
+                             | (1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW2)) 
+                             | (1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_PUSH)))) {
+                xHigherPriorityTaskWoken |= bsp::bell_switches::bell_switches_Cent_Right_Latch_IRQHandler(irq_mask);
             }
 
             // Clear all IRQs

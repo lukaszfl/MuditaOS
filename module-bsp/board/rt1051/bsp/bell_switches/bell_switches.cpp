@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
-#include "bell_switches.hpp"
+#include "bell_switches/bell_switches.hpp"
 
 #include <module-utils/Utils.hpp> // for byte conversion functions. it is included first because of magic enum define
 
@@ -33,19 +33,19 @@ namespace bsp
 
         static std::map<BoardDefinitions, uint8_t> notifications
         {
-            {BoardDefinitions::BELL_SWITCHES_CENTER, 0x10U},
-            {BoardDefinitions::BELL_SWITCHES_LEFT, 0x20U},
-            {BoardDefinitions::BELL_SWITCHES_RIGHT, 0x30U},
-            {BoardDefinitions::BELL_SWITCHES_LATCH, 0x40U},
+            {BoardDefinitions::BELL_BUTTONS_SW_ENC, 0x10U},
+            {BoardDefinitions::BELL_BUTTONS_SW1, 0x20U},
+            {BoardDefinitions::BELL_BUTTONS_SW2, 0x30U},
+            {BoardDefinitions::BELL_BUTTONS_SW_PUSH, 0x40U},
             {BoardDefinitions::BELL_WAKEUP, 0x50U}    //disabled
         };
 
         static std::map<uint8_t, bsp::KeyCodes> keycodes
         {
-            {notifications[BoardDefinitions::BELL_SWITCHES_CENTER], bsp::KeyCodes::JoystickEnter},
-            {notifications[BoardDefinitions::BELL_SWITCHES_LEFT], bsp::KeyCodes::FnLeft},
-            {notifications[BoardDefinitions::BELL_SWITCHES_RIGHT], bsp::KeyCodes::FnRight},
-            {notifications[BoardDefinitions::BELL_SWITCHES_LATCH], bsp::KeyCodes::JoystickDown},
+            {notifications[BoardDefinitions::BELL_BUTTONS_SW_ENC], bsp::KeyCodes::JoystickEnter},
+            {notifications[BoardDefinitions::BELL_BUTTONS_SW1], bsp::KeyCodes::FnLeft},
+            {notifications[BoardDefinitions::BELL_BUTTONS_SW2], bsp::KeyCodes::FnRight},
+            {notifications[BoardDefinitions::BELL_BUTTONS_SW_PUSH], bsp::KeyCodes::JoystickDown},
             {notifications[BoardDefinitions::BELL_WAKEUP], bsp::KeyCodes::Undefined}    //disabled
         };
 
@@ -85,19 +85,19 @@ namespace bsp
 
         static void Left_timer_cb(TimerHandle_t timer)
         {
-            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Left], gpio_sw, BoardDefinitions::BELL_SWITCHES_LEFT);
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Left], gpio_sw, BoardDefinitions::BELL_BUTTONS_SW1);
         }
         static void Right_timer_cb(TimerHandle_t timer)
         {    
-            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Right], gpio_sw, BoardDefinitions::BELL_SWITCHES_RIGHT);
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Right], gpio_sw, BoardDefinitions::BELL_BUTTONS_SW2);
         }
         static void Center_timer_cb(TimerHandle_t timer)
         {
-            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Center], gpio_sw, BoardDefinitions::BELL_SWITCHES_CENTER);
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Center], gpio_sw, BoardDefinitions::BELL_BUTTONS_SW_ENC);
         }
         static void Latch_timer_cb(TimerHandle_t timer)
         {
-            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Latch], gpio_sw, BoardDefinitions::BELL_SWITCHES_LATCH);
+            debounce_timer_callback(timer, debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Latch], gpio_sw, BoardDefinitions::BELL_BUTTONS_SW_PUSH);
         }
         static void Wakeup_timer_cb(TimerHandle_t timer)
         {
@@ -109,37 +109,37 @@ namespace bsp
             qHandleIrq = qHandle;
 
             // Switches
-            gpio_sw = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_SWITCHES_GPIO), DriverGPIOParams{});
+            gpio_sw = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_BUTTONS_GPIO), DriverGPIOParams{});
             //wakeup
             gpio_wakeup = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_WAKEUP_GPIO), DriverGPIOParams{});
 
             // Center switch
-            gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER));
+            gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_ENC));
             gpio_sw->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
                                               .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingOrFallingEdge,
                                               .defLogic = 0,
-                                              .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER)});
+                                              .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_ENC)});
 
             // Left switch
-            gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT));
+            gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW1));
             gpio_sw->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
                                               .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingOrFallingEdge,
                                               .defLogic = 0,
-                                              .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT)});
+                                              .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW1)});
 
             // Right switch
-            gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT));
+            gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW2));
             gpio_sw->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
                                               .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingOrFallingEdge,
                                               .defLogic = 0,
-                                              .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT)});
+                                              .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW2)});
 
             // Latch
-            gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH));
+            gpio_sw->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_PUSH));
             gpio_sw->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
                                               .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingOrFallingEdge,
                                               .defLogic = 0,
-                                              .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH)});       
+                                              .pin      = static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_PUSH)});       
 
             // Wakeup
             gpio_wakeup->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
@@ -216,22 +216,22 @@ namespace bsp
         {
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             gpio_sw->ClearPortInterrupts(mask);
-            BoardDefinitions gpio_index = BoardDefinitions::BELL_SWITCHES_CENTER;
+            BoardDefinitions gpio_index = BoardDefinitions::BELL_BUTTONS_SW_ENC;
             unsigned int debounce_index = DEBOUNCE_TIMERS::COUNT;
 
-            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER)))
+            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_ENC)))
             {
-                gpio_index = BoardDefinitions::BELL_SWITCHES_CENTER;
+                gpio_index = BoardDefinitions::BELL_BUTTONS_SW_ENC;
                 debounce_index = DEBOUNCE_TIMERS::Bell_SW_Center;
             }
-            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT)))
+            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW2)))
             {
-                gpio_index = BoardDefinitions::BELL_SWITCHES_RIGHT;
+                gpio_index = BoardDefinitions::BELL_BUTTONS_SW2;
                 debounce_index = DEBOUNCE_TIMERS::Bell_SW_Right;
             }
-            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH)))
+            if (mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_PUSH)))
             {
-                gpio_index = BoardDefinitions::BELL_SWITCHES_LATCH;
+                gpio_index = BoardDefinitions::BELL_BUTTONS_SW_PUSH;
                 debounce_index = DEBOUNCE_TIMERS::Bell_SW_Latch;
             }
 
@@ -254,12 +254,12 @@ namespace bsp
         BaseType_t bell_switches_Left_IRQHandler() 
         {
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-            gpio_sw->ClearPortInterrupts(1U << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT));
+            gpio_sw->ClearPortInterrupts(1U << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW1));
 
             if (debounce_timer[DEBOUNCE_TIMERS::Bell_SW_Left] != NULL) {
-                gpio_sw->DisableInterrupt(1U << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT));
+                gpio_sw->DisableInterrupt(1U << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW1));
 
-                if (gpio_sw->ReadPin(static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT)) == 0) {
+                if (gpio_sw->ReadPin(static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW1)) == 0) {
                     debounce_last_state[DEBOUNCE_TIMERS::Bell_SW_Left] = 0;
                 }
                 else {
@@ -295,20 +295,20 @@ namespace bsp
 
         void enableIRQ()
         {
-            gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER));
-            gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT));
-            gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT));
-            gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH));
+            gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_ENC));
+            gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW1));
+            gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW2));
+            gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_PUSH));
             /* Disable wakeup as it's not yet used in the code and may lead to false event interpretation */
             //gpio_wakeup->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
         }
 
         void disableIRQ()
         {
-            gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_CENTER));
-            gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT));
-            gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT));
-            gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH));
+            gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_ENC));
+            gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW1));
+            gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW2));
+            gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_BUTTONS_SW_PUSH));
             gpio_wakeup->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
         }
 

@@ -134,14 +134,17 @@ enum class BoardDefinitions
 
      /* ******* BELL HYBRID ******* */
 
-    BELL_SWITCHES_GPIO      = static_cast<int>(drivers::GPIOInstances ::GPIO_2),
-    BELL_SWITCHES_CENTER    = 6,    //GPIO_B0_06
-    BELL_SWITCHES_LATCH     = 9,    //GPIO_B0_09
-    BELL_SWITCHES_LEFT      = 16,   //GPIO_B1_00
-    BELL_SWITCHES_RIGHT     = 11,   //GPIO_B0_11
+    BELL_BUTTONS_GPIO       = static_cast<int>(drivers::GPIOInstances ::GPIO_2),
+    BELL_BUTTONS_SW1        = 24,   //IOMUXC_GPIO_B1_08_GPIO2_IO24
+    BELL_BUTTONS_SW2        = 25,   //IOMUXC_GPIO_B1_09_GPIO2_IO25
+    BELL_BUTTONS_SW_ENC     = 16,   //IOMUXC_GPIO_B1_00_GPIO2_IO16
+    BELL_BUTTONS_SW_PUSH    = 26,   //IOMUXC_GPIO_B1_10_GPIO2_IO26
 
     BELL_WAKEUP_GPIO        = static_cast<int>(drivers::GPIOInstances ::GPIO_5),
     BELL_WAKEUP             = 0,    //SNVS_WAKEUP_GPIO5_IO00
+
+    BELL_DOME_SWITCH_GPIO   = static_cast<int>(drivers::GPIOInstances ::GPIO_2),
+    BELL_DOME_SWITCH        = 11,   //IOMUXC_GPIO_B0_11_GPIO2_IO11
 };
 
 #endif //PUREPHONE_BOARDDEFINITIONS_HPP

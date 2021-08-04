@@ -39,12 +39,12 @@ namespace bsp
             qHandleIrq = qHandle;
             enc_config_t encConfig;
 
-            ENC_GetDefaultConfig(&encConfig);
-            ENC_Init(SWITCHES_ENC_A_PERIPHERAL, &encConfig);
+            //ENC_GetDefaultConfig(&encConfig);
+            //ENC_Init(SWITCHES_ENC_A_PERIPHERAL, &encConfig);
             
-            ENC_DoSoftwareLoadInitialPositionValue(SWITCHES_ENC_A_PERIPHERAL);
+            //ENC_DoSoftwareLoadInitialPositionValue(SWITCHES_ENC_A_PERIPHERAL);
 
-            encLastPosition = ENC_GetPositionValue(SWITCHES_ENC_A_PERIPHERAL);
+            //encLastPosition = ENC_GetPositionValue(SWITCHES_ENC_A_PERIPHERAL);
 
             if (timerHandle == nullptr) {
                 timerHandle = xTimerCreate(
@@ -67,7 +67,8 @@ namespace bsp
 
         std::optional<bsp::KeyCodes> WorkerEventHandler()
         {
-            uint32_t encCurrentPosition = ENC_GetPositionValue(SWITCHES_ENC_A_PERIPHERAL);
+            //uint32_t encCurrentPosition = ENC_GetPositionValue(SWITCHES_ENC_A_PERIPHERAL);
+            uint32_t encCurrentPosition = 0;
             int32_t diff = 0;
 
             if (encCurrentPosition >= encLastPosition)

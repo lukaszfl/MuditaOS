@@ -294,25 +294,14 @@ I2C_SDA_FXOS8700CQ;CSI_I2C_SDA}
 void PINMUX_InitBootPins(void)
 {
     PINMUX_InitDEBUG_UART();
-    PINMUX_InitPowerButton();
     PINMUX_InitEMMC();
-    PINMUX_InitKeyboard();
     PINMUX_InitAudioCodec();
     PINMUX_InitEINK();
-    PINMUX_InitBluetoothPins();
-    PINMUX_InitCellular();
-    PINMUX_InitLEDDRIVER();
-    PINMUX_InitUSBC();
     PINMUX_InitBatteryCharger();
-    PINMUX_InitALS();
-    PINMUX_InitPowerSW();
-    PINMUX_InitHeadset();
-    PINMUX_InitVibrator();
-    PINMUX_InitTorch();
-    PINMUX_InitMagnetometer();
     PINMUX_InitEinkFrontlight();
-    PINMUX_InitLightSensor();
-    PINMUX_InitSwitches();
+    PINMUX_InitButtons();
+    PINMUX_InitRotaryEncoder();
+    PINMUX_DomeSwitch();
 }
 
 /*
@@ -1010,54 +999,11 @@ void PINMUX_InitEMMC(void)
                                         Hyst. Enable Field: Hysteresis Enabled */
 }
 
-void PINMUX_InitPowerButton(void)
-{
-    CLOCK_EnableClock(kCLOCK_Iomuxc); /* iomuxc clock (iomuxc_clk_enable): 0x03u */
-
-    IOMUXC_SetPinMux(PINMUX_KEYBOARD_POWER_ENABLE_PAD, 0U);
-
-    IOMUXC_SetPinMux(PINMUX_KEYBOARD_RF_BUTTON_PAD, 0U);
-
-    // Output
-    IOMUXC_SetPinConfig(PINMUX_KEYBOARD_POWER_ENABLE_PAD,
-                        PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm);
-
-    // Input
-    IOMUXC_SetPinConfig(PINMUX_KEYBOARD_RF_BUTTON_PAD, PAD_CONFIG_PULL_UP_100kOhm | PAD_CONFIG_SELECT_PULL);
-}
-
-void PINMUX_InitKeyboard(void)
-{
-    IOMUXC_SetPinMux(PINMUX_KEYBOARD_SCL, /* GPIO_AD_B1_00 is configured as LPI2C1_SCL */
-                     1U);                 /* Software Input On Field: Force input path of pad PINMUX_KEYPINMUX_SCL */
-
-    IOMUXC_SetPinMux(PINMUX_KEYBOARD_SDA, /* GPIO_AD_B1_01 is configured as LPI2C1_SDA */
-                     1U);                 /* Software Input On Field: Force input path of pad PINMUX_KEYPINMUX_SDA */
-
-    IOMUXC_SetPinMux(PINMUX_KEYBOARD_RESET, /* GPIO_AD_B1_00 is configured as LPI2C1_SCL */
-                     1U);                   /* Software Input On Field: Force input path of pad PINMUX_KEYPINMUX_SCL */
-
-    IOMUXC_SetPinMux(PINMUX_KEYBOARD_IRQ, /* GPIO_AD_B1_00 is configured as LPI2C1_SCL */
-                     0U);                 /* Software Input On Field: Force input path of pad PINMUX_KEYPINMUX_SCL */
-
-    IOMUXC_SetPinConfig(PINMUX_KEYBOARD_SCL, PAD_CONFIG_OPEN_DRAIN_ENABLED | PAD_CONFIG_DRIVER_STRENGTH_LVL_1);
-
-    IOMUXC_SetPinConfig(PINMUX_KEYBOARD_SDA, PAD_CONFIG_OPEN_DRAIN_ENABLED | PAD_CONFIG_DRIVER_STRENGTH_LVL_1);
-
-    // Output
-    IOMUXC_SetPinConfig(PINMUX_KEYBOARD_RESET,
-                        PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL |
-                            PAD_CONFIG_PULL_UP_100kOhm);
-
-    // Input
-    IOMUXC_SetPinConfig(PINMUX_KEYBOARD_IRQ, PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
-}
-
 void PINMUX_InitAudioCodec(void)
 {
 
-    IOMUXC_SetPinMux(PINMUX_AUDIOCODEC_SAIx_MCLK, /* GPIO_AD_B1_09 is configured as SAI1_MCLK */
-                     0U);
+//    IOMUXC_SetPinMux(PINMUX_AUDIOCODEC_SAIx_MCLK, /* GPIO_AD_B1_09 is configured as SAI1_MCLK */
+//                     0U);
     IOMUXC_SetPinMux(PINMUX_AUDIOCODEC_SAIx_RX_DATA00, /* GPIO_AD_B1_12 is configured as SAI1_RX_DATA00 */
                      0U);
     IOMUXC_SetPinMux(PINMUX_AUDIOCODEC_SAIx_TX_DATA00, /* GPIO_AD_B1_13 is configured as SAI1_TX_DATA00 */
@@ -1067,8 +1013,8 @@ void PINMUX_InitAudioCodec(void)
     IOMUXC_SetPinMux(PINMUX_AUDIOCODEC_SAIx_TX_SYNC, /* GPIO_AD_B1_15 is configured as SAI1_TX_SYNC */
                      0U);
 
-    IOMUXC_SetPinConfig(PINMUX_AUDIOCODEC_SAIx_MCLK, /* GPIO_AD_B1_09 PAD functional properties : */
-                        PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
+//    IOMUXC_SetPinConfig(PINMUX_AUDIOCODEC_SAIx_MCLK, /* GPIO_AD_B1_09 PAD functional properties : */
+//                        PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
     IOMUXC_SetPinConfig(PINMUX_AUDIOCODEC_SAIx_RX_DATA00, /* GPIO_AD_B1_12 PAD functional properties : */
                         PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
     IOMUXC_SetPinConfig(PINMUX_AUDIOCODEC_SAIx_TX_DATA00, /* GPIO_AD_B1_13 PAD functional properties : */
@@ -1130,358 +1076,33 @@ void PINMUX_InitEINK(void)
                             PAD_CONFIG_HYSTERESIS_DISABLED);
 }
 
-void PINMUX_InitUSBC(void)
-{
-    CLOCK_EnableClock(kCLOCK_Iomuxc); /* iomuxc clock (iomuxc_clk_enable): 0x03u */
-
-    IOMUXC_SetPinMux(PINMUX_USBC_CONTROLLER_NINT, /* GPIO_AD_B0_01 is configured as LPSPI1_SDO */
-                     0U);                       /* Software Input On Field: Input Path is determined by functionality */
-    IOMUXC_SetPinMux(PINMUX_USBC_CONTROLLER_ID, /* GPIO_AD_B0_02 is configured as LPSPI1_SDI */
-                     0U);                       /* Software Input On Field: Input Path is determined by functionality */
-    IOMUXC_SetPinMux(PINMUX_USBC_CONTROLLER_PORT, /* GPIO_AD_B0_02 is configured as LPSPI1_SDI */
-                     0U); /* Software Input On Field: Input Path is determined by functionality */
-    IOMUXC_SetPinMux(PINMUX_USB_FUNCTION_MUX_SELECT, 1U);
-
-    IOMUXC_SetPinConfig(PINMUX_USBC_CONTROLLER_NINT, /* GPIO_AD_B0_03 PAD functional properties : */
-                        IOMUXC_SW_PAD_CTL_PAD_ODE(1) | PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL |
-                            PAD_CONFIG_PULL_UP_100kOhm); /* Open drain enable with internal 100k pullup */
-
-    IOMUXC_SetPinConfig(PINMUX_USBC_CONTROLLER_ID, /* GPIO_AD_B0_03 PAD functional properties : */
-                        IOMUXC_SW_PAD_CTL_PAD_ODE(1) | PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL |
-                            PAD_CONFIG_PULL_UP_100kOhm); /* Open drain enable with internal 100k pullup */
-
-    IOMUXC_SetPinConfig(PINMUX_USBC_CONTROLLER_PORT, /* GPIO_AD_B0_03 PAD functional properties : */
-                        0x10B0u);                    /* Slew Rate Field: Slow Slew Rate
-                                                      Drive Strength Field: R0/6
-                                                      Speed Field: medium(100MHz)
-                                                      Open Drain Enable Field: Open Drain Disabled
-                                                      Pull / Keep Enable Field: Pull/Keeper Enabled
-                                                      Pull / Keep Select Field: Keeper
-                                                      Pull Up / Down Config. Field: 100K Ohm Pull Down
-                                                      Hyst. Enable Field: Hysteresis Disabled */
-
-    IOMUXC_SetPinConfig(PINMUX_USB_FUNCTION_MUX_SELECT,
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_KEEPER |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-}
-
-void PINMUX_InitLEDDRIVER(void)
-{
-    CLOCK_EnableClock(kCLOCK_Iomuxc); /* iomuxc clock (iomuxc_clk_enable): 0x03u */
-
-    IOMUXC_SetPinMux(PINMUX_LEDDRIVER_NRST, /* GPIO_AD_B0_00 is configured as LPSPI1_SCK */
-                     0U);                   /* Software Input On Field: Input Path is determined by functionality */
-
-    IOMUXC_SetPinConfig(PINMUX_LEDDRIVER_NRST, /* GPIO_AD_B0_03 PAD functional properties : */
-                        PAD_CONFIG_PULL_UP_22kOhm | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_KEEPER_DISABLED |
-                            PAD_CONFIG_DRIVER_STRENGTH_LVL_4 | PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_SPEED_SLOW_50MHz);
-}
-
-void PINMUX_InitCellular(void)
-{
-    CLOCK_EnableClock(kCLOCK_Iomuxc); /* iomuxc clock (iomuxc_clk_enable): 0x03u */
-
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_UART_TX, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_UART_RX, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_UART_CTS, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_UART_RTS, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_AP_READY, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_RESET, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_PWRKEY, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_WAKEUP_IN, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_SIM_SEL, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_RI, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_DTR, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_SIM_TRAY_INSERTED, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_NC, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_SIM_PRESENCE, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_ANTENNA_SELECT, 1U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_STATUS, 0U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_USB_BOOT_PIN, 1U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_SAIx_TX_DATA00, 1U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_SAIx_RX_DATA00, 1U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_SAIx_BCLK, 1U);
-    IOMUXC_SetPinMux(PINMUX_CELLULAR_SAIx_TX_SYNC, 1U);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_UART_TX,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_UART_RX,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_UART_CTS,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_UART_RTS,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_AP_READY,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_RESET,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_PULL_DOWN_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_PWRKEY,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_WAKEUP_IN,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_SIM_SEL,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_RI,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_DTR,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_SIM_TRAY_INSERTED,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_ENABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_NC,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_SIM_PRESENCE,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_ANTENNA_SELECT,
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_STATUS,
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_47kOhm |
-                            PAD_CONFIG_HYSTERESIS_ENABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_USB_BOOT_PIN,
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_SAIx_BCLK,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_SAIx_RX_DATA00,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_SAIx_TX_DATA00,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_CELLULAR_SAIx_TX_SYNC,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_HYSTERESIS_DISABLED);
-}
-
-void PINMUX_InitBluetoothPins(void)
-{
-    CLOCK_EnableClock(kCLOCK_Iomuxc); /* iomuxc clock (iomuxc_clk_enable): 0x03u */
-
-    IOMUXC_SetPinMux(PINMUX_BLUETOOTH_UART_TX, 0U);
-    IOMUXC_SetPinMux(PINMUX_BLUETOOTH_UART_RX, 0U);
-    IOMUXC_SetPinMux(PINMUX_BLUETOOTH_UART_CTS, 0U);
-    IOMUXC_SetPinMux(PINMUX_BLUETOOTH_UART_RTS, 0U);
-    IOMUXC_SetPinMux(PINMUX_BLUETOOTH_NSHUTDOWN, 0U);
-    IOMUXC_SetPinMux(PINMUX_BLUETOOTH_OSC_EN, 0U);
-
-    IOMUXC_SetPinConfig(PINMUX_BLUETOOTH_UART_TX,
-
-                        PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_MEDIUM_1_100MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_BLUETOOTH_UART_RX,
-
-                        PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_BLUETOOTH_UART_CTS,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm);
-
-    IOMUXC_SetPinConfig(PINMUX_BLUETOOTH_UART_RTS,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_BLUETOOTH_NSHUTDOWN,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinConfig(PINMUX_BLUETOOTH_OSC_EN,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-}
-
-void PINMUX_InitHeadset(void)
-{
-    CLOCK_EnableClock(kCLOCK_Iomuxc); /* iomuxc clock (iomuxc_clk_enable): 0x03u */
-
-    IOMUXC_SetPinMux(PINMUX_JACKDET_IRQ, /* GPIO_AD_B0_00 is configured as LPSPI1_SCK */
-                     0U);                /* Software Input On Field: Input Path is determined by functionality */
-
-    IOMUXC_SetPinConfig(PINMUX_JACKDET_IRQ, /* GPIO_AD_B0_02 PAD functional properties : */
-                        PAD_CONFIG_PULL_UP_100kOhm | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_KEEPER_ENABLED);
-
-    IOMUXC_SetPinMux(PINMUX_MIC_LDO_EN, 1);
-    IOMUXC_SetPinConfig(PINMUX_MIC_LDO_EN,
-                        PAD_CONFIG_PULL_UP_22kOhm | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_KEEPER_DISABLED |
-                            PAD_CONFIG_DRIVER_STRENGTH_LVL_4 | PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_SPEED_SLOW_50MHz);
-}
-
 void PINMUX_InitBatteryCharger(void)
 {
-    //#if PROJECT_CONFIG_IS_T1_BOARD == 1
-    IOMUXC_SetPinMux(PINUMX_BATTERY_CHARGER_INOKB_IRQ, /* GPIO_AD_B0_00 is configured as LPSPI1_SCK */
+    IOMUXC_SetPinMux(PINUMX_BATTERY_CHARGER_CHGINT,
                      0U); /* Software Input On Field: Input Path is determined by functionality */
 
-    IOMUXC_SetPinMux(PINUMX_BATTERY_CHARGER_WCINOKB_IRQ, /* GPIO_AD_B0_00 is configured as LPSPI1_SCK */
+    IOMUXC_SetPinMux(PINUMX_BATTERY_CHARGER_ACOK,
                      0U);
 
-    IOMUXC_SetPinMux(PINUMX_BATTERY_CHARGER_INTB_IRQ, /* GPIO_AD_B0_00 is configured as LPSPI1_SCK */
+    IOMUXC_SetPinMux(PINUMX_BATTERY_CHARGER_CHGEN,
                      0U);
 
-    IOMUXC_SetPinConfig(PINUMX_BATTERY_CHARGER_INOKB_IRQ,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
-
-    IOMUXC_SetPinConfig(PINUMX_BATTERY_CHARGER_WCINOKB_IRQ,
+    IOMUXC_SetPinConfig(PINUMX_BATTERY_CHARGER_CHGINT,
 
                         PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
                             PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
 
-    IOMUXC_SetPinConfig(PINUMX_BATTERY_CHARGER_INTB_IRQ,
+    IOMUXC_SetPinConfig(PINUMX_BATTERY_CHARGER_ACOK,
 
                         PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
+                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
 
-    //#endif
-}
+    IOMUXC_SetPinConfig(PINUMX_BATTERY_CHARGER_CHGEN,
 
-void PINMUX_InitALS(void)
-{
-    CLOCK_EnableClock(kCLOCK_Iomuxc); /* iomuxc clock (iomuxc_clk_enable): 0x03u */
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_OPEN_DRAIN_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_PULL_DOWN_100kOhm |
+                            PAD_CONFIG_DRIVER_STRENGTH_LVL_6 | PAD_CONFIG_HYSTERESIS_DISABLED);
 
-    IOMUXC_SetPinMux(PINMUX_ALS_ADC, 0U);
-
-    IOMUXC_SetPinConfig(PINMUX_ALS_ADC,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_OPEN_DRAIN_DISABLED | PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL |
-                            PAD_CONFIG_PULL_UP_100kOhm | PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinMux(PINMUX_ALS_GB1, 1U);
-
-    IOMUXC_SetPinConfig(PINMUX_ALS_GB1,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinMux(PINMUX_ALS_GB2, 1U);
-
-    IOMUXC_SetPinConfig(PINMUX_ALS_GB2,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-}
-
-void PINMUX_InitPowerSW(void)
-{
-    IOMUXC_SetPinMux(PINMUX_POWER_SW, 1U);
-
-    IOMUXC_SetPinConfig(PINMUX_POWER_SW,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-
-    IOMUXC_SetPinMux(PINMUX_POWER_HOLD, 1U);
-
-    IOMUXC_SetPinConfig(PINMUX_POWER_HOLD,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_DOWN_100kOhm |
-                            PAD_CONFIG_HYSTERESIS_DISABLED);
-}
-
-void PINMUX_InitVibrator(void)
-{
-    CLOCK_EnableClock(kCLOCK_Iomuxc); /* iomuxc clock (iomuxc_clk_enable): 0x03u */
-
-    IOMUXC_SetPinMux(PINMUX_VIBRATOR_EN_PIN, 0U);
-    IOMUXC_SetPinConfig(PINMUX_VIBRATOR_EN_PIN,
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
-}
-
-void PINMUX_InitTorch(void)
-{
-    IOMUXC_SetPinMux(PINMUX_TORCH_EN_PIN, 1U);
-    IOMUXC_SetPinConfig(PINMUX_TORCH_EN_PIN,
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_STRENGTH_LVL_1 | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_KEEPER | PAD_CONFIG_HYSTERESIS_DISABLED);
-}
-
-void PINMUX_InitMagnetometer(void)
-{
-    IOMUXC_SetPinMux(PINMUX_MAGNETOMETER_IRQ_PIN, 0U);
-    IOMUXC_SetPinConfig(PINMUX_MAGNETOMETER_IRQ_PIN,
-
-                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_22kOhm);
 }
 
 void PINMUX_InitEinkFrontlight(void)
@@ -1493,87 +1114,73 @@ void PINMUX_InitEinkFrontlight(void)
                             PAD_CONFIG_DRIVER_STRENGTH_LVL_6 | PAD_CONFIG_HYSTERESIS_DISABLED);
 }
 
-void PINMUX_InitLightSensor(void)
+void PINMUX_InitButtons(void)
 {
-    IOMUXC_SetPinMux(PINMUX_LIGHT_SENSOR_IRQ_PIN, 0U);
-    IOMUXC_SetPinConfig(PINMUX_LIGHT_SENSOR_IRQ_PIN,
+    IOMUXC_SetPinMux(PINMUX_BUTTON_SW1,
+                     0U); /* Software Input On Field: Input Path is determined by functionality */
+                    
+    IOMUXC_SetPinMux(PINMUX_BUTTON_SW2,
+                     0U); /* Software Input On Field: Input Path is determined by functionality */
+
+    IOMUXC_SetPinMux(PINMUX_BUTTON_SW_ENC,
+                     0U); /* Software Input On Field: Input Path is determined by functionality */
+                    
+    IOMUXC_SetPinMux(PINMUX_BUTTON_SW_PUSH,
+                     0U); /* Software Input On Field: Input Path is determined by functionality */
+
+    IOMUXC_SetPinConfig(PINMUX_BUTTON_SW1,
+
                         PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
-                            PAD_CONFIG_PULL_KEEPER_ENABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_22kOhm);
+                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
+
+    IOMUXC_SetPinConfig(PINMUX_BUTTON_SW2,
+
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
+
+    IOMUXC_SetPinConfig(PINMUX_BUTTON_SW_ENC,
+
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
+
+    IOMUXC_SetPinConfig(PINMUX_BUTTON_SW_PUSH,
+
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
+
 }
 
-/* FUNCTION ************************************************************************************************************
- *
- * Function Name : PINMUX_InitSwitches
- * Description   : Configures pin routing and optionally pin electrical features.
- *
- * END ****************************************************************************************************************/
-void PINMUX_InitSwitches(void) {
-  CLOCK_EnableClock(kCLOCK_Iomuxc);           
-  CLOCK_EnableClock(kCLOCK_IomuxcSnvs);       
-  CLOCK_EnableClock(kCLOCK_Xbar1);            
+void PINMUX_InitRotaryEncoder(void)
+{
+    IOMUXC_SetPinMux(PINMUX_ENCODER_2,
+                     0U); /* Software Input On Field: Input Path is determined by functionality */
 
-  /* GPIO configuration of PS_BUTTON on GPIO_B0_06 (pin A8) */
-  gpio_pin_config_t PS_BUTTON_config = {
-      .direction = kGPIO_DigitalInput,
-      .outputLogic = 0U,
-      .interruptMode = kGPIO_IntRisingOrFallingEdge
-  };
-  /* Initialize GPIO functionality on GPIO_B0_06 (pin A8) */
-  GPIO_PinInit(GPIO2, 6U, &PS_BUTTON_config);
+    IOMUXC_SetPinMux(PINMUX_ENCODER_1,
+                     0U); /* Software Input On Field: Input Path is determined by functionality */
 
-  /* GPIO configuration of SW_LATCH on GPIO_B0_09 (pin C9) */
-  gpio_pin_config_t SW_LATCH_config = {
-      .direction = kGPIO_DigitalInput,
-      .outputLogic = 0U,
-      .interruptMode = kGPIO_IntRisingOrFallingEdge
-  };
-  /* Initialize GPIO functionality on GPIO_B0_09 (pin C9) */
-  GPIO_PinInit(GPIO2, 9U, &SW_LATCH_config);
+    IOMUXC_SetPinConfig(PINMUX_ENCODER_2,
 
-  /* GPIO configuration of SW_RIGHT on GPIO_B0_11 (pin A10) */
-  gpio_pin_config_t SW_RIGHT_config = {
-      .direction = kGPIO_DigitalInput,
-      .outputLogic = 0U,
-      .interruptMode = kGPIO_IntRisingOrFallingEdge
-  };
-  /* Initialize GPIO functionality on GPIO_B0_11 (pin A10) */
-  GPIO_PinInit(GPIO2, 11U, &SW_RIGHT_config);
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
+                    
+    IOMUXC_SetPinConfig(PINMUX_ENCODER_1,
 
-  /* GPIO configuration of SW_LEFT on GPIO_B1_00 (pin A11) */
-  gpio_pin_config_t SW_LEFT_config = {
-      .direction = kGPIO_DigitalInput,
-      .outputLogic = 0U,
-      .interruptMode = kGPIO_IntRisingOrFallingEdge
-  };
-  /* Initialize GPIO functionality on GPIO_B1_00 (pin A11) */
-  GPIO_PinInit(GPIO2, 16U, &SW_LEFT_config);
-
-  /* GPIO configuration of MCU_WAKEUP on WAKEUP (pin L6) */
-  gpio_pin_config_t MCU_WAKEUP_config = {
-      .direction = kGPIO_DigitalInput,
-      .outputLogic = 0U,
-      .interruptMode = kGPIO_IntFallingEdge
-  };
-  /* Initialize GPIO functionality on WAKEUP (pin L6) */
-  GPIO_PinInit(GPIO5, 0U, &MCU_WAKEUP_config);
-
-  IOMUXC_SetPinMux(IOMUXC_GPIO_B0_06_GPIO2_IO06, 1U); 
-  IOMUXC_SetPinMux(IOMUXC_GPIO_B0_09_GPIO2_IO09, 1U); 
-  IOMUXC_SetPinMux(IOMUXC_GPIO_B0_11_GPIO2_IO11, 1U); 
-  IOMUXC_SetPinMux(IOMUXC_GPIO_B1_00_GPIO2_IO16, 1U); 
-  IOMUXC_SetPinMux(IOMUXC_GPIO_B1_14_XBAR1_IN02, 1U); 
-  IOMUXC_SetPinMux(IOMUXC_GPIO_B1_15_XBAR1_IN03, 1U); 
-  IOMUXC_SetPinMux(IOMUXC_SNVS_WAKEUP_GPIO5_IO00, 1U); 
-  XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputIomuxXbarIn02, kXBARA1_OutputEnc1PhaseAInput); 
-  XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputIomuxXbarIn03, kXBARA1_OutputEnc1PhaseBInput); 
-  IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_06_GPIO2_IO06, 0xB0B0U); 
-  IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_09_GPIO2_IO09, 0xB0B0U); 
-  IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_11_GPIO2_IO11, 0xB0B0U); 
-  IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_00_GPIO2_IO16, 0xB0B0U); 
-  IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_14_XBAR1_IN02, 0xB0B0U); 
-  IOMUXC_SetPinConfig(IOMUXC_GPIO_B1_15_XBAR1_IN03, 0xB0B0U); 
-  IOMUXC_SetPinConfig(IOMUXC_SNVS_WAKEUP_GPIO5_IO00, 0x01B0A0U); 
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
 }
+
+void PINMUX_DomeSwitch(void)
+{
+    IOMUXC_SetPinMux(PINMUX_DOME_SWITCH,
+                     0U); /* Software Input On Field: Input Path is determined by functionality */
+
+    IOMUXC_SetPinConfig(PINMUX_DOME_SWITCH,
+
+                        PAD_CONFIG_SLEW_RATE_SLOW | PAD_CONFIG_DRIVER_DISABLED | PAD_CONFIG_SPEED_SLOW_50MHz |
+                            PAD_CONFIG_PULL_KEEPER_DISABLED | PAD_CONFIG_SELECT_PULL | PAD_CONFIG_PULL_UP_100kOhm);
+
+}
+
 
 /***********************************************************************************************************************
  * EOF

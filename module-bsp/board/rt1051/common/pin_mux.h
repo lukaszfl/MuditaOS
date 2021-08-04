@@ -126,6 +126,10 @@ extern "C"
 
     void PINMUX_InitBatteryCharger(void);
 
+/**
+ * BELL EINK FRONTLIGHT PWM
+ */
+
 #define PINMUX_EINK_FORNTLIGHT_PWM IOMUXC_GPIO_B1_15_FLEXPWM4_PWMA03 
     void PINMUX_InitEinkFrontlight(void);
 
@@ -137,10 +141,21 @@ extern "C"
 #define PINMUX_BUTTON_SW_ENC    IOMUXC_GPIO_B1_00_GPIO2_IO16
 #define PINMUX_BUTTON_SW_PUSH   IOMUXC_GPIO_B1_10_GPIO2_IO26
 
+    void PINMUX_InitButtons(void);
+
 /**
  * BELL ROTARY ENCODER
  */
-#define PINMUX_ENCODER_1        IOMUXC_GPIO_B1_10_GPIO2_IO26
+#define PINMUX_ENCODER_2        IOMUXC_GPIO_B0_06_QTIMER3_TIMER0
+#define PINMUX_ENCODER_1        IOMUXC_GPIO_B0_07_QTIMER3_TIMER1
+
+    void PINMUX_InitRotaryEncoder(void);
+
+/**
+ * BELL DOME SWITCH
+ */
+#define PINMUX_DOME_SWITCH       IOMUXC_GPIO_B0_11_GPIO2_IO11
+    void PINMUX_DomeSwitch(void);
 
 #if defined(__cplusplus)
 }
