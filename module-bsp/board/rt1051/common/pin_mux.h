@@ -96,24 +96,16 @@ extern "C"
 
     void PINMUX_InitEMMC(void);
 
-#define PINMUX_AUDIOCODEC_SAIx_MCLK      IOMUXC_GPIO_AD_B0_10_SAI2_MCLK
-#define PINMUX_AUDIOCODEC_SAIx_TX_DATA00 IOMUXC_GPIO_AD_B0_09_SAI2_TX_DATA
-#define PINMUX_AUDIOCODEC_SAIx_RX_DATA00 IOMUXC_GPIO_AD_B0_08_SAI2_RX_DATA
-#define PINMUX_AUDIOCODEC_SAIx_BCLK      IOMUXC_GPIO_AD_B0_05_SAI2_TX_BCLK
-#define PINMUX_AUDIOCODEC_SAIx_TX_SYNC   IOMUXC_GPIO_AD_B0_04_SAI2_TX_SYNC
+//#define PINMUX_AUDIOCODEC_SAIx_MCLK      IOMUXC_GPIO_AD_B0_10_SAI2_MCLK
+#define PINMUX_AUDIOCODEC_SAIx_TX_DATA00 IOMUXC_GPIO_AD_B1_13_SAI1_TX_DATA00
+#define PINMUX_AUDIOCODEC_SAIx_RX_DATA00 IOMUXC_GPIO_AD_B1_12_SAI1_RX_DATA00
+#define PINMUX_AUDIOCODEC_SAIx_BCLK      IOMUXC_GPIO_AD_B1_14_SAI1_TX_BCLK
+#define PINMUX_AUDIOCODEC_SAIx_TX_SYNC   IOMUXC_GPIO_AD_B1_15_SAI1_TX_SYNC
 
 #define PINMUX_AUDIOCODEC_SCL IOMUXC_GPIO_B0_04_LPI2C2_SCL
 #define PINMUX_AUDIOCODEC_SDA IOMUXC_GPIO_B0_05_LPI2C2_SDA
 
     void PINMUX_InitAudioCodec(void);
-
-#define PINMUX_KEYBOARD_SCL   IOMUXC_GPIO_B0_04_LPI2C2_SCL
-#define PINMUX_KEYBOARD_SDA   IOMUXC_GPIO_B0_05_LPI2C2_SDA
-#define PINMUX_KEYBOARD_RESET IOMUXC_GPIO_B1_13_GPIO2_IO29
-#define PINMUX_KEYBOARD_IRQ   IOMUXC_GPIO_B1_12_GPIO2_IO28
-
-    void PINMUX_InitKeyboard(void);
-
 /**
  * EINK PINMUX DEFINITIONS
  */
@@ -126,189 +118,29 @@ extern "C"
     void PINMUX_InitEINK(void);
 
 /**
- * CELLULAR PINMUX DEFINITIONS
- */
-#define PINMUX_CELLULAR_UART_TX           IOMUXC_GPIO_AD_B0_12_LPUART1_TX
-#define PINMUX_CELLULAR_UART_RX           IOMUXC_GPIO_AD_B0_13_LPUART1_RX
-#define PINMUX_CELLULAR_UART_CTS          IOMUXC_GPIO_AD_B0_14_LPUART1_CTS_B
-#define PINMUX_CELLULAR_UART_RTS          IOMUXC_GPIO_AD_B0_15_LPUART1_RTS_B
-#define PINMUX_CELLULAR_AP_READY          IOMUXC_GPIO_B1_00_GPIO2_IO16
-#define PINMUX_CELLULAR_RESET             IOMUXC_GPIO_B1_01_GPIO2_IO17
-#define PINMUX_CELLULAR_PWRKEY            IOMUXC_GPIO_B1_02_GPIO2_IO18
-#define PINMUX_CELLULAR_WAKEUP_IN         IOMUXC_GPIO_B1_06_GPIO2_IO22
-#define PINMUX_CELLULAR_SIM_SEL           IOMUXC_GPIO_B1_04_GPIO2_IO20
-#define PINMUX_CELLULAR_RI                IOMUXC_GPIO_B1_05_GPIO2_IO21
-#define PINMUX_CELLULAR_DTR               IOMUXC_GPIO_EMC_41_GPIO3_IO27
-#define PINMUX_CELLULAR_SIM_TRAY_INSERTED IOMUXC_GPIO_B0_11_GPIO2_IO11
-#define PINMUX_CELLULAR_NC                IOMUXC_GPIO_B0_10_GPIO2_IO10
-#define PINMUX_CELLULAR_SIM_PRESENCE      IOMUXC_GPIO_B0_09_GPIO2_IO09
-#define PINMUX_CELLULAR_ANTENNA_SELECT    IOMUXC_GPIO_B0_02_GPIO2_IO02
-#define PINMUX_CELLULAR_STATUS            IOMUXC_GPIO_AD_B0_02_GPIO1_IO02
-#define PINMUX_CELLULAR_USB_BOOT_PIN      IOMUXC_GPIO_B1_08_GPIO2_IO24
-
-#define PINMUX_CELLULAR_SAIx_TX_DATA00 IOMUXC_GPIO_AD_B1_13_SAI1_TX_DATA00
-#define PINMUX_CELLULAR_SAIx_RX_DATA00 IOMUXC_GPIO_AD_B1_12_SAI1_RX_DATA00
-#define PINMUX_CELLULAR_SAIx_BCLK      IOMUXC_GPIO_AD_B1_14_SAI1_TX_BCLK
-#define PINMUX_CELLULAR_SAIx_TX_SYNC   IOMUXC_GPIO_AD_B1_15_SAI1_TX_SYNC
-
-    void PINMUX_InitCellular(void);
-
-/**
- * BLUETOOTH PINMUX DEFINITIONS
- */
-#define PINMUX_BLUETOOTH_UART_TX   IOMUXC_GPIO_AD_B1_02_LPUART2_TX
-#define PINMUX_BLUETOOTH_UART_RX   IOMUXC_GPIO_AD_B1_03_LPUART2_RX
-#define PINMUX_BLUETOOTH_UART_CTS  IOMUXC_GPIO_AD_B1_00_LPUART2_CTS_B
-#define PINMUX_BLUETOOTH_UART_RTS  IOMUXC_GPIO_AD_B1_01_LPUART2_RTS_B
-#define PINMUX_BLUETOOTH_OSC_EN    IOMUXC_GPIO_B0_00_GPIO2_IO00
-#define PINMUX_BLUETOOTH_NSHUTDOWN IOMUXC_GPIO_B0_01_GPIO2_IO01
-
-    void PINMUX_InitBluetoothPins(void);
-
-/**
- * USB TYPE-C CONTROLLER PINMUX DEFINITIONS
- */
-#define PINMUX_USBC_CONTROLLER_NINT    IOMUXC_GPIO_B1_09_GPIO2_IO25
-#define PINMUX_USBC_CONTROLLER_ID      IOMUXC_GPIO_B1_10_GPIO2_IO26
-#define PINMUX_USBC_CONTROLLER_PORT    IOMUXC_GPIO_B1_07_GPIO2_IO23
-#define PINMUX_USB_FUNCTION_MUX_SELECT IOMUXC_GPIO_AD_B1_09_GPIO1_IO25
-    void PINMUX_InitUSBC(void);
-
-/**
- * LED DRIVER PINMUX DEFINITIONS
- */
-#define PINMUX_LEDDRIVER_NRST IOMUXC_GPIO_AD_B0_03_GPIO1_IO03
-    void PINMUX_InitLEDDRIVER(void);
-
-/**
- * HEADSET (JACK DETECTION, MIC BIAS) PINMUX DEFINITIONS
- */
-#define PINMUX_JACKDET_IRQ IOMUXC_GPIO_B1_14_GPIO2_IO30
-#define PINMUX_MIC_LDO_EN  IOMUXC_GPIO_B1_03_GPIO2_IO19
-    void PINMUX_InitHeadset(void);
-
-/**
  * BATTERY CHARGER PINMUX DEFINITIONS
  */
-#define PINUMX_BATTERY_CHARGER_INOKB_IRQ   IOMUXC_GPIO_B0_12_GPIO2_IO12
-#define PINUMX_BATTERY_CHARGER_WCINOKB_IRQ IOMUXC_GPIO_B0_13_GPIO2_IO13
-#define PINUMX_BATTERY_CHARGER_INTB_IRQ    IOMUXC_GPIO_B0_14_GPIO2_IO14
+#define PINUMX_BATTERY_CHARGER_CHGINT   IOMUXC_GPIO_AD_B0_00_GPIO1_IO00
+#define PINUMX_BATTERY_CHARGER_ACOK     IOMUXC_GPIO_AD_B0_02_GPIO1_IO02
+#define PINUMX_BATTERY_CHARGER_CHGEN    IOMUXC_GPIO_AD_B0_15_GPIO1_IO15
 
     void PINMUX_InitBatteryCharger(void);
 
-#define PINMUX_KEYBOARD_POWER_ENABLE_PAD IOMUXC_GPIO_B0_07_GPIO2_IO07
-#define PINMUX_KEYBOARD_RF_BUTTON_PAD    IOMUXC_GPIO_B0_06_GPIO2_IO06
-
-    void PINMUX_InitPowerButton(void);
-
-#define PINMUX_ALS_ADC IOMUXC_GPIO_AD_B1_08_GPIO1_IO24 // gpio_ad_b1_08 - gpio1.24 - alt5
-#define PINMUX_ALS_GB1 IOMUXC_GPIO_AD_B1_10_GPIO1_IO26 // GPIO_AD_B1_10
-#define PINMUX_ALS_GB2 IOMUXC_GPIO_AD_B1_11_GPIO1_IO27 // GPIO_AD_B1_11
-    void PINMUX_InitALS(void);
-
-#define PINMUX_POWER_SW   IOMUXC_GPIO_B0_06_GPIO2_IO06
-#define PINMUX_POWER_HOLD IOMUXC_GPIO_B0_07_GPIO2_IO07
-    void PINMUX_InitPowerSW(void);
-
-#define PINMUX_VIBRATOR_EN_PIN IOMUXC_GPIO_AD_B0_00_GPIO1_IO00
-    void PINMUX_InitVibrator(void);
-
-#define PINMUX_TORCH_EN_PIN IOMUXC_GPIO_AD_B1_05_GPIO1_IO21
-    void PINMUX_InitTorch(void);
-
-#define PINMUX_MAGNETOMETER_IRQ_PIN IOMUXC_GPIO_AD_B1_04_GPIO1_IO20
-    void PINMUX_InitMagnetometer(void);
-
-#define PINMUX_EINK_FORNTLIGHT_PWM IOMUXC_GPIO_AD_B0_01_FLEXPWM2_PWMB03
+#define PINMUX_EINK_FORNTLIGHT_PWM IOMUXC_GPIO_B1_15_FLEXPWM4_PWMA03 
     void PINMUX_InitEinkFrontlight(void);
 
-#define PINMUX_LIGHT_SENSOR_IRQ_PIN IOMUXC_GPIO_B0_15_GPIO2_IO15
-    void PINMUX_InitLightSensor(void);
+/**
+ * BELL BUTTONS
+ */
+#define PINMUX_BUTTON_SW1       IOMUXC_GPIO_B1_08_GPIO2_IO24
+#define PINMUX_BUTTON_SW2       IOMUXC_GPIO_B1_09_GPIO2_IO25
+#define PINMUX_BUTTON_SW_ENC    IOMUXC_GPIO_B1_00_GPIO2_IO16
+#define PINMUX_BUTTON_SW_PUSH   IOMUXC_GPIO_B1_10_GPIO2_IO26
 
-/* **************** BELL HYBRID ***************** */
-/* GPIO_B1_00 (coord A11), SW_LEFT */
-/* Routed pin properties */
-#define SWITCHES_SW_LEFT_PERIPHERAL                                        GPIO2   /*!< Peripheral name */
-#define SWITCHES_SW_LEFT_SIGNAL                                          gpio_io   /*!< Signal name */
-#define SWITCHES_SW_LEFT_CHANNEL                                             16U   /*!< Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define SWITCHES_SW_LEFT_GPIO                                              GPIO2   /*!< GPIO peripheral base pointer */
-#define SWITCHES_SW_LEFT_GPIO_PIN                                            16U   /*!< GPIO pin number */
-#define SWITCHES_SW_LEFT_GPIO_PIN_MASK                               (1U << 16U)   /*!< GPIO pin mask */
-#define SWITCHES_SW_LEFT_PORT                                              GPIO2   /*!< PORT peripheral base pointer */
-#define SWITCHES_SW_LEFT_PIN                                                 16U   /*!< PORT pin number */
-#define SWITCHES_SW_LEFT_PIN_MASK                                    (1U << 16U)   /*!< PORT pin mask */
-
-/* GPIO_B0_09 (coord C9), SW_LATCH */
-/* Routed pin properties */
-#define SWITCHES_SW_LATCH_PERIPHERAL                                       GPIO2   /*!< Peripheral name */
-#define SWITCHES_SW_LATCH_SIGNAL                                         gpio_io   /*!< Signal name */
-#define SWITCHES_SW_LATCH_CHANNEL                                             9U   /*!< Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define SWITCHES_SW_LATCH_GPIO                                             GPIO2   /*!< GPIO peripheral base pointer */
-#define SWITCHES_SW_LATCH_GPIO_PIN                                            9U   /*!< GPIO pin number */
-#define SWITCHES_SW_LATCH_GPIO_PIN_MASK                               (1U << 9U)   /*!< GPIO pin mask */
-#define SWITCHES_SW_LATCH_PORT                                             GPIO2   /*!< PORT peripheral base pointer */
-#define SWITCHES_SW_LATCH_PIN                                                 9U   /*!< PORT pin number */
-#define SWITCHES_SW_LATCH_PIN_MASK                                    (1U << 9U)   /*!< PORT pin mask */
-
-/* GPIO_B0_11 (coord A10), SW_RIGHT */
-/* Routed pin properties */
-#define SWITCHES_SW_RIGHT_PERIPHERAL                                       GPIO2   /*!< Peripheral name */
-#define SWITCHES_SW_RIGHT_SIGNAL                                         gpio_io   /*!< Signal name */
-#define SWITCHES_SW_RIGHT_CHANNEL                                            11U   /*!< Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define SWITCHES_SW_RIGHT_GPIO                                             GPIO2   /*!< GPIO peripheral base pointer */
-#define SWITCHES_SW_RIGHT_GPIO_PIN                                           11U   /*!< GPIO pin number */
-#define SWITCHES_SW_RIGHT_GPIO_PIN_MASK                              (1U << 11U)   /*!< GPIO pin mask */
-#define SWITCHES_SW_RIGHT_PORT                                             GPIO2   /*!< PORT peripheral base pointer */
-#define SWITCHES_SW_RIGHT_PIN                                                11U   /*!< PORT pin number */
-#define SWITCHES_SW_RIGHT_PIN_MASK                                   (1U << 11U)   /*!< PORT pin mask */
-
-/* GPIO_B1_14 (coord C14), ENC_1 */
-/* Routed pin properties */
-#define SWITCHES_ENC_A_PERIPHERAL                                           ENC1   /*!< Peripheral name */
-#define SWITCHES_ENC_A_SIGNAL                                              PHASE   /*!< Signal name */
-#define SWITCHES_ENC_A_CHANNEL                                                 A   /*!< Signal channel */
-
-/* GPIO_B1_15 (coord B14), ENC_B */
-/* Routed pin properties */
-#define SWITCHES_ENC_B_PERIPHERAL                                           ENC1   /*!< Peripheral name */
-#define SWITCHES_ENC_B_SIGNAL                                              PHASE   /*!< Signal name */
-#define SWITCHES_ENC_B_CHANNEL                                                 B   /*!< Signal channel */
-
-/* GPIO_B0_06 (coord A8), PS_BUTTON */
-/* Routed pin properties */
-#define SWITCHES_PS_BUTTON_PERIPHERAL                                      GPIO2   /*!< Peripheral name */
-#define SWITCHES_PS_BUTTON_SIGNAL                                        gpio_io   /*!< Signal name */
-#define SWITCHES_PS_BUTTON_CHANNEL                                            6U   /*!< Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define SWITCHES_PS_BUTTON_GPIO                                            GPIO2   /*!< GPIO peripheral base pointer */
-#define SWITCHES_PS_BUTTON_GPIO_PIN                                           6U   /*!< GPIO pin number */
-#define SWITCHES_PS_BUTTON_GPIO_PIN_MASK                              (1U << 6U)   /*!< GPIO pin mask */
-#define SWITCHES_PS_BUTTON_PORT                                            GPIO2   /*!< PORT peripheral base pointer */
-#define SWITCHES_PS_BUTTON_PIN                                                6U   /*!< PORT pin number */
-#define SWITCHES_PS_BUTTON_PIN_MASK                                   (1U << 6U)   /*!< PORT pin mask */
-
-/* WAKEUP (coord L6), MCU_WAKEUP */
-/* Routed pin properties */
-#define SWITCHES_MCU_WAKEUP_PERIPHERAL                                     GPIO5   /*!< Peripheral name */
-#define SWITCHES_MCU_WAKEUP_SIGNAL                                       gpio_io   /*!< Signal name */
-#define SWITCHES_MCU_WAKEUP_CHANNEL                                           0U   /*!< Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define SWITCHES_MCU_WAKEUP_GPIO                                           GPIO5   /*!< GPIO peripheral base pointer */
-#define SWITCHES_MCU_WAKEUP_GPIO_PIN                                          0U   /*!< GPIO pin number */
-#define SWITCHES_MCU_WAKEUP_GPIO_PIN_MASK                             (1U << 0U)   /*!< GPIO pin mask */
-#define SWITCHES_MCU_WAKEUP_PORT                                           GPIO5   /*!< PORT peripheral base pointer */
-#define SWITCHES_MCU_WAKEUP_PIN                                               0U   /*!< PORT pin number */
-#define SWITCHES_MCU_WAKEUP_PIN_MASK                                  (1U << 0U)   /*!< PORT pin mask */
-
-void PINMUX_InitSwitches(void);
+/**
+ * BELL ROTARY ENCODER
+ */
+#define PINMUX_ENCODER_1        IOMUXC_GPIO_B1_10_GPIO2_IO26
 
 #if defined(__cplusplus)
 }
