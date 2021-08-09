@@ -205,11 +205,13 @@ void BluetoothAudioDevice::disableOutput()
 
 void HSPAudioDevice::enableInput()
 {
-    auto blockSize = Source::_stream->getInputTraits().blockSize;
-    rxLeftovers    = std::make_unique<std::uint8_t[]>(blockSize);
-    decoderBuffer  = std::make_unique<std::int16_t[]>(scratchBufferSize);
-    btstack_cvsd_plc_init(&cvsdPlcState);
-    BluetoothAudioDevice::enableInput();
+    if (!BluetoothAudioDevice::isInputEnabled()) {
+        auto blockSize = Source::_stream->getInputTraits().blockSize;
+        rxLeftovers    = std::make_unique<std::uint8_t[]>(blockSize);
+        decoderBuffer  = std::make_unique<std::int16_t[]>(scratchBufferSize);
+        btstack_cvsd_plc_init(&cvsdPlcState);
+        BluetoothAudioDevice::enableInput();
+    }
 }
 
 auto BluetoothAudioDevice::fillSbcAudioBuffer() -> int

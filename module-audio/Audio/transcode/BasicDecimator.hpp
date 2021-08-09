@@ -33,8 +33,9 @@ namespace audio::transcode
         /**
          * @brief Integer type to be used to read and write data from/to a buffer.
          */
-        using IntegerType = typename decltype(
-            utils::integer::getIntegerType<sizeof(SampleType) * utils::integer::BitsInByte * Channels>())::type;
+        using IntegerType =
+            typename decltype(utils::integer::getIntegerType<sizeof(SampleType) * utils::integer::BitsInByte *
+                                                             Channels>())::type;
 
       public:
         auto transformBlockSize(std::size_t blockSize) const noexcept -> std::size_t override
@@ -60,8 +61,7 @@ namespace audio::transcode
 
         auto transform(const Span &inputSpan, const Span &transformSpace) const -> Span override
         {
-            auto outputSpan =
-                Span{.data = transformSpace.data, .dataSize = transformBlockSize(inputSpan.dataSize / Ratio)};
+            auto outputSpan     = Span{.data = transformSpace.data, .dataSize = transformBlockSize(inputSpan.dataSize)};
             IntegerType *input  = reinterpret_cast<IntegerType *>(inputSpan.data);
             IntegerType *output = reinterpret_cast<IntegerType *>(outputSpan.data);
 
