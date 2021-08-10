@@ -13,12 +13,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.
 from harness import log
 from harness.harness import Harness
 from harness import utils
-from harness.interface.error import TestError, Error
 from harness.interface.CDCSerial import Keytype, CDCSerial as serial
 from harness.interface.defs import key_codes
+from harness.harnesscache import HarnessCache
 
-
-simulator_port = 'simulator'
 
 def pytest_addoption(parser):
     parser.addoption("--port", type=str, action="store", required=False)
@@ -49,72 +47,38 @@ def sms_text(request):
     assert sms_text != ''
     return sms_text
 
+
 @pytest.fixture(scope='session')
 def bt_device(request):
     bt_device = request.config.option.bt_device
     return bt_device
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture(scope='function')
 def harness(request):
     '''
-    Try to init one Pure phone with serial port path or automatically
+    Gets harness connection to be used with tests
+    tries to init one Pure phone with:
+    * automatically - depending on harness discovery aka get_pures method
+    * serial port path if provided via config.option.port ( `--port` parameter)
+    * virtual com used with simulator always named `/tmp/purephone_pts_name`
     '''
     port_name = request.config.option.port
     TIMEOUT = request.config.option.timeout
-
-    timeout_started = time.time()
-
     RETRY_EVERY_SECONDS = 1.0
+
+    if HarnessCache.cached() and HarnessCache.is_operational():
+        return HarnessCache.harness
+
     try:
-        if port_name is None:
-            log.warning("no port provided! trying automatic detection")
-            harness = None
-
-            with utils.Timeout.limit(seconds=TIMEOUT):
-                while not harness:
-                    try:
-                        harness = Harness.from_detect()
-                    except TestError as e:
-                        if e.get_error_code() == Error.PORT_NOT_FOUND:
-                            log.info(f"waiting for a serial port… ({TIMEOUT- int(time.time() - timeout_started)})")
-                            time.sleep(RETRY_EVERY_SECONDS)
-        else:
-            assert '/dev' in port_name or simulator_port in port_name
-
-            if simulator_port in port_name:
-                file = None
-                with utils.Timeout.limit(seconds=TIMEOUT):
-                    while not file:
-                        try:
-                            file = open("/tmp/purephone_pts_name", "r")
-                        except FileNotFoundError as err:
-                            log.info(
-                                f"waiting for a simulator port… ({TIMEOUT- int(time.time() - timeout_started)})")
-                            time.sleep(RETRY_EVERY_SECONDS)
-                port_name = file.readline()
-                if port_name.isascii():
-                    log.debug("found {} entry!".format(port_name))
-                else:
-                    pytest.exit("not a valid sim pts entry!")
-
-            harness = Harness(port_name)
-
-            '''
-            Wait for endpoints to initialize
-            '''
-            testbody = {"ui": True, "getWindow": True}
-            result = None
-            with utils.Timeout.limit(seconds=305):
-                while not result:
-                    try:
-                        result = harness.endpoint_request("developerMode", "get", testbody)
-                    except ValueError:
-                        log.info("Endpoints not ready..")
-
+        HarnessCache.get(port_name, TIMEOUT, RETRY_EVERY_SECONDS)
     except utils.Timeout:
         pytest.exit("couldn't find any viable port. exiting")
-    else:
-        return harness
+    except ValueError as err:
+        pytest.exit(f"harness discovery error! {err}")
+
+    return HarnessCache.harness
+
 
 @pytest.fixture(scope='session')
 def harnesses():
@@ -128,15 +92,18 @@ def harnesses():
     assert len(harnesses) >= 2
     return harnesses
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture()
 def phone_unlocked(harness):
     harness.unlock_phone()
     assert not harness.is_phone_locked()
+
 
 @pytest.fixture(scope='session')
 def phone_locked(harness):
     harness.lock_phone()
     assert harness.is_phone_locked()
+
 
 @pytest.fixture(scope='session')
 def phones_unlocked(harnesses):
@@ -146,15 +113,16 @@ def phones_unlocked(harnesses):
 
 
 @pytest.fixture(scope='session')
-def phone_in_desktop(harness):
+def phone_in_desktop(harness: Harness):
     # go to desktop
     if harness.get_application_name() != "ApplicationDesktop":
-        harness.connection.send_key_code(key_codes["fnRight"], Keytype.long_press)
+        harness.return_to_home_screen()
         # in some cases we have to do it twice
         if harness.get_application_name() != "ApplicationDesktop":
-            harness.connection.send_key_code(key_codes["fnRight"], Keytype.long_press)
+            harness.connection.return_to_home_screen()
     # assert that we are in ApplicationDesktop
     assert harness.get_application_name() == "ApplicationDesktop"
+
 
 @pytest.fixture(scope='function')
 def phone_ends_test_in_desktop(harness):
@@ -186,6 +154,15 @@ def phone_ends_test_in_desktop(harness):
     # assert that we are in ApplicationDesktop
     assert harness.get_application_name() == target_application
     time.sleep(1)
+
+
+@pytest.fixture(scope='function')
+def phone_mode_unlock(harness):
+    from harness.api.developermode import PhoneModeLock
+    PhoneModeLock(False).run(harness)
+    yield
+    PhoneModeLock(True).run(HarnessCache.harness)
+
 
 def pytest_configure(config):
     config.addinivalue_line("markers",

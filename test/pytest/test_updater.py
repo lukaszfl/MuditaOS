@@ -5,15 +5,14 @@
 import pytest
 from harness import log
 from harness.interface.defs import Method, Endpoint
-from harness.rt_harness_discovery import get_rt1051_harness
 from harness.harness import Harness
 from harness.api.filesystem import put_file, get_file
-from harness.api.developermode import PhoneModeLock
-from harness.api.update import PhoneReboot, Reboot
+from harness.api.update import Reboot
 from assets.update_package_generator import gen_update_asset, get_last_version
+from harness.harnesscache import HarnessCache
 
 # !!! Please update your updater.bin path to your local path.
-updater_bin_path = "/home/maciej/Repos/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin"
+updater_bin_path = "/home/pholat/workspace/mudita/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin"
 
 def get_version(harness: Harness):
     r = harness.request(Endpoint.DEVICEINFO, Method.GET, {}).response
@@ -32,29 +31,20 @@ def disable_some_logs(harness: Harness):
 
 def general_test(harness: Harness, filename, expects='FAIL'):
     log.info(get_version(harness))
-    PhoneModeLock(False).run(harness)
-    put_file(harness, filename, "/sys/user")
-    PhoneReboot(Reboot.UPDATE).run(harness)
-    assert harness.connection.watch_port_reboot(300)
+    put_file(harness, filename, "/sys/user/")
 
-    harness = get_rt1051_harness(60 * 6)
-    import time
-    time.sleep(15)
-    harness.unlock_phone()
-    PhoneModeLock(False).run(harness)
+    harness = HarnessCache.reset_phone(Reboot.UPDATE)
 
     log.info(get_version(harness))
     get_file(harness, "updater.log", "./")
     with open("updater.log") as f:
         line = f.readline()
         assert expects in line
-    #PhoneModeLock(True).run(harness)
     log.info("update done!")
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_in_desktop")
-@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
 def test_simple_update(harness: Harness):
     filename = gen_update_asset(
        updater=updater_bin_path,
@@ -63,8 +53,7 @@ def test_simple_update(harness: Harness):
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_in_desktop")
-@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
 def test_checksum_fail_bad(harness: Harness):
     '''
     we can update only when checksum is proper
@@ -76,8 +65,7 @@ def test_checksum_fail_bad(harness: Harness):
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_in_desktop")
-@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
 def test_checksum_fail_none(harness: Harness):
     '''
     we can update only when checksum is proper
@@ -88,8 +76,7 @@ def test_checksum_fail_none(harness: Harness):
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_in_desktop")
-@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
 def test_checksum_fail_zero(harness: Harness):
     '''
     we can update only when checksum is proper
@@ -100,8 +87,7 @@ def test_checksum_fail_zero(harness: Harness):
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_in_desktop")
-@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
 def test_version_fail(harness: Harness):
     '''
     first release of updater.bin is set to 0.0.1, defaults are 0.0.0 in gen_version
@@ -117,8 +103,7 @@ def test_version_fail(harness: Harness):
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_in_desktop")
-@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
 def test_version_same(harness: Harness):
     '''
     we should fail with the latest version -as we should already have latest version
@@ -130,8 +115,7 @@ def test_version_same(harness: Harness):
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_in_desktop")
-@pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
 def test_version_newer(harness: Harness):
     '''
     we should succeed with version loaded +1 bigger
