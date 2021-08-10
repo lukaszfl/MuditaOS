@@ -11,8 +11,9 @@ from harness.api.update import Reboot
 from assets.update_package_generator import gen_update_asset, get_last_version
 from harness.harnesscache import HarnessCache
 
-# !!! Please update your updater.bin path to your local path.
-updater_bin_path = "/home/pholat/workspace/mudita/PureUpdater2/PureUpdater/build/updater/PureUpdater_RT.bin"
+# !!! Please update your updater.bin path to your local path
+# TODO: This will be changed to current binary from github
+updater_bin_path = "/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin"
 
 def get_version(harness: Harness):
     r = harness.request(Endpoint.DEVICEINFO, Method.GET, {}).response

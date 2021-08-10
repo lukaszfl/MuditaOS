@@ -112,7 +112,7 @@ def phones_unlocked(harnesses):
         assert not harness.is_phone_locked()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def phone_in_desktop(harness: Harness):
     # go to desktop
     if harness.get_application_name() != "ApplicationDesktop":
