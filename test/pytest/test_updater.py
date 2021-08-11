@@ -107,11 +107,10 @@ def test_version_fail(harness: Harness):
 @pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
 def test_version_same(harness: Harness):
     '''
-    we should fail with the latest version -as we should already have latest version
+    we should succeed with the same version (update of the same version, to same version is ok)
     '''
-    
     filename = gen_update_asset(
-        updater=updater_bin_path, updater_version= get_last_version())
+        updater=updater_bin_path, updater_version=get_last_version())
     general_test(harness, filename, 'OK')
 
 
