@@ -6,6 +6,7 @@
 #include "ServiceManifest.hpp"
 
 #include <memory>
+#include <tuple>
 
 namespace sys
 {
@@ -39,19 +40,27 @@ namespace sys
         ServiceManifest manifest;
     };
 
-    template <typename T> class ServiceCreator : public BaseServiceCreator
+    template <typename T, typename... Args> class ServiceCreator : public BaseServiceCreator
     {
       public:
         using BaseServiceCreator::BaseServiceCreator;
 
+        explicit ServiceCreator(ServiceManifest &&manifest, Args &&...args)
+            : BaseServiceCreator(std::move(manifest)), savedArgs(std::make_tuple<Args...>(std::forward<Args>(args)...))
+        {}
+
         [[nodiscard]] auto create() const -> std::shared_ptr<Service> override
         {
-            return std::make_shared<T>();
+            return std::apply([](auto... args) { return std::make_shared<T, Args...>(std::forward<Args>(args)...); },
+                              savedArgs);
         }
+
+      private:
+        std::tuple<Args...> savedArgs;
     };
 
-    template <typename T> std::unique_ptr<BaseServiceCreator> CreatorFor() noexcept
+    template <typename T, typename... Args> std::unique_ptr<BaseServiceCreator> CreatorFor(Args &&...args) noexcept
     {
-        return std::make_unique<ServiceCreator<T>>(ManifestOf<T>());
+        return std::make_unique<ServiceCreator<T, Args...>>(ManifestOf<T>(), std::forward<Args>(args)...);
     }
 } // namespace sys

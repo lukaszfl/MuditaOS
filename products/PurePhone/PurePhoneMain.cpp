@@ -55,6 +55,27 @@
 #include <memory>
 #include <vector>
 
+class FooService : public ServiceAudio
+{
+  public:
+    FooService(int x, std::string y)
+    {}
+};
+
+namespace sys
+{
+    template <> struct ManifestTraits<FooService>
+    {
+        static auto GetManifest() -> ServiceManifest
+        {
+            ServiceManifest manifest;
+            manifest.name         = service::name::audio;
+            manifest.dependencies = {service::name::db};
+            return manifest;
+        }
+    };
+} // namespace sys
+
 int main()
 {
 
@@ -98,6 +119,7 @@ int main()
     systemServices.emplace_back(sys::CreatorFor<stm::ServiceTime>());
     systemServices.emplace_back(sys::CreatorFor<service::eink::ServiceEink>());
     systemServices.emplace_back(sys::CreatorFor<service::gui::ServiceGUI>());
+    systemServices.emplace_back(sys::CreatorFor<FooService>(1, std::string("foo")));
 
     auto sysmgr = std::make_shared<sys::SystemManager>(std::move(systemServices));
     sysmgr->StartSystem(
