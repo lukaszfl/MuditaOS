@@ -8,12 +8,33 @@ from harness.interface.defs import Method, Endpoint
 from harness.harness import Harness
 from harness.api.filesystem import put_file, get_file
 from harness.api.update import Reboot
-from assets.update_package_generator import gen_update_asset, get_last_version
+from assets.update_package_generator import gen_update_asset, get_last_version, PackageOpts
 from harness.harnesscache import HarnessCache
 
-# !!! Please update your updater.bin path to your local path
-# TODO: This will be changed to current binary from github
-updater_bin_path = "/home/pholat/workspace/mudita/PureUpdater2/build/updater/PureUpdater_RT.bin"
+
+def updater_bin_path(request):
+    return request.config.option.updater_bin
+
+
+def ecoboot_bin_path(request):
+    return request.config.option.ecoboot_bin
+
+
+def boot_bin_path(request):
+    return request.config.option.boot_bin
+
+
+def update_binaries(request):
+    '''
+    selected binaries list, possible options:
+        boot
+        ecoboot
+        updater
+    '''
+    binaries = request.config.option.update_opts
+    binaries = binaries.split(',')
+    return binaries
+
 
 def get_version(harness: Harness):
     r = harness.request(Endpoint.DEVICEINFO, Method.GET, {}).response
@@ -22,16 +43,25 @@ def get_version(harness: Harness):
     return f"version: {version} sha: {sha}"
 
 
-def disable_some_logs(harness: Harness):
-    from harness.interface.defs import PureLogLevel
-    for val in ["SysMgrService", "ServiceDesktop_w2", "CellularMux"]:
-        ret = harness.request(Endpoint.DEVELOPERMODE, Method.POST, {
-                              "log": True, "service": val, "level": PureLogLevel.LOGERROR.value})
-        log.info(f"{ret.response}")
+@pytest.fixture
+def update_options():
+    opts = PackageOpts()
+    return opts
+
+
+@pytest.fixture(params=["", "0", "deadbeefdeadbeefdeadbeefdeadbeef"])
+def update_options_failure_checksum(request):
+    opts = PackageOpts()
+    opts.updater_checksum = request.param
+    opts.updater = updater_bin_path(request)
+    opts.updater_version = get_last_version()
+    opts.binaries = update_binaries(request)
+    print("-------------------------------------")
+    print(f"opts: {opts}")
+    return opts
 
 
 def general_test(harness: Harness, filename, expects='FAIL'):
-    log.info(get_version(harness))
     put_file(harness, filename, "/sys/user/")
 
     harness = HarnessCache.reset_phone(Reboot.UPDATE)
@@ -45,50 +75,27 @@ def general_test(harness: Harness, filename, expects='FAIL'):
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
+@pytest.mark.usefixtures("phone_in_desktop", "phone_unlocked", "phone_mode_unlock")
 def test_simple_update(harness: Harness):
-    filename = gen_update_asset(
-       updater=updater_bin_path,
-       updater_version = get_last_version())
+    opts = PackageOpts()
+    opts.updater = updater_bin_path()
+    opts.updater_version = get_last_version()
+    filename = gen_update_asset(opts)
     general_test(harness, filename, 'OK')
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
-def test_checksum_fail_bad(harness: Harness):
+@pytest.mark.usefixtures("phone_in_desktop", "phone_unlocked", "phone_mode_unlock")
+def test_checksum_fail_bad(harness: Harness, request, update_options_failure_checksum):
     '''
-    we can update only when checksum is proper
+    tests for bad checksums
     '''
-    filename = gen_update_asset(updater=updater_bin_path,
-                                updater_checksum="deadbeefdeadbeefdeadbeefdeadbeef",
-                                updater_version = get_last_version())
+    filename = gen_update_asset(update_options_failure_checksum)
     general_test(harness, filename, 'FAIL')
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
-def test_checksum_fail_none(harness: Harness):
-    '''
-    we can update only when checksum is proper
-    '''
-    filename = gen_update_asset(
-        updater=updater_bin_path, updater_checksum="", updater_version = get_last_version())
-    general_test(harness, filename, 'FAIL')
-
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
-def test_checksum_fail_zero(harness: Harness):
-    '''
-    we can update only when checksum is proper
-    '''
-    filename = gen_update_asset(
-        updater=updater_bin_path, updater_checksum="0", updater_version = get_last_version())
-    general_test(harness, filename, 'FAIL')
-
-
-@pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
+@pytest.mark.usefixtures("phone_in_desktop", "phone_unlocked", "phone_mode_unlock")
 def test_version_fail(harness: Harness):
     '''
     first release of updater.bin is set to 0.0.1, defaults are 0.0.0 in gen_version
@@ -98,25 +105,29 @@ def test_version_fail(harness: Harness):
           on the other hand - if we want to not fail with partial update success - then
           it should make logic considerably more convoluted
     '''
-    filename = gen_update_asset(
-        updater=updater_bin_path, updater_version="0.0.0")
+    opts = PackageOpts()
+    opts.updater = updater_bin_path()
+    opts.updater_version = "0.0.0"
+    filename = gen_update_asset(opts)
     general_test(harness, filename, 'FAIL')
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
+@pytest.mark.usefixtures("phone_in_desktop", "phone_unlocked", "phone_mode_unlock")
 def test_version_same(harness: Harness):
     '''
     we should succeed with the same version (update of the same version, to same version is ok)
     '''
-    filename = gen_update_asset(
-        updater=updater_bin_path, updater_version=get_last_version())
+    opts = PackageOpts()
+    opts.updater=updater_bin_path()
+    opts.updater_version=get_last_version()
+    filename = gen_update_asset(opts)
     general_test(harness, filename, 'OK')
 
 
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked", "phone_mode_unlock", "phone_in_desktop")
-def test_version_newer(harness: Harness):
+@pytest.mark.usefixtures("phone_in_desktop", "phone_unlocked", "phone_mode_unlock")
+def test_version_newer(harness: Harness, request, update_options):
     '''
     we should succeed with version loaded +1 bigger
     '''
@@ -125,6 +136,11 @@ def test_version_newer(harness: Harness):
     version[-1] = str(int(version[-1]) + 1)
     version = ".".join(version)
 
-    filename = gen_update_asset(
-        updater=updater_bin_path, updater_version=version)
+    update_options.binaries = update_binaries(request)
+    update_options.updater = updater_bin_path(request)
+    update_options.ecoboot = ecoboot_bin_path(request)
+    update_options.updater_version = version
+
+    log.info(f"load phone with ecoboot: {update_options}")
+    filename = gen_update_asset(update_options)
     general_test(harness, filename, 'OK')

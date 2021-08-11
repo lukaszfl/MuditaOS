@@ -11,8 +11,11 @@ import logging
 from hashlib import md5
 from download_asset.download_asset import Getter
 from tempfile import TemporaryDirectory
+from dataclasses import dataclass, field
 
 log = logging.getLogger(__name__)
+logger = logging.getLogger("download_asset")
+#logger.setLevel(logging.ERROR)
 
 
 def get_0_versions():
@@ -84,62 +87,95 @@ def get_last_version():
     return g.releases[0]["tag_name"]
 
 
-def gen_update_asset(updater: str = None, boot: str = None, updater_version: str = None, boot_version: str = None,
-                     updater_checksum=None, package_name: str = "update.tar", ):
+@dataclass
+class PackageOpts():
     '''
-    Generates package:
+    options for gen_update_asset
         updater         : if set to value, copy updater.bin from directory, otherwise load latest from PurePupdater repository
         boot            : if set to value, copy bootloader to tar file - otherwise do not add boot.bin to package
         updater_version : updater version to set for updater in json file
         boot_version    : updater version to set for updater in json file
         package_name    : package name to create
+        binaries        : what binaries to pack, optional: boot, ecoboot, updater
     '''
-    g = Getter()
-    g.repo = "PureUpdater"
+    updater: str = None
+    boot: str = None
+    ecoboot: str = None
+    updater_version: str = None
+    boot_version: str = None
+    updater_checksum: str = None
+    package_name: str = "update.tar"
+    binaries: list = field(default_factory=lambda: ["updater"])
+
+
+def gen_update_asset(opts: PackageOpts):
+    '''
+    Generates package: by options from PackageOpts
+    '''
+    g_updater = Getter()
+    g_ecoboot = Getter()
     workdir = WorkOnTmp()
     versions = get_0_versions()
 
-    if updater is None:
-        g.getReleases(None)
-        versions["updater.bin"] = g.releases[0]["tag_name"]
-        download_args = Args()
-        download_args.asset = "updater.bin"
-        download_args.tag = versions["updater.bin"]
-        download_args.workdir = workdir.name()
-        log.info(f"---> save file to: {workdir.name()}")
-        g.downloadRelease(download_args)
-    else:
-        shutil.copyfile(updater, workdir.name() + "/updater.bin")
+    if 'updater' in opts.binaries:
+        if opts.updater is None:
+            g_updater.repo = "PureUpdater"
+            g_updater.getReleases(None)
+            versions["updater.bin"] = g_updater.releases[0]["tag_name"]
+            download_args = Args()
+            download_args.asset = "updater.bin"
+            download_args.tag = versions["updater.bin"]
+            download_args.workdir = workdir.name()
+            log.info(f"---> save file to: {workdir.name()}")
+            g_updater.downloadRelease(download_args)
+        else:
+            shutil.copyfile(opts.updater, workdir.name() + "/updater.bin")
 
-    if boot is not None:
-        shutil.copyfile(boot, workdir.name() + "/boot.bin")
+    if 'ecoboot' in opts.binaries:
+        if opts.ecoboot is None:
+            log.warning("BY DEFAULT WILL LOAD BOOTLOADER FOR T7")
+            g_ecoboot.repo = "ecoboot"
+            g_ecoboot.getReleases(None)
+            versions["ecoboot.bin"] = g_ecoboot.releases[0]["tag_name"]
+            download_args = Args()
+            download_args.asset = "ecoboot.bin"
+            download_args.assetRepoName = "ecoboot.bin"
+            download_args.assetOutName = "ecoboot.bin"
+            download_args.tag = versions["ecoboot.bin"]
+            download_args.workdir = workdir.name()
+            log.info(f"---> save file to: {workdir.name()}")
+            g_ecoboot.listReleases(download_args)
+            g_ecoboot.downloadRelease(download_args)
+        else:
+            shutil.copyfile(opts.ecoboot, workdir.name() + "/ecoboot.bin")
 
-    checksums = None
+    if 'boot' in opts.binaries:
+        shutil.copyfile(opts.boot, workdir.name() + "/boot.bin")
 
-    if updater_version is not None:
-        versions["updater.bin"] = updater_version
-    if boot_version is not None:
-        versions["boot.bin"] = boot_version
-    if updater_checksum is not None:
-        checksums = get_none_checksums()
-        checksums["updater.bin"] = updater_checksum
+    checksums = get_none_checksums()
+
+    if opts.updater_version is not None:
+        versions["updater.bin"] = opts.updater_version
+    if opts.boot_version is not None:
+        versions["boot.bin"] = opts.boot_version
+    if opts.updater_checksum is not None:
+        checksums["updater.bin"] = opts.updater_checksum
 
     log.info("generating version json ...")
 
     gen_version_json("./", versions, checksums)
 
-    log.info(f"writting {package_name}...")
-    with tarfile.open(name=package_name, mode='x') as tar:
+    log.info(f"writting {opts.package_name}...")
+    with tarfile.open(name=opts.package_name, mode='x') as tar:
         for file in os.listdir("./"):
             tar.add(file)
-        tar.close()    
 
-    log.info(f"move {package_name} to current location ...")
-    shutil.copyfile(package_name, workdir.current + '/' + package_name)
+    log.info(f"move {opts.package_name} to current location ...")
+    shutil.copyfile(opts.package_name, workdir.current + '/' + opts.package_name)
 
-    log.info(f"package generation done and copied to: {workdir.current}/{package_name}!")
+    log.info(f"package generation done and copied to: {workdir.current}/{opts.package_name}!")
 
-    return workdir.current + "/" + package_name
+    return workdir.current + "/" + opts.package_name
 
 
 if __name__ == "__main__":

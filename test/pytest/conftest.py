@@ -25,6 +25,10 @@ def pytest_addoption(parser):
     parser.addoption("--call_duration", type=int, action="store", default=30)
     parser.addoption("--sms_text", type=str, action="store", default='')
     parser.addoption("--bt_device", type=str, action="store", default='')
+    parser.addoption("--update_opts", type=str, action="store", default='', help='what update binaries we want to test with, space limited: boot,ecoboot,update select any')
+    parser.addoption("--updater_bin", type=str, action="store", default=None, help='path to load updater_bin from - if not added, will try to load it from updater bin release page')
+    parser.addoption("--ecoboot_bin", type=str, action="store", default=None, help='path to load ecoboot from - if not added, will try to load it from ecoboot bin release page')
+    parser.addoption("--boot_bin", type=str, action="store", default=None, help='path to load boot from - if not added, will not add it')
 
 
 @pytest.fixture(scope='session')
@@ -119,7 +123,7 @@ def phone_in_desktop(harness: Harness):
         harness.return_to_home_screen()
         # in some cases we have to do it twice
         if harness.get_application_name() != "ApplicationDesktop":
-            harness.connection.return_to_home_screen()
+            harness.return_to_home_screen()
     # assert that we are in ApplicationDesktop
     assert harness.get_application_name() == "ApplicationDesktop"
 
@@ -162,18 +166,3 @@ def phone_mode_unlock(harness):
     PhoneModeLock(False).run(harness)
     yield
     PhoneModeLock(True).run(HarnessCache.harness)
-
-
-def pytest_configure(config):
-    config.addinivalue_line("markers",
-                            "service_desktop_test: mark test if it's related to service-desktop API")
-    config.addinivalue_line("markers",
-                            "rt1051: mark test if it's target only (eg. calls, messages)")
-    config.addinivalue_line("markers",
-                            "usb_cdc_echo: mark test if it's intended for usb-cdc echo mode")
-    config.addinivalue_line("markers",
-                            "two_sim_cards: mark test in case when two sim cards are required")
-    config.addinivalue_line("markers",
-                            "backup: subset of backup user data tests")
-    config.addinivalue_line("markers",
-                            "restore: subset of restore user data tests")
