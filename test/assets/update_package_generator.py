@@ -28,6 +28,17 @@ def get_none_checksums():
             "updater.bin": None, "ecoboot.bin": None}
 
 
+def gen_empty_version_json(workdir):
+    # our dumb locations in json
+    version_json = {"boot": {"filename": "boot.bin", "version": "0.0.0", "md5sum":"0"},
+                    "updater": {"filename": "updater.bin", "version": "0.0.0", "md5sum":"0"},
+                    "bootloader": {"filename": "ecoboot.bin", "version": "0.0.0", "md5sum":"0"}}
+
+    with open(workdir + "/version.json", "w") as f:
+        log.info(f"saving version.json: {version_json}")
+        f.write(json.dumps(version_json, indent=4, ensure_ascii=True))
+
+
 def gen_version_json(workdir, versions, checksums=None):
     '''
     Create version.json in {workdir} for: boot.bin, updater.bin and ecoboot.bin if available in {workdir}
@@ -97,6 +108,7 @@ class PackageOpts():
         boot_version    : updater version to set for updater in json file
         package_name    : package name to create
         binaries        : what binaries to pack, optional: boot, ecoboot, updater
+        empty_clean     : zeroed values in json
     '''
     updater: str = None
     boot: str = None
@@ -106,6 +118,7 @@ class PackageOpts():
     updater_checksum: str = None
     package_name: str = "update.tar"
     binaries: list = field(default_factory=lambda: ["updater"])
+    empty_clean: bool = False
 
 
 def gen_update_asset(opts: PackageOpts):
@@ -115,6 +128,7 @@ def gen_update_asset(opts: PackageOpts):
     g_updater = Getter()
     g_ecoboot = Getter()
     workdir = WorkOnTmp()
+
     versions = get_0_versions()
 
     if 'updater' in opts.binaries:
@@ -163,7 +177,10 @@ def gen_update_asset(opts: PackageOpts):
 
     log.info("generating version json ...")
 
-    gen_version_json("./", versions, checksums)
+    if opts.empty_clean:
+        gen_empty_version_json("./")
+    else:
+        gen_version_json("./", versions, checksums)
 
     log.info(f"writting {opts.package_name}...")
     with tarfile.open(name=opts.package_name, mode='x') as tar:
