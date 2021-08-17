@@ -43,7 +43,6 @@ target_sources(apps-common
         widgets/TimeSetFmtSpinner.cpp
         widgets/TimeWidget.cpp
         widgets/WidgetsUtils.cpp
-        windows/AppWindow.cpp
         windows/BrightnessWindow.cpp
         windows/Dialog.cpp
         windows/OptionWindow.cpp
