@@ -110,7 +110,6 @@ void HSPAudioDevice::onDataSend(std::uint16_t scoHandle)
 
     // send packet
     hci_send_sco_packet_buffer(dataSpan.dataSize + packetDataOffset);
-    hci_request_sco_can_send_now_event();
 }
 
 void HSPAudioDevice::receiveCVSD(audio::AbstractStream::Span receivedData)

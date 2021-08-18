@@ -81,6 +81,8 @@ namespace bluetooth
         case Command::StopStream:
             profileManager->stop();
             return Error::Success;
+        case Command::HSPSCOTrigger:
+            return Error::Success;
         }
         return Error::LibraryError;
     }

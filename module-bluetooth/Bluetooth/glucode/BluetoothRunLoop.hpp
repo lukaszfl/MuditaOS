@@ -30,10 +30,10 @@ namespace bluetooth
         static auto removeDataSource(btstack_data_source_t *ds) -> bool;
         static void triggerExit();
         static auto getTimeMs() -> TickType_t;
-        static void executeCodeOnMainThread(void (*fn)(void *arg), void *arg);
         static void addTimer(btstack_timer_source_t *ts);
         static void setTimer(btstack_timer_source_t *ts, uint32_t timeout_in_ms);
         static void start();
+        static void executeCodeOnMainThread(void (*fn)(void *arg), void *arg);
         static void triggerCallback(TimerHandle_t xTimer);
         static QueueHandle_t btstack_run_loop_queue;
         static TaskHandle_t btstack_run_loop_task;
@@ -50,6 +50,7 @@ namespace bluetooth
         static void deinit();
         void setTriggerQueue(QueueHandle_t queue);
         auto getRunLoopInstance() -> btstack_run_loop *;
+        void triggerHSPSCO();
     };
 
 } // namespace bluetooth

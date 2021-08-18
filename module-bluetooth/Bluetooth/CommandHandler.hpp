@@ -41,6 +41,7 @@ namespace bluetooth
             StartStream,
             StopStream,
             SwitchProfile,
+            HSPSCOTrigger,
             None,
         };
 

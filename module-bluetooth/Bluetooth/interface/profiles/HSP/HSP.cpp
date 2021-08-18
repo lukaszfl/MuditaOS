@@ -12,6 +12,8 @@
 #include <service-audio/AudioMessage.hpp>
 #include <service-bluetooth/Constants.hpp>
 #include <service-bluetooth/messages/AudioVolume.hpp>
+#include <service-bluetooth/messages/HSPSCOTrigger.hpp>
+
 #include <service-cellular/service-cellular/CellularServiceAPI.hpp>
 #include <service-evtmgr/Constants.hpp>
 #include <service-audio/AudioServiceAPI.hpp>
@@ -164,6 +166,11 @@ namespace bluetooth
             else {
                 sco::utils::sendZeros(scoHandle);
             }
+            {
+                auto msg       = std::make_shared<message::bluetooth::HSPSCOTrigger>();
+                auto &busProxy = const_cast<sys::Service *>(ownerService)->bus;
+                busProxy.sendUnicast(std::move(msg), service::name::bluetooth);
+            }
             break;
         case HCI_EVENT_HSP_META:
             processHSPEvent(event);
@@ -212,7 +219,10 @@ namespace bluetooth
                 scoHandle = hsp_subevent_audio_connection_complete_get_handle(event);
                 LOG_DEBUG("Audio connection established with SCO handle 0x%04x.\n", scoHandle);
                 callAnswered = true;
-                hci_request_sco_can_send_now_event();
+
+                auto msg       = std::make_shared<message::bluetooth::HSPSCOTrigger>();
+                auto &busProxy = const_cast<sys::Service *>(ownerService)->bus;
+                busProxy.sendUnicast(std::move(msg), service::name::bluetooth);
             }
             break;
         case HSP_SUBEVENT_AUDIO_DISCONNECTION_COMPLETE:

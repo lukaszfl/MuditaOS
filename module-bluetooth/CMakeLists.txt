@@ -53,7 +53,10 @@ target_compile_options(${PROJECT_NAME}
 
     # C only flags
     "$<$<COMPILE_LANGUAGE:C>:-Wno-old-style-declaration>"
-)
+    -O0
+    -g3
+    -ggdb
+        )
 target_link_options(${PROJECT_NAME} PUBLIC ${TARGET_LINK_OPTIONS})
 
 target_include_directories(

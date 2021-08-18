@@ -30,6 +30,5 @@ namespace bluetooth::sco::utils
         little_endian_store_16(scoPacket, 0, scoHandle);
         scoPacket[lengthPosition] = scoPayloadLength;
         hci_send_sco_packet_buffer(scoPacketLength);
-        hci_request_sco_can_send_now_event();
     }
 } // namespace bluetooth::sco::utils

@@ -21,6 +21,7 @@
 #include "service-bluetooth/messages/Unpair.hpp"
 #include "service-bluetooth/messages/SetDeviceName.hpp"
 #include "service-bluetooth/messages/Ring.hpp"
+#include "service-bluetooth/messages/HSPSCOTrigger.hpp"
 
 #include "SystemManager/messages/SentinelRegistrationMessage.hpp"
 
@@ -98,6 +99,7 @@ sys::ReturnCodes ServiceBluetooth::InitHandler()
     connectHandler<message::bluetooth::Unpair>();
     connectHandler<sdesktop::developerMode::DeveloperModeRequest>();
     connectHandler<message::bluetooth::ResponsePasskey>();
+    connectHandler<message::bluetooth::HSPSCOTrigger>();
 
     settingsHolder->onStateChange = [this]() {
         auto initialState = std::visit(bluetooth::IntVisitor(), settingsHolder->getValue(bluetooth::Settings::State));
@@ -270,6 +272,11 @@ auto ServiceBluetooth::handle(message::bluetooth::ResponsePasskey *msg) -> std::
     return sys::MessageNone{};
 }
 
+auto ServiceBluetooth::handle(message::bluetooth::HSPSCOTrigger *msg) -> std::shared_ptr<sys::Message>
+{
+    sendWorkerCommand(bluetooth::Command(bluetooth::Command::Type::HSPSCOTrigger));
+    return sys::MessageNone{};
+}
 auto ServiceBluetooth::handle(BluetoothMessage *msg) -> std::shared_ptr<sys::Message>
 {
     LOG_INFO("Bluetooth request!");

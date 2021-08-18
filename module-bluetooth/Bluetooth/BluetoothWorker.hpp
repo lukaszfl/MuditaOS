@@ -26,6 +26,15 @@ struct HCI;
 
 /// debug option for HCI (uart) commands debugging
 // #define DO_DEBUG_HCI_COMS
+namespace queues
+{
+    constexpr inline auto io      = "qBtIO";
+    constexpr inline auto cmd     = "qBtCmds";
+    constexpr inline auto btstack = "qBtStack";
+
+    constexpr inline auto queueLength        = 10;
+    constexpr inline auto triggerQueueLength = 3;
+} // namespace queues
 
 namespace bluetooth
 {

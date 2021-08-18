@@ -3,6 +3,7 @@
 
 #include "BluetoothRunLoop.hpp"
 #include "btstack_util.h"
+#include "btstack.h"
 #include <cassert>
 namespace bluetooth
 {
@@ -190,6 +191,13 @@ namespace bluetooth
             &getTimeMs,
         };
         return &runLoop;
+    }
+    void RunLoop::triggerHSPSCO()
+    {
+        //       executeCodeOnMainThread(reinterpret_cast<void (*)(void
+        //       *arg)>(hci_request_sco_can_send_now_event),nullptr);
+        hci_request_sco_can_send_now_event();
+        trigger();
     }
 
 } // namespace bluetooth

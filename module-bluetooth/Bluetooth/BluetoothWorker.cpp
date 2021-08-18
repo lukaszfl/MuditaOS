@@ -26,15 +26,7 @@
 
 using namespace bsp;
 
-namespace queues
-{
-    constexpr inline auto io      = "qBtIO";
-    constexpr inline auto cmd     = "qBtCmds";
-    constexpr inline auto btstack = "qBtStack";
 
-    constexpr inline auto queueLength        = 10;
-    constexpr inline auto triggerQueueLength = 3;
-} // namespace queues
 
 namespace
 {
@@ -159,6 +151,11 @@ auto BluetoothWorker::handleCommand(QueueHandle_t queue) -> bool
     case bluetooth::Command::Unpair:
         controller->processCommand(command);
         removeFromBoundDevices(command.getAddress());
+        break;
+    case bluetooth::Command::HSPSCOTrigger:
+        //        bluetooth::RunLoop::executeCodeOnMainThread(reinterpret_cast<void (*)(void
+        //        *arg)>(hci_request_sco_can_send_now_event),nullptr);
+        runLoop->triggerHSPSCO();
         break;
     default:
         controller->processCommand(command);

@@ -52,6 +52,7 @@ namespace message::bluetooth
     class HSPVolume;
     class Ring;
     class StartAudioRouting;
+    class HSPSCOTrigger;
 } // namespace message::bluetooth
 
 class ServiceBluetooth : public sys::Service
@@ -104,6 +105,7 @@ class ServiceBluetooth : public sys::Service
     [[nodiscard]] auto handle(message::bluetooth::Ring *msg) -> std::shared_ptr<sys::Message>;
     [[nodiscard]] auto handle(message::bluetooth::StartAudioRouting *msg) -> std::shared_ptr<sys::Message>;
     [[nodiscard]] auto handle(message::bluetooth::ResponsePasskey *msg) -> std::shared_ptr<sys::Message>;
+    [[nodiscard]] auto handle(message::bluetooth::HSPSCOTrigger *msg) -> std::shared_ptr<sys::Message>;
 };
 
 namespace sys
