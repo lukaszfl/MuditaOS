@@ -8,10 +8,15 @@ module_is_test_entity()
 
 add_library(${PROJECT_NAME} STATIC)
 
+if(${PRODUCT} STREQUAL "PurePhone")
+    include(../products/BellHybrid/AppSelector.cmake)
+elseif(${PRODUCT} STREQUAL "BellHybrid")
+    include(../products/BellHybrid/AppSelector.cmake)
+endif()
+
 add_subdirectory(apps-common)
 
 option(ENABLE_APP_ANTENNA "Enable application antenna" OFF)
-option(ENABLE_APP_CALLLOG "Enable application callog" OFF)
 
 set(APPLICATIONS
     alarm-clock
@@ -40,7 +45,7 @@ foreach(app IN LISTS APPLICATIONS)
     string(TOUPPER ${app} app_upper)
     string(REPLACE "-" "_" app_macro_name ${app_upper})
     if (NOT DEFINED ENABLE_APP_${app_macro_name})
-        option(ENABLE_APP_${app_macro_name} "Enable application ${app}" ON)
+        option(ENABLE_APP_${app_macro_name} "Enable application ${app}" OFF)
     endif()
 
     if(ENABLE_APP_${app_macro_name})
@@ -50,7 +55,7 @@ foreach(app IN LISTS APPLICATIONS)
     endif()
 endforeach()
 
-target_compile_definitions(application-desktop PRIVATE "${ENABLED_APPS_DEFINES}")
+#target_compile_definitions(application-desktop PRIVATE "${ENABLED_APPS_DEFINES}")
 set(ENABLED_APPS_DEFINES ${ENABLED_APPS_DEFINES} PARENT_SCOPE)
 
 if(${PROJECT_TARGET} STREQUAL "TARGET_Linux")
@@ -88,7 +93,6 @@ endif()
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        application-messages
         apps-common
         date::date
         eventstore

@@ -16,7 +16,6 @@
 #include <SystemManager/messages/SystemManagerMessage.hpp>
 #include <SystemManager/messages/TetheringPhoneModeChangeProhibitedMessage.hpp>
 #include <SystemManager/messages/TetheringQuestionRequest.hpp>
-#include <application-desktop/ApplicationDesktop.hpp>
 #include <application-onboarding/ApplicationOnBoarding.hpp>
 #include <application-onboarding/data/OnBoardingMessages.hpp>
 #include <application-special-input/ApplicationSpecialInput.hpp>
@@ -158,15 +157,10 @@ namespace app::manager
             }
             break;
         case StartupType::LowBattery:
-            handleSwitchApplication(std::make_unique<SwitchRequest>(
-                                        service::name::appmgr, app::name_desktop, window::name::dead_battery, nullptr)
-                                        .get());
+            handleSwitchApplication(std::make_unique<SwitchRequest>(service::name::appmgr, "", "", nullptr).get());
             break;
         case StartupType::LowBatteryCharging:
-            handleSwitchApplication(
-                std::make_unique<SwitchRequest>(
-                    service::name::appmgr, app::name_desktop, window::name::charging_battery, nullptr)
-                    .get());
+            handleSwitchApplication(std::make_unique<SwitchRequest>(service::name::appmgr, "", "", nullptr).get());
             break;
         }
     }
@@ -358,8 +352,8 @@ namespace app::manager
         for (const auto &app : getApplications()) {
             if (app->started()) {
                 auto appName = app->name();
-                if (appName == app::name_desktop) {
-                    LOG_DEBUG("Delay closing %s", app::name_desktop);
+                if (appName == "") {
+                    LOG_DEBUG("Delay closing %s", "");
                     continue;
                 }
                 LOG_INFO("Closing application on Update %s", appName.c_str());
