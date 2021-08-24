@@ -26,7 +26,7 @@ namespace locks
 
         simResponseTimer = sys::TimerFactory::createSingleShotTimer(
             owner, simResponseTimerName, std::chrono::seconds{sim_not_responding_timeout}, [this](sys::Timer &) {
-                handleSimNotRespondingMessage();
+                //                handleSimNotRespondingMessage();
             });
     }
 
@@ -38,8 +38,6 @@ namespace locks
 
     void SimLockHandler::setSimInputTypeAction(SimInputTypeAction _simInputTypeAction)
     {
-        simResponseTimer.stop();
-
         if (simInputTypeAction != _simInputTypeAction) {
             simInputTypeAction = _simInputTypeAction;
             lock.lockState     = Lock::LockState::Unlocked;
@@ -107,7 +105,6 @@ namespace locks
     void SimLockHandler::setSim(cellular::api::SimSlot simSlot)
     {
         if (simReady) {
-            simResponseTimer.start();
             Store::GSM::get()->selected = static_cast<Store::GSM::SIM>(simSlot);
             owner->bus.sendUnicast<cellular::msg::request::sim::SetActiveSim>(simSlot);
         }
@@ -271,8 +268,14 @@ namespace locks
 
     sys::MessagePointer SimLockHandler::handleSimReadyMessage()
     {
-        simResponseTimer.stop();
+        setSimReady();
         return sys::msgHandled();
+    }
+
+    sys::MessagePointer SimLockHandler::handleSimNotInsertedMessage()
+    {
+        //        handleSimNotRespondingMessage();
+        return handleSimNotRespondingMessage();
     }
 
     sys::MessagePointer SimLockHandler::handleSimNotRespondingMessage()

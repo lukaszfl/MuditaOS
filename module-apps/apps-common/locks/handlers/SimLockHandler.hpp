@@ -70,6 +70,7 @@ namespace locks
         sys::MessagePointer handleSimPinChangedMessage();
         sys::MessagePointer handleSimAvailabilityMessage();
         sys::MessagePointer handleSimReadyMessage();
+        sys::MessagePointer handleSimNotInsertedMessage();
         sys::MessagePointer handleSimNotRespondingMessage();
 
         void getSettingsSimSelect(const std::string &settingsSim);
