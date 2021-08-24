@@ -11,7 +11,7 @@
 
 namespace app::bell_settings
 {
-    FrontlightModel::FrontlightModel(app::Application *app) : application(app)
+    FrontlightModel::FrontlightModel(app::Application *app, app::settingsInterface::BellScreenLightSettings *settings) : application(app), screenLightSettings(settings)
     {}
 
     FrontlightModel::~FrontlightModel()
@@ -55,11 +55,17 @@ namespace app::bell_settings
     {
         // TODO: set frontlight intensity in driver
         // TODO: store set intensity to database
+        int value = frontlightSpinnerListItem->frontlightSetSpinner->getCurrentValue();
+        screenLightSettings->setBrightness(static_cast<float>(value));
     }
 
     void FrontlightModel::loadData()
     {
         // TODO: load intensity from database
+        //app::settingsInterface::ScreenLightSettings::Values values;
+        auto values     = screenLightSettings->getCurrentValues();
+        bsp::eink_frontlight::BrightnessPercentage brightnessValue = values.parameters.manualModeBrightness;
+        frontlightSpinnerListItem->frontlightSetSpinner->setCurrentValue(static_cast<int>(brightnessValue));
     }
 
     auto FrontlightModel::requestRecords(uint32_t offset, uint32_t limit) -> void

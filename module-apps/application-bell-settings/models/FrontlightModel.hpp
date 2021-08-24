@@ -5,6 +5,7 @@
 
 #include <apps-common/Application.hpp>
 #include <apps-common/InternalModel.hpp>
+#include <ApplicationBellSettings.hpp>
 
 namespace gui
 {
@@ -16,7 +17,7 @@ namespace app::bell_settings
     class FrontlightModel : public app::InternalModel<gui::ListItem *>, public gui::ListItemProvider
     {
       public:
-        explicit FrontlightModel(app::Application *app);
+        explicit FrontlightModel(app::Application *app, app::settingsInterface::BellScreenLightSettings *settings);
         ~FrontlightModel();
 
         auto clearData() -> void;
@@ -32,5 +33,6 @@ namespace app::bell_settings
       private:
         app::Application *application                             = nullptr;
         gui::FrontlightSpinnerListItem *frontlightSpinnerListItem = nullptr;
+        app::settingsInterface::BellScreenLightSettings *screenLightSettings = nullptr;
     };
 } // namespace app::bell_settings

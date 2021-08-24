@@ -19,6 +19,8 @@ namespace gui
     BellSettingsFinishedWindow::BellSettingsFinishedWindow(app::Application *app, const std::string &name)
         : WindowWithTimer(app, name)
     {
+        buildInterface();
+
         timerCallback = [this](Item &, sys::Timer &) {
             application->switchWindow(appNameToReturn);
             return true;
@@ -60,7 +62,7 @@ namespace gui
             message = messageData->getMessage();
         }
 
-        buildInterface();
+        icon->text->setRichText(message);
     }
 
 } // namespace gui

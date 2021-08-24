@@ -11,14 +11,20 @@
 #include "windows/BellSettingsFrontlight.hpp"
 
 #include <apps-common/windows/Dialog.hpp>
+#include <apps-common/AsyncTask.hpp>
+#include <service-evtmgr/Constants.hpp>
+#include <service-evtmgr/EventManagerServiceAPI.hpp>
+#include <service-evtmgr/ScreenLightControlMessage.hpp>
 
 namespace app
 {
+    static constexpr auto settingStackDepth = 1024 * 6; // 6Kb stack size
+
     ApplicationBellSettings::ApplicationBellSettings(std::string name,
                                                      std::string parent,
                                                      sys::phone_modes::PhoneMode mode,
                                                      StartInBackground startInBackground)
-        : Application(std::move(name), std::move(parent), mode, startInBackground)
+        : Application(std::move(name), std::move(parent), mode, startInBackground, settingStackDepth)
     {}
 
     sys::ReturnCodes ApplicationBellSettings::InitHandler()
@@ -51,7 +57,7 @@ namespace app
         });
 
         windowsFactory.attach(gui::window::name::bellSettingsFrontlight, [](Application *app, const std::string &name) {
-            auto FrontlightProvider = std::make_shared<bell_settings::FrontlightModel>(app);
+            auto FrontlightProvider = std::make_shared<bell_settings::FrontlightModel>(app, static_cast<ApplicationBellSettings *>(app));
             auto presenter          = std::make_unique<bell_settings::FrontlightWindowPresenter>(FrontlightProvider);
             return std::make_unique<gui::BellSettingsFrontlightWindow>(app, std::move(presenter));
         });
@@ -67,6 +73,55 @@ namespace app
         if (dynamic_cast<sys::ResponseMessage *>(retMsg.get())->retCode == sys::ReturnCodes::Success) {
             return retMsg;
         }
+
+        // handle database response
+        if (resp != nullptr) {
+            if (auto command = callbackStorage->getCallback(resp); command->execute()) {
+                refreshWindow(gui::RefreshModes::GUI_REFRESH_FAST);
+            }
+            return sys::msgHandled();
+        }
         return std::make_shared<sys::ResponseMessage>();
+    }
+
+    auto ApplicationBellSettings::getCurrentValues() -> settingsInterface::BellScreenLightSettings::Values
+    {
+        constexpr int timeout = pdMS_TO_TICKS(1500);
+
+        auto response = bus.sendUnicastSync(
+            std::make_shared<sevm::ScreenLightControlRequestParameters>(), service::name::evt_manager, timeout);
+
+        if (response.first == sys::ReturnCodes::Success) {
+            auto msgState = dynamic_cast<sevm::ScreenLightControlParametersResponse *>(response.second.get());
+            if (msgState == nullptr) {
+                return {};
+            }
+
+            return {msgState->isLightOn(), msgState->getMode(), msgState->getParams()};
+        }
+
+        return {};
+    }
+
+    void ApplicationBellSettings::setBrightness(bsp::eink_frontlight::BrightnessPercentage value)
+    {
+        screen_light_control::ManualModeParameters parameters{value};
+        bus.sendUnicast(std::make_shared<sevm::ScreenLightSetManualModeParams>(parameters), service::name::evt_manager);
+    }
+
+    void ApplicationBellSettings::setMode(bool isAutoLightSwitchOn)
+    {
+        bus.sendUnicast(std::make_shared<sevm::ScreenLightControlMessage>(
+                            isAutoLightSwitchOn ? screen_light_control::Action::enableAutomaticMode
+                                                : screen_light_control::Action::disableAutomaticMode),
+                        service::name::evt_manager);
+    }
+
+    void ApplicationBellSettings::setStatus(bool isDisplayLightSwitchOn)
+    {
+        bus.sendUnicast(std::make_shared<sevm::ScreenLightControlMessage>(isDisplayLightSwitchOn
+                                                                              ? screen_light_control::Action::turnOn
+                                                                              : screen_light_control::Action::turnOff),
+                        service::name::evt_manager);
     }
 } // namespace app

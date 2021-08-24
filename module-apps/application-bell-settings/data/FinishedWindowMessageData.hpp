@@ -10,10 +10,10 @@ namespace gui
     class FinishedWindowMessageData : public gui::SwitchData
     {
       public:
-        FinishedWindowMessageData(std::string message) : _message(message)
+        FinishedWindowMessageData(std::string message) : _message(std::move(message))
         {}
 
-        [[nodiscard]] std::string getMessage() const noexcept
+        [[nodiscard]] std::string getMessage() const
         {
             return _message;
         }

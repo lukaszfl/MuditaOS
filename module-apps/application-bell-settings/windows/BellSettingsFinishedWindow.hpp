@@ -24,7 +24,7 @@ namespace gui
 
         Icon *icon{};
 
-        std::string message = "";
+        std::string message;
     };
 
 } // namespace gui

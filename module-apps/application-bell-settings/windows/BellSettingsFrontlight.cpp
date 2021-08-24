@@ -60,9 +60,6 @@ namespace gui
             application->switchWindow(window::name::bellSettingsFinished, std::move(finishedMessageData));
             return true;
         }
-        if (AppWindow::onInput(inputEvent)) {
-            return true;
-        }
 
         return AppWindow::onInput(inputEvent);
     }
