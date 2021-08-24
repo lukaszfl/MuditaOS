@@ -3,11 +3,12 @@
 
 #include "ApplicationBellSettings.hpp"
 #include "TimeUnitsPresenter.hpp"
-#include "models/TemperatureUnitModel.hpp"
+#include "FrontlightPresenter.hpp"
 #include "windows/BellSettingsAdvancedWindow.hpp"
 #include "windows/BellSettingsFinishedWindow.hpp"
 #include "windows/BellSettingsTimeUnitsWindow.hpp"
 #include "windows/BellSettingsWindow.hpp"
+#include "windows/BellSettingsFrontlight.hpp"
 
 #include <apps-common/windows/Dialog.hpp>
 
@@ -27,6 +28,7 @@ namespace app
             return ret;
         }
         createUserInterface();
+
         return sys::ReturnCodes::Success;
     }
 
@@ -46,6 +48,12 @@ namespace app
             auto presenter            = std::make_unique<bell_settings::TimeUnitsWindowPresenter>(timeUnitsProvider,
                                                                                        std::move(temperatureUnitModel));
             return std::make_unique<gui::BellSettingsTimeUnitsWindow>(app, std::move(presenter));
+        });
+
+        windowsFactory.attach(gui::window::name::bellSettingsFrontlight, [](Application *app, const std::string &name) {
+            auto FrontlightProvider = std::make_shared<bell_settings::FrontlightModel>(app);
+            auto presenter          = std::make_unique<bell_settings::FrontlightWindowPresenter>(FrontlightProvider);
+            return std::make_unique<gui::BellSettingsFrontlightWindow>(app, std::move(presenter));
         });
 
         windowsFactory.attach(gui::window::name::bellSettingsFinished, [](Application *app, const std::string &name) {

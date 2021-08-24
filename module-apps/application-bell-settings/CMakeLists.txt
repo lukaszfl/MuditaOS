@@ -23,25 +23,34 @@ target_sources(application-bell-settings
         ApplicationBellSettings.cpp
         models/TimeUnitsModel.cpp
         models/TemperatureUnitModel.cpp
+	models/FrontlightModel.cpp
         presenter/TimeUnitsPresenter.cpp
+        presenter/FrontlightPresenter.cpp
         widgets/TimeSetListItem.cpp
         widgets/TimeFormatSetListItem.cpp
+        widgets/FrontlightSpinnerListItem.cpp
         windows/BellSettingsWindow.cpp
         windows/BellSettingsAdvancedWindow.cpp
         windows/BellSettingsTimeUnitsWindow.cpp
         windows/BellSettingsFinishedWindow.cpp
+        windows/BellSettingsFrontlight.cpp
 
         models/TimeUnitsModel.hpp
         models/TemperatureUnitModel.hpp
+	models/FrontlightModel.hpp
         presenter/TimeUnitsPresenter.hpp
+        presenter/FrontlightPresenter.hpp
         widgets/TimeSetListItem.hpp
         widgets/TimeFormatSetListItem.hpp
+        widgets/FrontlightSpinnerListItem.hpp
         windows/BellSettingsWindow.hpp
         windows/BellSettingsAdvancedWindow.hpp
         windows/BellSettingsTimeUnitsWindow.hpp
+        windows/BellSettingsFrontlight.hpp
 
     PRIVATE
         windows/BellSettingsFinishedWindow.hpp
+        data/FinishedWindowMessageData.hpp
 
     PUBLIC
         include/application-bell-settings/ApplicationBellSettings.hpp

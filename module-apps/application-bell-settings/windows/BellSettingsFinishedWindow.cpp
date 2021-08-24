@@ -2,9 +2,11 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "BellSettingsFinishedWindow.hpp"
+#include "data/FinishedWindowMessageData.hpp"
 
 #include <gui/input/InputEvent.hpp>
 #include <gui/widgets/Icon.hpp>
+#include <log.hpp>
 
 namespace
 {
@@ -17,8 +19,6 @@ namespace gui
     BellSettingsFinishedWindow::BellSettingsFinishedWindow(app::Application *app, const std::string &name)
         : WindowWithTimer(app, name)
     {
-        buildInterface();
-
         timerCallback = [this](Item &, sys::Timer &) {
             application->switchWindow(appNameToReturn);
             return true;
@@ -38,7 +38,7 @@ namespace gui
                         style::window_width,
                         style::window_height,
                         "circle_success",
-                        utils::translate("app_bell_settings_time_units_finished_message"));
+                        message);
     }
     bool BellSettingsFinishedWindow::onInput(const InputEvent &inputEvent)
     {
@@ -55,6 +55,17 @@ namespace gui
     void BellSettingsFinishedWindow::rebuild()
     {
         erase();
+        buildInterface();
+    }
+
+    void BellSettingsFinishedWindow::onBeforeShow(ShowMode mode, SwitchData *data)
+    {
+        WindowWithTimer::onBeforeShow(mode, data);
+        auto messageData = dynamic_cast<FinishedWindowMessageData *>(data);
+        if (messageData != nullptr) {
+            message = messageData->getMessage();
+        }
+
         buildInterface();
     }
 
