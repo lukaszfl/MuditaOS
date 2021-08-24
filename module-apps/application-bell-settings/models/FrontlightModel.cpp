@@ -37,12 +37,8 @@ namespace app::bell_settings
     void FrontlightModel::createData()
     {
 
-        frontlightSpinnerListItem =
-            new gui::FrontlightSpinnerListItem(0,
-                                           0,
-                                           0,
-                                           0,
-                                           utils::translate("app_bell_settings_frontlight_top_message"));
+        frontlightSpinnerListItem = new gui::FrontlightSpinnerListItem(
+            0, 0, 0, 0, utils::translate("app_bell_settings_frontlight_top_message"));
         internalData.push_back(frontlightSpinnerListItem);
 
         for (auto item : internalData) {
@@ -57,13 +53,13 @@ namespace app::bell_settings
 
     void FrontlightModel::saveData()
     {
-        //TODO: set frontlight intensity in driver
-        //TODO: store set intensity to database
+        // TODO: set frontlight intensity in driver
+        // TODO: store set intensity to database
     }
 
     void FrontlightModel::loadData()
     {
-        //TODO: load intensity from database
+        // TODO: load intensity from database
     }
 
     auto FrontlightModel::requestRecords(uint32_t offset, uint32_t limit) -> void

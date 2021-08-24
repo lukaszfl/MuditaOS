@@ -32,13 +32,7 @@ namespace gui
         header->setTitleVisibility(false);
         bottomBar->setVisible(false);
 
-        icon = new Icon(this,
-                        0,
-                        0,
-                        style::window_width,
-                        style::window_height,
-                        "circle_success",
-                        message);
+        icon = new Icon(this, 0, 0, style::window_width, style::window_height, "circle_success", message);
     }
     bool BellSettingsFinishedWindow::onInput(const InputEvent &inputEvent)
     {

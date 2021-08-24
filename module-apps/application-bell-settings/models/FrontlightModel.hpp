@@ -30,7 +30,7 @@ namespace app::bell_settings
         [[nodiscard]] auto getMinimalItemSpaceRequired() const -> unsigned int override;
 
       private:
-        app::Application *application                  = nullptr;
+        app::Application *application                             = nullptr;
         gui::FrontlightSpinnerListItem *frontlightSpinnerListItem = nullptr;
     };
 } // namespace app::bell_settings
