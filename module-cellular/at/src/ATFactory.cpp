@@ -23,6 +23,7 @@ namespace at
         {AT::RI_PIN_PULSE_OTHER, {"AT+QCFG=\"urc/ri/other\",\"pulse\""}},
         {AT::URC_DELAY_ON, {"AT+QCFG=\"urc/delay\",1"}},
         {AT::URC_UART1, {"AT+QURCCFG=\"urcport\",\"uart1\""}},
+        {AT::USBNET, {"AT+QCFG=\"usbnet\",3"}},
         {AT::AT_PIN_READY_LOGIC, {"AT+QCFG=\"apready\",1,1,200"}},
         {AT::CSQ_URC_ON, {"AT+QINDCFG=\"csq\",1"}},
         {AT::CSQ_URC_OFF, {"AT+QINDCFG=\"csq\",0"}},

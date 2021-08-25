@@ -30,6 +30,7 @@ namespace at
         RI_PIN_PULSE_OTHER,         /// Turn on RI pin for other incoming URCs
         URC_DELAY_ON,               /// Enable delay the output of URC indication until ring indicator pulse ends
         URC_UART1,                  /// Route URCs to UART1
+        USBNET,
         AT_PIN_READY_LOGIC,         /// Configure AP_Ready pin logic ( enable, logic level 1, 200ms )
         CSQ_URC_ON,                 /// Turn on signal strength change URC
         CRC_ON,                     /// Change incoming call notification from "RING" to "+CRING:type"

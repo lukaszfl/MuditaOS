@@ -1551,6 +1551,15 @@ void ServiceCellular::handle_power_state_change()
             priv->state->set(State::ST::PowerDown);
         }
         else {
+            if (auto channel = cmux->get(CellularMux::Channel::Commands); channel) {
+                if (const auto result = channel->cmd(at::AT::USBNET); result.code == at::Result::Code::OK) {
+                    LOG_DEBUG("Change usbnet done");
+                }
+                else {
+                    LOG_ERROR("Change usbnet failed");
+                }
+            }
+
             LOG_INFO("Modem Power DOWN.");
             cmux->turnOffModem();
             priv->state->set(State::ST::PowerDownWaiting);
