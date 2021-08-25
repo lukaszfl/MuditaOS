@@ -23,7 +23,7 @@ target_sources(application-bell-settings
         ApplicationBellSettings.cpp
         models/TimeUnitsModel.cpp
         models/TemperatureUnitModel.cpp
-	models/FrontlightModel.cpp
+        models/FrontlightModel.cpp
         presenter/TimeUnitsPresenter.cpp
         presenter/FrontlightPresenter.cpp
         widgets/TimeSetListItem.cpp
@@ -37,7 +37,7 @@ target_sources(application-bell-settings
 
         models/TimeUnitsModel.hpp
         models/TemperatureUnitModel.hpp
-	models/FrontlightModel.hpp
+        models/FrontlightModel.hpp
         presenter/TimeUnitsPresenter.hpp
         presenter/FrontlightPresenter.hpp
         widgets/TimeSetListItem.hpp

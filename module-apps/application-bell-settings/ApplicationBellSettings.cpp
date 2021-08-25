@@ -4,6 +4,7 @@
 #include "ApplicationBellSettings.hpp"
 #include "TimeUnitsPresenter.hpp"
 #include "FrontlightPresenter.hpp"
+#include "models/TemperatureUnitModel.hpp"
 #include "windows/BellSettingsAdvancedWindow.hpp"
 #include "windows/BellSettingsFinishedWindow.hpp"
 #include "windows/BellSettingsTimeUnitsWindow.hpp"
