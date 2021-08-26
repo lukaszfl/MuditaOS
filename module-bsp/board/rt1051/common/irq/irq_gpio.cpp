@@ -9,7 +9,7 @@
 #include "fsl_common.h"
 
 #include "board/rt1051/bsp/eink/bsp_eink.h"
-#include "bsp/battery-charger/battery_charger.hpp"
+#include "puretx/bsp/battery_charger/battery_charger.hpp" // temporary solution
 #include "bsp/cellular/bsp_cellular.hpp"
 #include "bsp/keyboard/keyboard.hpp"
 #include "bsp/headset/headset.hpp"

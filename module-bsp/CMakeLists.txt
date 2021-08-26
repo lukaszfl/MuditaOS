@@ -26,6 +26,7 @@ target_sources(
 
     PUBLIC
         hal/temperature_source/TemperatureSource.hpp
+        hal/battery_charger/BatteryCharger.hpp
 )
 add_board_subdirectory(board)
 
