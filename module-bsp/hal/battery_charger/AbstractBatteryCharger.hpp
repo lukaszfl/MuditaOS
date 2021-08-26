@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "common.hpp"
-
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <Service/Service.hpp>
