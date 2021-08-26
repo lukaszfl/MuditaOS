@@ -23,6 +23,7 @@ target_sources(module-bsp
                 watchdog/software_watchdog.cpp
                 watchdog/watchdog.cpp
                 hal/temperature_source/TemperatureSource.cpp
+                hal/battery_charger/BatteryCharger.cpp
 
                 ${CMAKE_CURRENT_BINARY_DIR}/eink-config.h
 )

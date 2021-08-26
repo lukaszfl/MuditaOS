@@ -19,12 +19,12 @@ namespace hal::battery
     {}
 
     void BatteryCharger::BatteryCharger::deinit()
-    {
+    {}
 
-        void BatteryCharger::processStateChangeNotification(std::uint8_t notification)
-        {}
+    void BatteryCharger::processStateChangeNotification(std::uint8_t notification)
+    {}
 
-        void BatteryCharger::setChargingCurrentLimit(std::uint8_t)
-        {}
+    void BatteryCharger::setChargingCurrentLimit(std::uint8_t)
+    {}
 
-    } // namespace hal::battery
+} // namespace hal::battery

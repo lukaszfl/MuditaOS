@@ -9,15 +9,16 @@
 
 namespace hal::battery
 {
-    class BatteryCharger : public AbstractBatteryCharger
+    class LinuxBatteryCharger : public AbstractBatteryCharger
     {
       public:
-        explicit BatteryCharger(sys::Service *);
-        void init(xQueueHandle queueBatteryHandle, xQueueHandle) final;
+        explicit LinuxBatteryCharger(sys::Service *service);
+        void init(xQueueHandle irqQueueHandle, xQueueHandle dcdQueueHandle) final;
         void deinit() final;
         void processStateChangeNotification(std::uint8_t notification) final;
-        void setChargingCurrentLimit(std::uint8_t) final;
+        void setChargingCurrentLimit(std::uint8_t usbType) final;
 
       private:
+        sys::Service *service;
     };
 } // namespace hal::battery
