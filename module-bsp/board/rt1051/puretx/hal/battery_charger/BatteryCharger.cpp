@@ -121,7 +121,7 @@ namespace hal::battery
     {
         void USB_ChargerDetectedCB(std::uint8_t detectedType)
         {
-            bsp::battery_charger::USBChargerDetectedHandler(std::uint8_t detectedType)
+            bsp::battery_charger::USBChargerDetectedHandler(detectedType);
         }
     }
 
