@@ -23,7 +23,6 @@ namespace hal::battery
         // Mocking initial state to make system run
         Store::Battery::modify().state = Store::Battery::State::Discharging;
         Store::Battery::modify().level = 100;
-        battery_level_check::checkBatteryLevel();
         auto message = std::make_shared<sevm::BatteryStatusChangeMessage>();
         service->bus.sendUnicast(std::move(message), service::name::evt_manager);
     }
