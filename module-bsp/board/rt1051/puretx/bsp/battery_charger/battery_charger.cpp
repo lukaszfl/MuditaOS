@@ -770,14 +770,11 @@ namespace bsp::battery_charger
         return xHigherPriorityTaskWoken;
     }
 
-    extern "C"
+    void USBChargerDetectedHandler(std::uint8_t detectedType)
     {
-        void USB_ChargerDetectedCB(std::uint8_t detectedType)
-        {
-            if (DCDQueueHandle != nullptr) {
-                std::uint8_t val = static_cast<std::uint8_t>(detectedType);
-                xQueueSend(DCDQueueHandle, &val, portMAX_DELAY);
-            }
+        if (DCDQueueHandle != nullptr) {
+            std::uint8_t val = static_cast<std::uint8_t>(detectedType);
+            xQueueSend(DCDQueueHandle, &val, portMAX_DELAY);
         }
     }
 } // namespace bsp::battery_charger

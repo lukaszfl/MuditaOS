@@ -4,7 +4,10 @@
 #include "BatteryCharger.hpp"
 
 #include <hal/GenericFactory.hpp>
-
+#include <EventStore.hpp>
+#include <service-evtmgr/battery-level-check/BatteryLevelCheck.hpp>
+#include <service-evtmgr/BatteryMessages.hpp>
+#include <service-evtmgr/EventManagerCommon.hpp>
 namespace hal::battery
 {
     std::shared_ptr<AbstractBatteryCharger> AbstractBatteryCharger::Factory::create(sys::Service *service)
@@ -12,11 +15,18 @@ namespace hal::battery
         return hal::impl::factory<BatteryCharger, AbstractBatteryCharger>(service);
     }
 
-    BatteryCharger::BatteryCharger(sys::Service *)
+    BatteryCharger::BatteryCharger(sys::Service *service) : service{service}
     {}
 
     void BatteryCharger::init(xQueueHandle queueBatteryHandle, xQueueHandle)
-    {}
+    {
+        // Mocking initial state to make system run
+        Store::Battery::modify().state = Store::Battery::State::Discharging;
+        Store::Battery::modify().level = 100;
+        battery_level_check::checkBatteryLevel();
+        auto message = std::make_shared<sevm::BatteryStatusChangeMessage>();
+        service->bus.sendUnicast(std::move(message), service::name::evt_manager);
+    }
 
     void BatteryCharger::BatteryCharger::deinit()
     {}
@@ -26,5 +36,16 @@ namespace hal::battery
 
     void BatteryCharger::setChargingCurrentLimit(std::uint8_t)
     {}
+
+    BaseType_t IRQHandler()
+    {
+        return 0;
+    }
+
+    extern "C"
+    {
+        void USB_ChargerDetectedCB(std::uint8_t)
+        {}
+    }
 
 } // namespace hal::battery

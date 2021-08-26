@@ -98,8 +98,6 @@ namespace bsp::battery_charger
 
     BaseType_t INTB_IRQHandler();
 
-    extern "C"
-    {
-        void USB_ChargerDetectedCB(std::uint8_t detectedType);
-    }
+    void USBChargerDetectedHandler(std::uint8_t detectedType);
+
 } // namespace bsp::battery_charger

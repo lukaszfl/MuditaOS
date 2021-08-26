@@ -26,4 +26,10 @@ namespace hal::battery
         virtual void processStateChangeNotification(std::uint8_t) = 0;
         virtual void setChargingCurrentLimit(std::uint8_t)        = 0;
     };
+
+    BaseType_t IRQHandler();
+    extern "C"
+    {
+        void USB_ChargerDetectedCB(std::uint8_t detectedType);
+    }
 } // namespace hal::battery

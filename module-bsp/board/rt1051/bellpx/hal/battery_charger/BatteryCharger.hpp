@@ -19,5 +19,6 @@ namespace hal::battery
         void setChargingCurrentLimit(std::uint8_t) final;
 
       private:
+        sys::Service *service;
     };
 } // namespace hal::battery

@@ -111,4 +111,18 @@ namespace hal::battery
                 static_cast<std::uint16_t>(bsp::battery_charger::batteryINTBSource::all));
         }
     }
+
+    BaseType_t IRQHandler()
+    {
+        return bsp::battery_charger::INTB_IRQHandler();
+    }
+
+    extern "C"
+    {
+        void USB_ChargerDetectedCB(std::uint8_t detectedType)
+        {
+            bsp::battery_charger::USBChargerDetectedHandler(std::uint8_t detectedType)
+        }
+    }
+
 } // namespace hal::battery

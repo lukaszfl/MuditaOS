@@ -12,7 +12,7 @@
 #include <bsp/keyboard/key_codes.hpp>
 #include <bsp/keyboard/key_codes.hpp>
 #include <Service/CpuSentinel.hpp>
-#include <hal/battery_charger/BatteryCharger.hpp>
+#include <hal/battery_charger/AbstractBatteryCharger.hpp>
 
 #include <cstdint>
 #include <list>
