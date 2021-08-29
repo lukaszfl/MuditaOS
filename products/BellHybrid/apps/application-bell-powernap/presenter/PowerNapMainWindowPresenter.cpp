@@ -3,6 +3,8 @@
 
 #include "PowerNapMainWindowPresenter.hpp"
 #include "models/PowerNapModel.hpp"
+#include "data/PowerNapData.hpp"
+#include "application-bell-powernap/ApplicationBellPowerNap.hpp"
 #include <apps-common/Application.hpp>
 #include <service-db/agents/settings/SystemSettings.hpp>
 
@@ -14,7 +16,7 @@ namespace
 namespace app::powernap
 {
     PowerNapMainWindowPresenter::PowerNapMainWindowPresenter(app::Application *app, settings::Settings *settings)
-        : model{std::make_shared<PowerNapModel>()}, settings{settings}
+        : app{app}, model{std::make_shared<PowerNapModel>()}, settings{settings}
     {}
 
     auto PowerNapMainWindowPresenter::getNapTimeProvider() -> std::shared_ptr<gui::ListItemProvider>
@@ -34,5 +36,7 @@ namespace app::powernap
         const auto currentValue = model->getCurrentValue();
         settings->setValue(
             powernapDBRecordName, utils::to_string(currentValue.count()), settings::SettingsScope::AppLocal);
+        auto msg = std::make_unique<gui::PowerNapData>(currentValue);
+        app->switchWindow(gui::window::name::powernapProgress, std::move(msg));
     }
 } // namespace app::powernap

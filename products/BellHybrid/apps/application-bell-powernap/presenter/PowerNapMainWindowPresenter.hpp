@@ -41,6 +41,7 @@ namespace app::powernap
 
     class PowerNapMainWindowPresenter : public PowerNapMainWindowContract::Presenter
     {
+        app::Application *app;
         std::shared_ptr<PowerNapModel> model;
         settings::Settings *settings;
 

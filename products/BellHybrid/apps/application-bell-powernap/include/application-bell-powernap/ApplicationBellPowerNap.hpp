@@ -5,6 +5,11 @@
 
 #include <apps-common/Application.hpp>
 
+namespace gui::window::name
+{
+    inline constexpr auto powernapProgress = "PowerNapProgress";
+}
+
 namespace app
 {
     inline constexpr auto applicationBellPowerNapName = "ApplicationBellPowerNap";

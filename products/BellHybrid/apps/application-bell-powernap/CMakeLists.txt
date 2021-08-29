@@ -17,11 +17,14 @@ target_sources(application-bell-powernap
         ApplicationBellPowerNap.cpp
         presenter/PowerNapMainWindowPresenter.cpp
         windows/PowerNapMainWindow.cpp
+        windows/PowerNapProgressWindow.cpp
         data/PowerNapListItem.cpp
         models/PowerNapModel.cpp
 
         presenter/PowerNapMainWindowPresenter.hpp
+        presenter/PowerNapProgressPresenter.hpp
         windows/PowerNapMainWindow.hpp
+        windows/PowerNapProgressWindow.hpp
         data/PowerNapListItem.hpp
         data/PowerNapStyle.hpp
         models/PowerNapModel.hpp
