@@ -15,6 +15,6 @@ namespace alarms
 
     auto playAlarmSound(const std::string &soundPath) -> bool;
     auto displayAlarmPopup(stm::ServiceTime *serviceTime) -> bool;
-    auto turnOnFrontlight() -> bool;
+    auto turnOnFrontlight(stm::ServiceTime *serviceTime) -> bool;
 
 } // namespace alarms

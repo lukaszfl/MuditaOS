@@ -10,6 +10,9 @@
 #include <service-appmgr/include/service-appmgr/Constants.hpp>
 #include <service-appmgr/messages/SwitchRequest.hpp>
 #include <service-time/ServiceTime.hpp>
+#include <service-evtmgr/Constants.hpp>
+#include <service-evtmgr/EventManagerServiceAPI.hpp>
+#include <service-evtmgr/ScreenLightControlMessage.hpp>
 
 namespace alarms
 {
@@ -29,9 +32,11 @@ namespace alarms
         return true;
     }
 
-    auto turnOnFrontlight() -> bool
+    auto turnOnFrontlight(stm::ServiceTime *serviceTime) -> bool
     {
         // turnOnFrontlight after it will be implemented [BH-756]
+        serviceTime->bus.sendUnicast(std::make_shared<sevm::ScreenLightControlMessage>(screen_light_control::Action::turnOn),
+                        service::name::evt_manager);
         return true;
     }
 } // namespace alarms

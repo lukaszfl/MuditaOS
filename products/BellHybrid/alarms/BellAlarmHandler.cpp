@@ -18,7 +18,7 @@ namespace alarms
 
         if (record.enabled) {
             result = playAlarmSound(record.musicTone);
-            result = turnOnFrontlight();
+            result = turnOnFrontlight(serviceTime);
             result = displayAlarmPopup(serviceTime);
             return result;
         }

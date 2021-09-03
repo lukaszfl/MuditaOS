@@ -67,7 +67,7 @@ namespace screen_light_control
 
     void ScreenLightControl::readoutTimerCallback()
     {
-        functions::calculateBrightness(bsp::light_sensor::readout());
+        functions::calculateBrightness(/*bsp::light_sensor::readout()*/100.0);
     }
 
     auto ScreenLightControl::getAutoModeState() const noexcept -> ScreenLightMode
@@ -136,7 +136,7 @@ namespace screen_light_control
     void ScreenLightControl::turnOn()
     {
         bsp::eink_frontlight::turnOn();
-        bsp::light_sensor::wakeup();
+        //bsp::light_sensor::wakeup();
         if (automaticMode == ScreenLightMode::Automatic) {
             enableTimers();
         }
@@ -151,7 +151,7 @@ namespace screen_light_control
     void ScreenLightControl::turnOff()
     {
         bsp::eink_frontlight::turnOff();
-        bsp::light_sensor::standby();
+        //bsp::light_sensor::standby();
         disableTimers();
         lightOn = false;
     }

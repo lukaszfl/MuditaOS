@@ -701,6 +701,10 @@ __attribute__((section(".after_vectors.reset"))) void ResetISR(void)
     // Disable interrupts
     __asm volatile("cpsid i");
 
+    __set_MSP((uintptr_t)g_pfnVectors[0]);
+    __DSB();
+    __ISB();
+
     SystemInit();
 
     unsigned int LoadAddr, ExeAddr, SectionLen;
