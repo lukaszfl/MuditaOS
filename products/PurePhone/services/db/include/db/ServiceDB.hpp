@@ -33,6 +33,12 @@ namespace Quotes
     class QuotesAgent;
 }
 
+namespace db::multimedia_files
+{
+    class MultimediaFilesDB;
+    class MultimediaFilesRecordInterface;
+} // namespace db::multimedia_files
+
 class ServiceDB : public ServiceDBCommon
 {
   public:
@@ -50,6 +56,7 @@ class ServiceDB : public ServiceDBCommon
     std::unique_ptr<CountryCodesDB> countryCodesDB;
     std::unique_ptr<NotificationsDB> notificationsDB;
     std::unique_ptr<Database> quotesDB;
+    std::unique_ptr<db::multimedia_files::MultimediaFilesDB> multimediaFilesDB;
 
     std::unique_ptr<AlarmEventRecordInterface> alarmEventRecordInterface;
     std::unique_ptr<SMSRecordInterface> smsRecordInterface;
@@ -62,6 +69,7 @@ class ServiceDB : public ServiceDBCommon
     std::unique_ptr<CountryCodeRecordInterface> countryCodeRecordInterface;
     std::unique_ptr<NotificationsRecordInterface> notificationsRecordInterface;
     std::unique_ptr<Quotes::QuotesAgent> quotesRecordInterface;
+    std::unique_ptr<db::multimedia_files::MultimediaFilesRecordInterface> multimediaFilesRecordInterface;
 
     db::Interface *getInterface(db::Interface::Name interface) override;
     sys::MessagePointer DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp) override;

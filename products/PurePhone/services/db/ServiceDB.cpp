@@ -6,25 +6,26 @@
 #include <module-db/Databases/AlarmsDB.hpp>
 #include <module-db/Databases/CountryCodesDB.hpp>
 #include <module-db/Databases/EventsDB.hpp>
-#include <module-db/Databases/NotificationsDB.hpp>
+#include <module-db/Databases/MultimediaFilesDB.hpp>
 #include <module-db/Databases/NotificationsDB.hpp>
 #include <module-db/Interface/AlarmEventRecord.hpp>
 #include <module-db/Interface/AlarmsRecord.hpp>
 #include <module-db/Interface/CalllogRecord.hpp>
 #include <module-db/Interface/CountryCodeRecord.hpp>
+#include <module-db/Interface/MultimediaFilesRecord.hpp>
 #include <module-db/Interface/NotesRecord.hpp>
 #include <module-db/Interface/NotificationsRecord.hpp>
 #include <module-db/Interface/SMSRecord.hpp>
 #include <module-db/Interface/SMSTemplateRecord.hpp>
 #include <purefs/filesystem_paths.hpp>
+#include <service-db/agents/file_indexer/FileIndexerAgent.hpp>
+#include <service-db/agents/quotes/QuotesAgent.hpp>
+#include <service-db/agents/settings/SettingsAgent.hpp>
 #include <service-db/DBCalllogMessage.hpp>
 #include <service-db/DBContactMessage.hpp>
 #include <service-db/DBServiceMessage.hpp>
 #include <service-db/QueryMessage.hpp>
-#include <service-db/agents/file_indexer/FileIndexerAgent.hpp>
-#include <service-db/agents/settings/SettingsAgent.hpp>
 #include <time/ScopedTime.hpp>
-#include <service-db/agents/quotes/QuotesAgent.hpp>
 
 ServiceDB::~ServiceDB()
 {
@@ -36,6 +37,7 @@ ServiceDB::~ServiceDB()
     countryCodesDB.reset();
     notificationsDB.reset();
     quotesDB.reset();
+    multimediaFilesDB.reset();
 
     Database::deinitialize();
     LOG_INFO("[ServiceDB] Cleaning resources");
@@ -66,7 +68,10 @@ db::Interface *ServiceDB::getInterface(db::Interface::Name interface)
         return notificationsRecordInterface.get();
     case db::Interface::Name::Quotes:
         return quotesRecordInterface.get();
+    case db::Interface::Name::MultimediaFiles:
+        return multimediaFilesRecordInterface.get();
     }
+
     return nullptr;
 }
 
@@ -217,6 +222,8 @@ sys::ReturnCodes ServiceDB::InitHandler()
     countryCodesDB  = std::make_unique<CountryCodesDB>("country-codes.db");
     notificationsDB = std::make_unique<NotificationsDB>((purefs::dir::getUserDiskPath() / "notifications.db").c_str());
     quotesDB        = std::make_unique<Database>((purefs::dir::getUserDiskPath() / "quotes.db").c_str());
+    multimediaFilesDB = std::make_unique<db::multimedia_files::MultimediaFilesDB>(
+        (purefs::dir::getUserDiskPath() / "multimedia.db").c_str());
 
     // Create record interfaces
     alarmEventRecordInterface  = std::make_unique<AlarmEventRecordInterface>(eventsDB.get());
@@ -231,6 +238,8 @@ sys::ReturnCodes ServiceDB::InitHandler()
     notificationsRecordInterface =
         std::make_unique<NotificationsRecordInterface>(notificationsDB.get(), contactRecordInterface.get());
     quotesRecordInterface = std::make_unique<Quotes::QuotesAgent>(quotesDB.get());
+    multimediaFilesRecordInterface =
+        std::make_unique<db::multimedia_files::MultimediaFilesRecordInterface>(multimediaFilesDB.get());
 
     databaseAgents.emplace(std::make_unique<SettingsAgent>(this, "settings_v2.db"));
     databaseAgents.emplace(std::make_unique<FileIndexerAgent>(this));
@@ -277,6 +286,11 @@ bool ServiceDB::StoreIntoBackup(const std::filesystem::path &backupPath)
 
     if (quotesDB->storeIntoFile(backupPath / std::filesystem::path(quotesDB->getName()).filename()) == false) {
         LOG_ERROR("quotesDB backup failed");
+        return false;
+    }
+
+    if (quotesDB->storeIntoFile(backupPath / std::filesystem::path(multimediaFilesDB->getName()).filename()) == false) {
+        LOG_ERROR("multimediaFilesDB backup failed");
         return false;
     }
 

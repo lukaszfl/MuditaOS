@@ -12,6 +12,7 @@ target_sources( ${PROJECT_NAME}
 	PRIVATE
 	"ServiceFileIndexer.cpp"
 	"StartupIndexer.cpp"
+    "InotifyHandler.cpp"
 )
 
 
@@ -25,4 +26,5 @@ target_link_libraries(${PROJECT_NAME}
 		tag
 	PRIVATE
 		utf8
+        tagsfetcher
 )

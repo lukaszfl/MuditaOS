@@ -30,10 +30,12 @@
 #include <module-db/Databases/CountryCodesDB.hpp>
 #include <module-db/Databases/EventsDB.hpp>
 #include <module-db/Databases/NotificationsDB.hpp>
+#include <module-db/Databases/MultimediaFilesDB.hpp>
 #include <module-db/Interface/AlarmEventRecord.hpp>
 #include <module-db/Interface/AlarmsRecord.hpp>
 #include <module-db/Interface/CountryCodeRecord.hpp>
 #include <module-db/Interface/NotificationsRecord.hpp>
+#include <module-db/Interface/MultimediaFilesRecord.hpp>
 
 // services
 #include <appmgr/ApplicationManager.hpp>
@@ -96,9 +98,9 @@ int main()
 
     std::vector<std::unique_ptr<sys::BaseServiceCreator>> systemServices;
     systemServices.emplace_back(sys::CreatorFor<EventManager>());
-#if ENABLE_FILEINDEXER_SERVICE
+    //#if ENABLE_FILEINDEXER_SERVICE
     systemServices.emplace_back(sys::CreatorFor<service::ServiceFileIndexer>());
-#endif
+    //#endif
     systemServices.emplace_back(sys::CreatorFor<ServiceDB>());
 #if ENABLE_GSM == 0
     // For now disable permanently Service cellular when there is no GSM configured
