@@ -29,6 +29,10 @@ def add_tags(filename, title, artist, album):
     audioFile.tag.save()
 
 def check_db(harness, fileName):
+    try:
+        os.remove(fileName)
+    except OSError:
+        pass
     get_file(harness, fileName, "./", "/sys/user/")
     fs_resp = list_files(harness, "/sys/user/music")
     fs_list = [item["path"] for item in fs_resp]
@@ -36,6 +40,10 @@ def check_db(harness, fileName):
     cur = con.cursor()
     db_tuple = cur.execute('SELECT path FROM files')
     db_list = [item[0] for item in db_tuple]
+    for a in fs_list:
+        print("FS: " +a)
+    for b in db_list:
+        print("DB: " +b)
     result = all(elem in db_list for elem in fs_list)
     con.close()
     try:
@@ -53,53 +61,21 @@ def check_db_tags(harness, fileNameDb, assetFileName, title, artist, album):
     print(query)
     for row in cur.execute(query):
         print("%s vs %s\n%s vs %s\n%s vs %s\n" % (row[0], path, row[1], title, row[2], artist))
-        if str(row[0]) == path and str(row[1]) == title and str(row[2]) == artist:
+        if str(row[0]) == path and (str(row[1]) == title or str(row[1]) == assetFileName) and str(row[2]) == artist:
             return True
-        
-        if str(row[0]) == path and not str(row[1]) and not title and not str(row[2]) and not artist:
-            return True
-
     return False
-    # rows_count = len(cur.execute(query).fetchall())
-    # try:
-    #     os.remove(fileNameDb)
-    # except OSError:
-    #     pass
-    # assert rows_count > 0
-
-
-# def test_2(harness, multimediadb, filename, title, artist, album):
-#     add_tags(filename, title, artist, album)
-#     put_file(harness, filename, "/sys/user/music/")
-#     test_3(harness, multimediadb, filename, title, artist, album)
-
-# def test_3(harness, multimediadb, filename, title, artist, album):
-#     time.sleep(2)
-#     ret = check_db_tags(harness, multimediadb, filename, title, artist, album)
-#     assert ret is True
-#     try:
-#         os.remove(multimediadb)
-#     except OSError:
-#         pass
 
 @pytest.mark.rt1051
 @pytest.mark.usefixtures("phone_ends_test_in_desktop")
 @pytest.mark.usefixtures("phone_unlocked")
 def test_file_indexer(harness):
-    # remove_file(harness, "/sys/user/music/test.mp3")
     # 1
     multimediadb = "multimedia.db"
     check_db(harness, multimediadb)
-    time.sleep(2)
     # 2
-    filename = "test.mp3"
-    title = u"Harness test title"
-    artist = u"Harness test artist"
-    album = u"Harness test album"
-    add_tags(filename, title, artist, album)
-    put_file(harness, filename, "/sys/user/music")
-    time.sleep(2)
-    ret = check_db_tags(harness, multimediadb, filename, title, artist, album)
+    filename = "file1.mp3"
+    put_file(harness, filename, "/sys/user/music", "test.mp3")
+    ret = check_db_tags(harness, multimediadb, "test.mp3", "File 1 title", "File 1 artist", "File 1 album")
     assert ret is True
     try:
         os.remove(multimediadb)
@@ -107,41 +83,29 @@ def test_file_indexer(harness):
         pass
 
     # 3
-    emptyTagFileName = "emptyTag.mp3"
-    shutil.copy(filename, emptyTagFileName)
-    emptyTitle = ""
-    emptyArtist = ""
-    emptyAlbum = ""
-    add_tags(emptyTagFileName, emptyTitle, emptyArtist, emptyAlbum)
-    time.sleep(2)
-    put_file(harness, emptyTagFileName, "/sys/user/music")
-    time.sleep(2)
-    ret = check_db_tags(harness, multimediadb, emptyTagFileName, emptyTitle, emptyArtist, emptyAlbum)
+    filename = "file2.mp3"
+    put_file(harness, filename, "/sys/user/music", "empty.mp3")
+    ret = check_db_tags(harness, multimediadb, "empty.mp3", "", "", "")
     assert ret is True
     try:
         os.remove(multimediadb)
     except OSError:
         pass
 
-    # # 4
-    title = u"Abc"
-    artist = u"Def"
-    album = u"Asdf"
-    add_tags(filename, title, artist, album)
-    put_file(harness, filename, "/sys/user/music")
-    time.sleep(2)
-    ret = check_db_tags(harness, multimediadb, filename, title, artist, album)
+    # 4
+    filename = "file3.mp3"
+    put_file(harness, filename, "/sys/user/music", "test.mp3")
+    ret = check_db_tags(harness, multimediadb, "test.mp3", "File 3 title", "File 3 artist", "File 3 album")
     assert ret is True
     try:
         os.remove(multimediadb)
     except OSError:
         pass
 
-    # # 5
-    add_tags(filename, emptyTitle, emptyArtist, emptyAlbum)
-    put_file(harness, filename, "/sys/user/music")
-    time.sleep(2)
-    ret = check_db_tags(harness, multimediadb, filename, emptyTitle, emptyArtist, emptyAlbum)
+    # 5
+    filename = "file4.mp3"
+    put_file(harness, filename, "/sys/user/music", "test.mp3")
+    ret = check_db_tags(harness, multimediadb, "test.mp3", "", "", "")
     assert ret is True
     try:
         os.remove(multimediadb)
@@ -149,15 +113,30 @@ def test_file_indexer(harness):
         pass
 
 
-    # # 6
+    # 6
     destfilename = "destfilename.mp3"
-    rename_file(harness, "/sys/user/music/" + filename, "/sys/user/music/" + destfilename)
-    ret = check_db_tags(harness, multimediadb, destfilename, emptyTitle, emptyArtist, emptyAlbum)
+    rename_file(harness, "/sys/user/music/test.mp3", "/sys/user/music/" + destfilename)
+    ret = check_db_tags(harness, multimediadb, destfilename, "", "", "")
     assert ret is True
     try:
         os.remove(multimediadb)
     except OSError:
         pass    
     
-    # remove_file("sys/user/music/" + destfilename)
+    # 7
+    filename = "file5.mp3"
+    put_file(harness, filename, "/sys/user/music", "empty.mp3")
+    ret = check_db_tags(harness, multimediadb, "empty.mp3", "File 5 title", "File 5 artist", "File 5 album")
+    assert ret is True
+    try:
+        os.remove(multimediadb)
+    except OSError:
+        pass
 
+    # 8
+    remove_file(harness, "/sys/user/music/destfilename.mp3")
+    check_db(harness, multimediadb)
+
+    # 9
+    remove_file(harness, "/sys/user/music/empty.mp3")
+    check_db(harness, multimediadb)
