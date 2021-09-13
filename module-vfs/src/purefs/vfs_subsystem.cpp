@@ -94,7 +94,7 @@ namespace purefs::subsystem
             }
             return json[json::main][json::os_type].string_value();
         }
-
+#if 0
         int read_mbr_lfs_erase_size(std::shared_ptr<blkdev::disk_manager> disk_mngr,
                                     std::string_view dev_name,
                                     int part_no)
@@ -114,6 +114,7 @@ namespace purefs::subsystem
             }
             return mbr_buf[MBR_ERASE_BLK_OFFSET + part_no];
         }
+#endif
 
     } // namespace
 
@@ -186,7 +187,7 @@ namespace purefs::subsystem
             LOG_FATAL("Invalid boot partition type expected code: %i current code: %i", fat_part_code, boot_part.type);
             return -EIO;
         }
-        if (user_part.type != lfs_part_code) {
+        if (user_part.type != fat_part_code) {
             LOG_FATAL("Invalid user partition type expected code: %i current code: %i", lfs_part_code, user_part.type);
             return -EIO;
         }
@@ -200,6 +201,7 @@ namespace purefs::subsystem
         if (err) {
             return err;
         }
+        /*
         const int lfs_block_log2     = read_mbr_lfs_erase_size(disk, default_blkdev_name, user_part.physical_number);
         uint32_t lfs_block_size      = 0;
         uint32_t *lfs_block_size_ptr = nullptr;
@@ -208,6 +210,12 @@ namespace purefs::subsystem
             lfs_block_size_ptr = &lfs_block_size;
         }
         err = vfs->mount(user_part.name, purefs::dir::getUserDiskPath().string(), "littlefs", 0, lfs_block_size_ptr);
+        */
+        err = vfs->mount(user_part.name, purefs::dir::getUserDiskPath().string(), "vfat");
+        if (err) {
+            LOG_ERROR("Unable to mount VFAT partition: %i", err);
+            return err;
+        }
         const std::string json_file = (dir::getRootDiskPath() / file::boot_json).string();
         const auto boot_dir_name    = parse_boot_json_directory(json_file);
         const auto user_dir         = (dir::getRootDiskPath() / boot_dir_name).string();

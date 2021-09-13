@@ -82,7 +82,7 @@ unit: sectors
 
 /dev/sdx1 : start=    $PART1_START,  size=    $PART1_SIZE, type=b, bootable
 /dev/sdx2 : start=    $PART2_START,  size=    $PART2_SIZE, type=9e
-/dev/sdx3 : start=    $PART3_START,  size=    $PART3_SIZE, type=9e
+/dev/sdx3 : start=    $PART3_START,  size=    $PART3_SIZE, type=b
 ==sfdisk
 
 
@@ -90,8 +90,8 @@ unit: sectors
 PART1="$IMAGE_NAME@@$(($PART1_START * $DEVICE_BLK_SIZE))"
 mformat -i "$PART1" -F -T $PART1_SIZE -M $DEVICE_BLK_SIZE -v MUDITAOS
 
-PART2="$IMAGE_NAME@@$(($PART2_START * $DEVICE_BLK_SIZE))"
-mformat -i "$PART2" -F -T $PART2_SIZE -M $DEVICE_BLK_SIZE -v RECOVER
+PART3="$IMAGE_NAME@@$(($PART3_START * $DEVICE_BLK_SIZE))"
+mformat -i "$PART3" -F -T $PART3_SIZE -M $DEVICE_BLK_SIZE -v RECOVER
 
 if [ ! -d "${SYSROOT}/sys" ]; then
 	echo "Fatal! Image folder sys/ missing in build. Check build system."
@@ -134,9 +134,9 @@ mcopy -s -i "$PART1" .boot.json ::
 mcopy -s -i "$PART1" .boot.json.crc32 ::
 
 #Littlefs generate image
-echo $(pwd)
 $GENLFS --image=$IMAGE_NAME --block_size=4096 --overwrite --partition_num=2
-$GENLFS --image=$IMAGE_NAME --block_size=32768 --overwrite --partition_num=3 -- user/*
+#$GENLFS --image=$IMAGE_NAME --block_size=32768 --overwrite --partition_num=3 -- user/*
+mcopy -s -i "$PART3" user/* ::
 
 # back to previous dir
 cd -
