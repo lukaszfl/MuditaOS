@@ -5,10 +5,11 @@
 
 #include <apps-common/popups/presenter/PowerOffPresenter.hpp>
 #include <apps-common/windows/Dialog.hpp>
+#include <AsyncTask.hpp>
 
 namespace gui
 {
-    class AlarmActivatedWindow : public Dialog
+    class AlarmActivatedWindow : public Dialog, public app::AsyncCallbackReceiver
     {
       public:
         explicit AlarmActivatedWindow(app::ApplicationCommon *app);
