@@ -21,6 +21,7 @@ target_sources(module-vfs
         drivers/include/purefs/fs/drivers/mount_point_littlefs.hpp
         drivers/include/purefs/fs/drivers/mount_point_vfat.hpp
         drivers/include/thirdparty/fatfs/ffconf.h
+        drivers/include/thirdparty/reedgefs/redconf.h
         drivers/include/thirdparty/fatfs/volume_mapper.hpp
         drivers/include/thirdparty/littlefs/volume_mapper.hpp
         drivers/src/purefs/fs/filesystem_littlefs.cpp
@@ -81,6 +82,7 @@ target_include_directories(module-vfs
             $<$<STREQUAL:${PROJECT_TARGET},TARGET_Linux>:${CMAKE_CURRENT_SOURCE_DIR}/board/linux/purefs/include>
             ${CMAKE_CURRENT_SOURCE_DIR}/drivers/include/thirdparty
             ${CMAKE_CURRENT_SOURCE_DIR}/drivers/include/thirdparty/fatfs
+            ${CMAKE_CURRENT_SOURCE_DIR}/drivers/include/thirdparty/reedgefs
             ${CMAKE_CURRENT_SOURCE_DIR}/include/internal
         >
     PUBLIC
@@ -92,6 +94,7 @@ target_include_directories(module-vfs
 
 target_link_libraries(module-vfs 
     PRIVATE
+        reliance-edge::fs
         fatfs::fatfs
         json::json
         littlefs::littlefs

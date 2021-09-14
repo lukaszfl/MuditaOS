@@ -96,3 +96,6 @@
 [submodule "libical"]
 	path = third-party/libical/libical
 	url = https://github.com/mudita/libical
+[submodule "third-party/reedgefs/src"]
+	path = third-party/reedgefs/src
+	url = https://github.com/datalightinc/reliance-edge.git
