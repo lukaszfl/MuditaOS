@@ -94,6 +94,16 @@ add_catch2_executable(
     USE_FS
 )
 
+add_catch2_executable(
+    NAME vfs-reedgefs
+    SRCS
+        ${CMAKE_CURRENT_LIST_DIR}/unittest_filesystem_reedgefs.cpp
+    LIBS
+        platform
+        module-vfs
+    USE_FS
+)
+
 # prepare test assets
 set(ASSETS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test_dir")
 set(ASSETS_TARGET_DIR "${CMAKE_BINARY_DIR}/module-platform/test_dir")

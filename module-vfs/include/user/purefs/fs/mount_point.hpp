@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #pragma once
@@ -71,7 +71,7 @@ namespace purefs::fs::internal
         }
 
       private:
-        virtual auto native_root() const noexcept -> std::string_view = 0;
+        virtual auto native_root() const noexcept -> std::string = 0;
 
       private:
         const std::weak_ptr<blkdev::internal::disk_handle> m_diskh;
