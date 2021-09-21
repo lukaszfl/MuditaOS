@@ -5,7 +5,7 @@ import time
 import os
 from harness import log
 from harness.interface.defs import status
-
+from harness.api.filesystem import get_log_file_with_path
 
 @pytest.mark.service_desktop_test
 @pytest.mark.rt1051
@@ -14,17 +14,17 @@ from harness.interface.defs import status
 def test_backup(harness):
     body = { "request": True }
     log.debug("backup testing");
-    
+
     # this requests a backup start
     response = harness.endpoint_request("backup", "get", body)
     assert response["body"] != ""
     assert response["body"]["task"] != ""
     task = response["body"]["task"]
     assert response["status"] == status["OK"]
-    
+
     # in response we get a task ID and status 200
     log.debug("backup started, waiting for results")
-    
+
     # start polling for backup status and wait for it to end
     i = 0
     while True:
@@ -34,32 +34,35 @@ def test_backup(harness):
         # now that we know the task ID we can poll for it's status
         body = { "request": True, "task": task }
         response = harness.endpoint_request("backup", "get", body)
-        
+
         # backup is still running
         if response["body"]["state"] == "running":
             assert response["status"] == 200
             log.debug("backup is running...")
-            
+
         # backup has stopped, should be OK and finished, status is 303
         # and redirects to a location as per the documentation
         if response["body"]["state"] == "stopped":
             log.debug("backup ended, check results")
             assert response["status"] == 303
             assert response["body"]["location"] != ""
-            
+
             # see if the location is a valid backup path, extensions is .tar
             # and starts with a /
             p = response["body"]["location"]
+            log.debug(f'Backup file path: {p}')
+            get_log_file_with_path(harness, p, "./")
+
             p_split = os.path.splitext(p)
             assert p_split[1] == ".tar"
             assert p_split[0][0] == "/"
-            
+
             break
-            
+
         # wait for a moment
         log.debug("sleeping for 1 second")
         time.sleep(1)
-        
+
         # max 30 second timeout
         if i > 30:
             # this is bas, and the test fails here

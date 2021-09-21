@@ -321,6 +321,11 @@ bool ServiceDB::StoreIntoBackup(const std::filesystem::path &backupPath)
         return false;
     }
 
+    if (notificationsDB->storeIntoFile(backupPath / std::filesystem::path(quotesDB->getName()).filename()) == false) {
+        LOG_ERROR("notificationsDB backup failed");
+        return false;
+    }
+
     if (quotesDB->storeIntoFile(backupPath / std::filesystem::path(quotesDB->getName()).filename()) == false) {
         LOG_ERROR("quotesDB backup failed");
         return false;

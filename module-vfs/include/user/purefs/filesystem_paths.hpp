@@ -25,6 +25,7 @@ namespace purefs
     namespace file
     {
         constexpr inline auto boot_json = ".boot.json";
+        constexpr inline auto version_json = "version.json";
         constexpr inline auto boot_bin  = "boot.bin";
     } // namespace file
 

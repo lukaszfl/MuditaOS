@@ -101,18 +101,17 @@ bool BackupRestore::WriteBackupInfo(sys::Service *ownerService, const std::files
     LOG_INFO("Writing backup info");
 
     if (std::filesystem::is_directory(path)) {
+        const auto backup_version_json = purefs::dir::getCurrentOSPath() / purefs::file::version_json;
         try {
-            copyFile(purefs::dir::getRootDiskPath() / purefs::file::boot_json, path / bkp::backupInfo);
+            copyFile(backup_version_json, path / bkp::backupInfo);
 
-            LOG_DEBUG("%s copied to %s",
-                      (purefs::dir::getRootDiskPath() / purefs::file::boot_json).c_str(),
-                      (path / bkp::backupInfo).c_str());
+            LOG_DEBUG("%s copied to %s", (backup_version_json).c_str(), (path / bkp::backupInfo).c_str());
 
             return true;
         }
         catch (std::filesystem::filesystem_error &e) {
             LOG_ERROR("failed to copy %s->%s error:\"%s\"",
-                      (purefs::dir::getRootDiskPath() / purefs::file::boot_json).c_str(),
+                      (backup_version_json).c_str(),
                       (path / bkp::backupInfo).c_str(),
                       e.what());
 

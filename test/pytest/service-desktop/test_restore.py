@@ -14,27 +14,41 @@ def test_restore(harness):
     # this requests the list of available files
     body = { "request": True }
     response = harness.endpoint_request("restore", "get", body)
-    
+
     # should be ok 200
     assert response["status"] == status["OK"]
     log.debug("check if body is an array")
-    
+
     # body should be an array of files
     assert isinstance(response["body"], list) == True
-    
+
     # chose the first entry for test if array is > 0
     if len(response["body"]) > 0:
-        restore_task = response["body"][0]
+        print("List of backup files:")
+        idx = 1
+        for restore_task in response["body"]:
+            print(f'{idx}: {restore_task} ')
+            idx += 1
+
+        print('0: Cancel')
+        print("Select a backup file:")
+        fileIdx = int(input())
+
+        if (fileIdx == 0):
+            assert True
+            return
+
+        restore_task = response["body"][fileIdx]
         log.debug("there are possible backup files on target, test restore %s" % (restore_task))
         # this starts a restore process with a file as parameter
-        body = { "request":True, "location": restore_task }
-        response = harness.endpoint_request("restore", "post", body)
-        
+        # body = { "request":True, "location": restore_task }
+        # response = harness.endpoint_request("restore", "post", body)
+
         # we can't really test for results here, as the phone should reset
         # in case the restore process lasts longer we should be able to poll
         # but only on rt1051
-        assert response["body"]["location"] != ""
-        assert response["body"]["state"] != ""
+        # assert response["body"]["location"] != ""
+        # assert response["body"]["state"] != ""
     else:
         log.error("no possisble backup files on phone, run backup first")
         assert False
