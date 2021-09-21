@@ -8,7 +8,7 @@
 #include <parser/ParserUtils.hpp>
 #include <service-desktop/DesktopMessages.hpp>
 #include <service-desktop/ServiceDesktop.hpp>
-#include <service-desktop/endpoints/backup/BackupRestore.hpp>
+#include <service-desktop/BackupRestore.hpp>
 #include <purefs/filesystem_paths.hpp>
 
 #include <memory>
@@ -19,10 +19,10 @@ auto RestoreEndpoint::handle(Context &context) -> void
 {
     switch (context.getMethod()) {
     case http::Method::get:
-        context.setResponseBody(BackupRestore::GetBackupFiles());
+        handleGet(context);
         break;
     case http::Method::post:
-        request(context);
+        executeRestore(context);
         break;
     case http::Method::put:
     case http::Method::del:
@@ -33,13 +33,13 @@ auto RestoreEndpoint::handle(Context &context) -> void
     MessageHandler::putToSendQueue(context.createSimpleResponse());
 }
 
-auto RestoreEndpoint::request(Context &context) -> sys::ReturnCodes
+auto RestoreEndpoint::handleGet(Context &context) -> sys::ReturnCodes
 {
     json11::Json responseBodyJson;
     auto owner = static_cast<ServiceDesktop *>(ownerServicePtr);
 
-    if (context.getBody()[json::task].is_string()) {
-        if (owner->getBackupRestoreStatus().task == context.getBody()[json::task].string_value()) {
+    if (context.getBody()[json::taskId].is_string()) {
+        if (owner->getBackupRestoreStatus().task == context.getBody()[json::taskId].string_value()) {
             if (owner->getBackupRestoreStatus().state == ServiceDesktop::OperationState::Running) {
                 LOG_WARN("looks like a previous job is running can't start a new one");
                 context.setResponseStatus(parserFSM::http::Code::SeeOther);
@@ -51,7 +51,26 @@ auto RestoreEndpoint::request(Context &context) -> sys::ReturnCodes
             context.setResponseStatus(parserFSM::http::Code::NotFound);
         }
     }
-    else if (context.getBody()[json::request] == true) {
+    else if (context.getBody()[json::request].is_string()) {
+        const std::string request(context.getBody()[json::request].string_value());
+
+        if (request.compare(json::fileList)) {
+            context.setResponseStatus(parserFSM::http::Code::BadRequest);
+
+            return sys::ReturnCodes::Failure;
+        }
+
+        context.setResponseBody(BackupRestore::GetBackupFiles());
+    }
+
+    return sys::ReturnCodes::Success;
+}
+
+auto RestoreEndpoint::executeRestore(Context &context) -> sys::ReturnCodes
+{
+    auto owner = static_cast<ServiceDesktop *>(ownerServicePtr);
+
+    if (context.getBody()[json::request] == true) {
         if (owner->getBackupRestoreStatus().state == ServiceDesktop::OperationState::Running) {
             LOG_WARN("looks like a job is running, try again later");
             context.setResponseStatus(parserFSM::http::Code::NotAcceptable);

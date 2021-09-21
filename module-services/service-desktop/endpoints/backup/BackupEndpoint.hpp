@@ -27,5 +27,8 @@ class BackupEndpoint : public parserFSM::Endpoint
         debugName = "BackupEndpoint";
     }
     auto handle(parserFSM::Context &context) -> void override;
-    auto request(parserFSM::Context &context) -> sys::ReturnCodes;
+
+  private:
+    auto executeRequest(parserFSM::Context &context) -> sys::ReturnCodes;
+    auto checkState(parserFSM::Context &context) -> sys::ReturnCodes;
 };

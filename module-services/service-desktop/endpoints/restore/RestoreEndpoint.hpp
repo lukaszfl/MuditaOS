@@ -25,5 +25,8 @@ class RestoreEndpoint : public parserFSM::Endpoint
         debugName = "RestoreEndpoint";
     }
     auto handle(parserFSM::Context &context) -> void override;
-    auto request(parserFSM::Context &context) -> sys::ReturnCodes;
+
+  private:
+    auto handleGet(parserFSM::Context &context) -> sys::ReturnCodes;
+    auto executeRestore(parserFSM::Context &context) -> sys::ReturnCodes;
 };

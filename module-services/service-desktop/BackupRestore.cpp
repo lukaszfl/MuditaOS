@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
-#include "BackupRestore.hpp"
+#include "service-desktop/BackupRestore.hpp"
 
 #include <SystemManager/SystemManager.hpp>
 #include <log.hpp>
@@ -101,18 +101,17 @@ bool BackupRestore::WriteBackupInfo(sys::Service *ownerService, const std::files
     LOG_INFO("Writing backup info");
 
     if (std::filesystem::is_directory(path)) {
+        const auto backup_version_json = purefs::dir::getCurrentOSPath() / purefs::file::version_json;
         try {
-            copyFile(purefs::dir::getRootDiskPath() / purefs::file::boot_json, path / bkp::backupInfo);
+            copyFile(backup_version_json, path / bkp::backupInfo);
 
-            LOG_DEBUG("%s copied to %s",
-                      (purefs::dir::getRootDiskPath() / purefs::file::boot_json).c_str(),
-                      (path / bkp::backupInfo).c_str());
+            LOG_DEBUG("%s copied to %s", (backup_version_json).c_str(), (path / bkp::backupInfo).c_str());
 
             return true;
         }
         catch (std::filesystem::filesystem_error &e) {
             LOG_ERROR("failed to copy %s->%s error:\"%s\"",
-                      (purefs::dir::getRootDiskPath() / purefs::file::boot_json).c_str(),
+                      (backup_version_json).c_str(),
                       (path / bkp::backupInfo).c_str(),
                       e.what());
 
@@ -213,11 +212,13 @@ bool BackupRestore::PackUserFiles(std::filesystem::path &path)
         return false;
     }
 
+    LOG_INFO("opening tar %s file...", path.filename().c_str());
+
     std::filesystem::path tarFilePath =
-        (purefs::dir::getBackupOSPath() / path.filename()).replace_extension(purefs::extension::tar);
+        (purefs::dir::getBackupOSPath() / path.filename()); // .replace_extension(purefs::extension::tar);
     mtar_t tarFile;
 
-    LOG_INFO("opening tar file...");
+    LOG_INFO("opening tar %s file...", tarFilePath.c_str());
 
     int ret = mtar_open(&tarFile, tarFilePath.c_str(), "w");
 
@@ -481,7 +482,8 @@ json11::Json BackupRestore::GetBackupFiles()
             LOG_ERROR("Can't get directory %s contents", purefs::dir::getBackupOSPath().c_str());
             return json11::Json();
         }
-        if (!p.is_directory() && p.path().extension() == purefs::extension::tar) {
+        // if (!p.is_directory() && p.path().extension() == purefs::extension::tar) {
+        if (!p.is_directory()) {
             LOG_DEBUG("possible restore file");
             dirEntryVector.push_back(p.path().filename());
         }

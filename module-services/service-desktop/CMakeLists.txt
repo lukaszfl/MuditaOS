@@ -9,7 +9,6 @@ option(ENABLE_DEVELOPER_MODE_ENDPOINT
 set(SOURCES
     endpoints/BaseHelper.cpp
     endpoints/backup/BackupEndpoint.cpp
-    endpoints/backup/BackupRestore.cpp
     endpoints/bluetooth/BluetoothEndpoint.cpp
     endpoints/bluetooth/BluetoothHelper.cpp
     endpoints/bluetooth/BluetoothEventMessages.cpp
@@ -41,6 +40,7 @@ set(SOURCES
     parser/ParserFSM.cpp
     parser/MessageHandler.cpp
 
+    BackupRestore.cpp
     DesktopEvent.cpp
     DeveloperModeMessage.cpp
     DesktopMessages.cpp

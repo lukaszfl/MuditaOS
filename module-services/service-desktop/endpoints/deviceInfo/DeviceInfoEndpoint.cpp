@@ -68,7 +68,8 @@ auto DeviceInfoEndpoint::getDeviceInfo(Context &context) -> bool
          {json::gitBranch, (std::string)GIT_BRANCH},
          {json::currentRTCTime, std::to_string(static_cast<uint32_t>(std::time(nullptr)))},
          {json::version, std::string(VERSION)},
-         {json::serialNumber, getSerialNumber()}}));
+         {json::serialNumber, getSerialNumber()},
+         {json::backupLocation, purefs::dir::getBackupOSPath().string()}}));
 
     MessageHandler::putToSendQueue(context.createSimpleResponse());
     return true;

@@ -274,6 +274,7 @@ sys::ReturnCodes ServiceDB::InitHandler()
 
 sys::ReturnCodes ServiceDB::DeinitHandler()
 {
+    Database::deinitialize();
     return sys::ReturnCodes::Success;
 }
 
@@ -318,6 +319,12 @@ bool ServiceDB::StoreIntoBackup(const std::filesystem::path &backupPath)
 
     if (calllogDB->storeIntoFile(backupPath / std::filesystem::path(calllogDB->getName()).filename()) == false) {
         LOG_ERROR("calllogDB backup failed");
+        return false;
+    }
+
+    if (notificationsDB->storeIntoFile(backupPath / std::filesystem::path(notificationsDB->getName()).filename()) ==
+        false) {
+        LOG_ERROR("notificationsDB backup failed");
         return false;
     }
 
