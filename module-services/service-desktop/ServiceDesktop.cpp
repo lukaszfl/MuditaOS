@@ -142,8 +142,8 @@ sys::ReturnCodes ServiceDesktop::InitHandler()
             backupRestoreStatus.state = OperationState::Running;
             backupRestoreStatus.lastOperationResult =
                 BackupRestore::BackupUserFiles(this, backupRestoreStatus.backupTempDir);
-            backupRestoreStatus.location =
-                (purefs::dir::getBackupOSPath() / backupRestoreStatus.task).replace_extension(purefs::extension::tar);
+            backupRestoreStatus.location = (purefs::dir::getBackupOSPath() /
+                                            backupRestoreStatus.task); //.replace_extension(purefs::extension::tar);
             backupRestoreStatus.state = OperationState::Stopped;
         }
         return sys::MessageNone{};
@@ -283,8 +283,13 @@ sys::MessagePointer ServiceDesktop::DataReceivedHandler(sys::DataMessage *msg, s
 
 void ServiceDesktop::prepareBackupData()
 {
+    std::array<char, 64> backupFileName;
+    std::time_t now;
+    std::time(&now);
+    std::strftime(backupFileName.data(), backupFileName.size(), "%FT%OH%OM%OSZ", std::localtime(&now));
+
     backupRestoreStatus.operation = ServiceDesktop::Operation::Backup;
-    backupRestoreStatus.task          = std::to_string(static_cast<uint32_t>(std::time(nullptr)));
+    backupRestoreStatus.task          = std::string(backupFileName.data());
     backupRestoreStatus.state     = OperationState::Stopped;
     backupRestoreStatus.backupTempDir = purefs::dir::getTemporaryPath() / backupRestoreStatus.task;
 }

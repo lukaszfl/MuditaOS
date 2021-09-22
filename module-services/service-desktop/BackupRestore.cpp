@@ -212,11 +212,13 @@ bool BackupRestore::PackUserFiles(std::filesystem::path &path)
         return false;
     }
 
+    LOG_INFO("opening tar %s file...", path.filename().c_str());
+
     std::filesystem::path tarFilePath =
-        (purefs::dir::getBackupOSPath() / path.filename()).replace_extension(purefs::extension::tar);
+        (purefs::dir::getBackupOSPath() / path.filename()); // .replace_extension(purefs::extension::tar);
     mtar_t tarFile;
 
-    LOG_INFO("opening tar file...");
+    LOG_INFO("opening tar %s file...", tarFilePath.c_str());
 
     int ret = mtar_open(&tarFile, tarFilePath.c_str(), "w");
 
@@ -480,7 +482,8 @@ json11::Json BackupRestore::GetBackupFiles()
             LOG_ERROR("Can't get directory %s contents", purefs::dir::getBackupOSPath().c_str());
             return json11::Json();
         }
-        if (!p.is_directory() && p.path().extension() == purefs::extension::tar) {
+        // if (!p.is_directory() && p.path().extension() == purefs::extension::tar) {
+        if (!p.is_directory()) {
             LOG_DEBUG("possible restore file");
             dirEntryVector.push_back(p.path().filename());
         }
