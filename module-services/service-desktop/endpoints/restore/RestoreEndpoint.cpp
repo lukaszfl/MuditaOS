@@ -8,7 +8,7 @@
 #include <parser/ParserUtils.hpp>
 #include <service-desktop/DesktopMessages.hpp>
 #include <service-desktop/ServiceDesktop.hpp>
-#include <service-desktop/endpoints/backup/BackupRestore.hpp>
+#include <service-desktop/BackupRestore.hpp>
 #include <purefs/filesystem_paths.hpp>
 
 #include <memory>

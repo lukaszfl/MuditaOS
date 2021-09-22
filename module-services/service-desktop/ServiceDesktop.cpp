@@ -7,7 +7,7 @@
 #include "service-desktop/WorkerDesktop.hpp"
 #include "service-cellular/CellularMessage.hpp"
 #include "endpoints/factoryReset/FactoryReset.hpp"
-#include "endpoints/backup/BackupRestore.hpp"
+#include "service-desktop/BackupRestore.hpp"
 
 #include <Common/Query.hpp>
 #include <MessageType.hpp>
