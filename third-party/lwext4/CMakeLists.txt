@@ -16,7 +16,7 @@ target_compile_definitions(lwext4
     CONFIG_DEBUG_ASSERT=0
     CONFIG_HAVE_OWN_OFLAGS=0
     CONFIG_HAVE_OWN_ERRNO=0
-    CONFIG_BLOCK_DEV_CACHE_SIZE=128
+    CONFIG_BLOCK_DEV_CACHE_SIZE=256
 )
 target_compile_options(lwext4
     PRIVATE

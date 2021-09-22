@@ -146,7 +146,6 @@ mke2fs \
   -N 0 \
   -E offset=$(($PART3_START*$DEVICE_BLK_SIZE)) \
   -O ^64bit \
-  -O ^filetype \
   -O ^extents \
   -O ^flex_bg \
   -d "user" \
