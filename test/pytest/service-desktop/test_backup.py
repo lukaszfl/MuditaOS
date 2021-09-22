@@ -9,17 +9,17 @@ from harness.api.filesystem import get_log_file_with_path
 
 @pytest.mark.service_desktop_test
 @pytest.mark.rt1051
-@pytest.mark.usefixtures("phone_unlocked")
+# @pytest.mark.usefixtures("phone_unlocked")
 @pytest.mark.backup
 def test_backup(harness):
-    body = { "request": True }
+    body = {}
     log.debug("backup testing");
 
     # this requests a backup start
-    response = harness.endpoint_request("backup", "get", body)
+    response = harness.endpoint_request("backup", "post", body)
     assert response["body"] != ""
-    assert response["body"]["task"] != ""
-    task = response["body"]["task"]
+    assert response["body"]["id"] != ""
+    task = response["body"]["id"]
     assert response["status"] == status["OK"]
 
     # in response we get a task ID and status 200
@@ -32,7 +32,7 @@ def test_backup(harness):
         time.sleep(1)  # wait for the endpoint to be ready
 
         # now that we know the task ID we can poll for it's status
-        body = { "request": True, "task": task }
+        body = { "id": task }
         response = harness.endpoint_request("backup", "get", body)
 
         # backup is still running

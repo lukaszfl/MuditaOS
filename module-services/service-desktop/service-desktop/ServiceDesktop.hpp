@@ -82,7 +82,7 @@ class ServiceDesktop : public sys::Service
         Operation operation  = Operation::Backup;
         json11::Json to_json() const
         {
-            return json11::Json::object{{parserFSM::json::task, task},
+            return json11::Json::object{{parserFSM::json::taskId, task},
                                         {parserFSM::json::state, opToString(state)},
                                         {parserFSM::json::location, location.string()}};
         }

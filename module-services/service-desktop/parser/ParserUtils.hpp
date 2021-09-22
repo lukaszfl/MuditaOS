@@ -110,15 +110,17 @@ namespace parserFSM
         inline constexpr auto versionString       = "string";
         inline constexpr auto fileExists          = "fileExists";
         inline constexpr auto version             = "version";
-        inline constexpr auto task                = "task";
+        inline constexpr auto taskId              = "id";
         inline constexpr auto state               = "state";
         inline constexpr auto success             = "success";
         inline constexpr auto request             = "request";
+        inline constexpr auto fileList            = "fileList";
         inline constexpr auto finished            = "finished";
         inline constexpr auto pending             = "pending";
         inline constexpr auto location            = "location";
         inline constexpr auto reason              = "reason";
         inline constexpr auto serialNumber        = "serialNumber";
+        inline constexpr auto backupLocation      = "backupLocation";
 
         namespace filesystem
         {
