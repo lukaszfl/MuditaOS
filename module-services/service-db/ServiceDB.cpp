@@ -274,6 +274,7 @@ sys::ReturnCodes ServiceDB::InitHandler()
 
 sys::ReturnCodes ServiceDB::DeinitHandler()
 {
+    Database::deinitialize();
     return sys::ReturnCodes::Success;
 }
 

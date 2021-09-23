@@ -4,13 +4,10 @@ import pytest
 import time
 from harness.interface.defs import status
 from harness import log
+from harness.harness import Harness
+from harness.api.filesystem import put_file
 
-
-@pytest.mark.service_desktop_test
-@pytest.mark.rt1051
-# @pytest.mark.usefixtures("phone_unlocked")
-@pytest.mark.restore
-def test_restore(harness):
+def list_backup(harness):
     # this requests the list of available files
     body = { "request": "fileList" }
     response = harness.endpoint_request("restore", "get", body)
@@ -23,32 +20,47 @@ def test_restore(harness):
     assert isinstance(response["body"], list) == True
 
     # chose the first entry for test if array is > 0
-    if len(response["body"]) > 0:
-        print("List of backup files:")
-        idx = 1
-        for restore_task in response["body"]:
-            print(f'{idx}: {restore_task} ')
-            idx += 1
+    if len(response["body"]) == 0:
+        return False
 
-        print('0: Cancel')
-        print("Select a backup file:")
-        fileIdx = int(input())
+    print("List of backup files:")
+    idx = 1
+    for restore_task in response["body"]:
+        print(f'{idx}: {restore_task} ')
+        idx += 1
 
-        if (fileIdx == 0):
-            assert True
-            return
+    print('0: Cancel')
+    print("Select a backup file:")
+    fileIdx = int(input())
 
-        restore_task = response["body"][fileIdx]
-        log.debug("there are possible backup files on target, test restore %s" % (restore_task))
-        # this starts a restore process with a file as parameter
-        body = { "request":True, "location": restore_task }
-        response = harness.endpoint_request("restore", "post", body)
+    if (fileIdx == 0):
+        assert True
+        return
 
-        # we can't really test for results here, as the phone should reset
-        # in case the restore process lasts longer we should be able to poll
-        # but only on rt1051
-        assert response["body"]["location"] != ""
-        assert response["body"]["state"] != ""
-    else:
-        log.error("no possisble backup files on phone, run backup first")
-        assert False
+    restore_task = response["body"][fileIdx - 1]
+    log.debug("there are possible backup files on target, test restore %s" % (restore_task))
+    # this starts a restore process with a file as parameter
+    body = { "request":True, "location": restore_task }
+    response = harness.endpoint_request("restore", "post", body)
+
+    # we can't really test for results here, as the phone should reset
+    # in case the restore process lasts longer we should be able to poll
+    # but only on rt1051
+    assert response["body"]["location"] != ""
+    assert response["body"]["state"] != ""
+
+@pytest.mark.service_desktop_test
+@pytest.mark.rt1051
+# @pytest.mark.usefixtures("phone_unlocked")
+@pytest.mark.restore
+def test_restore(harness: Harness):
+
+    if list_backup(harness) == False:
+        log.error("No backup files on phone, run backup first")
+        print("Put a backup file to upload to phone:")
+        backupFile = input()
+        if (backupFile != ""):
+            put_file(harness, backupFile, "/sys/user/backup")
+
+        list_backup(harness)
+
