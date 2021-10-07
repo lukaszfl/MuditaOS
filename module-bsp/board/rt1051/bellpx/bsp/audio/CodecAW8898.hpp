@@ -1,15 +1,27 @@
 // Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
-#ifndef PUREPHONE_CODEC_HPP
-#define PUREPHONE_CODEC_HPP
+#pragma once
 
-#include <memory>
-#include <optional>
+#include <bsp/audio/Codec.hpp>
+#include "drivers/i2c/DriverI2C.hpp"
+#include "drivers/gpio/DriverGPIO.hpp"
 
-class CodecParams
+class CodecParamsAW8898 : public CodecParams
 {
   public:
+    enum class Cmd
+    {
+        SetOutVolume,
+        SetInGain,
+        SetMute,
+        SetOutput,
+        SetInput,
+        Reset,
+        MicBiasCtrl,
+        None
+    };
+
     enum class SampleRate
     {
         Rate8KHz   = 8000,
@@ -21,16 +33,10 @@ class CodecParams
         Invalid
     };
 
-    enum class Cmd
+    enum class MonoStereo
     {
-        SetOutVolume,
-        SetInGain,
-        SetMute,
-        SetOutput,
-        SetInput,
-        Reset,
-        MicBiasCtrl,
-        None
+        Mono,
+        Stereoq
     };
 
     static SampleRate ValToSampleRate(uint32_t rate)
@@ -75,35 +81,36 @@ class CodecParams
 
     Cmd opCmd             = Cmd::None;
     float outVolume       = 0;
-    float inGain          = 0;
+    bool muteEnable       = false;
+    bool resetEnable      = false;
     SampleRate sampleRate = SampleRate ::Rate44K1Hz;
 };
 
-enum class CodecRetCode
-{
-    Success,
-    InvalidSampleRate,
-    InvalidInputPath,
-    InvalidOutputPath,
-    InvalidArgument
-};
-
-class Codec
+class CodecAW8898 : public Codec
 {
   public:
-    virtual ~Codec() = default;
+    CodecAW8898();
+    ~CodecAW8898();
 
-    virtual std::optional<uint32_t> Probe() = 0;
+    std::optional<uint32_t> Probe() override final;
 
-    virtual CodecRetCode Start(const CodecParams &param) = 0;
+    CodecRetCode Start(const CodecParams &param) override final;
 
-    virtual CodecRetCode Pause() = 0;
+    CodecRetCode Pause() override final;
 
-    virtual CodecRetCode Resume() = 0;
+    CodecRetCode Resume() override final;
 
-    virtual CodecRetCode Stop() = 0;
+    CodecRetCode Stop() override final;
 
-    virtual CodecRetCode Ioctrl(const CodecParams &param) = 0;
+    CodecRetCode Ioctrl(const CodecParams &param) override final;
+
+  private:
+    std::shared_ptr<drivers::DriverI2C> i2c;
+    std::shared_ptr<drivers::DriverGPIO> gpio;
+    drivers::I2CAddress i2cAddr;
+    CodecParamsAW8898 currentParams;
+
+    CodecRetCode SetOutputVolume(const float vol);
+    CodecRetCode SetMute(const bool enable);
+    CodecRetCode Reset();
 };
-
-#endif // PUREPHONE_CODEC_HPP
