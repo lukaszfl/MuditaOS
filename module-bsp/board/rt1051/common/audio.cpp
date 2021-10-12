@@ -26,7 +26,7 @@ void bsp::audioInit()
         DriverDMA::Create(static_cast<DMAInstances>(BoardDefinitions ::AUDIOCODEC_DMA), DriverDMAParams{});
 
     // Enable MCLK clock
-    IOMUXC_GPR->GPR1 |= BOARD_AUDIOCODEC_SAIx_MCLK_MASK;
+    IOMUXC_GPR->GPR1 |= BELL_AUDIOCODEC_SAIx_MCLK_MASK;
 
     audioConfig.txDMAHandle =
         audioConfig.dma->CreateHandle(static_cast<uint32_t>(BoardDefinitions ::AUDIOCODEC_TX_DMA_CHANNEL));
@@ -37,24 +37,24 @@ void bsp::audioInit()
     audioConfig.dmamux->Enable(static_cast<uint32_t>(BoardDefinitions ::AUDIOCODEC_RX_DMA_CHANNEL),
                                BSP_AUDIOCODEC_SAIx_DMA_RX_SOURCE);
 
-    audioConfig.mclkSourceClockHz = GetPerphSourceClock(PerphClock_SAI2);
+    audioConfig.mclkSourceClockHz = GetPerphSourceClock(PerphClock_SAI1);
 
     // Initialize SAI Tx module
     SAI_TxGetDefaultConfig(&audioConfig.config);
-    audioConfig.config.masterSlave = kSAI_Slave;
-    SAI_TxInit(BOARD_AUDIOCODEC_SAIx, &audioConfig.config);
+    audioConfig.config.masterSlave = kSAI_Master;
+    SAI_TxInit(BELL_AUDIOCODEC_SAIx, &audioConfig.config);
 
     // Initialize SAI Rx module
     SAI_RxGetDefaultConfig(&audioConfig.config);
 
-    audioConfig.config.masterSlave = kSAI_Slave;
-    SAI_RxInit(BOARD_AUDIOCODEC_SAIx, &audioConfig.config);
+    audioConfig.config.masterSlave = kSAI_Master;
+    SAI_RxInit(BELL_AUDIOCODEC_SAIx, &audioConfig.config);
 }
 
 void bsp::audioDeinit()
 {
     memset(&audioConfig.config, 0, sizeof(audioConfig.config));
-    SAI_Deinit(BOARD_AUDIOCODEC_SAIx);
+    SAI_Deinit(BELL_AUDIOCODEC_SAIx);
     if (audioConfig.dmamux) {
         audioConfig.dmamux->Disable(static_cast<uint32_t>(BoardDefinitions ::AUDIOCODEC_TX_DMA_CHANNEL));
         audioConfig.dmamux->Disable(static_cast<uint32_t>(BoardDefinitions ::AUDIOCODEC_RX_DMA_CHANNEL));

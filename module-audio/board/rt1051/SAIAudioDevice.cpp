@@ -77,6 +77,7 @@ void SAIAudioDevice::enableInput()
 
 void SAIAudioDevice::enableOutput()
 {
+    LOG_DEBUG("Enabling SAI output");
     if (!isSinkConnected()) {
         LOG_FATAL("No input stream connected!");
         return;

@@ -2,7 +2,7 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "CodecAW8898.hpp"
-#include "AW8898_regs.hpp"
+#include "AW8898.hpp"
 #include "board/BoardDefinitions.hpp"
 
 #include <log/log.hpp>
@@ -14,13 +14,7 @@ extern "C"
 }
 
 using namespace drivers;
-using namespace bsp::bell_audio;
-
-inline void FlipBytes(uint16_t *val)
-{
-    uint16_t tmp = *val << 8;
-    *val         = (*val >> 8) | tmp;
-}
+//using namespace bsp::bell_audio;
 
 constexpr auto ReadStatusRetries        = 5;
 constexpr auto OneByteAddressing        = 1;
@@ -30,9 +24,567 @@ constexpr auto LogicHigh                = 1;
 constexpr auto ReadWriteTwoBytes        = 2;
 constexpr auto TwoMilisecondWait        = 2;
 constexpr auto TenMilisecondWait        = 10;
-constexpr auto OneOnBinaryPositionZero  = 0x0001;
-constexpr auto OneOnBinaryPositionNine  = 0x0200;
-constexpr auto OneOnBinaryPositionEight = 0x0100;
+
+
+    inline void FlipBytes(uint16_t *val)
+    {
+        uint16_t tmp = *val << 8;
+        *val         = (*val >> 8) | tmp;
+    }
+
+    /*******************************************************************************
+     * Definitations
+     ******************************************************************************/
+    #define AW8898_CHECK_RET(x, status)      \
+        do                                   \
+        {                                    \
+            (status) = (x);                  \
+            if (kStatus_Success != (status)) \
+            {                                \
+                return (status);             \
+            }                                \
+        } while (false)
+
+    #define AW8898_CHIP_ID			0x1702
+    #define AW8898_SOFT_RESET		0x55aa
+    #define AW_TAG                  "aw8898"
+    #define AW8898_VERSION 	        "v1.1.0"
+    #define AW_I2C_RETRIES			5
+    #define AW_I2C_RETRY_DELAY		2
+    #define AW_READ_CHIPID_RETRIES	5
+    #define MAX_RAM_WRITE_BYTE_SIZE 128
+    #define AW_LOG_ENABLE           1
+    #if AW_LOG_ENABLE
+        #define AW_LOGI(...)  LOG_DEBUG(__VA_ARGS__)
+    #else
+        #define AW_LOGI(...)  ((void)0)
+    #endif
+
+    /*******************************************************************************
+     * Code
+     ******************************************************************************/
+    status_t CodecAW8898::AW8898_WriteReg(uint8_t reg, uint16_t val)
+    {
+        i2cAddr.subAddress           = reg;
+        uint16_t tval = val;
+        FlipBytes(reinterpret_cast<uint16_t *>(&tval));
+        auto sent = i2c->Write(i2cAddr, reinterpret_cast<uint8_t *>(&tval), ReadWriteTwoBytes);
+        if (sent == ReadWriteTwoBytes)
+            return kStatus_Success;
+        else
+            return kStatus_Fail;
+    }
+
+    status_t CodecAW8898::AW8898_ReadReg(uint8_t reg, uint16_t *val)
+    {
+        uint16_t tval;
+
+        i2cAddr.subAddress           = reg;
+
+        auto received = i2c->Read(i2cAddr, reinterpret_cast<uint8_t *>(&tval), ReadWriteTwoBytes);
+        if (received != ReadWriteTwoBytes)
+            return kStatus_Fail;
+
+        FlipBytes(reinterpret_cast<uint16_t *>(&tval));
+        *val = tval;
+
+        return kStatus_Success;
+    }
+
+    status_t CodecAW8898::AW8898_ModifyReg(uint8_t reg, uint16_t mask, uint16_t val)
+    {
+        status_t retval  = 0;
+        uint16_t reg_val = 0;
+        retval           = AW8898_ReadReg(reg, &reg_val);
+        if (retval != kStatus_Success)
+        {
+            return kStatus_Fail;
+        }
+        reg_val &= (uint16_t)mask;
+        reg_val |= val;
+        retval = AW8898_WriteReg(reg, reg_val);
+        if (retval != kStatus_Success)
+        {
+            return kStatus_Fail;
+        }
+        return kStatus_Success;
+    }
+
+    status_t CodecAW8898::AW8898_HwReset(void)
+    {
+        AW_LOGI("%s enter ", __func__);
+
+        return kStatus_Success;
+    }
+
+    void CodecAW8898::AW8898_SoftReset(void)
+    {
+        AW_LOGI("enter %s start", __func__);
+
+        AW8898_WriteReg(AW8898_REG_ID, AW8898_SOFT_RESET);
+
+        AW_LOGI("enter %s end", __func__);
+
+    }
+
+    status_t CodecAW8898::AW8898_ReadChipid(void)
+    {
+        uint8_t cnt = 0;
+        uint16_t reg_val = 0;
+
+        while (cnt < AW_READ_CHIPID_RETRIES)
+        {
+        AW8898_ReadReg(AW8898_REG_ID, &reg_val);
+        if (reg_val == AW8898_CHIP_ID)
+        {
+            AW_LOGI("this chip is Aw8898 chipid=0x%x",reg_val);
+            return kStatus_Success;
+        }
+        AW_LOGI("%s: aw8898 chipid=0x%x error\n",__func__, reg_val);
+        cnt++;
+        HAL_Delay(2);
+        }
+
+        return kStatus_Fail;
+    }
+
+    status_t CodecAW8898::AW8898_Init(const aw8898_config_t *config)
+    {
+        status_t ret = kStatus_Success;
+
+        AW_LOGI("enter %s start", __func__);
+
+        ret = AW8898_ReadChipid();
+        if (ret == kStatus_Fail)
+        {
+            AW_LOGI("please check hardward ad_pin && i2c config!!!");
+            return ret;
+        }
+
+        AW8898_RunPwd(false);
+        HAL_Delay(2);
+
+        AW8898_SetMode(SPK_MODE);
+
+        AW8898_HwParams(CHSEL_LEFT, FREQUENCY_44K, WIDTH_16BITS, I2SBCK_32FS);
+        HAL_Delay(2);
+
+        AW8898_CtrlState(AW_DECODE, START);
+
+        AW8898_Start();
+
+        AW8898_ReadAllReg();
+
+        AW_LOGI("enter %s end", __func__);
+
+        return ret;
+    }
+
+    status_t CodecAW8898::AW8898_HwParams(aw_i2s_channel_t chsel, aw_i2s_frequency_t rate, aw_i2s_width_t width, aw_i2s_fs_t fs)
+    {
+        int reg_value = 0;
+        AW_LOGI("enter %s start", __func__);
+
+        switch (chsel)
+        {
+        case CHSEL_LEFT:
+        reg_value = AW8898_BIT_I2SCTRL_CHS_LEFT;
+        break;
+        case CHSEL_RIGHT:
+        reg_value = AW8898_BIT_I2SCTRL_CHS_RIGHT;
+        break;
+        case CHSEL_MONO:
+        reg_value = AW8898_BIT_I2SCTRL_CHS_MONO;
+        break;
+        default:
+        reg_value = AW8898_BIT_I2SCTRL_CHS_MONO;
+        AW_LOGI("%s: chsel can not support ", __func__);
+        break;
+        }
+        //set chsel
+        AW8898_ModifyReg(AW8898_REG_I2SCTRL, AW8898_BIT_I2SCTRL_CHS_MASK, reg_value);
+
+        switch (rate)
+        {
+        case FREQUENCY_08K:
+            reg_value =  AW8898_BIT_I2SCTRL_SR_8K;
+            break;
+        case FREQUENCY_11K:
+            reg_value =  AW8898_BIT_I2SCTRL_SR_11K;
+            break;
+        case FREQUENCY_16K:
+            reg_value = AW8898_BIT_I2SCTRL_SR_16K;
+            break;
+        case FREQUENCY_22K:
+            reg_value = AW8898_BIT_I2SCTRL_SR_22K;
+            break;
+        case FREQUENCY_24K:
+            reg_value = AW8898_BIT_I2SCTRL_SR_24K;
+            break;
+        case FREQUENCY_32K:
+            reg_value = AW8898_BIT_I2SCTRL_SR_32K;
+            break;
+        case FREQUENCY_44K:
+            reg_value = AW8898_BIT_I2SCTRL_SR_44P1K;
+            break;
+        case FREQUENCY_48K:
+            reg_value = AW8898_BIT_I2SCTRL_SR_48K;
+            break;
+        default:
+            reg_value = AW8898_BIT_I2SCTRL_SR_48K;
+            AW_LOGI("%s: rate can not support", __func__);
+            break;
+        }
+        //set rate
+        AW8898_ModifyReg(AW8898_REG_I2SCTRL, AW8898_BIT_I2SCTRL_SR_MASK, reg_value);
+
+        switch (width)
+        {
+        case WIDTH_16BITS:
+            reg_value = AW8898_BIT_I2SCTRL_FMS_16BIT;
+            break;
+        case WIDTH_24BITS:
+            reg_value = AW8898_BIT_I2SCTRL_FMS_24BIT;
+            break;
+        case WIDTH_32BITS:
+            reg_value = AW8898_BIT_I2SCTRL_FMS_32BIT;
+            break;
+        default:
+            reg_value = AW8898_BIT_I2SCTRL_FMS_16BIT;
+            AW_LOGI("%s: width can not support ", __func__);
+            break;
+        }
+        //set width
+        AW8898_ModifyReg(AW8898_REG_I2SCTRL, AW8898_BIT_I2SCTRL_FMS_MASK, reg_value);
+
+        switch (fs)
+        {
+        case I2SBCK_32FS:
+            reg_value = AW8898_BIT_I2SCTRL_BCK_32FS;
+            break;
+        case I2SBCK_48FS:
+            reg_value = AW8898_BIT_I2SCTRL_BCK_48FS;
+            break;
+        case I2SBCK_64FS:
+            reg_value = AW8898_BIT_I2SCTRL_BCK_64FS;
+            break;
+        default:
+            reg_value = AW8898_BIT_I2SCTRL_BCK_64FS;
+            AW_LOGI("%s: fs can not support ", __func__);
+            break;
+        }
+        //set fs
+        AW8898_ModifyReg(AW8898_REG_I2SCTRL, AW8898_BIT_I2SCTRL_BCK_MASK, reg_value);
+
+        return kStatus_Success;
+    }
+
+    void CodecAW8898::AW8898_LoadRegCfg(void)
+    {
+        uint16_t i = 0;
+        uint16_t data = 0;
+
+        AW_LOGI("enter %s start", __func__);
+
+        for (i = 0; i < sizeof(aw8898_reg_cfg) / sizeof(aw8898_reg_cfg[0]); i ++)
+        {
+            AW8898_WriteReg(aw8898_reg_cfg[i].addr, aw8898_reg_cfg[i].data);
+        }
+
+        AW_LOGI("enter %s end", __func__);
+    }
+
+    status_t CodecAW8898::AW8898_RunPwd(bool pwd)
+    {
+        AW_LOGI("enter %s start [%s]", __func__, pwd == true ? "TRUE" : "FALSE");
+
+        if (pwd)
+        {
+            AW8898_ModifyReg(AW8898_REG_SYSCTRL, AW8898_BIT_SYSCTRL_PW_MASK, AW8898_BIT_SYSCTRL_PW_PDN);
+        }
+        else
+        {
+            AW8898_ModifyReg(AW8898_REG_SYSCTRL, AW8898_BIT_SYSCTRL_PW_MASK, AW8898_BIT_SYSCTRL_PW_ACTIVE);
+            AW8898_ModifyReg(AW8898_REG_SYSCTRL, AW8898_BIT_SYSCTRL_I2SEN_MASK, AW8898_BIT_SYSCTRL_I2S_ENABLE);
+        }
+
+        AW_LOGI("enter %s end", __func__);
+        return kStatus_Success;
+    }
+
+    status_t CodecAW8898::AW8898_RunMute(bool mute)
+    {
+        AW_LOGI("enter %s start [%s]", __func__, mute == true ? "TRUE" : "FALSE");
+
+        if (mute)
+        {
+            AW8898_ModifyReg(AW8898_REG_PWMCTRL, AW8898_BIT_PWMCTRL_HMUTE_MASK, AW8898_BIT_PWMCTRL_HMUTE_ENABLE);
+        }
+        else
+        {
+            AW8898_ModifyReg(AW8898_REG_PWMCTRL, AW8898_BIT_PWMCTRL_HMUTE_MASK, AW8898_BIT_PWMCTRL_HMUTE_DISABLE);
+        }
+
+        AW_LOGI("enter %s end", __func__);
+        return kStatus_Success;
+    }
+
+    void CodecAW8898::AW8898_ColdStart(void)
+    {
+        AW_LOGI("%s: enter", __func__);
+
+        AW8898_LoadRegCfg();
+        g_aw8898.init = AW8898_INIT_OK;
+
+        if ((g_aw8898.mode == SPK_MODE) || (g_aw8898.mode == MUSIC_MODE))
+        {
+            AW8898_ModifyReg(AW8898_REG_SYSCTRL, AW8898_BIT_SYSCTRL_MODE_MASK, AW8898_BIT_SYSCTRL_SPK_MODE);
+        }
+        else
+        {
+            AW8898_ModifyReg(AW8898_REG_SYSCTRL, AW8898_BIT_SYSCTRL_MODE_MASK, AW8898_BIT_SYSCTRL_RCV_MODE);
+        }
+    }
+
+    status_t CodecAW8898::AW8898_Start(void)
+    {
+        uint16_t reg_val = 0;
+        unsigned int i = 0;
+
+        AW_LOGI("enter %s start", __func__);
+
+        AW8898_RunPwd(false);
+        HAL_Delay(2);
+
+        for (i = 0; i < 5; i ++)
+        {
+            AW8898_ReadReg(AW8898_REG_SYSST, &reg_val);
+            if ((reg_val & AW8898_BIT_SYSST_PLLS))
+            {
+                AW8898_RunMute(false);
+                AW_LOGI("%s iis signal check pass!", __func__);
+                return kStatus_Success;
+            }
+
+            HAL_Delay(2);
+        }
+        AW8898_RunPwd(true);
+
+        AW_LOGI("%s: iis signal check error[0x%04X]", __func__, reg_val);
+
+        return kStatus_Fail;
+    }
+
+    status_t CodecAW8898::AW8898_Stop(void)
+    {
+        AW_LOGI("enter %s start", __func__);
+        AW8898_RunMute(true);
+
+        AW_LOGI("enter %s end", __func__);
+        AW8898_RunPwd(true);
+
+        return kStatus_Success;
+    }
+
+    status_t CodecAW8898::AW8898_SmartpaCfg(bool play_flag)
+    {
+        int ret = -1;
+
+        AW_LOGI("%s: flag = %d", __func__, play_flag);
+
+        if (play_flag == true && g_aw8898.mode != OFF_MODE)
+        {
+        if ((g_aw8898.init == AW8898_INIT_ST) || (g_aw8898.init == AW8898_INIT_NG))
+        {
+            AW_LOGI("%s: init = %d", __func__, g_aw8898.init);
+            AW8898_ColdStart();
+        }
+        else
+        {
+            ret = AW8898_Start();
+            AW_LOGI("%s: init = %d", __func__, g_aw8898.init);
+            if (ret < 0)
+                AW_LOGI("%s: start fail, ret=%d\n", __func__, ret);
+            else
+                AW_LOGI("%s: start success", __func__);
+        }
+        }
+        else
+        {
+        AW8898_Stop();
+        }
+
+        return kStatus_Success;
+    }
+
+    status_t CodecAW8898::AW8898_CtrlState(aw_codec_mode_t mode, aw_ctrl_t aw_ctrl)
+    {
+        AW_LOGI("enter %s  start", __func__);
+
+        switch (mode)
+        {
+            case AW_ENCODE:
+            break;
+            case AW_DECODE:
+            if (aw_ctrl == STOP)
+            {
+                AW8898_SmartpaCfg(false);
+            }
+            else
+            {
+                AW8898_SmartpaCfg(true);
+            }
+            break;
+            case AW_MODE_BOTH:
+            break;
+            case AW_MODE_LINE_IN:
+            break;
+            default:
+            break;
+        }
+
+        AW_LOGI("enter %s end", __func__);
+
+        return kStatus_Success;
+    }
+
+    status_t CodecAW8898::AW8898_SetVolume(aw8898_module_t module, uint8_t gain)
+    {
+        status_t res = kStatus_Success;
+        uint16_t reg = 0, reg_val = 0;
+
+        AW_LOGI("enter %s start", __func__);
+
+        res = AW8898_ReadReg(AW8898_REG_HAGCCFG7, &reg);
+        if (res != 0)
+        {
+            AW_LOGI("reg read err(%ld)", res);
+            return res;
+        }
+
+        reg_val = (gain << 8) | (reg & 0x00ff);
+        res = AW8898_WriteReg(AW8898_REG_HAGCCFG7, reg_val);
+
+        AW_LOGI("enter %s end", __func__);
+        return res;
+    }
+
+    status_t CodecAW8898::AW8898_GetVolume(aw8898_module_t module, uint8_t *gian)
+    {
+        status_t res = kStatus_Success;
+        uint16_t reg = 0;
+
+        AW_LOGI("enter %s start", __func__);
+
+        res = AW8898_ReadReg(AW8898_REG_HAGCCFG7, &reg);
+        if (res != kStatus_Success)
+        {
+            AW_LOGI("reg read err(%ld)", res);
+            return res;
+        }
+
+        *gian = reg >> 8;
+
+        AW_LOGI("enter %s end", __func__);
+        return res;
+    }
+
+    int CodecAW8898::AW8898_SetMode(aw_sel_mode_t mode)
+    {
+        AW_LOGI("enter %s start", __func__);
+
+        if ((mode == SPK_MODE) && (g_aw8898.mode != mode))
+        {
+            g_aw8898.mode = SPK_MODE;
+            g_aw8898.init =  AW8898_INIT_ST;
+        }
+        else if((mode == VOICE_MODE) && (g_aw8898.mode != mode))
+        {
+            g_aw8898.mode = VOICE_MODE;
+            g_aw8898.init =  AW8898_INIT_ST;
+        }
+        else if((mode == MUSIC_MODE) && (g_aw8898.mode != mode))
+        {
+            g_aw8898.mode = MUSIC_MODE;
+            g_aw8898.init =  AW8898_INIT_ST;
+        }
+        else if (mode == OFF_MODE)
+        {
+            g_aw8898.mode = OFF_MODE;
+        }
+        else
+        {
+            AW_LOGI("enter %s mode not change!", __func__);
+        }
+        return 0;
+    }
+
+
+
+    bool CodecAW8898::AW8898_CheckPllStatus(void)
+    {
+        uint16_t reg_val = 0;
+
+        AW8898_ReadReg(AW8898_REG_SYSST, &reg_val);
+
+        if ((reg_val & AW8898_BIT_SYSST_PLLS))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    void CodecAW8898::HAL_Delay(uint32_t count)
+    {
+        extern uint32_t SystemCoreClock;
+
+        //SDK_DelayAtLeastUs(count * 1000, SystemCoreClock);
+        vTaskDelay(pdMS_TO_TICKS(count));
+    }
+
+    void CodecAW8898::AW8898_ReadAllReg(void)
+    {
+        uint16_t val = 0;
+        for(uint8_t i = 0; i< sizeof(reg); i++)
+        {
+            AW8898_ReadReg(reg[i], &val);
+            AW_LOGI("reg[%x] = 0x%x", reg[i], val);
+        }
+    }
+
+    /*!
+    * brief Codec initilization.
+    *
+    * param handle codec handle.
+    * param config codec configuration.
+    * return kStatus_Success is success, else initial failed.
+    */
+    status_t CodecAW8898::HAL_CODEC_Init(void *config)
+    {
+        assert(config != NULL);
+
+        codec_config_t *codecConfig = (codec_config_t *)config;
+
+        aw8898_config_t *devConfig = (aw8898_config_t *)(codecConfig->codecDevConfig);
+
+        /* codec device initialization */
+        return AW8898_Init(devConfig);
+    }
+
+    /*!
+    * brief Codec de-initilization.
+    *
+    * param handle codec handle.
+    * return kStatus_Success is success, else de-initial failed.
+    */
+    status_t CodecAW8898::HAL_CODEC_Deinit(void)
+    {
+        return AW8898_Deinit();
+    }
+
 
 CodecAW8898::CodecAW8898() : i2cAddr{}
 {
@@ -63,6 +615,7 @@ CodecAW8898::CodecAW8898() : i2cAddr{}
     gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN), LogicHigh); // clear reset
     vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
 
+    LOG_DEBUG("Probing AW8898 ...");
     auto ret = Probe();
     LOG_DEBUG("AW8898 Probe: 0x%04lX", ret.value());
 }
@@ -77,148 +630,29 @@ CodecRetCode CodecAW8898::Start(const CodecParams &param)
 
     const CodecParamsAW8898 &params = static_cast<const CodecParamsAW8898 &>(param);
 
-    // Software reset - p.19
-    i2cAddr.subAddress         = AW8898_REG_ID;
-    aw8898_reg_idcode_t dev_id = {.idcode = AW8898_SW_RESET_MAGIC};
-    FlipBytes(reinterpret_cast<uint16_t *>(&dev_id));
-    i2c->Write(i2cAddr, reinterpret_cast<uint8_t *>(&dev_id), ReadWriteTwoBytes);
-
-    // Power up sequence - table 2, p.18
-    /*
-        1   Wait for VDD, DVDD supply power up  ;   mode: Power-Down
-        2   I2S + Data Path Configuration       ;   mode: Stand-By
-        3.1 Enable system (SYSCTRL.PWDN=0)      ;   mode: Configuring
-        3,2 Bias, OSC, PLL active
-        3.3 Waiting for PLL locked
-        4.1 Enable Boost and amplifier
-            (SYSCTRL.AMPPD=0)
-            Boost and Amplifier boot up         ;   mode: Operating
-        4.2 Wait SYSST.SWS=1                    ;   mode: Operating
-        5   Release HARD-Mute
-            Data Path active                    ;   mode: Operating
-    */
-
-    /* 2. I2S:
-        I2SCTRL.I2SMD -> mode
-        I2SCTRL.I2SSR -> samplerate
-        I2SCTRL.I2SBCK -> bit clock BCK frequency = SampleRate * SlotLength * SlotNumber
-            SampleRate: Sample rate for this digital audio interface; SlotLength: The length of one audio slot in unit
-       of BCK clock; SlotNumber:  How  many  slots  supported  in  this  audio  interface.  For  example:  2-slot
-       supported  in  I2S  mode, 4-slot supported in TDM mode.
-
-    */
-
-    aw8898_reg_i2sctrl_t i2s_setup = {
-        .inplev = 1, // attenuate input
-        .chsel  = 3, // mono; (L+R)/2
-        .i2smd  = 0, // standard I2S
-        .i2sfs  = 0, // 16 bit
-        .i2sbck = 0  // 21*fs(16*2)
+    aw8898_config_t aw8898Config = {
+    .route     = kAW8898_RoutePlaybackandRecord,
+    .bus              = kAW8898_BusI2S,
+    .format = {.mclk_HZ = 6144000U, .sampleRate = kAW8898_AudioSampleRate16KHz, .bitWidth = kAW8898_AudioBitWidth16bit},
+    .master_slave = false,
+    .rightInputSource = kAW8898_InputDifferentialMicInput2,
+    .playSource       = kAW8898_PlaySourceDAC,
+    .slaveAddress     = AW8898_I2C_ADDR,
+    .i2cConfig = {.codecI2CInstance = 0, .codecI2CSourceClock = 0},
     };
-
-    switch (params.sampleRate) {
-
-    case CodecParamsAW8898::SampleRate::Rate8KHz:
-        i2s_setup.i2ssr = static_cast<uint8_t>(AW8898_i2ssr::SampleRate8kHz); // 8 kHz
-        break;
-
-    case CodecParamsAW8898::SampleRate::Rate16KHz:
-        i2s_setup.i2ssr = static_cast<uint8_t>(AW8898_i2ssr::SampleRate16kHz); // 16 kHz
-        break;
-
-    case CodecParamsAW8898::SampleRate::Rate44K1Hz:
-        i2s_setup.i2ssr = static_cast<uint8_t>(AW8898_i2ssr::SampleRate44k1Hz); // 44.1 kHz
-        break;
-
-    case CodecParamsAW8898::SampleRate::Rate48KHz:
-        i2s_setup.i2ssr = static_cast<uint8_t>(AW8898_i2ssr::SampleRate48kHz); // 48 kHz
-        break;
-
-    case CodecParamsAW8898::SampleRate::Rate32KHz:
-        i2s_setup.i2ssr = static_cast<uint8_t>(AW8898_i2ssr::SampleRate32kHz); // 32 kHz
-        break;
-
-    case CodecParamsAW8898::SampleRate::Rate96KHz:
-        i2s_setup.i2ssr = static_cast<uint8_t>(AW8898_i2ssr::SampleRate96kHz); // 96 kHz
-        break;
-
-    default:
-        return CodecRetCode::InvalidSampleRate;
-    }
-    i2cAddr.subAddress = AW8898_REG_I2SCTRL;
-    FlipBytes(reinterpret_cast<uint16_t *>(&i2s_setup));
-    i2c->Write(i2cAddr, reinterpret_cast<uint8_t *>(&i2s_setup), ReadWriteTwoBytes);
-
-    aw8898_reg_i2stxcfg_t i2s_tx_setup = {
-        .fsync_type     = 0, // one slot wide sync pulse
-        .slot_num       = 0, // 2 slots
-        .i2s_tx_slotvld = 0, // send on slot 0
-        .i2s_rx_slotvld = 3, // slot 0,1
-        .drvstren       = 0, // I2S_DATAO pad drive 2mA
-        .dohz           = 0  // unused channel data set to 0
+    enum
+    {
+        kCODEC_AW8898,
     };
-    i2cAddr.subAddress = AW8898_REG_I2STXCFG;
-    FlipBytes(reinterpret_cast<uint16_t *>(&i2s_setup));
-    i2c->Write(i2cAddr, reinterpret_cast<uint8_t *>(&i2s_setup), ReadWriteTwoBytes);
+    codec_config_t boardCodecConfig = {.codecDevType = kCODEC_AW8898, .codecDevConfig = &aw8898Config};
 
-    /* 3.1 Enable system (SYSCTRL.PWDN=0) */
-    aw8898_reg_sysctrl_t sys_setup;
-    i2c->Read(i2cAddr, reinterpret_cast<uint8_t *>(&sys_setup), ReadWriteTwoBytes);
-    FlipBytes(reinterpret_cast<uint16_t *>(&sys_setup));
-    sys_setup.i2sen    = 1; // enable I2S
-    sys_setup.pwdn     = 0; // power up
-    sys_setup.rcv_mode = 0; // SPK mode
-    sys_setup.amppd    = 1; // amplifier power down
-    i2cAddr.subAddress = AW8898_REG_SYSCTRL;
-    FlipBytes(reinterpret_cast<uint16_t *>(&sys_setup));
-    i2c->Write(i2cAddr, reinterpret_cast<uint8_t *>(&sys_setup), ReadWriteTwoBytes);
-
-    /* 3,2 Bias, OSC, PLL active */
-    vTaskDelay(pdMS_TO_TICKS(TenMilisecondWait));
-
-    /* 3.3 Waiting for PLL locked */
-    i2cAddr.subAddress  = AW8898_REG_SYSST;
-    uint16_t sys_status = 0;
-
-    int retries = ReadStatusRetries;
-    while ((sys_status & OneOnBinaryPositionZero) != 1) // wait for PLLS = 1 (locked)
-    {
-        i2c->Read(i2cAddr, reinterpret_cast<uint8_t *>(&sys_status), ReadWriteTwoBytes);
-        FlipBytes(reinterpret_cast<uint16_t *>(&sys_status));
-        vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
-
-        if (retries-- == 0) {
-            LOG_ERROR("Failed to start codec !");
-            return CodecRetCode::InvalidOutputPath; // there isn't suitable fail return code
-        }
-    }
-
-    /* 4.1 Enable Boost and amplifier
-            (SYSCTRL.AMPPD=0)
-    */
-    i2cAddr.subAddress = AW8898_REG_SYSCTRL;
-    i2c->Modify(i2cAddr, OneOnBinaryPositionNine, false, ReadWriteTwoBytes); //(SYSCTRL.AMPPD=0)
-
-    /* 4.2 Wait SYSST.SWS=1 */
-    i2cAddr.subAddress = AW8898_REG_SYSST;
-    retries            = ReadStatusRetries;
-    while ((sys_status & (1 << 8)) == 0) // wait for SWS = 1
-    {
-        i2c->Read(i2cAddr, reinterpret_cast<uint8_t *>(&sys_status), ReadWriteTwoBytes);
-        FlipBytes(reinterpret_cast<uint16_t *>(&sys_status));
-        vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
-
-        if (retries-- == 0) {
-            LOG_ERROR("Failed to start codec !");
-            return CodecRetCode::InvalidOutputPath; // there isn't suitable fail return code
-        }
-    }
+    HAL_CODEC_Init(&boardCodecConfig);
 
     // Store param configuration
     currentParams = params;
 
     auto currVol = currentParams.outVolume;
-
+    currVol = 1.0;
     SetOutputVolume(currVol);
 
     return CodecRetCode::Success;
@@ -227,27 +661,13 @@ CodecRetCode CodecAW8898::Start(const CodecParams &param)
 CodecRetCode CodecAW8898::Pause()
 {
     // Turn off device
-    i2cAddr.subAddress = AW8898_REG_SYSCTRL;
-    i2c->Modify(i2cAddr, OneOnBinaryPositionNine, true, ReadWriteTwoBytes);  //(SYSCTRL.AMPPD=1)
-    i2c->Modify(i2cAddr, OneOnBinaryPositionEight, true, ReadWriteTwoBytes); //(SYSCTRL.PWDN=1)
-
+    
     return CodecRetCode::Success;
 }
 
 CodecRetCode CodecAW8898::Resume()
 {
-    // Turn on device
-    i2cAddr.subAddress = AW8898_REG_SYSCTRL;
-    i2c->Modify(i2cAddr, OneOnBinaryPositionEight, false, ReadWriteTwoBytes); //(SYSCTRL.PWDN=0)
-    /* 3.3 Waiting for PLL locked */
-    i2cAddr.subAddress  = AW8898_REG_SYSST;
-    uint16_t sys_status = 0;
-    while ((sys_status & OneOnBinaryPositionEight) == 0) // wait for PLLS = 1 (locked)
-    {
-        i2c->Read(i2cAddr, reinterpret_cast<uint8_t *>(&sys_status), ReadWriteTwoBytes);
-        FlipBytes(reinterpret_cast<uint16_t *>(&sys_status));
-    }
-    i2c->Modify(i2cAddr, OneOnBinaryPositionNine, false, ReadWriteTwoBytes); //(SYSCTRL.AMPPD=0)
+    
 
     return CodecRetCode::Success;
 }
@@ -286,7 +706,7 @@ CodecRetCode CodecAW8898::Ioctrl(const CodecParams &param)
         ret = Reset();
         break;
     case CodecParamsAW8898::Cmd::SetMute:
-        ret = SetMute(params.muteEnable);
+        ret = SetMute(true);
         break;
     default:
         break;
@@ -298,7 +718,7 @@ CodecRetCode CodecAW8898::Ioctrl(const CodecParams &param)
 CodecRetCode CodecAW8898::SetOutputVolume(const float vol)
 {
     uint8_t mute = 0;
-
+/*
     // If volume set to 0 then mute output
     i2cAddr.subAddress = AW8898_REG_PWMCTRL;
     if (vol == 0)
@@ -312,28 +732,23 @@ CodecRetCode CodecAW8898::SetOutputVolume(const float vol)
     i2c->Read(i2cAddr, reinterpret_cast<uint8_t *>(&regval), ReadWriteTwoBytes);
     FlipBytes(reinterpret_cast<uint16_t *>(&regval));
     regval.volume = static_cast<uint8_t>(25.5 * vol);
+    LOG_DEBUG("Setting volume to %u", regval.volume);
+    //regval.unused = 0x00;
     FlipBytes(reinterpret_cast<uint16_t *>(&regval));
     i2c->Write(i2cAddr, reinterpret_cast<uint8_t *>(&regval), ReadWriteTwoBytes);
-
+*/
     currentParams.outVolume = vol;
     return CodecRetCode::Success;
 }
 
 CodecRetCode CodecAW8898::Reset()
 {
-    // Software reset - p.19
-    i2cAddr.subAddress         = AW8898_REG_ID;
-    aw8898_reg_idcode_t dev_id = {AW8898_SW_RESET_MAGIC};
-    FlipBytes(reinterpret_cast<uint16_t *>(&dev_id));
-    i2c->Write(i2cAddr, reinterpret_cast<uint8_t *>(&dev_id), ReadWriteTwoBytes);
 
     return CodecRetCode::Success;
 }
 
 CodecRetCode CodecAW8898::SetMute(const bool enable)
 {
-    i2cAddr.subAddress = AW8898_REG_PWMCTRL;
-    i2c->Modify(i2cAddr, OneOnBinaryPositionEight, enable ? true : false, ReadWriteTwoBytes); //(PWMCTRL.HMUTE)
     return CodecRetCode::Success;
 }
 
@@ -341,8 +756,5 @@ std::optional<uint32_t> CodecAW8898::Probe()
 {
     uint16_t id = 0;
 
-    i2cAddr.subAddress = AW8898_REG_ID;
-    i2c->Read(i2cAddr, reinterpret_cast<uint8_t *>(&id), ReadWriteTwoBytes);
-    FlipBytes(reinterpret_cast<uint16_t *>(&id));
     return id;
 }

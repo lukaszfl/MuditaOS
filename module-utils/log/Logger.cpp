@@ -16,7 +16,7 @@ namespace Log
                                                             {"CellularMux", logger_level::LOGINFO},
                                                             {"ServiceCellular", logger_level::LOGINFO},
                                                             {"ServiceAntenna", logger_level::LOGERROR},
-                                                            {"ServiceAudio", logger_level::LOGINFO},
+                                                            {"ServiceAudio", logger_level::LOGTRACE},
                                                             {"ServiceBluetooth", logger_level::LOGINFO},
                                                             {"ServiceFota", logger_level::LOGINFO},
                                                             {"ServiceEink", logger_level::LOGINFO},

@@ -53,8 +53,8 @@ extern "C"
  *   * *
  *   **********************************************************************************************************************
  */
-#define BSP_AUDIOCODEC_SAIx_DMA_TX_SOURCE kDmaRequestMuxSai2Tx
-#define BSP_AUDIOCODEC_SAIx_DMA_RX_SOURCE kDmaRequestMuxSai2Rx
+#define BSP_AUDIOCODEC_SAIx_DMA_TX_SOURCE kDmaRequestMuxSai1Tx
+#define BSP_AUDIOCODEC_SAIx_DMA_RX_SOURCE kDmaRequestMuxSai1Rx
 
 /*
  *   **********************************************************************************************************************

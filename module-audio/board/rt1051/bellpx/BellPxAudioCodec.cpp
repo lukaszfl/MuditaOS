@@ -17,7 +17,7 @@ namespace audio
     sai_edma_handle_t BellPxAudioCodec::rxHandle = {};
 
     BellPxAudioCodec::BellPxAudioCodec(const Configuration &format)
-        : SAIAudioDevice(BOARD_AUDIOCODEC_SAIx, &rxHandle, &txHandle), saiInFormat{}, saiOutFormat{},
+        : SAIAudioDevice(BELL_AUDIOCODEC_SAIx, &rxHandle, &txHandle), saiInFormat{}, saiOutFormat{},
           codecParams{}, codec{},
           formats(audio::AudioFormat::makeMatrix(supportedSampleRates, supportedBitWidths, supportedChannelModes)),
           currentFormat(format)
@@ -66,6 +66,7 @@ namespace audio
         }
 
         codecParams.sampleRate = CodecParams::ValToSampleRate(currentFormat.sampleRate_Hz);
+        LOG_DEBUG("Samplerate expected: %i, codec: %i", (int)currentFormat.sampleRate_Hz, (int)codecParams.sampleRate);
         if (codecParams.sampleRate == CodecParams::SampleRate::Invalid) {
             LOG_ERROR("Unsupported sample rate");
         };
@@ -73,6 +74,8 @@ namespace audio
         codecParams.outVolume = currentFormat.outputVolume;
         codecParams.inGain    = currentFormat.inputGain;
 
+        txEnabled = true;
+        initiateTxTransfer();
         codec.Start(codecParams);
 
         state = State::Running;
@@ -144,19 +147,19 @@ namespace audio
         sai_format.watermark = FSL_FEATURE_SAI_FIFO_COUNT / 2U;
 #endif
 
-        SAI_TransferRxCreateHandleEDMA(BOARD_AUDIOCODEC_SAIx,
+        SAI_TransferRxCreateHandleEDMA(BELL_AUDIOCODEC_SAIx,
                                        &rxHandle,
                                        rxAudioCodecCallback,
                                        this,
                                        reinterpret_cast<edma_handle_t *>(audioCfg->rxDMAHandle->GetHandle()));
 
         SAI_TransferRxSetFormatEDMA(
-            BOARD_AUDIOCODEC_SAIx, &rxHandle, &sai_format, audioCfg->mclkSourceClockHz, audioCfg->mclkSourceClockHz);
+            BELL_AUDIOCODEC_SAIx, &rxHandle, &sai_format, audioCfg->mclkSourceClockHz, audioCfg->mclkSourceClockHz);
 
-        DisableIRQ(BOARD_AUDIOCODEC_SAIx_RX_IRQ);
+        DisableIRQ(BELL_AUDIOCODEC_SAIx_RX_IRQ);
 
         /* Reset SAI Rx internal logic */
-        SAI_RxSoftwareReset(BOARD_AUDIOCODEC_SAIx, kSAI_ResetTypeSoftware);
+        SAI_RxSoftwareReset(BELL_AUDIOCODEC_SAIx, kSAI_ResetTypeSoftware);
     }
 
     void BellPxAudioCodec::OutStart()
@@ -176,34 +179,34 @@ namespace audio
         sai_format.watermark = FSL_FEATURE_SAI_FIFO_COUNT / 2U;
 #endif
 
-        SAI_TransferTxCreateHandleEDMA(BOARD_AUDIOCODEC_SAIx,
+        SAI_TransferTxCreateHandleEDMA(BELL_AUDIOCODEC_SAIx,
                                        &txHandle,
                                        txAudioCodecCallback,
                                        this,
                                        reinterpret_cast<edma_handle_t *>(audioCfg->txDMAHandle->GetHandle()));
         SAI_TransferTxSetFormatEDMA(
-            BOARD_AUDIOCODEC_SAIx, &txHandle, &sai_format, audioCfg->mclkSourceClockHz, audioCfg->mclkSourceClockHz);
+            BELL_AUDIOCODEC_SAIx, &txHandle, &sai_format, audioCfg->mclkSourceClockHz, audioCfg->mclkSourceClockHz);
 
-        DisableIRQ(BOARD_AUDIOCODEC_SAIx_TX_IRQ);
+        DisableIRQ(BELL_AUDIOCODEC_SAIx_TX_IRQ);
 
         /* Reset SAI Tx internal logic */
-        SAI_TxSoftwareReset(BOARD_AUDIOCODEC_SAIx, kSAI_ResetTypeSoftware);
+        SAI_TxSoftwareReset(BELL_AUDIOCODEC_SAIx, kSAI_ResetTypeSoftware);
     }
 
     void BellPxAudioCodec::OutStop()
     {
-        SAI_TxDisableInterrupts(BOARD_AUDIOCODEC_SAIx, kSAI_FIFOErrorInterruptEnable);
+        SAI_TxDisableInterrupts(BELL_AUDIOCODEC_SAIx, kSAI_FIFOErrorInterruptEnable);
         if (txHandle.dmaHandle) {
-            SAI_TransferTerminateSendEDMA(BOARD_AUDIOCODEC_SAIx, &txHandle);
+            SAI_TransferTerminateSendEDMA(BELL_AUDIOCODEC_SAIx, &txHandle);
         }
         memset(&txHandle, 0, sizeof(txHandle));
     }
 
     void BellPxAudioCodec::InStop()
     {
-        SAI_RxDisableInterrupts(BOARD_AUDIOCODEC_SAIx, kSAI_FIFOErrorInterruptEnable);
+        SAI_RxDisableInterrupts(BELL_AUDIOCODEC_SAIx, kSAI_FIFOErrorInterruptEnable);
         if (rxHandle.dmaHandle) {
-            SAI_TransferAbortReceiveEDMA(BOARD_AUDIOCODEC_SAIx, &rxHandle);
+            SAI_TransferAbortReceiveEDMA(BELL_AUDIOCODEC_SAIx, &rxHandle);
         }
         memset(&rxHandle, 0, sizeof(rxHandle));
     }
