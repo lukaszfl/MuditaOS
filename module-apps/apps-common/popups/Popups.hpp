@@ -27,7 +27,8 @@ namespace gui
             AlarmDeactivated,
             Alarm,
             PowerOff,
-            Reboot
+            Reboot,
+            Invalid, //
         };
 
         namespace window

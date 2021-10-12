@@ -1,15 +1,16 @@
-// Copyright (c) 2017-2020, Mudita Sp. z.o.o. All rights reserved.
+// Copyright (c) 2017-2021, Mudita Sp. z.o.o. All rights reserved.
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "WindowsFactory.hpp"
 #include <AppWindow.hpp>
+#include <utility>
 
 namespace app
 {
 
     void WindowsFactory::attach(const std::string &name, builder builder)
     {
-        builders[name] = builder;
+        builders[name] = std::move(builder);
     }
 
     auto WindowsFactory::isRegistered(const std::string &name) const -> bool

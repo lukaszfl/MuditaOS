@@ -1,0 +1,9 @@
+add_catch2_executable(
+    NAME
+        windows-management
+    SRCS
+        tests-main.cpp
+        test-WindowsStack.cpp
+    LIBS
+    module-gui
+)

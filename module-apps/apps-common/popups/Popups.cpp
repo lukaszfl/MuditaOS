@@ -2,6 +2,8 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "Popups.hpp"
+#include "AppWindow.hpp"
+#include <cassert>
 
 namespace gui::popup
 {
@@ -42,6 +44,9 @@ namespace gui::popup
             return gui::popup::window::power_off_window;
         case ID::Reboot:
             return gui::popup::window::reboot_window;
+        case ID::Invalid:
+            assert(0);
+            return gui::name::window::main_window;
         }
 
         return {};

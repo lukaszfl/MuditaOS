@@ -8,6 +8,7 @@
 #include <service-appmgr/include/service-appmgr/Constants.hpp>
 #include <service-appmgr/Controller.hpp>
 #include <apps-common/popups/data/AlarmPopupRequestParams.hpp>
+#include <string>
 
 namespace alarms
 {
@@ -16,11 +17,14 @@ namespace alarms
 
     bool NotifyGUIAction::execute(const AlarmEventRecord &record)
     {
-        auto r = std::make_unique<AlarmEventRecord>(record);
-        app::manager::Controller::sendAction(
-            &service,
-            app::manager::actions::ShowPopup,
-            std::make_unique<gui::AlarmPopupRequestParams>(gui::AlarmPopupType::AlarmRing, std::move(r)));
+        for (int i = 0; i < 3; ++i) {
+            auto r  = std::make_unique<AlarmEventRecord>(record);
+            r->name = UTF8(std::string(record.name) + std::to_string(i));
+            app::manager::Controller::sendAction(
+                &service,
+                app::manager::actions::ShowPopup,
+                std::make_unique<gui::AlarmPopupRequestParams>(gui::AlarmPopupType::AlarmRing, std::move(r)));
+        }
         return true;
     }
 

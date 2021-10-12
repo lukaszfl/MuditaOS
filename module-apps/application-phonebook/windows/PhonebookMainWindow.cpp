@@ -6,6 +6,7 @@
 #include "application-phonebook/data/PhonebookItemData.hpp"
 #include "application-phonebook/data/PhonebookStyle.hpp"
 
+#include <memory>
 #include <queries/phonebook/QueryContactGet.hpp>
 
 #include <header/AddElementAction.hpp>
@@ -13,12 +14,13 @@
 #include <service-appmgr/Controller.hpp>
 #include <service-db/QueryMessage.hpp>
 #include <service-db/DBNotificationMessage.hpp>
+#include <utility>
 
 namespace gui
 {
-    PhonebookMainWindow::PhonebookMainWindow(app::ApplicationCommon *app)
-        : AppWindow(app, gui::name::window::main_window), phonebookModel{
-                                                              std::make_shared<PhonebookModel>(this->application)}
+    PhonebookMainWindow::PhonebookMainWindow(app::ApplicationCommon *app, std::shared_ptr<SearchModel> model)
+        : AppWindow(app, gui::name::window::main_window),
+          model(std::move(model)), phonebookModel{std::make_shared<PhonebookModel>(this->application)}
     {
         buildInterface();
     }
@@ -86,8 +88,8 @@ namespace gui
         LOG_INFO("onBeforeShow");
 
         auto contactRequest = dynamic_cast<PhonebookSearchRequest *>(data);
-        requestedSearch     = contactRequest != nullptr;
-        if (requestedSearch) {
+        model->setRequested(contactRequest != nullptr);
+        if (model->requestedSearch()) {
             enableNewContact                       = false;
             phonebookModel->messagesSelectCallback = [=](gui::PhonebookItem *item) {
                 std::unique_ptr<PhonebookSearchRequest> data = std::make_unique<PhonebookSearchRequest>();
@@ -162,11 +164,6 @@ namespace gui
         }
 
         return false;
-    }
-
-    bool PhonebookMainWindow::isSearchRequested() const
-    {
-        return requestedSearch;
     }
 
     void PhonebookMainWindow::onEmptyList()

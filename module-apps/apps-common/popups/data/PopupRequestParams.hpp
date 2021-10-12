@@ -11,6 +11,7 @@
 #include <module-audio/Audio/AudioCommon.hpp>
 #include <locks/widgets/Lock.hpp>
 #include <locks/data/LockData.hpp>
+#include <popups/Disposition.hpp>
 
 namespace gui
 {
@@ -18,8 +19,12 @@ namespace gui
     class PopupRequestParams : public app::manager::actions::ActionParams
     {
       public:
-        explicit PopupRequestParams(gui::popup::ID popupId)
-            : app::manager::actions::ActionParams{"Popup request parameters"}, popupId{popupId}
+        explicit PopupRequestParams(gui::popup::ID popupId) : PopupRequestParams(popupId, popup::Disposition{})
+        {}
+
+        explicit PopupRequestParams(gui::popup::ID popupId, popup::Disposition disposition)
+            : app::manager::actions::ActionParams{"Popup request parameters"}, popupId{popupId},
+              disposition(disposition)
         {}
 
         [[nodiscard]] auto getPopupId() const noexcept
@@ -27,8 +32,19 @@ namespace gui
             return popupId;
         }
 
+        [[nodiscard]] const auto &getDisposition() const noexcept
+        {
+            return disposition;
+        }
+
+        void setDisposition(const popup::Disposition &d)
+        {
+            this->disposition = d;
+        }
+
       private:
         gui::popup::ID popupId;
+        popup::Disposition disposition;
     };
 
     class PhoneUnlockInputRequestParams : public PopupRequestParams
