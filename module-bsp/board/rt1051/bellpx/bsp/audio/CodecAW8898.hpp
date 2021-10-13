@@ -41,27 +41,38 @@ class CodecParamsAW8898 : public CodecParams
 
     enum class MonoStereo
     {
-        Mono,
-        Stereoq
+        Left,
+        Right,
+        Mono
     };
 
-    static SampleRate ValToSampleRate(uint32_t rate)
+    aw_i2s_channel_t MonoStereoToCodecChsel() const
     {
-        switch (rate) {
-        case 8000:
-            return SampleRate ::Rate8KHz;
-        case 16000:
-            return SampleRate::Rate16KHz;
-        case 32000:
-            return SampleRate::Rate32KHz;
-        case 44100:
-            return SampleRate::Rate44K1Hz;
-        case 48000:
-            return SampleRate::Rate48KHz;
-        case 96000:
-            return SampleRate::Rate96KHz;
+        switch(monoStereo) {
+            case MonoStereo::Left:
+                return CHSEL_LEFT;
+            case MonoStereo::Right:
+                return CHSEL_RIGHT;
+            default:
+                return CHSEL_MONO;
+        }
+    }
+
+    aw_i2s_frequency_t SampleRateToCodecFreq() const
+    {
+        switch (sampleRate) {
+        case SampleRate::Rate8KHz:
+            return FREQUENCY_08K;
+        case SampleRate::Rate16KHz:
+            return FREQUENCY_16K;
+        case SampleRate::Rate32KHz:
+            return FREQUENCY_32K;
+        case SampleRate::Rate44K1Hz:
+            return FREQUENCY_44K;
+        case SampleRate::Rate48KHz:
+            return FREQUENCY_48K;
         default:
-            return SampleRate ::Invalid;
+            return FREQUENCY_44K;
         }
     }
 
@@ -87,8 +98,7 @@ class CodecParamsAW8898 : public CodecParams
 
     Cmd opCmd             = Cmd::None;
     float outVolume       = 0;
-    bool muteEnable       = false;
-    bool resetEnable      = false;
+    MonoStereo monoStereo = MonoStereo::Mono;
     SampleRate sampleRate = SampleRate ::Rate44K1Hz;
 };
 
@@ -134,12 +144,6 @@ class CodecAW8898 : public Codec
         AW8898_INIT_NG = 2,
     }aw8898_init_t;
 
-    typedef struct _codec_config
-    {
-        uint32_t codecDevType; /*!< codec type */
-        void *codecDevConfig;  /*!< Codec device specific configuration */
-    } codec_config_t;
-
     struct aw8898
     {
     //	aw_hw_irq_handle_t irq_handle;
@@ -156,8 +160,9 @@ class CodecAW8898 : public Codec
 
     static constexpr const aw8898_reg_cfg_t  aw8898_reg_cfg[] =
     {
-        {0x05, 0x0c03},
-        {0x06, 0x0330},
+        //{0x05, 0x0c07},
+        {0x06, 0x0510},
+        {0x08, 0xa00c},
         {0x09, 0x424a},
         {0x0a, 0x03c2},
         {0x0b, 0x03c2},
@@ -186,7 +191,7 @@ class CodecAW8898 : public Codec
     void AW8898_SoftReset(void);
 
     status_t AW8898_ReadChipid(void);
-    status_t AW8898_Init(const aw8898_config_t *config);
+    status_t AW8898_Init(const CodecParamsAW8898 &params);
 
     status_t AW8898_HwParams(aw_i2s_channel_t chsel, aw_i2s_frequency_t rate, aw_i2s_width_t width, aw_i2s_fs_t fs);
     status_t AW8898_RunPwd(bool pwd);
@@ -206,16 +211,8 @@ class CodecAW8898 : public Codec
     void AW8898_ReadAllReg(void);
     void HAL_Delay(uint32_t count);
 
-    status_t AW8898_SetVolume(aw8898_module_t module, uint8_t gain);
-    status_t AW8898_GetVolume(aw8898_module_t module, uint8_t *gain);
+    status_t AW8898_SetVolume(uint8_t gain);
+    status_t AW8898_GetVolume(uint8_t *gain);
 
-    uint8_t aw8898_init(void);
-    uint8_t aw8898_deinit(void);
-    bool aw8898_check_pll_status(void);
-    int  aw8898_set_voice_volume(int volume);
-    int  aw8898_get_voice_volume(int *volume);
     status_t AW8898_Start(void);
-
-    status_t HAL_CODEC_Init(void *config);
-    status_t HAL_CODEC_Deinit(void);
 };

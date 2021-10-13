@@ -2,7 +2,7 @@
 // For licensing, see https://github.com/mudita/MuditaOS/LICENSE.md
 
 #include "CodecAW8898.hpp"
-#include "AW8898.hpp"
+//#include "AW8898.hpp"
 #include "board/BoardDefinitions.hpp"
 
 #include <log/log.hpp>
@@ -60,7 +60,158 @@ constexpr auto TenMilisecondWait        = 10;
         #define AW_LOGI(...)  ((void)0)
     #endif
 
-    /*******************************************************************************
+CodecAW8898::CodecAW8898() : i2cAddr{}
+{
+    LOG_INFO("Initializing AW8898 audio codec");
+    i2cAddr.deviceAddress  = AW8898_I2C_ADDR;
+    i2cAddr.subAddressSize = OneByteAddressing; // AW8898 uses 1byte addressing
+    i2c                    = DriverI2C::Create(
+        static_cast<I2CInstances>(BoardDefinitions::AUDIOCODEC_I2C),
+        DriverI2CParams{.baudrate = static_cast<uint32_t>(BoardDefinitions::AUDIOCODEC_I2C_BAUDRATE)});
+
+    gpio = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_AUDIOCODEC_GPIO), DriverGPIOParams{});
+
+    gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
+                                      .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
+                                      .defLogic = PositiveLogic,
+                                      .pin = static_cast<uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN)});
+
+    gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
+                                      .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
+                                      .defLogic = PositiveLogic,
+                                      .pin = static_cast<uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_INTN_PA_PIN)});
+
+    gpio->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_INTN_PA_PIN));
+    gpio->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_INTN_PA_PIN));
+
+    gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN), LogicLow); // reset chip
+    vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
+    gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN), LogicHigh); // clear reset
+    vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
+
+    LOG_DEBUG("Probing AW8898 ...");
+    auto ret = Probe();
+    LOG_DEBUG("AW8898 Probe: 0x%04lX", ret.value());
+}
+
+CodecAW8898::~CodecAW8898()
+{
+    Reset();
+}
+
+CodecRetCode CodecAW8898::Start(const CodecParams &param)
+{
+    CodecParamsAW8898 params;
+    params.opCmd = static_cast<CodecParamsAW8898::Cmd>(param.opCmd);
+    params.outVolume = param.outVolume;
+    params.sampleRate = static_cast<CodecParamsAW8898::SampleRate>(param.sampleRate);
+
+    AW8898_Init(params);
+
+    // Store param configuration
+    currentParams = params;
+
+    auto currVol = currentParams.outVolume;
+    currVol = 3.0;
+    SetOutputVolume(currVol);
+
+    return CodecRetCode::Success;
+}
+
+CodecRetCode CodecAW8898::Pause()
+{
+    AW8898_Stop();
+    
+    return CodecRetCode::Success;
+}
+
+CodecRetCode CodecAW8898::Resume()
+{
+    AW8898_Start();
+
+    return CodecRetCode::Success;
+}
+
+CodecRetCode CodecAW8898::Stop()
+{
+    AW8898_Stop();
+    return CodecRetCode::Success;
+}
+
+CodecRetCode CodecAW8898::Ioctrl(const CodecParams &param)
+{
+
+    const CodecParamsAW8898 &params = static_cast<const CodecParamsAW8898 &>(param);
+
+    CodecRetCode ret = CodecRetCode::Success;
+
+    switch (params.opCmd) {
+    case CodecParamsAW8898::Cmd::SetOutVolume:
+        ret = SetOutputVolume(params.outVolume);
+        break;
+
+    case CodecParamsAW8898::Cmd::SetInGain:
+        ret = CodecRetCode::Success;
+        break;
+    case CodecParamsAW8898::Cmd::SetInput:
+        ret = CodecRetCode::Success;
+        break;
+    case CodecParamsAW8898::Cmd::SetOutput:
+        ret = CodecRetCode::Success;
+        break;
+    case CodecParamsAW8898::Cmd::MicBiasCtrl:
+        ret = CodecRetCode::Success;
+        break;
+    case CodecParamsAW8898::Cmd::Reset:
+        ret = Reset();
+        break;
+    case CodecParamsAW8898::Cmd::SetMute:
+        ret = SetMute(true);
+        break;
+    default:
+        break;
+    }
+
+    return ret;
+}
+
+CodecRetCode CodecAW8898::SetOutputVolume(const float vol)
+{
+    uint8_t mute = 0;
+
+    // If volume set to 0 then mute output
+     if (vol == 0)
+         AW8898_RunMute(true); //(PWMCTRL.HMUTE=1) - enable mute
+     else
+         AW8898_RunMute(false); //(PWMCTRL.HMUTE=0) - disable mute
+
+
+    AW8898_SetVolume(static_cast<uint8_t>(25.5 * vol));
+    currentParams.outVolume = vol;
+    return CodecRetCode::Success;
+}
+
+CodecRetCode CodecAW8898::Reset()
+{
+    AW8898_HwReset();
+    return CodecRetCode::Success;
+}
+
+CodecRetCode CodecAW8898::SetMute(const bool enable)
+{
+    AW8898_RunMute(enable);
+    return CodecRetCode::Success;
+}
+
+std::optional<uint32_t> CodecAW8898::Probe()
+{
+    if (AW8898_ReadChipid() == kStatus_Success)
+        return AW8898_CHIP_ID;
+    else
+        return 0;
+}
+
+/*******************************************************************************
      * Code
      ******************************************************************************/
     status_t CodecAW8898::AW8898_WriteReg(uint8_t reg, uint16_t val)
@@ -114,6 +265,11 @@ constexpr auto TenMilisecondWait        = 10;
     {
         AW_LOGI("%s enter ", __func__);
 
+        gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN), LogicLow); // reset chip
+        vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
+        gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN), LogicHigh); // clear reset
+        vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
+
         return kStatus_Success;
     }
 
@@ -148,11 +304,14 @@ constexpr auto TenMilisecondWait        = 10;
         return kStatus_Fail;
     }
 
-    status_t CodecAW8898::AW8898_Init(const aw8898_config_t *config)
+    status_t CodecAW8898::AW8898_Init(const CodecParamsAW8898 &params)
     {
         status_t ret = kStatus_Success;
 
         AW_LOGI("enter %s start", __func__);
+
+        AW8898_HwReset();
+	    HAL_Delay(2);
 
         ret = AW8898_ReadChipid();
         if (ret == kStatus_Fail)
@@ -166,7 +325,7 @@ constexpr auto TenMilisecondWait        = 10;
 
         AW8898_SetMode(SPK_MODE);
 
-        AW8898_HwParams(CHSEL_LEFT, FREQUENCY_44K, WIDTH_16BITS, I2SBCK_32FS);
+        AW8898_HwParams(params.MonoStereoToCodecChsel(), params.SampleRateToCodecFreq(), WIDTH_16BITS, I2SBCK_32FS);
         HAL_Delay(2);
 
         AW8898_CtrlState(AW_DECODE, START);
@@ -185,6 +344,8 @@ constexpr auto TenMilisecondWait        = 10;
         int reg_value = 0;
         AW_LOGI("enter %s start", __func__);
 
+        AW_LOGI("[chsel]=%i, [rate]=%i", static_cast<int>(chsel), static_cast<int>(rate));
+        
         switch (chsel)
         {
         case CHSEL_LEFT:
@@ -338,10 +499,12 @@ constexpr auto TenMilisecondWait        = 10;
 
         if ((g_aw8898.mode == SPK_MODE) || (g_aw8898.mode == MUSIC_MODE))
         {
+            AW_LOGI("SPK MODE");
             AW8898_ModifyReg(AW8898_REG_SYSCTRL, AW8898_BIT_SYSCTRL_MODE_MASK, AW8898_BIT_SYSCTRL_SPK_MODE);
         }
         else
         {
+            AW_LOGI("RCV MODE");
             AW8898_ModifyReg(AW8898_REG_SYSCTRL, AW8898_BIT_SYSCTRL_MODE_MASK, AW8898_BIT_SYSCTRL_RCV_MODE);
         }
     }
@@ -448,7 +611,7 @@ constexpr auto TenMilisecondWait        = 10;
         return kStatus_Success;
     }
 
-    status_t CodecAW8898::AW8898_SetVolume(aw8898_module_t module, uint8_t gain)
+    status_t CodecAW8898::AW8898_SetVolume(uint8_t gain)
     {
         status_t res = kStatus_Success;
         uint16_t reg = 0, reg_val = 0;
@@ -464,12 +627,13 @@ constexpr auto TenMilisecondWait        = 10;
 
         reg_val = (gain << 8) | (reg & 0x00ff);
         res = AW8898_WriteReg(AW8898_REG_HAGCCFG7, reg_val);
+        LOG_DEBUG("Vol 0x%04X", reg_val);
 
         AW_LOGI("enter %s end", __func__);
         return res;
     }
 
-    status_t CodecAW8898::AW8898_GetVolume(aw8898_module_t module, uint8_t *gian)
+    status_t CodecAW8898::AW8898_GetVolume(uint8_t *gian)
     {
         status_t res = kStatus_Success;
         uint16_t reg = 0;
@@ -554,207 +718,3 @@ constexpr auto TenMilisecondWait        = 10;
             AW_LOGI("reg[%x] = 0x%x", reg[i], val);
         }
     }
-
-    /*!
-    * brief Codec initilization.
-    *
-    * param handle codec handle.
-    * param config codec configuration.
-    * return kStatus_Success is success, else initial failed.
-    */
-    status_t CodecAW8898::HAL_CODEC_Init(void *config)
-    {
-        assert(config != NULL);
-
-        codec_config_t *codecConfig = (codec_config_t *)config;
-
-        aw8898_config_t *devConfig = (aw8898_config_t *)(codecConfig->codecDevConfig);
-
-        /* codec device initialization */
-        return AW8898_Init(devConfig);
-    }
-
-    /*!
-    * brief Codec de-initilization.
-    *
-    * param handle codec handle.
-    * return kStatus_Success is success, else de-initial failed.
-    */
-    status_t CodecAW8898::HAL_CODEC_Deinit(void)
-    {
-        return AW8898_Deinit();
-    }
-
-
-CodecAW8898::CodecAW8898() : i2cAddr{}
-{
-    LOG_INFO("Initializing AW8898 audio codec");
-    i2cAddr.deviceAddress  = AW8898_I2C_ADDR;
-    i2cAddr.subAddressSize = OneByteAddressing; // AW8898 uses 1byte addressing
-    i2c                    = DriverI2C::Create(
-        static_cast<I2CInstances>(BoardDefinitions::AUDIOCODEC_I2C),
-        DriverI2CParams{.baudrate = static_cast<uint32_t>(BoardDefinitions::AUDIOCODEC_I2C_BAUDRATE)});
-
-    gpio = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_AUDIOCODEC_GPIO), DriverGPIOParams{});
-
-    gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
-                                      .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
-                                      .defLogic = PositiveLogic,
-                                      .pin = static_cast<uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN)});
-
-    gpio->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
-                                      .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
-                                      .defLogic = PositiveLogic,
-                                      .pin = static_cast<uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_INTN_PA_PIN)});
-
-    gpio->ClearPortInterrupts(1 << static_cast<uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_INTN_PA_PIN));
-    gpio->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_INTN_PA_PIN));
-
-    gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN), LogicLow); // reset chip
-    vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
-    gpio->WritePin(static_cast<std::uint32_t>(BoardDefinitions::BELL_AUDIOCODEC_RSTN_PA_PIN), LogicHigh); // clear reset
-    vTaskDelay(pdMS_TO_TICKS(TwoMilisecondWait));
-
-    LOG_DEBUG("Probing AW8898 ...");
-    auto ret = Probe();
-    LOG_DEBUG("AW8898 Probe: 0x%04lX", ret.value());
-}
-
-CodecAW8898::~CodecAW8898()
-{
-    Reset();
-}
-
-CodecRetCode CodecAW8898::Start(const CodecParams &param)
-{
-
-    const CodecParamsAW8898 &params = static_cast<const CodecParamsAW8898 &>(param);
-
-    aw8898_config_t aw8898Config = {
-    .route     = kAW8898_RoutePlaybackandRecord,
-    .bus              = kAW8898_BusI2S,
-    .format = {.mclk_HZ = 6144000U, .sampleRate = kAW8898_AudioSampleRate16KHz, .bitWidth = kAW8898_AudioBitWidth16bit},
-    .master_slave = false,
-    .rightInputSource = kAW8898_InputDifferentialMicInput2,
-    .playSource       = kAW8898_PlaySourceDAC,
-    .slaveAddress     = AW8898_I2C_ADDR,
-    .i2cConfig = {.codecI2CInstance = 0, .codecI2CSourceClock = 0},
-    };
-    enum
-    {
-        kCODEC_AW8898,
-    };
-    codec_config_t boardCodecConfig = {.codecDevType = kCODEC_AW8898, .codecDevConfig = &aw8898Config};
-
-    HAL_CODEC_Init(&boardCodecConfig);
-
-    // Store param configuration
-    currentParams = params;
-
-    auto currVol = currentParams.outVolume;
-    currVol = 1.0;
-    SetOutputVolume(currVol);
-
-    return CodecRetCode::Success;
-}
-
-CodecRetCode CodecAW8898::Pause()
-{
-    // Turn off device
-    
-    return CodecRetCode::Success;
-}
-
-CodecRetCode CodecAW8898::Resume()
-{
-    
-
-    return CodecRetCode::Success;
-}
-
-CodecRetCode CodecAW8898::Stop()
-{
-    Pause();
-    return CodecRetCode::Success;
-}
-
-CodecRetCode CodecAW8898::Ioctrl(const CodecParams &param)
-{
-
-    const CodecParamsAW8898 &params = static_cast<const CodecParamsAW8898 &>(param);
-
-    CodecRetCode ret = CodecRetCode::Success;
-
-    switch (params.opCmd) {
-    case CodecParamsAW8898::Cmd::SetOutVolume:
-        ret = SetOutputVolume(params.outVolume);
-        break;
-
-    case CodecParamsAW8898::Cmd::SetInGain:
-        ret = CodecRetCode::Success;
-        break;
-    case CodecParamsAW8898::Cmd::SetInput:
-        ret = CodecRetCode::Success;
-        break;
-    case CodecParamsAW8898::Cmd::SetOutput:
-        ret = CodecRetCode::Success;
-        break;
-    case CodecParamsAW8898::Cmd::MicBiasCtrl:
-        ret = CodecRetCode::Success;
-        break;
-    case CodecParamsAW8898::Cmd::Reset:
-        ret = Reset();
-        break;
-    case CodecParamsAW8898::Cmd::SetMute:
-        ret = SetMute(true);
-        break;
-    default:
-        break;
-    }
-
-    return ret;
-}
-
-CodecRetCode CodecAW8898::SetOutputVolume(const float vol)
-{
-    uint8_t mute = 0;
-/*
-    // If volume set to 0 then mute output
-    i2cAddr.subAddress = AW8898_REG_PWMCTRL;
-    if (vol == 0)
-        i2c->Modify(i2cAddr, OneOnBinaryPositionEight, true, ReadWriteTwoBytes); //(PWMCTRL.HMUTE=1) - enable mute
-    else
-        i2c->Modify(i2cAddr, OneOnBinaryPositionEight, false, ReadWriteTwoBytes); //(PWMCTRL.HMUTE=0) - disable mute
-
-    // volume is encoded with 8 bits. vol is in range 0-10
-    i2cAddr.subAddress           = AW8898_REG_HAGCCFG7;
-    aw8898_reg_hagccfg7_t regval = {};
-    i2c->Read(i2cAddr, reinterpret_cast<uint8_t *>(&regval), ReadWriteTwoBytes);
-    FlipBytes(reinterpret_cast<uint16_t *>(&regval));
-    regval.volume = static_cast<uint8_t>(25.5 * vol);
-    LOG_DEBUG("Setting volume to %u", regval.volume);
-    //regval.unused = 0x00;
-    FlipBytes(reinterpret_cast<uint16_t *>(&regval));
-    i2c->Write(i2cAddr, reinterpret_cast<uint8_t *>(&regval), ReadWriteTwoBytes);
-*/
-    currentParams.outVolume = vol;
-    return CodecRetCode::Success;
-}
-
-CodecRetCode CodecAW8898::Reset()
-{
-
-    return CodecRetCode::Success;
-}
-
-CodecRetCode CodecAW8898::SetMute(const bool enable)
-{
-    return CodecRetCode::Success;
-}
-
-std::optional<uint32_t> CodecAW8898::Probe()
-{
-    uint16_t id = 0;
-
-    return id;
-}

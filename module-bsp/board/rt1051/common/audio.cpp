@@ -38,7 +38,7 @@ void bsp::audioInit()
                                BSP_AUDIOCODEC_SAIx_DMA_RX_SOURCE);
 
     audioConfig.mclkSourceClockHz = GetPerphSourceClock(PerphClock_SAI1);
-
+    
     // Initialize SAI Tx module
     SAI_TxGetDefaultConfig(&audioConfig.config);
     audioConfig.config.masterSlave = kSAI_Master;

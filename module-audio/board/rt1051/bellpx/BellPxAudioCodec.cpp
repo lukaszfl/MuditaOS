@@ -172,7 +172,7 @@ namespace audio
         sai_format.channel            = 0U;
         sai_format.sampleRate_Hz      = saiOutFormat.sampleRate_Hz;
         sai_format.masterClockHz      = audioCfg->mclkSourceClockHz;
-        sai_format.isFrameSyncCompact = false;
+        sai_format.isFrameSyncCompact = true;
         sai_format.protocol           = audioCfg->config.protocol;
         sai_format.stereo             = saiOutFormat.stereo;
 #if defined(FSL_FEATURE_SAI_FIFO_COUNT) && (FSL_FEATURE_SAI_FIFO_COUNT > 1)
