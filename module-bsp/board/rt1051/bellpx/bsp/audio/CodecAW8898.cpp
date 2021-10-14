@@ -112,8 +112,10 @@ CodecRetCode CodecAW8898::Start(const CodecParams &param)
     currentParams = params;
 
     auto currVol = currentParams.outVolume;
-    currVol = 3.0;
+    currVol = 2.0;
     SetOutputVolume(currVol);
+
+    AW8898_ReadAllReg();
 
     return CodecRetCode::Success;
 }

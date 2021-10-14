@@ -187,6 +187,8 @@ namespace audio
         SAI_TransferTxSetFormatEDMA(
             BELL_AUDIOCODEC_SAIx, &txHandle, &sai_format, audioCfg->mclkSourceClockHz, audioCfg->mclkSourceClockHz);
 
+        SAI_TxSetBitClockPolarity(BELL_AUDIOCODEC_SAIx, kSAI_PolarityActiveLow);
+
         DisableIRQ(BELL_AUDIOCODEC_SAIx_TX_IRQ);
 
         /* Reset SAI Tx internal logic */

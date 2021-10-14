@@ -161,8 +161,8 @@ class CodecAW8898 : public Codec
     static constexpr const aw8898_reg_cfg_t  aw8898_reg_cfg[] =
     {
         //{0x05, 0x0c07},
-        {0x06, 0x0510},
-        {0x08, 0xa00c},
+        {0x06, 0x0330},
+        {0x08, 0xa00e},
         {0x09, 0x424a},
         {0x0a, 0x03c2},
         {0x0b, 0x03c2},
