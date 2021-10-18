@@ -11,6 +11,7 @@ target_sources(
 
     PRIVATE
         bsp/audio/CodecAW8898.cpp
+        bsp/audio/AW8898driver.cpp
         bsp/battery-charger/battery-charger.cpp
         bsp/bell_temp_sensor/bell_temp_sensor.cpp
         bsp/eink/eink_pin_config.cpp

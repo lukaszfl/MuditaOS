@@ -3,10 +3,8 @@
 
 #pragma once
 
-#include "AW8898.hpp"
+#include "AW8898driver.hpp"
 #include <bsp/audio/Codec.hpp>
-#include "drivers/i2c/DriverI2C.hpp"
-#include "drivers/gpio/DriverGPIO.hpp"
 
 extern "C"
 {
@@ -46,33 +44,33 @@ class CodecParamsAW8898 : public CodecParams
         Mono
     };
 
-    aw_i2s_channel_t MonoStereoToCodecChsel() const
+    bsp::bell_audio::aw_i2s_channel_t MonoStereoToCodecChsel() const
     {
         switch(monoStereo) {
             case MonoStereo::Left:
-                return CHSEL_LEFT;
+                return bsp::bell_audio::CHSEL_LEFT;
             case MonoStereo::Right:
-                return CHSEL_RIGHT;
+                return bsp::bell_audio::CHSEL_RIGHT;
             default:
-                return CHSEL_MONO;
+                return bsp::bell_audio::CHSEL_MONO;
         }
     }
 
-    aw_i2s_frequency_t SampleRateToCodecFreq() const
+    bsp::bell_audio::aw_i2s_frequency_t SampleRateToCodecFreq() const
     {
         switch (sampleRate) {
         case SampleRate::Rate8KHz:
-            return FREQUENCY_08K;
+            return bsp::bell_audio::FREQUENCY_08K;
         case SampleRate::Rate16KHz:
-            return FREQUENCY_16K;
+            return bsp::bell_audio::FREQUENCY_16K;
         case SampleRate::Rate32KHz:
-            return FREQUENCY_32K;
+            return bsp::bell_audio::FREQUENCY_32K;
         case SampleRate::Rate44K1Hz:
-            return FREQUENCY_44K;
+            return bsp::bell_audio::FREQUENCY_44K;
         case SampleRate::Rate48KHz:
-            return FREQUENCY_48K;
+            return bsp::bell_audio::FREQUENCY_48K;
         default:
-            return FREQUENCY_44K;
+            return bsp::bell_audio::FREQUENCY_44K;
         }
     }
 
@@ -121,98 +119,9 @@ class CodecAW8898 : public Codec
     CodecRetCode Ioctrl(const CodecParams &param) override final;
 
   private:
-    std::shared_ptr<drivers::DriverI2C> i2c;
-    std::shared_ptr<drivers::DriverGPIO> gpio;
-    drivers::I2CAddress i2cAddr;
     CodecParamsAW8898 currentParams;
 
     CodecRetCode SetOutputVolume(const float vol);
     CodecRetCode SetMute(const bool enable);
     CodecRetCode Reset();
-
-    //internal typedefs & variables
-    typedef struct aw8898_reg_cfg_type
-    {
-        uint8_t  addr;
-        uint16_t data;
-    }aw8898_reg_cfg_t;
-
-    typedef enum
-    {
-        AW8898_INIT_ST = 0,
-        AW8898_INIT_OK = 1,
-        AW8898_INIT_NG = 2,
-    }aw8898_init_t;
-
-    struct aw8898
-    {
-    //	aw_hw_irq_handle_t irq_handle;
-        aw8898_init_t init;
-        aw_sel_mode_t mode;
-    };
-
-    struct aw8898 g_aw8898 =
-    {
-        .init =  AW8898_INIT_ST,
-    //    .irq_handle = AW_HW_IRQ_HANDLE_OFF,
-        .mode = OFF_MODE,
-    };
-
-    static constexpr const aw8898_reg_cfg_t  aw8898_reg_cfg[] =
-    {
-        //{0x05, 0x0c07},
-        {0x06, 0x0330},
-        {0x08, 0xa00e},
-        {0x09, 0x424a},
-        {0x0a, 0x03c2},
-        {0x0b, 0x03c2},
-        {0x0c, 0x3007},
-        {0x0d, 0x011b},
-        {0x0e, 0x0329},
-        {0x20, 0x0001},
-        {0x60, 0x1cbc},
-        {0x61, 0x0f0e},
-        {0x62, 0xf5b6},
-        {0x63, 0x307f},
-        {0x67, 0x007c},
-        {0x69, 0x0245},
-        {0x04, 0x0044},
-    };
-
-
-    static constexpr uint8_t reg[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0f, 0x21, 0x60, 0x61, 0x62};
-
-    //internal functions
-    status_t AW8898_WriteReg(uint8_t reg, uint16_t val);
-    status_t AW8898_ReadReg(uint8_t reg, uint16_t *val);
-    status_t AW8898_ModifyReg(uint8_t reg, uint16_t mask, uint16_t val);
-
-    status_t AW8898_HwReset(void);
-    void AW8898_SoftReset(void);
-
-    status_t AW8898_ReadChipid(void);
-    status_t AW8898_Init(const CodecParamsAW8898 &params);
-
-    status_t AW8898_HwParams(aw_i2s_channel_t chsel, aw_i2s_frequency_t rate, aw_i2s_width_t width, aw_i2s_fs_t fs);
-    status_t AW8898_RunPwd(bool pwd);
-    status_t AW8898_RunMute(bool mute);
-    void AW8898_LoadRegCfg(void);
-
-    void AW8898_ColdStart(void);
-
-    status_t AW8898_Stop(void);
-
-    status_t AW8898_SmartpaCfg(bool play_flag);
-    status_t AW8898_CtrlState(aw_codec_mode_t mode, aw_ctrl_t aw_ctrl);
-
-    int AW8898_SetMode(aw_sel_mode_t mode);
-    bool AW8898_CheckPllStatus(void);
-
-    void AW8898_ReadAllReg(void);
-    void HAL_Delay(uint32_t count);
-
-    status_t AW8898_SetVolume(uint8_t gain);
-    status_t AW8898_GetVolume(uint8_t *gain);
-
-    status_t AW8898_Start(void);
 };
