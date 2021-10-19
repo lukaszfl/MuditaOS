@@ -9,6 +9,7 @@
 #include <gui/widgets/Window.hpp>
 #include <Service/Service.hpp>
 #include <Service/Message.hpp>
+#include <Timers/TimerHandle.hpp>
 
 namespace app
 {
@@ -25,6 +26,8 @@ namespace gui
             inline constexpr auto no_window   = "";
         } // namespace window
     }     // namespace name
+
+    constexpr auto timerName = "InputModeTimer";
 
     /*
      * @brief This is wrapper for gui window used within applications.
@@ -59,6 +62,9 @@ namespace gui
          * A flag that is set if current window state requires the phone to stay unlocked
          */
         bool preventsAutoLock = false;
+
+        sys::TimerHandle restoreModeTimer;
+        const std::chrono::milliseconds restoreModeTimeout = std::chrono::seconds{3};
 
       public:
         AppWindow() = delete;
@@ -111,6 +117,9 @@ namespace gui
         void bottomBarTemporaryMode(const UTF8 &text, bool emptyOthers = true);
         void bottomBarTemporaryMode(const UTF8 &text, BottomBar::Side side, bool emptyOthers = true);
         void bottomBarRestoreFromTemporaryMode();
+
+        void inputModeTimer(std::function<void()> restoreFunction = nullptr);
+
         void setBottomBarText(const UTF8 &text, BottomBar::Side side);
         void clearBottomBarText(BottomBar::Side side);
         bool selectSpecialCharacter();

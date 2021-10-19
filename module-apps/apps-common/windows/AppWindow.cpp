@@ -10,6 +10,7 @@
 #include <i18n/i18n.hpp>
 #include <service-appmgr/Controller.hpp>
 #include <service-audio/AudioServiceAPI.hpp>
+#include <Timers/TimerFactory.hpp>
 
 using namespace style::header;
 
@@ -296,6 +297,13 @@ namespace gui
     {
         constexpr auto separator = "/";
         return application->GetName() + separator + getName();
+    }
+
+    void AppWindow::inputModeTimer(std::function<void()> restoreFunction)
+    {
+        restoreModeTimer = sys::TimerFactory::createSingleShotTimer(
+            application, timerName, restoreModeTimeout, [this, restoreFunction](sys::Timer &) { restoreFunction(); });
+        restoreModeTimer.start();
     }
 
 } /* namespace gui */

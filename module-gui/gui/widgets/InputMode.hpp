@@ -22,12 +22,15 @@ class InputMode
 
   private:
     InputMode() = delete;
+
     // list of enabled input modes
-    std::list<Mode> input_mode_list                    = {};
-    uint32_t input_mode_list_pos                       = 0;
-    std::function<void(const UTF8 &text)> show_type_cb = nullptr;
-    std::function<void()> restore_after_show_type_cb   = nullptr;
-    std::function<void()> show_special_char_selector   = nullptr;
+    std::list<Mode> input_mode_list                                                   = {};
+    uint32_t input_mode_list_pos                                                      = 0;
+    std::function<void(const UTF8 &text)> show_type_cb                                = nullptr;
+    std::function<void()> restore_after_show_type_cb                                  = nullptr;
+    std::function<void()> show_special_char_selector                                  = nullptr;
+    std::function<void(std::function<void()> restoreFunction)> timer_restore_function = nullptr;
+
     Mode modeNow() const;
 
     void show_input_type();
@@ -35,9 +38,10 @@ class InputMode
   public:
     void show_restore();
     InputMode(std::list<InputMode::Mode> mode_list,
-              std::function<void(const UTF8 &text)> show_type_cb = nullptr,
-              std::function<void()> restore_after_show_type_cb   = nullptr,
-              std::function<void()> show_special_char_selector   = nullptr);
+              std::function<void(const UTF8 &text)> show_type_cb                                = nullptr,
+              std::function<void()> restore_after_show_type_cb                                  = nullptr,
+              std::function<void()> show_special_char_selector                                  = nullptr,
+              std::function<void(std::function<void()> restoreFunction)> timer_restore_function = nullptr);
     void on_focus(bool focus)
     {
         if (!focus)

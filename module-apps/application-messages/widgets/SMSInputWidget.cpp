@@ -57,7 +57,10 @@ namespace gui
             {InputMode::ABC, InputMode::abc, InputMode::digit},
             [=](const UTF8 &Text) { application->getCurrentWindow()->bottomBarTemporaryMode(Text); },
             [=]() { application->getCurrentWindow()->bottomBarRestoreFromTemporaryMode(); },
-            [=]() { application->getCurrentWindow()->selectSpecialCharacter(); }));
+            [=]() { application->getCurrentWindow()->selectSpecialCharacter(); },
+            [=](std::function<void()> restoreFunction) {
+                application->getCurrentWindow()->inputModeTimer(restoreFunction);
+            }));
 
         inputText->inputCallback = [this, application]([[maybe_unused]] Item &, const InputEvent &event) {
             if (event.isShortRelease(KeyCode::KEY_LF)) {
