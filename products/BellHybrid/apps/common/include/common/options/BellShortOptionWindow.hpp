@@ -23,5 +23,6 @@ namespace gui
         void onClose(CloseReason reason) override;
         void rebuild() override;
         void buildInterface() override;
+        bool onInput(const InputEvent &inputEvent) override;
     };
 }; // namespace gui

@@ -3,6 +3,7 @@
 
 #include "common/options/BellOptionWindow.hpp"
 #include "common/options/OptionBellMenu.hpp"
+#include "common/options/BellOptionsNavigation.hpp"
 
 #include <messages/OptionsWindow.hpp>
 #include <TextFixedSize.hpp>
@@ -49,6 +50,14 @@ namespace gui
     void BellOptionWindow::onClose([[maybe_unused]] CloseReason reason)
     {
         optionsList->onClose();
+    }
+
+    bool BellOptionWindow::onInput(const InputEvent &inputEvent)
+    {
+        if (inputEvent.isShortRelease()) {
+            return AppWindow::onInput(invertNavigationDirection(inputEvent));
+        }
+        return false;
     }
 
     void BellOptionWindow::onBeforeShow(ShowMode mode, SwitchData *data)

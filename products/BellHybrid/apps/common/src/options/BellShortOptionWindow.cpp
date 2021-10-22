@@ -3,6 +3,7 @@
 
 #include "common/options/BellShortOptionWindow.hpp"
 #include "common/options/OptionBellMenu.hpp"
+#include "common/options/BellOptionsNavigation.hpp"
 
 #include <messages/OptionsWindow.hpp>
 #include <TextFixedSize.hpp>
@@ -71,5 +72,13 @@ namespace gui
         }
 
         optionsList->rebuildList(listview::RebuildType::InPlace);
+    }
+
+    bool BellShortOptionWindow::onInput(const InputEvent &inputEvent)
+    {
+        if (inputEvent.isShortRelease()) {
+            return AppWindow::onInput(invertNavigationDirection(inputEvent));
+        }
+        return false;
     }
 } /* namespace gui */
