@@ -80,3 +80,5 @@ add_subdirectory(tags_fetcher)
 if (${ENABLE_TESTS})
     add_subdirectory(Audio/test)
 endif ()
+
+add_compile_options(-O0 -g)
