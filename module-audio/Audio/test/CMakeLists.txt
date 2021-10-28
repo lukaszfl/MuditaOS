@@ -20,6 +20,15 @@ add_gtest_executable(
 
 add_gtest_executable(
     NAME
+        audio-hsp
+    SRCS
+        unittest_hsp.cpp
+    LIBS
+        module-audio
+)
+
+add_gtest_executable(
+    NAME
         audio-misc
     SRCS
         unittest.cpp

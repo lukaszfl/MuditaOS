@@ -135,6 +135,7 @@ bool Stream::reserve(Span &span)
         return true;
     }
 
+#if 0
     // reset data to peek end
     _blocksUsed = 0;
     _dataEnd    = _peekPosition;
@@ -143,6 +144,9 @@ bool Stream::reserve(Span &span)
     _reserveCount             = 1;
     _writeReservationPosition = _peekPosition;
     span                      = *++_writeReservationPosition;
+#else
+    span = *_writeReservationPosition;
+#endif
 
     broadcastEvent(Event::StreamOverflow);
     return false;

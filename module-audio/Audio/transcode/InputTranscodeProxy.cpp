@@ -38,13 +38,16 @@ void InputTranscodeProxy::commit()
     }
 }
 
-bool InputTranscodeProxy::reserve(Span &span)
+bool InputTranscodeProxy::reserve(Span &inputSpan)
 {
+    Span span;
     auto result = getWrappedStream().reserve(span);
 
-    reservedSpan = span;
-    span         = transcodingSpaceSpan;
-    isReserved   = true;
+    if (result) {
+        reservedSpan = span;
+        inputSpan    = transcodingSpaceSpan;
+        isReserved   = true;
+    }
 
     return result;
 }
