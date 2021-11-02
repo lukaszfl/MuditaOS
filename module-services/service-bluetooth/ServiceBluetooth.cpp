@@ -50,7 +50,8 @@ namespace
 
 } // namespace
 
-ServiceBluetooth::ServiceBluetooth() : sys::Service(service::name::bluetooth, "", BluetoothServiceStackDepth)
+ServiceBluetooth::ServiceBluetooth()
+    : sys::Service(service::name::bluetooth, "", BluetoothServiceStackDepth, sys::ServicePriority::Realtime)
 {
     LOG_INFO("[ServiceBluetooth] Initializing");
     bus.channels.push_back(sys::BusChannel::ServiceCellularNotifications);

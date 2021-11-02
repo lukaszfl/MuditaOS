@@ -1,4 +1,5 @@
-f = open('nums.txt')
+import sys
+f = open(sys.argv[1])
 
 nums = []
 for l in f.readlines():
