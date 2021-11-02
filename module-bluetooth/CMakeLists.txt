@@ -76,4 +76,3 @@ if (${ENABLE_TESTS})
     add_subdirectory(tests)
 endif()
 
-add_compile_options(-g -O0)
