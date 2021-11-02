@@ -51,7 +51,7 @@ namespace gui
         TextLineCursor *cursor                  = nullptr;
         CursorStartPosition cursorStartPosition = CursorStartPosition::DocumentEnd;
         std::unique_ptr<TextDocument> document  = std::make_unique<TextDocument>(std::list<TextBlock>());
-        InputMode *mode                         = nullptr;
+        InputMode *inputMode                    = nullptr;
         std::unique_ptr<Lines> lines            = nullptr;
 
         void buildDocument(const UTF8 &text);
@@ -139,7 +139,7 @@ namespace gui
         void setTextChangedCallback(TextChangedCallback &&callback);
 
         void addText(const UTF8 &text);
-        void addText(TextBlock text);
+        void addText(const TextBlock &text);
         /// @defgroup richtext can be virtualized by parametrized RichTextParser virtual api ( as second param )
         /// @{
         /// set rich text with default RichTextParser - please see RichTextParser documentation on how to use format
@@ -161,10 +161,10 @@ namespace gui
         /// move ownership of mode ptr to Text
         void setInputMode(InputMode *&&mode)
         {
-            if (this->mode != nullptr) {
-                delete this->mode;
+            if (this->inputMode != nullptr) {
+                delete this->inputMode;
             }
-            this->mode = mode;
+            this->inputMode = mode;
         };
         bool onFocus(bool state) override;
         bool onDimensionChanged(const BoundingBox &oldDim, const BoundingBox &newDim) override;

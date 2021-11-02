@@ -75,7 +75,7 @@ namespace gui
 
         [[nodiscard]] auto *getInputMode()
         {
-            return mode;
+            return inputMode;
         }
 
         auto removeNCharacters(unsigned int n)
