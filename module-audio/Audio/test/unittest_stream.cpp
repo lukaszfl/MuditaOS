@@ -303,7 +303,7 @@ TEST(Stream, Reserve)
     EXPECT_FALSE(s.reserve(span));
 
     s.commit();
-    EXPECT_EQ(s.getUsedBlockCount(), 1);
+    EXPECT_EQ(s.getUsedBlockCount(), s.getBlockCount());
 }
 
 TEST(Stream, Iterator)

@@ -66,6 +66,17 @@ namespace audio::transcode
         virtual auto transformBlockSizeInverted(std::size_t outputBlockSize) const noexcept -> std::size_t = 0;
 
         /**
+         * @brief Tells how much memory is needed to perform a transform.
+         *
+         * @param blockSize - size of an input block
+         * @return Size of a block required to perform a transcode. Returns zero if no additional space is required.
+         */
+        virtual auto getTransformSpaceSize(std::size_t blockSize) const noexcept -> std::size_t
+        {
+            return transformBlockSize(blockSize);
+        }
+
+        /**
          * @brief A convenience transform operator.
          */
         inline auto operator()(const Span &span, const Span &transformSpace)

@@ -255,7 +255,7 @@ TEST(Transform, MonoToStereo)
     static std::uint16_t inputBuffer[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     static std::uint16_t outputBuffer[16];
     auto input  = ::audio::AbstractStream::Span{.data     = reinterpret_cast<std::uint8_t *>(&inputBuffer[0]),
-                                               .dataSize = sizeof(inputBuffer)};
+                                                .dataSize = sizeof(inputBuffer)};
     auto output = ::audio::AbstractStream::Span{.data     = reinterpret_cast<std::uint8_t *>(&outputBuffer[0]),
                                                 .dataSize = sizeof(outputBuffer)};
 
@@ -302,7 +302,7 @@ TEST(Transform, Composite)
     };
 
     auto input  = ::audio::AbstractStream::Span{.data     = reinterpret_cast<std::uint8_t *>(&inputBuffer[0]),
-                                               .dataSize = sizeof(inputBuffer)};
+                                                .dataSize = sizeof(inputBuffer)};
     auto output = ::audio::AbstractStream::Span{.data     = reinterpret_cast<std::uint8_t *>(&outputBuffer[0]),
                                                 .dataSize = sizeof(outputBuffer)};
 
@@ -347,9 +347,11 @@ TEST(Transform, BasicInterpolator)
 
     std::uint16_t inputBuffer[8]          = {1, 2, 3, 4, 0, 0, 0, 0};
     static const uint16_t expectBuffer[8] = {1, 2, 1, 2, 3, 4, 3, 4};
-    auto inputSpan  = ::audio::AbstractStream::Span{.data     = reinterpret_cast<uint8_t *>(inputBuffer),
-                                                   .dataSize = 4 * sizeof(std::uint16_t)};
-    auto outputSpan = interp2.transform(inputSpan, inputSpan);
+    auto inputSpan      = ::audio::AbstractStream::Span{.data     = reinterpret_cast<uint8_t *>(inputBuffer),
+                                                        .dataSize = 4 * sizeof(std::uint16_t)};
+    auto transformSpace = ::audio::AbstractStream::Span{.data     = reinterpret_cast<uint8_t *>(inputBuffer),
+                                                        .dataSize = 8 * sizeof(std::uint16_t)};
+    auto outputSpan     = interp2.transform(inputSpan, transformSpace);
 
     EXPECT_EQ(outputSpan.dataSize, sizeof(uint16_t) * 8);
     EXPECT_EQ(memcmp(outputSpan.data, expectBuffer, outputSpan.dataSize), 0);
@@ -375,7 +377,7 @@ TEST(Transform, BasicDecimator)
     std::uint16_t inputBuffer[8]          = {1, 2, 1, 2, 3, 4, 3, 4};
     static const uint16_t expectBuffer[8] = {1, 2, 3, 4, 0, 0, 0, 0};
     auto inputSpan  = ::audio::AbstractStream::Span{.data     = reinterpret_cast<uint8_t *>(inputBuffer),
-                                                   .dataSize = 8 * sizeof(std::uint16_t)};
+                                                    .dataSize = 8 * sizeof(std::uint16_t)};
     auto outputSpan = decim2.transform(inputSpan, inputSpan);
 
     EXPECT_EQ(outputSpan.dataSize, sizeof(uint16_t) * 4);
