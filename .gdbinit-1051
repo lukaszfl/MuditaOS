@@ -13,10 +13,3 @@ info threads
 thread 2
 tb main
 b HardFault_Handler
-b StreamFactory.cpp:46
-commands
-set $foo=transform._M_t._M_t._M_head_impl
-print $foo
-watch *$foo
-continue
-end
