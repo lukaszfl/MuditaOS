@@ -17,7 +17,10 @@ namespace audio::transcode
       public:
         using Span = audio::AbstractStream::Span;
 
-        virtual ~Transform() = default;
+        virtual ~Transform()
+        {
+            LOG_ERROR("Transform destructor!");
+        }
 
         /**
          * @brief Transforms data within range

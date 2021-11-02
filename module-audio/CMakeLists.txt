@@ -81,4 +81,4 @@ if (${ENABLE_TESTS})
     add_subdirectory(Audio/test)
 endif ()
 
-add_compile_options(-O0 -g)
+target_compile_options(module-audio PRIVATE -O0 -g)

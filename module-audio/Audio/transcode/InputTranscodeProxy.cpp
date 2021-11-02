@@ -12,11 +12,17 @@ using audio::transcode::InputTranscodeProxy;
 InputTranscodeProxy::InputTranscodeProxy(std::shared_ptr<AbstractStream> wrappedStream,
                                          std::shared_ptr<Transform> transform) noexcept
     : StreamProxy(wrappedStream), transform(transform),
+      /** HERE \/ */
       transcodingSpaceSize(transform->transformBlockSizeInverted(wrappedStream->getInputTraits().blockSize)),
       transcodingSpace(std::make_unique<std::uint8_t[]>(transcodingSpaceSize)), transcodingSpaceSpan{
                                                                                     .data     = transcodingSpace.get(),
                                                                                     .dataSize = transcodingSpaceSize}
 {}
+
+InputTranscodeProxy::~InputTranscodeProxy()
+{
+    // abort();
+}
 
 bool InputTranscodeProxy::push(const Span &span)
 {

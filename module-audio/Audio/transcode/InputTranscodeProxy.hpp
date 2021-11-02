@@ -26,6 +26,8 @@ namespace audio::transcode
         explicit InputTranscodeProxy(std::shared_ptr<AbstractStream> wrappedStream,
                                      std::shared_ptr<Transform> transform) noexcept;
 
+        ~InputTranscodeProxy();
+
         bool push(const Span &span) override;
         bool push(void *data, std::size_t dataSize);
         void commit() override;

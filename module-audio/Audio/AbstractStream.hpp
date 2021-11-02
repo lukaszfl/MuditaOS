@@ -5,6 +5,8 @@
 
 #include "AudioFormat.hpp"
 
+#include <log/log.hpp>
+
 #include <cstdint>
 
 namespace audio
@@ -114,7 +116,10 @@ namespace audio
             AudioFormat format = nullFormat;
         };
 
-        virtual ~AbstractStream() = default;
+        virtual ~AbstractStream()
+        {
+            LOG_ERROR("Stream destructor");
+        }
 
         /**
          * @brief Registers events listener
