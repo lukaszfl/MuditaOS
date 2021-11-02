@@ -106,7 +106,12 @@ void CVSDAudioDevice::onDataSend(std::uint16_t scoHandle)
 
     // get data to send
     audio::AbstractStream::Span dataSpan;
-    Sink::_stream->peek(dataSpan);
+    if(!Sink::_stream->peek(dataSpan)) {
+        LOG_ERROR("Sending zeros");
+    }
+    else {
+        LOG_ERROR("Sending data");
+    }
 
     // prepare packet to send
     std::copy(dataSpan.data, dataSpan.dataEnd(), &scoPacket[packetDataOffset]);
@@ -266,7 +271,7 @@ auto A2DPAudioDevice::getTraits() const -> ::audio::Endpoint::Traits
 
 auto CVSDAudioDevice::getTraits() const -> ::audio::Endpoint::Traits
 {
-    return Traits{.usesDMA = false, .blockSizeConstraint = 64U, .timeConstraint = 16ms};
+    return Traits{.usesDMA = false, .blockSizeConstraint = 120U, .timeConstraint = 16ms};
 }
 
 auto A2DPAudioDevice::getSourceFormat() -> ::audio::AudioFormat
