@@ -76,3 +76,4 @@ if (${ENABLE_TESTS})
     add_subdirectory(tests)
 endif()
 
+#target_compile_options(module-bluetooth PRIVATE -O0 -g)
