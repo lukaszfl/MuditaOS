@@ -9,6 +9,7 @@
 #include "queue.h"
 #include "fsl_common.h"
 #include <fsl_qtmr.h>
+#include <fsl_gpc.h>
 
 #include "board/rt1051/bsp/eink/bsp_eink.h"
 #include <hal/battery_charger/AbstractBatteryCharger.hpp>
@@ -63,6 +64,7 @@ namespace bsp
 
         EnableIRQ(GPIO5_Combined_0_15_IRQn);
         NVIC_SetPriority(GPIO5_Combined_0_15_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
+        GPC_EnableIRQ(GPC, GPIO5_Combined_0_15_IRQn);
 
         EnableIRQ(TMR3_IRQn);
         NVIC_SetPriority(TMR3_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);

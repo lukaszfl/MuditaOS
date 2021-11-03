@@ -1264,7 +1264,7 @@ void PINMUX_Wakeup(void)
 {
     CLOCK_EnableClock(kCLOCK_IomuxcSnvs);
 
-    IOMUXC_SetPinMux(PINMUX_WAKEUP, 1U); /* Software Input On Field: Input Path is determined by functionality */
+    IOMUXC_SetPinMux(PINMUX_WAKEUP, 0U); /* Software Input On Field: Input Path is determined by functionality */
 
     IOMUXC_SetPinConfig(PINMUX_WAKEUP,
 

@@ -252,6 +252,13 @@ namespace bsp::bell_switches
 
         enableIRQ();
 
+        gpio_wakeup->ClearPortInterrupts(1 << static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP));
+        gpio_wakeup->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
+                                                 .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
+                                                 .defLogic = 1,
+                                                 .pin = static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)});
+        enableWakeupIRQ();
+
         return kStatus_Success;
     }
 

@@ -44,7 +44,10 @@ namespace bsp
 
     int32_t RT1051LPM::PowerOff()
     {
-        gpio_1->WritePin(static_cast<uint32_t>(BoardDefinitions::POWER_SWITCH_HOLD_BUTTON), 0);
+        // gpio_1->WritePin(static_cast<uint32_t>(BoardDefinitions::POWER_SWITCH_HOLD_BUTTON), 0);
+        SNVS->LPCR |= SNVS_LPCR_TOP(1);
+        while (1) { /* Shutdown */
+        }
         return 0;
     }
 
