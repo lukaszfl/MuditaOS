@@ -267,13 +267,17 @@ namespace bluetooth
                 codec = static_cast<SCOCodec>(hfp_subevent_audio_connection_established_get_negotiated_codec(event));
                 isAudioConnectionEstablished = true;
                 dump_supported_codecs();
+                hci_dump_enable_packet_log(true);
+                hci_dump_enable_log_level(HCI_DUMP_LOG_LEVEL_DEBUG, true);
+                hci_dump_enable_log_level(HCI_DUMP_LOG_LEVEL_INFO, true);
+                hci_dump_enable_log_level(HCI_DUMP_LOG_LEVEL_ERROR, true);
                 hci_request_sco_can_send_now_event();
                 RunLoop::trigger();
             }
             break;
         case HFP_SUBEVENT_AUDIO_CONNECTION_RELEASED:
             LOG_DEBUG("Audio connection released\n");
-            scoHandle = HCI_CON_HANDLE_INVALID;
+            scoHandle                    = HCI_CON_HANDLE_INVALID;
             isAudioRouted                = false;
             isAudioConnectionEstablished = false;
             break;

@@ -207,6 +207,10 @@ namespace bluetooth
             else {
                 scoHandle = hsp_subevent_audio_connection_complete_get_handle(event);
                 LOG_DEBUG("Audio connection established with SCO handle 0x%04x.\n", scoHandle);
+                hci_dump_enable_packet_log(true);
+                hci_dump_enable_log_level(HCI_DUMP_LOG_LEVEL_DEBUG, true);
+                hci_dump_enable_log_level(HCI_DUMP_LOG_LEVEL_INFO, true);
+                hci_dump_enable_log_level(HCI_DUMP_LOG_LEVEL_ERROR, true);
                 callAnswered = true;
                 hci_request_sco_can_send_now_event();
             }

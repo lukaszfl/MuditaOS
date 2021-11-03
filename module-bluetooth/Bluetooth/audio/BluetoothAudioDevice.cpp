@@ -106,11 +106,11 @@ void CVSDAudioDevice::onDataSend(std::uint16_t scoHandle)
 
     // get data to send
     audio::AbstractStream::Span dataSpan;
-    if(!Sink::_stream->peek(dataSpan)) {
-        LOG_ERROR("Sending zeros");
+    if (!Sink::_stream->peek(dataSpan)) {
+        // LOG_ERROR("Sending zeros");
     }
     else {
-        LOG_ERROR("Sending data");
+        // LOG_ERROR("Sending data");
     }
 
     // prepare packet to send

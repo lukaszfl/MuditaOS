@@ -60,6 +60,29 @@ namespace bluetooth
         : runLoop{runLoop}, gap{std::make_unique<bluetooth::GAP>(ownerService)}
     {}
 
+    void hci_log_reset()
+    {
+        printf("Resetting hci logger\n");
+    }
+
+    void hci_log_packet(uint8_t packet_type, uint8_t in, uint8_t *packet, uint16_t len)
+    {
+        printf("hci %02x in %02x len %d data", packet_type, in, len);
+        for (unsigned i = 0; i < len; i++) {
+            printf(":%02x", packet[i]);
+        }
+        printf("\n");
+    }
+
+    void hci_log_message(const char *format, va_list argptr)
+    {
+        printf("hci log ");
+        vprintf(format, argptr);
+        printf("\n");
+    }
+
+    hci_dump_t hci_log_dump = {.reset = hci_log_reset, .log_packet = hci_log_packet, .log_message = hci_log_message};
+
     auto Driver::init() -> Error::Code
     {
         btstack_memory_init();
@@ -78,6 +101,7 @@ namespace bluetooth
 
         const hci_transport_t *transport = hci_transport_h4_instance_for_uart(uartDriver);
         hci_init(transport, (void *)&config);
+        hci_dump_init(&hci_log_dump);
 
         hci_set_link_key_db(bluetooth::KeyStorage::getKeyStorage());
         hci_event_callback_registration.callback = &hci_packet_handler;
