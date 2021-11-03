@@ -54,14 +54,23 @@ namespace gui
 
     bool BGSoundsVolumeWindow::onInput(const gui::InputEvent &inputEvent)
     {
-        resetTimer();
 
         if (inputEvent.isShortRelease(KeyCode::KEY_DOWN)) {
+            resetTimer();
             presenter->decreaseVolume();
             return true;
         }
         else if (inputEvent.isShortRelease(KeyCode::KEY_UP)) {
+            resetTimer();
             presenter->increaseVolume();
+            return true;
+        }
+        else if (inputEvent.isShortRelease(KeyCode::KEY_ENTER)) {
+            application->returnToPreviousWindow();
+            return true;
+        }
+        else if (inputEvent.isShortRelease(KeyCode::KEY_RF)) {
+            application->returnToPreviousWindow();
             return true;
         }
         return WindowWithTimer::onInput(inputEvent);
