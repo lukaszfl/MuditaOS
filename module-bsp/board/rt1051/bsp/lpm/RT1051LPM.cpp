@@ -53,8 +53,13 @@ namespace bsp
     int32_t RT1051LPM::PowerOff()
     {
         // gpio_1->WritePin(static_cast<uint32_t>(BoardDefinitions::POWER_SWITCH_HOLD_BUTTON), 0);
+        gpio_wakeup->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
+                                                 .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
+                                                 .defLogic = 0,
+                                                 .pin = static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)});
+        gpio_wakeup->WritePin(static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP), 1);
         gpio_wakeup->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
-                                                 .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingEdge,
+                                                 .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
                                                  .defLogic = 0,
                                                  .pin = static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)});
         gpio_wakeup->ClearPortInterrupts(1 << static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP));
