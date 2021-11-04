@@ -63,7 +63,6 @@ namespace bsp
         NVIC_SetPriority(GPIO3_Combined_16_31_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
 
         EnableIRQ(GPIO5_Combined_0_15_IRQn);
-        NVIC_SetPriority(GPIO5_Combined_0_15_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
         GPC_EnableIRQ(GPC, GPIO5_Combined_0_15_IRQn);
 
         EnableIRQ(TMR3_IRQn);
@@ -168,22 +167,6 @@ namespace bsp
             portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
         }
 
-        void GPIO5_Combined_0_15_IRQHandler(void)
-        {
-            BaseType_t xHigherPriorityTaskWoken = 0;
-            uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO5);
-
-            if (irq_mask & (1 << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP))) {
-
-                xHigherPriorityTaskWoken |= hal::key_input::wakeupIRQHandler();
-            }
-
-            // Clear all IRQs on the GPIO5 port
-            GPIO_PortClearInterruptFlags(GPIO5, irq_mask);
-
-            // Switch context if necessary
-            portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
-        }
 
         void TMR3_IRQHandler(void)
         {

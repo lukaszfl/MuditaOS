@@ -50,8 +50,4 @@ namespace hal::key_input
         }
     }
 
-    BaseType_t wakeupIRQHandler()
-    {
-        return bsp::bell_switches::wakeupIRQHandler();
-    }
 } // namespace hal::key_input

@@ -104,7 +104,6 @@ namespace bsp::bell_switches
 
     static xQueueHandle qHandleIrq{};
     std::shared_ptr<DriverGPIO> gpio_sw;
-    std::shared_ptr<DriverGPIO> gpio_wakeup;
 
     void debounceTimerCallback(TimerHandle_t timerHandle)
     {
@@ -217,9 +216,6 @@ namespace bsp::bell_switches
         // Switches
         gpio_sw =
             DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_SWITCHES_GPIO), DriverGPIOParams{});
-        // wakeup
-        gpio_wakeup =
-            DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_WAKEUP_GPIO), DriverGPIOParams{});
 
         configureSwitch(BoardDefinitions::BELL_SWITCHES_LATCH,
                         DriverGPIOPinParams::InterruptMode::IntRisingOrFallingEdge);
@@ -247,17 +243,9 @@ namespace bsp::bell_switches
                                             gpio_sw,
                                             BoardDefinitions::BELL_SWITCHES_LATCH,
                                             KeyEvents::Released});
-        addDebounceTimer(DebounceTimerState{
-            DebounceTimerId::wakeup, NotificationSource::wakeupEvent, gpio_wakeup, BoardDefinitions::BELL_WAKEUP});
 
         enableIRQ();
 
-        gpio_wakeup->ClearPortInterrupts(1 << static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP));
-        gpio_wakeup->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
-                                                 .irqMode  = DriverGPIOPinParams::InterruptMode::IntFallingEdge,
-                                                 .defLogic = 1,
-                                                 .pin = static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)});
-        enableWakeupIRQ();
 
         return kStatus_Success;
     }
@@ -273,7 +261,6 @@ namespace bsp::bell_switches
         debounceTimers.clear();
 
         gpio_sw.reset();
-        gpio_wakeup.reset();
 
         return kStatus_Success;
     }
@@ -319,15 +306,6 @@ namespace bsp::bell_switches
         return xHigherPriorityTaskWoken;
     }
 
-    BaseType_t wakeupIRQHandler()
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        gpio_wakeup->ClearPortInterrupts(1U << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
-
-        getDebounceTimer(xHigherPriorityTaskWoken, DebounceTimerId::wakeup);
-
-        return xHigherPriorityTaskWoken;
-    }
 
     void enableIRQ()
     {
@@ -335,11 +313,6 @@ namespace bsp::bell_switches
         gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LEFT));
         gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_RIGHT));
         gpio_sw->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH));
-    }
-
-    void enableWakeupIRQ()
-    {
-        gpio_wakeup->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
     }
 
     void disableIRQ()
@@ -350,10 +323,6 @@ namespace bsp::bell_switches
         gpio_sw->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_SWITCHES_LATCH));
     }
 
-    void disableWakeupIRQ()
-    {
-        gpio_wakeup->DisableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
-    }
 
     std::vector<KeyEvent> getKeyEvents(NotificationSource notification)
     {

@@ -19,11 +19,8 @@ namespace bsp::bell_switches
 
     void enableIRQ();
 
-    void enableWakeupIRQ();
-
     void disableIRQ();
 
     BaseType_t IRQHandler(uint32_t mask);
 
-    BaseType_t wakeupIRQHandler();
 } // namespace bsp::bell_switches

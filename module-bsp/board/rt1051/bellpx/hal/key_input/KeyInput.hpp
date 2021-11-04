@@ -13,7 +13,5 @@ namespace hal::key_input
         void init(xQueueHandle) final;
         void deinit() final;
         std::vector<bsp::KeyEvent> getKeyEvents(KeyNotificationSource) final;
-
-        BaseType_t wakeupIRQHandler();
     };
 } // namespace hal::key_input

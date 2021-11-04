@@ -44,12 +44,12 @@ namespace drivers
 
     RT1051DriverGPIO::~RT1051DriverGPIO()
     {
-        // LOG_DEBUG("Deinit: %s", name.c_str());
-        // // Disable all interrupts
-        // GPIO_DisableInterrupts(base, UINT32_MAX);
-        // // Clear all interrupt flags
-        // GPIO_ClearPinsInterruptFlags(base, UINT32_MAX);
-        // GPIO_Deinit(base);
+        LOG_DEBUG("Deinit: %s", name.c_str());
+        // Disable all interrupts
+        GPIO_DisableInterrupts(base, UINT32_MAX);
+        // Clear all interrupt flags
+        GPIO_ClearPinsInterruptFlags(base, UINT32_MAX);
+        GPIO_Deinit(base);
     }
 
     int32_t RT1051DriverGPIO::ConfPin(const drivers::DriverGPIOPinParams &params)
