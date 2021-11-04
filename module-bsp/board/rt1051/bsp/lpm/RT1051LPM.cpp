@@ -10,6 +10,7 @@
 #include "bsp/watchdog/watchdog.hpp"
 #include <board/clock_config.h>
 #include <fsl_clock.h>
+#include <fsl_gpc.h>
 #include "ClockState.hpp"
 #include "Oscillator.hpp"
 #include "critical.hpp"
@@ -30,6 +31,8 @@ namespace bsp
                                     DriverGPIOParams{});
         gpio_2 = DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::DCDC_INVERTER_MODE_GPIO),
                                     DriverGPIOParams{});
+        gpio_wakeup =
+            DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_WAKEUP_GPIO), DriverGPIOParams{});
 
         gpio_1->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Output,
                                             .irqMode  = DriverGPIOPinParams::InterruptMode::NoIntmode,
@@ -44,24 +47,25 @@ namespace bsp
         gpio_1->WritePin(static_cast<uint32_t>(BoardDefinitions::POWER_SWITCH_HOLD_BUTTON), 1);
         DisableDcdcPowerSaveMode();
 
-        gpio_wakeup =
-            DriverGPIO::Create(static_cast<GPIOInstances>(BoardDefinitions::BELL_WAKEUP_GPIO), DriverGPIOParams{});
-        gpio_wakeup->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
-                                                 .irqMode  = DriverGPIOPinParams::InterruptMode::IntLowLevel,
-                                                 .defLogic = 1,
-                                                 .pin = static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)});
-        LOG_ERROR("irq gpio: 0x%x", gpio_wakeup->ReadPin(static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)));
-
         CpuFreq = std::make_unique<CpuFreqLPM>();
     }
 
     int32_t RT1051LPM::PowerOff()
     {
         // gpio_1->WritePin(static_cast<uint32_t>(BoardDefinitions::POWER_SWITCH_HOLD_BUTTON), 0);
-
-        LOG_ERROR("irq gpio: 0x%x", gpio_wakeup->ReadPin(static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)));
+        gpio_wakeup->ConfPin(DriverGPIOPinParams{.dir      = DriverGPIOPinParams::Direction::Input,
+                                                 .irqMode  = DriverGPIOPinParams::InterruptMode::IntRisingEdge,
+                                                 .defLogic = 0,
+                                                 .pin = static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)});
         gpio_wakeup->ClearPortInterrupts(1 << static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP));
         gpio_wakeup->EnableInterrupt(1 << static_cast<uint32_t>(BoardDefinitions::BELL_WAKEUP));
+        LOG_ERROR("irq gpio: 0x%x", gpio_wakeup->ReadPin(static_cast<std::uint32_t>(BoardDefinitions::BELL_WAKEUP)));
+
+        NVIC_ClearPendingIRQ(GPIO5_Combined_0_15_IRQn);
+        NVIC_SetPriority(GPIO5_Combined_0_15_IRQn, configMAX_SYSCALL_INTERRUPT_PRIORITY + 2);
+        /* Enable the Interrupt */
+        EnableIRQ(GPIO5_Combined_0_15_IRQn);
+        GPC_EnableIRQ(GPC, GPIO5_Combined_0_15_IRQn);
 
         SNVS->LPCR |= SNVS_LPCR_TOP(1);
         while (1) { /* Shutdown */

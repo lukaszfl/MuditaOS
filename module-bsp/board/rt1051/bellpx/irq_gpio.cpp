@@ -62,8 +62,8 @@ namespace bsp
         EnableIRQ(GPIO3_Combined_16_31_IRQn);
         NVIC_SetPriority(GPIO3_Combined_16_31_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
 
-        EnableIRQ(GPIO5_Combined_0_15_IRQn);
-        GPC_EnableIRQ(GPC, GPIO5_Combined_0_15_IRQn);
+        // EnableIRQ(GPIO5_Combined_0_15_IRQn);
+        // GPC_EnableIRQ(GPC, GPIO5_Combined_0_15_IRQn);
 
         EnableIRQ(TMR3_IRQn);
         NVIC_SetPriority(TMR3_IRQn, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
@@ -167,6 +167,12 @@ namespace bsp
             portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
         }
 
+        // void GPIO5_Combined_0_15_IRQHandler(void)
+        // {
+        //     uint32_t irq_mask                   = GPIO_GetPinsInterruptFlags(GPIO5);
+        //     // Clear all IRQs on the GPIO5 port
+        //     GPIO_PortClearInterruptFlags(GPIO5, irq_mask);
+        // }
 
         void TMR3_IRQHandler(void)
         {
