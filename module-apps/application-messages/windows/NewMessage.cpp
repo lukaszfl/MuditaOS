@@ -264,7 +264,12 @@ namespace gui
             return true;
         };
         message->focusChangedCallback = [=](Item &) -> bool {
-            navBar->setText(nav_bar::Side::Center, utils::translate(style::strings::common::send));
+            if (recipient->getText().empty()) {
+                navBar->setActive(nav_bar::Side::Center, false);
+            }
+            else {
+                navBar->setText(nav_bar::Side::Center, utils::translate(style::strings::common::send));
+            }
             navBar->setActive(nav_bar::Side::Left, true);
             return true;
         };
