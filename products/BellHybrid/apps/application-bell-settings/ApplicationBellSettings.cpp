@@ -47,8 +47,9 @@ namespace app
     ApplicationBellSettings::ApplicationBellSettings(std::string name,
                                                      std::string parent,
                                                      StatusIndicators statusIndicators,
-                                                     StartInBackground startInBackground)
-        : Application(std::move(name), std::move(parent), statusIndicators, startInBackground)
+                                                     StartInBackground startInBackground,
+                                                     uint32_t stackDepth)
+        : Application(std::move(name), std::move(parent), statusIndicators, startInBackground, stackDepth)
     {}
 
     sys::ReturnCodes ApplicationBellSettings::InitHandler()
@@ -217,16 +218,16 @@ namespace app
                 return std::make_unique<gui::AboutYourBellWindow>(app, std::move(aboutYourBellPresenter));
             });
 
+        windowsFactory.attach(gui::window::name::bellSettingsFactoryReset,
+                              [](ApplicationCommon *app, const std::string &name) {
+                                  return std::make_unique<gui::BellDialogYesNo>(app, name);
+                              });
+
         attachPopups({gui::popup::ID::AlarmActivated,
                       gui::popup::ID::AlarmDeactivated,
                       gui::popup::ID::PowerOff,
                       gui::popup::ID::Reboot,
                       gui::popup::ID::BedtimeNotification});
-
-        windowsFactory.attach(gui::window::name::bellSettingsFactoryReset,
-                              [](ApplicationCommon *app, const std::string &name) {
-                                  return std::make_unique<gui::BellDialogYesNo>(app, name);
-                              });
     }
 
     sys::MessagePointer ApplicationBellSettings::DataReceivedHandler(sys::DataMessage *msgl, sys::ResponseMessage *resp)
