@@ -171,6 +171,7 @@ namespace gui
 
         if (inputEvent.isLongRelease(gui::KeyCode::KEY_RF)) {
             LOG_INFO("exit to main menu");
+            AudioServiceAPI::StopAll(application);
             app::manager::Controller::sendAction(application, app::manager::actions::Home);
         }
 
