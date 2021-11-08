@@ -47,6 +47,7 @@ namespace app::bell_settings
                 chimeLength->setBottomDescribtionText(utils::translate("common_minutes_lower"));
             }
         });
+
         chimeLength->onEnter = [onOff, this]() {
             if (not onOff->isActive()) {
                 this->onExit();
@@ -56,18 +57,33 @@ namespace app::bell_settings
         internalData.emplace_back(chimeLength);
 
         const UTF8 minStr = utils::translate("common_minute_short");
-        const auto range  = NumWithStringListItem::NumWithStringSpinner::Range{
-            NumWithStringListItem::Value{utils::translate("app_settings_toggle_off")},
-            NumWithStringListItem::Value{1, minStr},
-            NumWithStringListItem::Value{2, minStr},
-            NumWithStringListItem::Value{3, minStr},
-            NumWithStringListItem::Value{5, minStr}};
+        const auto range  = NumWithStringListItem::NumWithStringSpinner::Range{NumWithStringListItem::Value{0, minStr}};
+
         auto chimeInterval = new NumWithStringListItem(
             model.getSnoozeChimeInterval(),
             range,
             utils::translate("app_bell_settings_alarm_settings_snooze_chime_interval"),
             utils::translate("app_bell_settings_alarm_settings_snooze_chime_interval_bot_desc"));
+
         internalData.emplace_back(chimeInterval);
+
+        chimeLength->onProceed = [chimeInterval, chimeLength, this]() {
+            if (chimeInterval != nullptr) {
+                auto val = chimeLength->getCurrentValue();
+                NumWithStringListItem::NumWithStringSpinner::Range chimeRange;
+                const UTF8 minStr = utils::translate("common_minute_short");
+                chimeRange.push_back(NumWithStringListItem::Value{utils::translate("app_alarm_clock_no_snooze")});
+                for (unsigned int i = 1; i <= val; i++) {
+                    if ((i != 1) && (i != 2) && (i != 5) && (i != 10) && (i != 15) && (i != 30)) {
+                        continue;
+                    }
+                    chimeRange.push_back(NumWithStringListItem::Value{i, minStr});
+                }
+                chimeInterval->getSpinner()->setRange(chimeRange);
+                chimeInterval->setArrowsVisibility(chimeRange);
+            }
+            return false;
+        };
 
         auto snoozeChimeTone = new UTF8ListItem(model.getSnoozeChimeTone(),
                                                 std::move(chimeTonesRange),
