@@ -9,13 +9,21 @@
 #include <string>
 #include <utility>
 
+#include <stdexcept>
+
 struct Device
 {
   public:
-    explicit Device(std::string name = "") : name(std::move(name))
-    {}
+    static constexpr auto NameBufferSize = 240;
+    explicit Device(std::string name = "") 
+    {
+        if (name.size() > NameBufferSize) {
+            throw std::runtime_error("Requested name is bigger than buffer size");
+        }
+        strcpy(this->name.data(), name.c_str());
+    }
     virtual ~Device() = default;
-    std::string name;
+    std::array<char, NameBufferSize> name;
 };
 
 enum DEVICE_STATE
