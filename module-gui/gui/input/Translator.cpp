@@ -219,6 +219,15 @@ namespace gui
         return times;
     }
 
+    UTF8 KeyInputMappedTranslation::handle(UTF8, const std::string &keymap)
+    {
+        LOG_ERROR("Co tutaj siedzi %s", profiles.get(keymap).getJson().dump().c_str());
+
+        profiles.get(keymap);
+
+        return nullptr;
+    }
+
     void Profiles::loadProfile(const std::string &filepath)
     {
         LOG_INFO("Load profile: %s", filepath.c_str());

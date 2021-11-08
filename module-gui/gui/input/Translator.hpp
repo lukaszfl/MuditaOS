@@ -6,6 +6,7 @@
 #include "InputEvent.hpp"
 #include "Profile.hpp"
 #include <hal/key_input/RawKey.hpp>
+#include <utf8/UTF8.hpp>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -70,6 +71,7 @@ namespace gui
 
       public:
         uint32_t handle(RawKey key, const std::string &keymap);
+        UTF8 handle(UTF8, const std::string &keymap);
         uint32_t getTimes() const noexcept;
     };
 
