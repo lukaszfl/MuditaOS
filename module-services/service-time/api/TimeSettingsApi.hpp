@@ -23,6 +23,11 @@ namespace stm::api
      */
     utils::time::Locale::TimeFormat timeFormat();
     /**
+     * Gets value corresponded to current AM/PM setting stored in DB
+     * @return actual setting value
+     */
+    utils::time::Locale::TimeAmPm timeAmPm();
+    /**
      *It checks if there is 12h time format set
      * @return true when 12h format is set, false when 24h format is set
      */

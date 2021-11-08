@@ -71,12 +71,12 @@ namespace gui
 
             if (timeFormat != newFormat) {
                 timeSetSpinner->setHour(date::make12(hours).count());
-                if (date::is_pm(hours)) {
-                    fmt->setCurrentValue(time::Locale::getPM());
-                }
-                else {
-                    fmt->setCurrentValue(time::Locale::getAM());
-                }
+                // if (date::is_pm(hours)) {
+                //     fmt->setCurrentValue(time::Locale::getPM());
+                // }
+                // else {
+                //     fmt->setCurrentValue(time::Locale::getAM());
+                // }
             }
 
         } break;
@@ -214,6 +214,32 @@ namespace gui
     auto TimeSetFmtSpinner::isPM() const noexcept -> bool
     {
         return fmt->getCurrentValue() == utils::time::Locale::getPM().c_str();
+    }
+
+    auto TimeSetFmtSpinner::getAmPm() const noexcept -> utils::time::Locale::TimeAmPm
+    {
+        if (fmt->getCurrentValue() == utils::time::Locale::getPM().c_str()) {
+            return utils::time::Locale::TimeAmPm::PM;
+        }
+        else {
+            return utils::time::Locale::TimeAmPm::AM;
+        }
+    }
+
+    auto TimeSetFmtSpinner::setAmPm(utils::time::Locale::TimeAmPm value) noexcept -> void
+    {
+        using namespace utils;
+
+        switch (value) {
+        case utils::time::Locale::TimeAmPm::AM: {
+            fmt->setCurrentValue(utils::time::Locale::getAM());
+        } break;
+        case utils::time::Locale::TimeAmPm::PM: {
+            fmt->setCurrentValue(utils::time::Locale::getPM());
+        } break;
+        default:
+            break;
+        }
     }
 
     auto TimeSetFmtSpinner::setTime(std::time_t time) noexcept -> void

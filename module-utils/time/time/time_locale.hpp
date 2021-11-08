@@ -151,6 +151,12 @@ namespace utils
                 }
             }
 
+            enum class TimeAmPm
+            {
+                AM = 0,
+                PM,
+            };
+
             // this could return variant<bool, UTF8> -> on error -> false -> visit -> handle defaults
             static const UTF8 get_day(enum Day day)
             {

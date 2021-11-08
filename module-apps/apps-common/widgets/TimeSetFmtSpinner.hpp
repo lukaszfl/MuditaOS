@@ -44,6 +44,7 @@ namespace gui
         auto setHour(int value) noexcept -> void;
         auto setMinute(int value) noexcept -> void;
         auto setTime(std::time_t time) noexcept -> void;
+        auto setAmPm(utils::time::Locale::TimeAmPm value) noexcept -> void;
         auto setEditMode(EditMode newEditMode) noexcept -> void;
         auto setFont(std::string newFontName) noexcept -> void;
         auto setFont(std::string newFocusFontName, std::string newNoFocusFontName) noexcept -> void;
@@ -53,6 +54,7 @@ namespace gui
         [[nodiscard]] auto getHour() const noexcept -> int;
         [[nodiscard]] auto getMinute() const noexcept -> int;
         [[nodiscard]] auto isPM() const noexcept -> bool;
+        [[nodiscard]] auto getAmPm() const noexcept -> utils::time::Locale::TimeAmPm;
 
       private:
         enum class TraverseDir : bool

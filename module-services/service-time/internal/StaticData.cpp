@@ -41,6 +41,17 @@ namespace stm::internal
     {
         return timeFormat;
     }
+
+    void StaticData::setTimeAmPm(utils::time::Locale::TimeAmPm formatAmPm)
+    {
+        timeAmPm = formatAmPm;
+    }
+
+    utils::time::Locale::TimeAmPm StaticData::getTimeAmPm() const noexcept
+    {
+        return timeAmPm;
+    }
+
     void StaticData::setTimezoneName(const std::string &newTimezone)
     {
         timezoneName = newTimezone;

@@ -16,6 +16,7 @@ namespace stm::internal
         bool isAutomaticDateAndTimeOn              = false;
         utils::time::Locale::DateFormat dateFormat = utils::time::Locale::DateFormat::DD_MM_YYYY;
         utils::time::Locale::TimeFormat timeFormat = utils::time::Locale::TimeFormat::FormatTime12H;
+        utils::time::Locale::TimeAmPm timeAmPm     = utils::time::Locale::TimeAmPm::AM;
         std::string timezoneName;
         std::string timezoneRules;
 
@@ -59,6 +60,16 @@ namespace stm::internal
          * @return actual setting value
          */
         [[nodiscard]] utils::time::Locale::TimeFormat getTimeFormat() const noexcept;
+        /**
+         * Sets value corresponding to current AM/PM setting
+         * @param format new setting value
+         */
+        void setTimeAmPm(utils::time::Locale::TimeAmPm formatAmPm);
+        /**
+         * Gets value corresponding to current AM/PM setting
+         * @return actual setting value
+         */
+        [[nodiscard]] utils::time::Locale::TimeAmPm getTimeAmPm() const noexcept;
         /**
          * Sets value corresponded to current Timezone name setting
          * @param timezone new timezone to set

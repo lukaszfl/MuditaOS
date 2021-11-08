@@ -76,6 +76,7 @@ namespace app::bell_settings
         const auto newTime = std::localtime(&now);
         newTime->tm_hour   = timeSetListItem->timeSetFmtSpinner->getHour();
         newTime->tm_min    = timeSetListItem->timeSetFmtSpinner->getMinute();
+        const auto newAmPm = timeSetListItem->timeSetFmtSpinner->getAmPm();
         const auto newFmt  = timeFmtSetListItem->getTimeFmt();
         LOG_INFO("Setting new time: %d:%d fmt: %s",
                  newTime->tm_hour,
@@ -83,6 +84,7 @@ namespace app::bell_settings
                  utils::time::Locale::format(newFmt).c_str());
         sendRtcUpdateTimeMessage(std::mktime(newTime));
         sendTimeFmtUpdateMessage(newFmt);
+        sendTimeAmPmUpdateMessage(newAmPm);
     }
 
     void TimeUnitsModel::loadData()
@@ -90,9 +92,11 @@ namespace app::bell_settings
         const auto now        = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         const auto time       = std::localtime(&now);
         const auto timeFormat = stm::api::timeFormat();
+        const auto timeAmPm   = stm::api::timeAmPm();
         timeSetListItem->timeSetFmtSpinner->setHour(time->tm_hour);
         timeSetListItem->timeSetFmtSpinner->setMinute(time->tm_min);
         timeSetListItem->timeSetFmtSpinner->setTimeFormat(timeFormat);
+        timeSetListItem->timeSetFmtSpinner->setAmPm(timeAmPm);
         timeFmtSetListItem->setTimeFmt(timeFormat);
     }
 
@@ -111,6 +115,12 @@ namespace app::bell_settings
     void TimeUnitsModel::sendTimeFmtUpdateMessage(utils::time::Locale::TimeFormat newFmt)
     {
         auto msg = std::make_shared<stm::message::SetTimeFormatRequest>(newFmt);
+        application->bus.sendUnicast(std::move(msg), service::name::service_time);
+    }
+
+    void TimeUnitsModel::sendTimeAmPmUpdateMessage(utils::time::Locale::TimeAmPm newAmPm)
+    {
+        auto msg = std::make_shared<stm::message::SetTimeAmPmRequest>(newAmPm);
         application->bus.sendUnicast(std::move(msg), service::name::service_time);
     }
 

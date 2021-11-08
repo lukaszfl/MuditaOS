@@ -54,6 +54,8 @@ namespace app::bell_settings
         void sendRtcUpdateTimeMessage(time_t newTime);
 
         void sendTimeFmtUpdateMessage(utils::time::Locale::TimeFormat newFmt);
+
+        void sendTimeAmPmUpdateMessage(utils::time::Locale::TimeAmPm newAmPm);
     };
 
     class TimeUnitsModelFactoryResetValues : public TimeUnitsModel

@@ -22,6 +22,12 @@ namespace stm::api
     {
         return stm::internal::StaticData::get().getTimeFormat();
     }
+
+    utils::time::Locale::TimeAmPm timeAmPm()
+    {
+        return stm::internal::StaticData::get().getTimeAmPm();
+    }
+
     bool isTimeFormat12h()
     {
         return stm::internal::StaticData::get().getTimeFormat() == utils::time::Locale::TimeFormat::FormatTime12H;

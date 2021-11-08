@@ -134,6 +134,20 @@ namespace stm::message
         utils::time::Locale::TimeFormat timeFormat;
     };
 
+    class SetTimeAmPmRequest : public sys::DataMessage
+    {
+      public:
+        explicit SetTimeAmPmRequest(const utils::time::Locale::TimeAmPm amPmFormat)
+            : sys::DataMessage(MessageType::MessageTypeUninitialized), amPmFormat(amPmFormat){};
+        auto getTimeAmPm() const -> utils::time::Locale::TimeAmPm
+        {
+            return amPmFormat;
+        };
+
+      private:
+        utils::time::Locale::TimeAmPm amPmFormat;
+    };
+
     class SetDateFormatRequest : public sys::DataMessage
     {
       public:
