@@ -169,3 +169,4 @@ target_include_directories(version-header INTERFACE $<BUILD_INTERFACE:${CMAKE_BI
 add_dependencies(version-header version)
 
 add_subdirectory(products)
+add_definitions(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON)

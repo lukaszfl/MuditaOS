@@ -5,7 +5,8 @@
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "${default}",
-            "configurationProvider": "vector-of-bool.cmake-tools"
+            "configurationProvider": "vector-of-bool.cmake-tools",
+            "compileCommands": "${workspaceFolder}/build-bell-linux-Debug/compile_commands.json"
         }
     ],
     "version": 4
