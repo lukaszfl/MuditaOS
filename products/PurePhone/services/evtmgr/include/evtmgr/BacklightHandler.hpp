@@ -22,6 +22,7 @@ namespace backlight
       public:
         Handler(std::shared_ptr<settings::Settings> settings, sys::Service *parent);
 
+        void init() override;
         void handleKeyPressed(int key = 0);
         /// Process request of the keypad light control
         /// @keypad_backlight::action an action to perform

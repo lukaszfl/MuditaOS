@@ -22,14 +22,24 @@ namespace backlight
       public:
         Handler(std::shared_ptr<settings::Settings> settings, sys::Service *parent);
 
+        void init() override;
+
         void handleKeyPressed(int key = 0);
 
         void processScreenRequest(screen_light_control::Action action,
                                   const screen_light_control::Parameters &params) override;
 
+        void handleScreenLightSettings(screen_light_control::Action action,
+                                       const screen_light_control::Parameters &params) override;
+
       private:
         void handleScreenLightRefresh(int key = 0);
 
         void onScreenLightTurnedOn() override;
+
+        void setKeyPressedModeFrontlightOn();
+        void setKeyPressedModeFrontlightOff();
+
+        bool onDemandModeOn = true;
     };
 } // namespace backlight

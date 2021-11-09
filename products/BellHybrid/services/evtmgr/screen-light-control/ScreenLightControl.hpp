@@ -28,6 +28,7 @@ namespace bell::screen_light_control
         using ScreenLightMode              = ::screen_light_control::ScreenLightMode;
         using ManualModeParameters         = ::screen_light_control::ManualModeParameters;
         using LinearProgressModeParameters = ::screen_light_control::LinearProgressModeParameters;
+        using ConstLinearProgressModeParameters = ::screen_light_control::ConstLinearProgressModeParameters;
 
         explicit ScreenLightController(sys::Service *parent);
         ~ScreenLightController() override;
@@ -46,7 +47,7 @@ namespace bell::screen_light_control
         void disableTimers();
 
         void setParameters(const LinearProgressModeParameters &params);
-        void setParameters(ManualModeParameters params);
+        void setParameters(const ConstLinearProgressModeParameters &params);
         void setManualBrightnessLevel(bsp::eink_frontlight::BrightnessPercentage brightness);
 
         void setAutomaticModeFunctions(const LinearProgressModeParameters::LinearFunctions &functions);
@@ -57,15 +58,13 @@ namespace bell::screen_light_control
         void turnOff();
         void turnOn(const std::optional<ManualModeParameters> &params = std::nullopt);
 
-        void enableAutomaticMode();
-        void disableAutomaticMode();
-
         static constexpr inline auto CONTROL_TIMER_MS = 25;
+        static constexpr inline auto RAMP_STEP_PER_MS = 0.1;
 
         sys::TimerHandle controlTimer;
-        bool lightOn                                               = false;
-        ScreenLightMode automaticMode                              = ScreenLightMode::Manual;
-        bsp::eink_frontlight::BrightnessPercentage brightnessValue = 0.0;
+        bool lightOn                                                = false;
+        ScreenLightMode automaticMode                               = ScreenLightMode::Manual;
+        bsp::eink_frontlight::BrightnessPercentage brightnessWhenOn = 0.0;
         LinearProgressModeParameters::LinearFunctions automaticModeFunctions;
     };
 } // namespace bell::screen_light_control
