@@ -12,4 +12,8 @@ namespace gui::bell_style
     inline constexpr auto font_center     = ::style::window::font::largelight;
     inline constexpr auto font_top        = ::style::window::font::largelight;
     inline constexpr auto statusClockFont = style::window::font::verybiglight;
+
+    inline constexpr auto popupIconTopMargin    = 120;
+    inline constexpr auto popupIconBottomMargin = 30;
+
 } // namespace gui::bell_style

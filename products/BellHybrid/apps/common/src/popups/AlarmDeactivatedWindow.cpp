@@ -5,6 +5,7 @@
 #include <apps-common/messages/DialogMetadataMessage.hpp>
 #include <apps-common/popups/data/PopupRequestParams.hpp>
 #include <apps-common/popups/Popups.hpp>
+#include <common/data/StyleCommon.hpp>
 #include <common/popups/AlarmDeactivatedWindow.hpp>
 #include <gui/input/InputEvent.hpp>
 #include <gui/widgets/Icon.hpp>
@@ -56,6 +57,8 @@ namespace gui
                         style::window_height,
                         "big_no-alarm_W_G",
                         utils::translate("app_bell_alarm_deactivated"));
+        icon->setAlignment(gui::Alignment(gui::Alignment::Horizontal::Center, gui::Alignment::Vertical::Top));
+        icon->image->setMargins({0, bell_style::popupIconTopMargin, 0, bell_style::popupIconBottomMargin});
         icon->text->setFont(style::window::font::verybiglight);
     }
 
