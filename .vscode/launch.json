@@ -94,6 +94,46 @@
                 "b BusFault_Handler",
                 "b UsageFault_Handler",
             ]
-        }
+        },
+        {
+            "name": "Tigran Cortex Debug (rt1051)",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "jlink",
+            "device": "MCIMXRT1051",
+            "serverpath": "/opt/SEGGER/JLink/JLinkGDBServerCLExe",
+            "armToolchainPath": "/home/tigran/gcc-arm-none-eabi-10-2020-q4-major/bin/",
+            "gdbPath": "/home/tigran/gcc-arm-none-eabi-10-2020-q4-major/bin/arm-none-eabi-gdb-py",
+            "overrideLaunchCommands": [
+                "source .gdb_macros",
+                "set pagination off",
+                "source tools/gdb_crash_extend.py",
+                "source tools/misc/puregdb/puregdb.py",
+                "monitor reset 0",
+                "monitor halt",
+                "monitor memU32 0x401BC000 = 128;",
+                "load",
+                "eval \"monitor exec SetRTTAddr %p\", &_SEGGER_RTT",
+                "info threads",
+                "thread 2",
+                "tb main",
+                "b HardFault_Handler",
+            ],
+            "serverArgs": [
+                "-strict",
+                "-ir",
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 1
+            },
+            "rtos": "FreeRTOS",
+            "interface": "swd",
+            "jlinkscript": "${workspaceRoot}/evkbimxrt1050_sdram_init_T6.jlinkscript",
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText",
+            "executable": "${workspaceRoot}/build-BellHybrid-rt1051-RelWithDebInfo/BellHybrid.elf",
+        },
     ]
 }
