@@ -91,4 +91,7 @@
         "filesystem": "cpp"
     },
     "favorites.sortDirection": "ASC",
+    "editor.formatOnSave": true,
+    "clang-format.executable": "/usr/bin/clang-format-12",
+    "cortex-debug.armToolchainPath": "/home/tigran/gcc-arm-none-eabi-10-2020-q4-major/bin"
 }
