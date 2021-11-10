@@ -219,13 +219,35 @@ namespace gui
         return times;
     }
 
-    UTF8 KeyInputMappedTranslation::handle(UTF8, const std::string &keymap)
+    UTF8 KeyInputMappedTranslation::handle(UTF8 text, const std::string &keymap)
     {
-        LOG_ERROR("Co tutaj siedzi %s", profiles.get(keymap).getJson().dump().c_str());
+        if (!keymap.empty()) {
+            auto profile = profiles.get(keymap).getJson();
+            std::string supportedSigns;
+            std::string supportedText = text;
 
-        profiles.get(keymap);
+            for (const auto &entry : profile.object_items()) {
+                if (entry.first != filetype::jsonKey) {
+                    supportedSigns += entry.second.string_value();
+                }
+            }
 
-        return nullptr;
+            supportedSigns += "\n";
+            supportedText.erase(std::remove_if(supportedText.begin(),
+                                               supportedText.end(),
+                                               [supportedSigns](const auto &sign) {
+                                                   return supportedSigns.find(sign) == std::string::npos;
+                                               }),
+                                supportedText.end());
+
+            LOG_ERROR("Supported signs: %s", supportedSigns.c_str());
+            LOG_ERROR("After unsupported removal: %s", supportedText.c_str());
+
+            return "";
+        }
+        else {
+            return text;
+        }
     }
 
     void Profiles::loadProfile(const std::string &filepath)

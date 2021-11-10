@@ -127,6 +127,8 @@ namespace gui
             return;
         }
 
+        translator.handle(text, inputMode != nullptr ? inputMode->get() : "");
+
         // Optimization to not set UTF8 text sign by sign but by blocks.
         for (const auto &block : textToTextBlocks(text, format)) {
             *cursor << block;
